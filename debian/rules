@@ -76,7 +76,7 @@ KODI_CONFIG_OPTIONS ?= --host=$(DEB_HOST_GNU_TYPE) \
   --disable-afpclient \
   --disable-airtunes \
   --enable-external-libraries \
-  --enable-libav-compat \
+  --with-ffmpeg=shared \
   --disable-dependency-tracking \
   --disable-dvdcss \
   --disable-non-free \

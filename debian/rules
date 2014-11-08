@@ -1,0 +1,260 @@
+#!/usr/bin/make -f
+
+# These are used for cross-compiling and for saving the configure script
+# from having to guess our platform (since we know it already)
+DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+DEB_HOST_ARCH ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
+
+ifeq (,$(filter i386 amd64,$(DEB_HOST_ARCH)))
+  ARCH_SPECIFIC_OPTIONS = --disable-crystalhd
+else
+  ARCH_SPECIFIC_OPTIONS = --enable-crystalhd
+  ARCH_SPECIFIC_LIB_RECOMMENDS = -lcrystalhd
+endif
+
+GL_CONFIG_OPTIONS = --enable-gl --disable-gles --enable-vdpau
+ARCH_SPECIFIC_LIB_RECOMMENDS_ADD = -lvdpau
+
+# Enable gles for armel, armhf
+# Also disable VDPAU and VAAPI there since they break the build with gles
+ifneq (,$(filter armel armhf,$(DEB_HOST_ARCH)))
+GL_CONFIG_OPTIONS = --disable-gl --enable-gles --disable-vdpau --disable-vaapi
+ARCH_SPECIFIC_LIB_RECOMMENDS_ADD =
+else
+# Enable OpenGL but no VDPAU or VAAPI for MIPS
+ifneq (,$(filter mips mipsel,$(DEB_HOST_ARCH)))
+GL_CONFIG_OPTIONS = --enable-gl --disable-gles --disable-vdpau --disable-vaapi
+ARCH_SPECIFIC_LIB_RECOMMENDS_ADD =
+endif
+endif
+
+ARCH_SPECIFIC_LIB_RECOMMENDS += $(ARCH_SPECIFIC_LIB_RECOMMENDS_ADD)
+
+# Various environment variables to set
+DEB_CFLAGS ?=  $(shell dpkg-buildflags --get CPPFLAGS) \
+  $(filter-out -g -O2, $(shell dpkg-buildflags --get CFLAGS))
+DEB_CXXFLAGS ?= $(shell dpkg-buildflags --get CPPFLAGS) \
+  $(filter-out -g -O2, $(shell dpkg-buildflags --get CXXFLAGS))
+DEB_LDFLAGS ?= $(shell dpkg-buildflags --get LDFLAGS) $(shell pkg-config --libs ftgl)
+ENV_OPTIONS = CFLAGS="$(DEB_CFLAGS)" CXXFLAGS="$(DEB_CXXFLAGS)" \
+  LDFLAGS="$(DEB_LDFLAGS)"
+
+# fall back to old location of libhdhomerun includes if needed
+ifneq ("$(wildcard /usr/lib/libhdhomerun/hdhomerun.h)","")
+  DEB_CXXFLAGS += -I/usr/lib/
+endif
+
+# List of options to pass to configure. Can be overridden.
+# Extra options can simply be passed using XBMC_CONFIG_EXTRA_OPTIONS env
+# variable.
+XBMC_CONFIG_OPTIONS ?= --host=$(DEB_HOST_GNU_TYPE) \
+  --build=$(DEB_BUILD_GNU_TYPE) \
+  --prefix=/usr --docdir=/usr/share/doc/xbmc \
+  --enable-debug \
+  $(GL_CONFIG_OPTIONS) \
+  --disable-vdadecoder \
+  --disable-vtbdecoder \
+  --disable-openmax \
+  --disable-tegra \
+  --disable-profiling \
+  --enable-joystick \
+  --enable-xrandr \
+  --enable-sdl \
+  --enable-pulse \
+  --enable-rtmp \
+  --enable-ffmpeg-libvorbis \
+  --disable-mid \
+  --disable-hal \
+  --enable-avahi \
+  --disable-asap-codec \
+  --enable-webserver \
+  --enable-optical-drive \
+  --enable-texturepacker \
+  --enable-nfs \
+  --enable-libcec \
+  --disable-afpclient \
+  --enable-airtunes \
+  --enable-external-libraries \
+  --enable-libav-compat \
+  --disable-dependency-tracking \
+  --disable-dvdcss \
+  --disable-non-free \
+  --disable-gtest \
+  $(ARCH_SPECIFIC_OPTIONS) \
+  $(XBMC_CONFIG_EXTRA_OPTIONS) \
+  $(ENV_OPTIONS)
+
+# Used to show what config options are enabled
+show-xbmc-config-options:
+	$(info $(XBMC_CONFIG_OPTIONS))
+
+%:
+	dh $@ --with autoreconf --with python2 --parallel
+
+override_dh_clean:
+	dh_clean libtool xbmc/config.h xbmc/stamp-h1
+	find . -name config.status -o -name config.cache -o -name config.log \
+		-exec rm -f "{}" \;
+
+# Use package's version in XBMC
+VERSION := $(shell dpkg-parsechangelog | sed -n 's/^Version: \(.*\)/\1/p')
+
+# fall back to old location of DejaVuSans.ttf if needed
+ifneq ("$(wildcard /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf)","")
+DEJAVUSANS=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
+else
+DEJAVUSANS=/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf
+endif
+
+override_dh_auto_configure: configure
+	sed -i 's/DEB_VERSION/"'$(VERSION)'"/' xbmc/GUIInfoManager.cpp
+	mkdir -p xbmc/visualizations/XBMCProjectM/libprojectM/fonts
+	-ln -s /usr/share/fonts/truetype/ttf-bitstream-vera/Vera.ttf xbmc/visualizations/XBMCProjectM/libprojectM/fonts/
+	-ln -s /usr/share/fonts/truetype/ttf-bitstream-vera/VeraMono.ttf xbmc/visualizations/XBMCProjectM/libprojectM/fonts/
+	fontforge -script $(CURDIR)/debian/mergefonts.ff \
+		/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf \
+		$(DEJAVUSANS) \
+		$(CURDIR)/media/Fonts/arial.ttf
+	./bootstrap
+	./configure $(XBMC_CONFIG_OPTIONS)
+	# Add Debian related notes to XBMC's original logo
+	mkdir -p $(CURDIR)/debian/tmp/home/user
+	HOME=$(CURDIR)/debian/tmp/home/user gimp -i -b '(load "debian/xcf2png.scm") (xcf2png "debian/xbmc-logo.xcf" "addons/skin.confluence/media/xbmc-logo.png") (gimp-quit 0)'
+
+override_dh_auto_install:
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
+	$(MAKE) eventclients DESTDIR=$(CURDIR)/debian/tmp \
+		WII_EXTRA_OPTS=-DCWIID_OLD
+	mkdir -p $(CURDIR)/debian/tmp/usr/include/xbmc
+	sed 's|../library.xbmc.addon/|xbmc/|' addons/library.xbmc.gui/libXBMC_gui.h > \
+		$(CURDIR)/debian/tmp/usr/include/xbmc/libXBMC_gui.h
+	sed 's|../library.xbmc.addon/|xbmc/|' addons/library.xbmc.pvr/libXBMC_pvr.h > \
+		$(CURDIR)/debian/tmp/usr/include/xbmc/libXBMC_pvr.h
+
+override_dh_install:
+	dh_install -XLICENCE -XLICENSE \
+		-XLicence.txt -XLicense.txt -XLiberationSans-Regular.ttf \
+		-XDejaVuSans.ttf -XDejaVuSans-Bold.ttf -XLICENSE.txt \
+		-XRoboto-Bold.ttf -XRoboto-Regular.ttf -XNOTICE.txt \
+		-Xjquery-1.8.2.min.js -Xiscroll-min.js
+
+override_dh_makeshlibs:
+	# We don't install shared libraries in standard locations so don't run
+	# dh_makeshlibs
+	# OTOH we need to remove exec flag after dh_strip
+	chmod -x $(CURDIR)/debian/tmp/usr/lib/xbmc/addons/visualization.*/*.vis
+	-chmod -x $(CURDIR)/debian/tmp/usr/lib/xbmc/addons/screensaver.rsxs.*/*.xbs
+
+override_dh_shlibdeps: debian/tmp/xbmc-bin-depends-dummy.so debian/tmp/xbmc-bin-recommends-dummy.so
+	dh_shlibdeps -a -O--parallel \
+		-l$(CURDIR)/debian/xbmc-bin/usr/lib/xbmc/system/players/dvdplayer
+	# Need to manually add dependencies for dlopened libs.
+	dpkg-shlibdeps -pdlopenlibs -edebian/tmp/xbmc-bin-depends-dummy.so -xlibc6 -O >>debian/xbmc-bin.substvars
+	dpkg-shlibdeps -dRecommends -edebian/tmp/xbmc-bin-recommends-dummy.so -xlibc6 -O >>debian/xbmc-bin.substvars
+
+debian/tmp/xbmc-bin-depends-dummy.so:
+	mkdir -p debian/tmp
+	cc -xc -shared -Wl,--no-as-needed -o $@ /dev/null \
+		-lcurl-gnutls
+
+debian/tmp/xbmc-bin-recommends-dummy.so:
+	mkdir -p debian/tmp
+	cc -xc -shared -Wl,--no-as-needed -o $@ /dev/null \
+		-lass \
+		-lbluray \
+		-lcec \
+		-lFLAC \
+		-lhdhomerun \
+		-lmad \
+		-lmodplug \
+		-lmp3lame \
+		-lmpeg2 \
+		-lnfs \
+		-logg \
+		-lplist \
+		-lrtmp \
+		-lshairport \
+		-lvorbis \
+		-lvorbisenc \
+		-lvorbisfile \
+		$(ARCH_SPECIFIC_LIB_RECOMMENDS)
+
+override_dh_strip:
+	dh_strip --dbg-package=xbmc-dbg
+
+override_dh_installinit:
+	echo "Shipping systemd xbmc.service file as an example only"
+
+# Get original XBMC source and cut not needed bits.
+# Based on https://github.com/xbmc/xbmc-packaging/blob/master/xbmc-get-orig-source
+ORIG_SRC_DIR := debian/tmp-src-dir
+UPSTREAM_VER ?= $(shell dpkg-parsechangelog | sed -rne 's/^Version: ([0-9]:)?([0-9.]+)(\+dfsg\d+)?.*$$/\2/p')
+DFSG_VER = $(UPSTREAM_VER)+dfsg1
+
+get-orig-source:
+	mkdir -p $(ORIG_SRC_DIR)
+	wget -O $(ORIG_SRC_DIR)/xbmc-orig.tar.gz http://mirrors.xbmc.org/releases/source/xbmc-$(UPSTREAM_VER).tar.gz
+	tar -C $(ORIG_SRC_DIR) -xf $(ORIG_SRC_DIR)/xbmc-orig.tar.gz
+	rm $(ORIG_SRC_DIR)/xbmc-orig.tar.gz
+	# Remove non-free components
+	find $(ORIG_SRC_DIR)/* -depth \( -iname '*dvdcss*' -o -iname '*unrar*' \) -exec rm -rf "{}" \;
+	# Remove components not needed for Linux
+	rm -rf $(ORIG_SRC_DIR)/*/lib/afpfs-ng \
+		$(ORIG_SRC_DIR)/*/lib/enca \
+		$(ORIG_SRC_DIR)/*/lib/cximage-6.0/jasper \
+		$(ORIG_SRC_DIR)/*/lib/cximage-6.0/jbig \
+		$(ORIG_SRC_DIR)/*/lib/cximage-6.0/jpeg \
+		$(ORIG_SRC_DIR)/*/lib/cximage-6.0/mng \
+		$(ORIG_SRC_DIR)/*/lib/cximage-6.0/png \
+		$(ORIG_SRC_DIR)/*/lib/cximage-6.0/tiff \
+		$(ORIG_SRC_DIR)/*/lib/cximage-6.0/zlib \
+		$(ORIG_SRC_DIR)/*/lib/freetype \
+		$(ORIG_SRC_DIR)/*/lib/gtest \
+		$(ORIG_SRC_DIR)/*/lib/libUPnP/Neptune/ThirdParty/zlib-1.2.3 \
+		$(ORIG_SRC_DIR)/*/lib/libass \
+		$(ORIG_SRC_DIR)/*/lib/libbluray \
+		$(ORIG_SRC_DIR)/*/lib/libcec \
+		$(ORIG_SRC_DIR)/*/lib/libhdhomerun \
+		$(ORIG_SRC_DIR)/*/lib/liblame \
+		$(ORIG_SRC_DIR)/*/lib/libmad \
+		$(ORIG_SRC_DIR)/*/lib/libmicrohttpd \
+		$(ORIG_SRC_DIR)/*/lib/libmodplug \
+		$(ORIG_SRC_DIR)/*/lib/libmpeg2 \
+		$(ORIG_SRC_DIR)/*/lib/libnfs \
+		$(ORIG_SRC_DIR)/*/lib/librtmp \
+		$(ORIG_SRC_DIR)/*/lib/libshairport \
+		$(ORIG_SRC_DIR)/*/lib/libsidplay2 \
+		$(ORIG_SRC_DIR)/*/lib/groovy \
+		$(ORIG_SRC_DIR)/*/lib/taglib \
+		$(ORIG_SRC_DIR)/*/lib/win32 \
+		$(ORIG_SRC_DIR)/*/project/Win32BuildSetup \
+		$(ORIG_SRC_DIR)/*/addons/service.xbmc.versioncheck \
+		$(ORIG_SRC_DIR)/*/addons/webinterface.default/js/iscroll-min.js \
+		$(ORIG_SRC_DIR)/*/addons/webinterface.default/js/jquery-1.8.2.min.js \
+		$(ORIG_SRC_DIR)/*/addons/skin.confluence/fonts/Roboto-*.ttf \
+		$(ORIG_SRC_DIR)/*/media/Fonts/arial.ttf \
+		$(ORIG_SRC_DIR)/*/xbmc/visualizations/XBMCProjectM/libprojectM/fonts/Vera*.ttf
+	find $(ORIG_SRC_DIR)/* -depth \( \( -iname '*.so' -o -iname '*.exe' -o -iname '*.lib' \
+		-o -iname '*.dll' -o -iname '*.dylib' -o -iname '*.a' -o -iname '*.obj' \
+		\) -exec rm -rf "{}" \; \)
+	# Remove components not needed for Linux when using external libs
+	rm -rf $(ORIG_SRC_DIR)/*/lib/ffmpeg
+	# Remove temp files and other cruft from source tarball
+	# The find command snippet here was taken from debhelper's dh_clean command
+	# with some modification to delete more unneeded files.
+	find $(ORIG_SRC_DIR)/* -depth \( \( -type f -a \
+		\( -name '#*#' -o -name '.*~' -o -name '*~' -o -name DEADJOE \
+		-o -name '*.orig' -o -name '*.rej' -o -name '*.bak' \
+		-o -name '.*.orig' -o -name .*.rej -o -name '.SUMS' \
+		-o -name TAGS -o \( -path '*/.deps/*' -a -name '*.P' \) \
+		-o -name config.status -o -name config.cache -o -name config.log \
+		-o -name 'VS20*' \) -exec rm -f "{}" \; \) -o \
+		\( -type d -a -name autom4te.cache -prune -exec rm -rf "{}" \; \) \)
+		rm $(ORIG_SRC_DIR)/*/.gitignore
+	#Remove empty directories
+	find $(ORIG_SRC_DIR)/* -type d -empty -delete
+	(cd $(ORIG_SRC_DIR) && tar -cJf ../../xbmc_$(DFSG_VER).orig.tar.xz *)
+	rm -rf $(ORIG_SRC_DIR)
+
+.PHONY: get-orig-source

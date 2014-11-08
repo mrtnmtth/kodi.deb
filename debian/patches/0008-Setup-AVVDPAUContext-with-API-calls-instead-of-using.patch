@@ -1,0 +1,116 @@
+From 5c0cf96c60f8545b3bc7118f2e0060a908b63b7a Mon Sep 17 00:00:00 2001
+From: Anton Khirnov <anton@khirnov.net>
+Date: Sat, 4 Oct 2014 21:32:35 +0200
+Subject: [PATCH] Setup AVVDPAUContext with API calls instead of using memset()
+Origin: https://bugzilla.libav.org/show_bug.cgi?id=674
+---
+ lib/xbmc-libav-hacks/libav_hacks.h             |  7 +++++++
+ xbmc/cores/dvdplayer/DVDCodecs/Video/VDPAU.cpp | 22 +++++++++-------------
+ xbmc/cores/dvdplayer/DVDCodecs/Video/VDPAU.h   |  2 +-
+ 3 files changed, 17 insertions(+), 14 deletions(-)
+
+diff --git a/lib/xbmc-libav-hacks/libav_hacks.h b/lib/xbmc-libav-hacks/libav_hacks.h
+index af64980..a840b31 100644
+--- a/lib/xbmc-libav-hacks/libav_hacks.h
++++ b/lib/xbmc-libav-hacks/libav_hacks.h
+@@ -21,11 +21,18 @@
+ #ifndef __LIBAV_HACKS_H
+ #define __LIBAV_HACKS_H
+ 
++#ifdef __cplusplus
++extern "C" {
++#endif
+ #include <libavutil/avutil.h>
+ #include <libavutil/opt.h>
+ #include <libavresample/avresample.h>
+ #include <libavformat/avformat.h>
+ #include <libavfilter/avfilter.h>
++#include <libavcodec/vdpau.h>
++#ifdef __cplusplus
++}
++#endif
+ 
+ #if LIBAVUTIL_VERSION_MICRO >= 100
+ #error "You should not enable libav hacks when building against FFmpeg."
+diff --git a/xbmc/cores/dvdplayer/DVDCodecs/Video/VDPAU.cpp b/xbmc/cores/dvdplayer/DVDCodecs/Video/VDPAU.cpp
+index 73c4fa4..932985a 100644
+--- a/xbmc/cores/dvdplayer/DVDCodecs/Video/VDPAU.cpp
++++ b/xbmc/cores/dvdplayer/DVDCodecs/Video/VDPAU.cpp
+@@ -488,7 +488,7 @@ CDecoder::CDecoder() : m_vdpauOutput(&m_inMsgEvent)
+   m_vdpauConfig.videoSurfaces = &m_videoSurfaces;
+ 
+   m_vdpauConfigured = false;
+-  m_hwContext.bitstream_buffers_allocated = 0;
++  m_hwContext = av_vdpau_alloc_context();
+   m_DisplayState = VDPAU_OPEN;
+   m_vdpauConfig.context = 0;
+ }
+@@ -578,17 +578,16 @@ bool CDecoder::Open(AVCodecContext* avctx, const enum PixelFormat fmt, unsigned
+ 
+       m_vdpauConfig.context->GetProcs().vdp_decoder_destroy(m_vdpauConfig.vdpDecoder);
+       CheckStatus(vdp_st, __LINE__);
++      if (!ConfigVDPAU(avctx, 16))
++	      return false;
+ 
+       // finally setup ffmpeg
+-      memset(&m_hwContext, 0, sizeof(AVVDPAUContext));
+-      m_hwContext.render = CDecoder::Render;
+-      m_hwContext.bitstream_buffers_allocated = 0;
++      m_hwContext->render =  m_vdpauConfig.context->GetProcs().vdp_decoder_render;
++      m_hwContext->decoder = m_vdpauConfig.vdpDecoder;
+       avctx->get_buffer      = CDecoder::FFGetBuffer;
+       avctx->reget_buffer    = CDecoder::FFGetBuffer;
+       avctx->release_buffer  = CDecoder::FFReleaseBuffer;
+-      avctx->draw_horiz_band = CDecoder::FFDrawSlice;
+-      avctx->slice_flags=SLICE_FLAG_CODED_ORDER|SLICE_FLAG_ALLOW_FIELD;
+-      avctx->hwaccel_context = &m_hwContext;
++      avctx->hwaccel_context = m_hwContext;
+ 
+       g_Windowing.Register(this);
+       return true;
+@@ -613,11 +612,7 @@ void CDecoder::Close()
+   FiniVDPAUOutput();
+   m_vdpauOutput.Dispose();
+ 
+-  if (m_hwContext.bitstream_buffers_allocated)
+-  {
+-    m_dllAvUtil.av_freep(&m_hwContext.bitstream_buffers);
+-  }
+-
++  av_freep(&m_hwContext);
+   m_dllAvUtil.Unload();
+ 
+   if (m_vdpauConfig.context)
+@@ -1030,6 +1025,7 @@ VdpStatus CDecoder::Render( VdpDecoder decoder, VdpVideoSurface target,
+   return VDP_STATUS_OK;
+ }
+ 
++#if 0
+ void CDecoder::FFDrawSlice(struct AVCodecContext *s,
+                                            const AVFrame *src, int offset[4],
+                                            int y, int type, int height)
+@@ -1089,7 +1085,7 @@ void CDecoder::FFDrawSlice(struct AVCodecContext *s,
+   if (diff*1000/CurrentHostFrequency() > 30)
+     CLog::Log(LOGDEBUG, "CVDPAU::DrawSlice - VdpDecoderRender long decoding: %d ms, dec: %d, proc: %d, rend: %d", (int)((diff*1000)/CurrentHostFrequency()), decoded, processed, rend);
+ }
+-
++#endif
+ 
+ int CDecoder::Decode(AVCodecContext *avctx, AVFrame *pFrame)
+ {
+diff --git a/xbmc/cores/dvdplayer/DVDCodecs/Video/VDPAU.h b/xbmc/cores/dvdplayer/DVDCodecs/Video/VDPAU.h
+index ccad9a6..dc3956a 100644
+--- a/xbmc/cores/dvdplayer/DVDCodecs/Video/VDPAU.h
++++ b/xbmc/cores/dvdplayer/DVDCodecs/Video/VDPAU.h
+@@ -619,7 +619,7 @@ protected:
+   bool          m_vdpauConfigured;
+   CVdpauConfig  m_vdpauConfig;
+   CVideoSurfaces m_videoSurfaces;
+-  AVVDPAUContext m_hwContext;
++  AVVDPAUContext *m_hwContext;
+ 
+   COutput       m_vdpauOutput;
+   CVdpauBufferStats m_bufferStats;
+-- 
+2.1.1
+

@@ -1,0 +1,6 @@
+#!/usr/bin/fontforge
+# merge $1 and $2 to $3 fonts
+Open($1);
+ScaleToEm(2048)
+MergeFonts($2);
+Generate($3);

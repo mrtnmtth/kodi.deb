@@ -1,0 +1,48 @@
+From fef995c74fc6719bce4b8c523ade6f589129a05a Mon Sep 17 00:00:00 2001
+From: Balint Reczey <balint@balintreczey.hu>
+Date: Fri, 30 Sep 2011 06:22:51 -0400
+Subject: [PATCH 3/4] mips: Add configure option for mips and mipsel
+
+---
+ configure.in    | 10 ++++++++++
+ m4/xbmc_arch.m4 |  3 +++
+ 2 files changed, 13 insertions(+)
+
+diff --git a/configure.in b/configure.in
+index 2e49fa1..186edfe 100644
+--- a/configure.in
++++ b/configure.in
+@@ -715,6 +715,16 @@ case $host in
+      use_wayland=no
+      build_shared_lib=yes
+      ;;
++  mips*-*-linux-gnu*)
++     ARCH="mips"
++     use_arch="mips"
++     ffmpeg_target_os=linux
++     use_joystick=no
++     use_gles=no
++     use_sdl=yes
++     use_x11=yes
++     use_wayland=no
++     ;;
+   *)
+      AC_MSG_ERROR(unsupported host ($host))
+ esac
+diff --git a/m4/xbmc_arch.m4 b/m4/xbmc_arch.m4
+index 5bcdd81..f9ab5cd 100644
+--- a/m4/xbmc_arch.m4
++++ b/m4/xbmc_arch.m4
+@@ -32,6 +32,9 @@ case $host in
+   arm*-*-linux-gnu*|arm*-*-linux-uclibc*)
+      AC_SUBST(ARCH_DEFINES, "-DTARGET_POSIX -DTARGET_LINUX -D_LINUX")
+      ;;
++  mips*-*-linux-gnu*|mips*-*-linux-uclibc*)
++     AC_SUBST(ARCH_DEFINES, "-DTARGET_POSIX -DTARGET_LINUX -D_LINUX")
++     ;;
+   *-*linux-android*)
+      AC_SUBST(ARCH_DEFINES, "-DTARGET_POSIX -DTARGET_LINUX -D_LINUX -DTARGET_ANDROID")
+      ;;
+-- 
+2.1.1
+

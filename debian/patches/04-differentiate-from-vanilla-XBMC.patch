@@ -1,0 +1,55 @@
+--- a/addons/skin.confluence/720p/Home.xml
++++ b/addons/skin.confluence/720p/Home.xml
+@@ -19,7 +19,7 @@
+ 			<description>LOGO</description>
+ 			<left>0</left>
+ 			<top>5</top>
+-			<width>170</width>
++			<width>680</width>
+ 			<height>100</height>
+ 			<aspectratio aligny="top" align="left">keep</aspectratio>
+ 			<texture>xbmc-logo.png</texture>
+--- a/addons/skin.confluence/720p/LoginScreen.xml
++++ b/addons/skin.confluence/720p/LoginScreen.xml
+@@ -24,7 +24,7 @@
+ 				<description>LOGO</description>
+ 				<left>0</left>
+ 				<top>5</top>
+-				<width>170</width>
++				<width>680</width>
+ 				<height>100</height>
+ 				<aspectratio aligny="top" align="left">keep</aspectratio>
+ 				<texture>xbmc-logo.png</texture>
+--- a/xbmc/Application.cpp
++++ b/xbmc/Application.cpp
+@@ -691,7 +691,7 @@
+   CProfilesManager::Get().Load();
+ 
+   CLog::Log(LOGNOTICE, "-----------------------------------------------------------------------");
+-  CLog::Log(LOGNOTICE, "Starting XBMC (%s). Platform: %s %s %d-bit", g_infoManager.GetVersion().c_str(), g_sysinfo.GetBuildTargetCpuFamily().c_str(),
++  CLog::Log(LOGNOTICE, "Starting XBMC from Debian (%s). Platform: %s %s %d-bit", g_infoManager.GetVersion().c_str(), g_sysinfo.GetBuildTargetCpuFamily().c_str(),
+       g_sysinfo.GetBuildTargetPlatformName().c_str(), g_sysinfo.GetXbmcBitness());
+ 
+ /* Expand macro before stringify */
+--- a/xbmc/GUIInfoManager.cpp
++++ b/xbmc/GUIInfoManager.cpp
+@@ -4208,7 +4208,7 @@
+   if (GetXbmcGitRevision())
+     tmp = StringUtils::Format("%d.%d%s Git:%s", VERSION_MAJOR, VERSION_MINOR, VERSION_TAG, GetXbmcGitRevision());
+   else
+-    tmp = StringUtils::Format("%d.%d%s", VERSION_MAJOR, VERSION_MINOR, VERSION_TAG);
++    tmp = StringUtils::Format("%d.%d%s Debian package version:%s", VERSION_MAJOR, VERSION_MINOR, VERSION_TAG, DEB_VERSION);
+   return tmp;
+ }
+ 
+--- a/xbmc/GitRevision.cpp
++++ b/xbmc/GitRevision.cpp
+@@ -29,7 +29,7 @@
+ const char *GetXbmcGitRevision()
+ {
+ #ifdef GIT_REV
+-  return GIT_REV;
++  return NULL;
+ #else
+   return NULL;
+ #endif

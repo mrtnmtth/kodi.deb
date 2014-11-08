@@ -3,11 +3,9 @@ Description: Use system's groovy instead of the embedded one
 Author: Balint Reczey <balint@balintreczey.hu>
 Forwarded: not-needed
 
-diff --git a/codegenerator.mk b/codegenerator.mk
-index 6689777..6afaa7d 100644
 --- a/codegenerator.mk
 +++ b/codegenerator.mk
-@@ -33,10 +33,9 @@ vpath %.i $(INTERFACES_DIR)/swig
+@@ -41,10 +41,9 @@
  
  $(GENDIR)/%.cpp: $(GENDIR)/%.xml $(JAVA) $(SWIG) $(DOXY_XML_PATH)
  	# Work around potential groovy bug reported at: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=733234

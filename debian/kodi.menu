@@ -1,2 +1,2 @@
-?package(xbmc):needs="X11" section="Applications/Video" \
-  title="xbmc" command="/usr/bin/xbmc"
+?package(kodi):needs="X11" section="Applications/Video" \
+  title="kodi" command="/usr/bin/kodi"

@@ -46,11 +46,11 @@ ifneq ("$(wildcard /usr/lib/libhdhomerun/hdhomerun.h)","")
 endif
 
 # List of options to pass to configure. Can be overridden.
-# Extra options can simply be passed using XBMC_CONFIG_EXTRA_OPTIONS env
+# Extra options can simply be passed using KODI_CONFIG_EXTRA_OPTIONS env
 # variable.
-XBMC_CONFIG_OPTIONS ?= --host=$(DEB_HOST_GNU_TYPE) \
+KODI_CONFIG_OPTIONS ?= --host=$(DEB_HOST_GNU_TYPE) \
   --build=$(DEB_BUILD_GNU_TYPE) \
-  --prefix=/usr --docdir=/usr/share/doc/xbmc \
+  --prefix=/usr --docdir=/usr/share/doc/kodi \
   --enable-debug \
   $(GL_CONFIG_OPTIONS) \
   --disable-vdadecoder \
@@ -74,7 +74,7 @@ XBMC_CONFIG_OPTIONS ?= --host=$(DEB_HOST_GNU_TYPE) \
   --enable-nfs \
   --enable-libcec \
   --disable-afpclient \
-  --enable-airtunes \
+  --disable-airtunes \
   --enable-external-libraries \
   --enable-libav-compat \
   --disable-dependency-tracking \
@@ -82,12 +82,12 @@ XBMC_CONFIG_OPTIONS ?= --host=$(DEB_HOST_GNU_TYPE) \
   --disable-non-free \
   --disable-gtest \
   $(ARCH_SPECIFIC_OPTIONS) \
-  $(XBMC_CONFIG_EXTRA_OPTIONS) \
+  $(KODI_CONFIG_EXTRA_OPTIONS) \
   $(ENV_OPTIONS)
 
 # Used to show what config options are enabled
-show-xbmc-config-options:
-	$(info $(XBMC_CONFIG_OPTIONS))
+show-kodi-config-options:
+	$(info $(KODI_CONFIG_OPTIONS))
 
 %:
 	dh $@ --with autoreconf --with python2 --parallel
@@ -97,7 +97,7 @@ override_dh_clean:
 	find . -name config.status -o -name config.cache -o -name config.log \
 		-exec rm -f "{}" \;
 
-# Use package's version in XBMC
+# Use package's version in Kodi
 VERSION := $(shell dpkg-parsechangelog | sed -n 's/^Version: \(.*\)/\1/p')
 
 # fall back to old location of DejaVuSans.ttf if needed
@@ -117,10 +117,10 @@ override_dh_auto_configure: configure
 		$(DEJAVUSANS) \
 		$(CURDIR)/media/Fonts/arial.ttf
 	./bootstrap
-	./configure $(XBMC_CONFIG_OPTIONS)
-	# Add Debian related notes to XBMC's original logo
+	./configure $(KODI_CONFIG_OPTIONS)
+	# Add Debian related notes to Kodi's original logo
 	mkdir -p $(CURDIR)/debian/tmp/home/user
-	HOME=$(CURDIR)/debian/tmp/home/user gimp -i -b '(load "debian/xcf2png.scm") (xcf2png "debian/xbmc-logo.xcf" "addons/skin.confluence/media/xbmc-logo.png") (gimp-quit 0)'
+	HOME=$(CURDIR)/debian/tmp/home/user gimp -i -b '(load "debian/xcf2png.scm") (xcf2png "debian/kodi-logo.xcf" "addons/skin.confluence/media/kodi-logo.png") (gimp-quit 0)'
 
 override_dh_auto_install:
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
@@ -143,22 +143,22 @@ override_dh_makeshlibs:
 	# We don't install shared libraries in standard locations so don't run
 	# dh_makeshlibs
 	# OTOH we need to remove exec flag after dh_strip
-	chmod -x $(CURDIR)/debian/tmp/usr/lib/xbmc/addons/visualization.*/*.vis
-	-chmod -x $(CURDIR)/debian/tmp/usr/lib/xbmc/addons/screensaver.rsxs.*/*.xbs
+	chmod -x $(CURDIR)/debian/tmp/usr/lib/kodi/addons/visualization.*/*.vis
+	-chmod -x $(CURDIR)/debian/tmp/usr/lib/kodi/addons/screensaver.rsxs.*/*.xbs
 
-override_dh_shlibdeps: debian/tmp/xbmc-bin-depends-dummy.so debian/tmp/xbmc-bin-recommends-dummy.so
+override_dh_shlibdeps: debian/tmp/kodi-bin-depends-dummy.so debian/tmp/kodi-bin-recommends-dummy.so
 	dh_shlibdeps -a -O--parallel \
-		-l$(CURDIR)/debian/xbmc-bin/usr/lib/xbmc/system/players/dvdplayer
+		-l$(CURDIR)/debian/kodi-bin/usr/lib/kodi/system/players/dvdplayer
 	# Need to manually add dependencies for dlopened libs.
-	dpkg-shlibdeps -pdlopenlibs -edebian/tmp/xbmc-bin-depends-dummy.so -xlibc6 -O >>debian/xbmc-bin.substvars
-	dpkg-shlibdeps -dRecommends -edebian/tmp/xbmc-bin-recommends-dummy.so -xlibc6 -O >>debian/xbmc-bin.substvars
+	dpkg-shlibdeps -pdlopenlibs -edebian/tmp/kodi-bin-depends-dummy.so -xlibc6 -O >>debian/kodi-bin.substvars
+	dpkg-shlibdeps -dRecommends -edebian/tmp/kodi-bin-recommends-dummy.so -xlibc6 -O >>debian/kodi-bin.substvars
 
-debian/tmp/xbmc-bin-depends-dummy.so:
+debian/tmp/kodi-bin-depends-dummy.so:
 	mkdir -p debian/tmp
 	cc -xc -shared -Wl,--no-as-needed -o $@ /dev/null \
 		-lcurl-gnutls
 
-debian/tmp/xbmc-bin-recommends-dummy.so:
+debian/tmp/kodi-bin-recommends-dummy.so:
 	mkdir -p debian/tmp
 	cc -xc -shared -Wl,--no-as-needed -o $@ /dev/null \
 		-lass \
@@ -174,19 +174,18 @@ debian/tmp/xbmc-bin-recommends-dummy.so:
 		-logg \
 		-lplist \
 		-lrtmp \
-		-lshairport \
 		-lvorbis \
 		-lvorbisenc \
 		-lvorbisfile \
 		$(ARCH_SPECIFIC_LIB_RECOMMENDS)
 
 override_dh_strip:
-	dh_strip --dbg-package=xbmc-dbg
+	dh_strip --dbg-package=kodi-dbg
 
 override_dh_installinit:
-	echo "Shipping systemd xbmc.service file as an example only"
+	echo "Shipping systemd kodi.service file as an example only"
 
-# Get original XBMC source and cut not needed bits.
+# Get original Kodi source and cut not needed bits.
 # Based on https://github.com/xbmc/xbmc-packaging/blob/master/xbmc-get-orig-source
 ORIG_SRC_DIR := debian/tmp-src-dir
 UPSTREAM_VER ?= $(shell dpkg-parsechangelog | sed -rne 's/^Version: ([0-9]:)?([0-9.]+)(\+dfsg\d+)?.*$$/\2/p')
@@ -194,9 +193,9 @@ DFSG_VER = $(UPSTREAM_VER)+dfsg1
 
 get-orig-source:
 	mkdir -p $(ORIG_SRC_DIR)
-	wget -O $(ORIG_SRC_DIR)/xbmc-orig.tar.gz http://mirrors.xbmc.org/releases/source/xbmc-$(UPSTREAM_VER).tar.gz
-	tar -C $(ORIG_SRC_DIR) -xf $(ORIG_SRC_DIR)/xbmc-orig.tar.gz
-	rm $(ORIG_SRC_DIR)/xbmc-orig.tar.gz
+	wget -O $(ORIG_SRC_DIR)/kodi-orig.tar.gz http://mirrors.kodi.tv/releases/source/kodi-$(UPSTREAM_VER).tar.gz
+	tar -C $(ORIG_SRC_DIR) -xf $(ORIG_SRC_DIR)/kodi-orig.tar.gz
+	rm $(ORIG_SRC_DIR)/kodi-orig.tar.gz
 	# Remove non-free components
 	find $(ORIG_SRC_DIR)/* -depth \( -iname '*dvdcss*' -o -iname '*unrar*' \) -exec rm -rf "{}" \;
 	# Remove components not needed for Linux
@@ -254,7 +253,7 @@ get-orig-source:
 		rm $(ORIG_SRC_DIR)/*/.gitignore
 	#Remove empty directories
 	find $(ORIG_SRC_DIR)/* -type d -empty -delete
-	(cd $(ORIG_SRC_DIR) && tar -cJf ../../xbmc_$(DFSG_VER).orig.tar.xz *)
+	(cd $(ORIG_SRC_DIR) && tar -cJf ../../kodi_$(DFSG_VER).orig.tar.xz *)
 	rm -rf $(ORIG_SRC_DIR)
 
 .PHONY: get-orig-source

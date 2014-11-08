@@ -1,7 +1,7 @@
-usr/bin/xbmc
-usr/share/xbmc
+usr/bin/kodi
+usr/share/kodi
 usr/share/icons
 usr/share/applications
-usr/share/xbmc/addons/skin.confluence
-usr/bin/xbmc-standalone
+usr/share/kodi/addons/skin.confluence
+usr/bin/kodi-standalone
 usr/share/xsessions

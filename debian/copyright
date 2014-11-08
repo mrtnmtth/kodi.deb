@@ -1,7 +1,5 @@
-XBMC is downloaded from http://xbmc.org/.
-Orig tarballs are generated from the script located at
-https://github.com/xbmc/xbmc-packaging/blob/master/xbmc-get-orig-source. The
-orig tarball is generated using the sources in https://github.com/xbmc/xbmc.
+Kodi is downloaded from http://kodi.tv/.
+Repacked tarballs are generated using get-orig-source target of debian/rules
 
 Main Contact: "Team-XBMC" <team at xbmc dot org>
 
@@ -68,10 +66,10 @@ Upstream Authors:
 
 Credits:
 
-XBMC - Cross-platform Media Center
-<http://xbmc.org/>
+Kodi - Cross-platform Media Center
+<http://kodi.tv/>
 
-    Copyright © 2005-2009 Team XBMC http://www.xbmc.org
+    Copyright © 2005-2009 Team Kodi http://www.kodi.tv
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1916,7 +1914,7 @@ Sample frequency change classes
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-xbmc-xrandr.c
+kodi-xrandr.c
 
     Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
     Copyright © 2002 Hewlett Packard Company, Inc.
@@ -1943,7 +1941,7 @@ xbmc-xrandr.c
 xbmc/Crc32.cpp and xbmc/Crc32.h
 
     Copyright (C) 2005-2009 Team XBMC
-    http://www.xbmc.org
+    http://www.kodi.tv
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

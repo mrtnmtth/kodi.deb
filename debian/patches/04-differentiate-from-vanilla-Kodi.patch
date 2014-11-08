@@ -1,0 +1,37 @@
+--- a/addons/skin.confluence/720p/Home.xml
++++ b/addons/skin.confluence/720p/Home.xml
+@@ -19,7 +19,7 @@
+ 			<description>LOGO</description>
+ 			<left>10</left>
+ 			<top>10</top>
+-			<width>100</width>
++			<width>305</width>
+ 			<height>50</height>
+ 			<aspectratio aligny="top" align="left">keep</aspectratio>
+ 			<texture>kodi-logo.png</texture>
+--- a/xbmc/GUIInfoManager.cpp
++++ b/xbmc/GUIInfoManager.cpp
+@@ -4242,12 +4242,12 @@
+   if (strlen(CCompileInfo::GetSuffix()) == 0)
+     return StringUtils::Format("%d.%d", CCompileInfo::GetMajor(), CCompileInfo::GetMinor());
+   else
+-    return StringUtils::Format("%d.%d-%s", CCompileInfo::GetMajor(), CCompileInfo::GetMinor(), CCompileInfo::GetSuffix());
++    return StringUtils::Format("%d.%d-%s Debian package version:%s", CCompileInfo::GetMajor(), CCompileInfo::GetMinor(), CCompileInfo::GetSuffix(), DEB_VERSION);
+ }
+ 
+ CStdString CGUIInfoManager::GetVersion()
+ {
+-  return GetVersionShort() + " Git:" + CCompileInfo::GetSCMID();
++  return GetVersionShort() + " Git: (unknown)";
+ }
+ 
+ CStdString CGUIInfoManager::GetBuild()
+@@ -4257,7 +4257,7 @@
+ 
+ CStdString CGUIInfoManager::GetAppName()
+ {
+-  return CCompileInfo::GetAppName();
++  return StringUtils::Format("%s from Debian", CCompileInfo::GetAppName());
+ }
+ 
+ void CGUIInfoManager::SetDisplayAfterSeek(unsigned int timeOut, int seekOffset)

@@ -1,6 +1,6 @@
-usr/share/fonts/truetype/ttf-dejavu/DejaVuSans-Bold.ttf usr/share/xbmc/addons/skin.confluence/fonts/DejaVuSans-Bold.ttf
-usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf usr/share/xbmc/addons/skin.confluence/fonts/DejaVuSans.ttf
-usr/share/fonts/truetype/roboto/Roboto-Bold.ttf usr/share/xbmc/addons/skin.confluence/fonts/Roboto-Bold.ttf
-usr/share/fonts/truetype/roboto/Roboto-Regular.ttf usr/share/xbmc/addons/skin.confluence/fonts/Roboto-Regular.ttf
-usr/share/javascript/jquery/jquery.min.js /usr/share/xbmc/addons/webinterface.default/js/jquery-1.8.2.min.js
-usr/share/javascript/iscroll/iscroll-min.js /usr/share/xbmc/addons/webinterface.default/js/iscroll-min.js
+usr/share/fonts/truetype/ttf-dejavu/DejaVuSans-Bold.ttf usr/share/kodi/addons/skin.confluence/fonts/DejaVuSans-Bold.ttf
+usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf usr/share/kodi/addons/skin.confluence/fonts/DejaVuSans.ttf
+usr/share/fonts/truetype/roboto/Roboto-Bold.ttf usr/share/kodi/addons/skin.confluence/fonts/Roboto-Bold.ttf
+usr/share/fonts/truetype/roboto/Roboto-Regular.ttf usr/share/kodi/addons/skin.confluence/fonts/Roboto-Regular.ttf
+usr/share/javascript/jquery/jquery.min.js /usr/share/kodi/addons/webinterface.default/js/jquery-1.8.2.min.js
+usr/share/javascript/iscroll/iscroll-min.js /usr/share/kodi/addons/webinterface.default/js/iscroll-min.js

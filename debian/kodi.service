@@ -1,16 +1,16 @@
 [Unit]
-Description = XBMC Media Center
+Description = Kodi Open Source Home Theatre
 After = remote-fs.target
 After = syslog.target
  
 [Service]
-User = xbmc
-Group = xbmc
+User = kodi
+Group = kodi
 Type = simple
 Restart = always
 RestartSec=5
 KillMode=process
-ExecStart = /usr/bin/xinit /usr/bin/xbmc-standalone -- :0
+ExecStart = /usr/bin/xinit /usr/bin/kodi-standalone -- :0
  
 [Install]
 WantedBy = multi-user.target

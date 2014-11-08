@@ -1,7 +1,7 @@
-addons/library.xbmc.addon/libXBMC_addon.h usr/include/xbmc/
-addons/library.xbmc.codec/libXBMC_codec.h usr/include/xbmc/
-usr/include/xbmc/libXBMC_gui.h
-usr/include/xbmc/libXBMC_pvr.h
-xbmc/addons/include/*.h usr/include/xbmc/
-xbmc/addons/include/*.hpp usr/include/xbmc/
-xbmc/cores/dvdplayer/DVDDemuxers/DVDDemuxPacket.h usr/include/xbmc/
+addons/library.xbmc.addon/libXBMC_addon.h usr/include/kodi/
+addons/library.xbmc.codec/libXBMC_codec.h usr/include/kodi/
+usr/include/kodi/libXBMC_gui.h
+usr/include/kodi/libXBMC_pvr.h
+xbmc/addons/include/*.h usr/include/kodi/
+xbmc/addons/include/*.hpp usr/include/kodi/
+xbmc/cores/dvdplayer/DVDDemuxers/DVDDemuxPacket.h usr/include/kodi/

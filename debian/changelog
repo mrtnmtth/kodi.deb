@@ -2,6 +2,9 @@ kodi (14.0~beta1+dfsg1-1) UNRELEASED; urgency=medium
 
   * First packaged Kodi version based on xbmc 2:13.2+dfsg1-4
     See http://kodi.tv/introducing-kodi-14 for the rationale behind the
-    name change
+    name change (Closes: #767180)
+  * Use packaged FFmpeg
+  * Stop using internal ffmpeg functions
+  * Build-depend on libcec-dev >= 2.2
 
  -- Balint Reczey <balint@balintreczey.hu>  Sat, 08 Nov 2014 11:14:40 +0100

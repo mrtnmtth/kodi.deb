@@ -1,3 +1,9 @@
+0001-linux-Check-for-Logind-first-then-Kit-s-with-UPower-.patch
+0002-mips-add-guards.patch
+0003-mips-add-atomics.patch
+0004-mips-Add-configure-option-for-mips-and-mipsel.patch
+0005-mips-Don-t-use-ASM-rounding-on-MIPS.patch
+0006-mips-Fix-build-with-using-OpenGL-rendering.patch
 01-Stop-using-internal-ffmpeg-functions.patch
 03-privacy.patch
 04-differentiate-from-vanilla-Kodi.patch

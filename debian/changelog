@@ -1,4 +1,4 @@
-kodi (14.0~beta1+dfsg1-1) UNRELEASED; urgency=medium
+kodi (14.0~beta1+dfsg1-1) experimental; urgency=medium
 
   * First packaged Kodi version based on xbmc 2:13.2+dfsg1-4
     See http://kodi.tv/introducing-kodi-14 for the rationale behind the
@@ -6,5 +6,6 @@ kodi (14.0~beta1+dfsg1-1) UNRELEASED; urgency=medium
   * Use packaged FFmpeg
   * Stop using internal ffmpeg functions
   * Build-depend on libcec-dev >= 2.2
+  * Add upstream patches for fixing suspend and adding MIPS support
 
  -- Balint Reczey <balint@balintreczey.hu>  Sat, 08 Nov 2014 11:14:40 +0100

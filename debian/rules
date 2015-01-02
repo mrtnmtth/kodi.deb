@@ -118,9 +118,8 @@ override_dh_auto_configure: configure
 		$(CURDIR)/media/Fonts/arial.ttf
 	./bootstrap
 	./configure $(KODI_CONFIG_OPTIONS)
-	# Add Debian related notes to Kodi's original logo
-	mkdir -p $(CURDIR)/debian/tmp/home/user
-	HOME=$(CURDIR)/debian/tmp/home/user gimp -i -b '(load "debian/xcf2png.scm") (xcf2png "debian/kodi-logo.xcf" "addons/skin.confluence/media/kodi-logo.png") (gimp-quit 0)'
+	# Add "from Debian" next to Kodi's original logo
+	inkscape -z --export-png=addons/skin.confluence/media/from-debian-logo.png debian/from-debian-logo.svg
 
 override_dh_auto_install:
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp

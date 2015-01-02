@@ -1,7 +1,9 @@
-kodi (14.0+dfsg1-1) UNRELEASED; urgency=medium
+kodi (14.0+dfsg1-1) experimental; urgency=medium
 
   * New upstream release 14.0
     See http://kodi.tv/kodi-14-0-helix-unwinds
+  * Refresh patches
+  * Generate "from Debian" logo from SVG
 
  -- Balint Reczey <balint@balintreczey.hu>  Fri, 02 Jan 2015 13:19:52 +0100
 

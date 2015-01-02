@@ -1,8 +1,6 @@
-diff --git a/xbmc/cores/dvdplayer/DVDDemuxers/DVDDemuxFFmpeg.cpp b/xbmc/cores/dvdplayer/DVDDemuxers/DVDDemuxFFmpeg.cpp
-index 81a511e..3a2dbf2 100644
 --- a/xbmc/cores/dvdplayer/DVDDemuxers/DVDDemuxFFmpeg.cpp
 +++ b/xbmc/cores/dvdplayer/DVDDemuxers/DVDDemuxFFmpeg.cpp
-@@ -516,11 +516,80 @@ void CDVDDemuxFFmpeg::Reset()
+@@ -535,11 +535,80 @@
    Open(pInputStream, m_streaminfo);
  }
  
@@ -83,5 +81,5 @@ index 81a511e..3a2dbf2 100644
 -    av_read_frame_flush(m_pFormatContext);
 +    xbmc_read_frame_flush(m_pFormatContext);
  
-   m_iCurrentPts = DVD_NOPTS_VALUE;
+   m_currentPts = DVD_NOPTS_VALUE;
  

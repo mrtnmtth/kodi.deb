@@ -52,7 +52,7 @@ Forwarded: not-needed
  BOOTSTRAP_SUBDIRS += lib/libdvd/libdvdcss/configure.ac
 --- a/configure.in
 +++ b/configure.in
-@@ -1150,6 +1150,12 @@
+@@ -1162,6 +1162,12 @@
  PKG_CHECK_MODULES([TAGLIB],  [taglib >= 1.8],
    [INCLUDES="$INCLUDES $TAGLIB_CFLAGS"; LIBS="$LIBS $TAGLIB_LIBS"],
    AC_MSG_ERROR($missing_library))
@@ -65,7 +65,7 @@ Forwarded: not-needed
  
  if test "$use_optical_drive" = "yes"; then
    PKG_CHECK_MODULES([CDIO],       [libcdio],
-@@ -1241,6 +1247,8 @@
+@@ -1253,6 +1259,8 @@
  XB_FIND_SONAME([MODPLUG],     [modplug])
  XB_FIND_SONAME([ASS],         [ass])
  XB_FIND_SONAME([MPEG2],       [mpeg2])
@@ -74,7 +74,7 @@ Forwarded: not-needed
  
  # WebServer
  if test "$use_webserver" = "yes"; then
-@@ -2446,7 +2454,6 @@
+@@ -2458,7 +2466,6 @@
      lib/timidity/Makefile \
      lib/asap/Makefile \
      lib/nosefart/Makefile \
@@ -82,7 +82,7 @@ Forwarded: not-needed
      lib/vgmstream/Makefile \
      lib/snesapu/SNES/SNESAPU/Makefile \
      lib/stsound/StSoundLibrary/Makefile \
-@@ -2462,7 +2469,6 @@
+@@ -2474,7 +2481,6 @@
      lib/libexif/Makefile \
      lib/libXDAAP/Makefile \
      lib/cmyth/Makefile \

@@ -214,7 +214,11 @@ void CGUIDialogPVRChannelsOSD::RestoreControlStates()
   CPVRChannelGroupPtr group = GetPlayingGroup();
   if (group)
   {
-    m_viewControl.SetSelectedItem(GetLastSelectedItemPath(group->GroupID()));
+    std::string path = GetLastSelectedItemPath(group->GroupID());
+    if (!path.empty())
+      m_viewControl.SetSelectedItem(path);
+    else
+      m_viewControl.SetSelectedItem(0);
   }
 }
 
@@ -285,7 +289,6 @@ void CGUIDialogPVRChannelsOSD::ShowInfo(int item)
     CEpgInfoTag epgnow;
     if (!channel->GetEPGNow(epgnow))
       return;
-    CFileItem *itemNow  = new CFileItem(epgnow);
 
     /* Load programme info dialog */
     CGUIDialogPVRGuideInfo* pDlgInfo = (CGUIDialogPVRGuideInfo*)g_windowManager.GetWindow(WINDOW_DIALOG_PVR_GUIDE_INFO);
@@ -293,6 +296,7 @@ void CGUIDialogPVRChannelsOSD::ShowInfo(int item)
       return;
 
     /* inform dialog about the file item and open dialog window */
+    CFileItem *itemNow  = new CFileItem(epgnow);
     pDlgInfo->SetProgInfo(itemNow);
     pDlgInfo->DoModal();
     delete itemNow; /* delete previuosly created FileItem */

@@ -1031,6 +1031,7 @@ void CLinuxRendererGLES::Render(DWORD flags, int index)
   else if (m_renderMethod & RENDER_IMXMAP)
   {
     RenderIMXMAPTexture(index, m_currentField);
+    VerifyGLState();
   }
   else
   {
@@ -2770,7 +2771,7 @@ bool CLinuxRendererGLES::CreateIMXMAPTexture(int index)
   YUVFIELDS &fields = m_buffers[index].fields;
   YUVPLANE  &plane  = fields[0][0];
 
-  DeleteEGLIMGTexture(index);
+  DeleteIMXMAPTexture(index);
 
   memset(&im    , 0, sizeof(im));
   memset(&fields, 0, sizeof(fields));
@@ -2960,7 +2961,13 @@ EINTERLACEMETHOD CLinuxRendererGLES::AutoInterlaceMethod()
 
 unsigned int CLinuxRendererGLES::GetOptimalBufferSize()
 {
-  return 2;
+  if(m_format == RENDER_FMT_OMXEGL ||
+     m_format == RENDER_FMT_CVBREF ||
+     m_format == RENDER_FMT_EGLIMG ||
+     m_format == RENDER_FMT_MEDIACODEC)
+    return 2;
+  else
+    return 3;
 }
 
 #ifdef HAVE_LIBOPENMAX

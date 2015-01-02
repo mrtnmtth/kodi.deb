@@ -277,7 +277,15 @@ const char* CAEChannelInfo::GetChName(const enum AEChannel ch)
     "UNKNOWN5",
     "UNKNOWN6",
     "UNKNOWN7",
-    "UNKNOWN8"
+    "UNKNOWN8",
+    "UNKNOWN9",
+    "UNKNOWN10",
+    "UNKNOWN11",
+    "UNKNOWN12",
+    "UNKNOWN13",
+    "UNKNOWN14",
+    "UNKNOWN15",
+    "UNKNOWN16"
   };
 
   return channels[ch];
@@ -342,7 +350,7 @@ int CAEChannelInfo::BestMatch(const std::vector<CAEChannelInfo>& dsts, int* scor
     int missingChannels = src.Count() - okChannels;
     int extraChannels = dst.Count() - okChannels;
 
-    int curScore = 0 - (missingChannels + dropped) * 1000 - extraChannels * 10 - remapped;
+    int curScore = 0 - (missingChannels + dropped) * 1000 - extraChannels * 10 - (remapped ? 1 : 0);
 
     if (curScore > bestScore)
     {

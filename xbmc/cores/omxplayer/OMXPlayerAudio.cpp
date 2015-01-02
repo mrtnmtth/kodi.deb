@@ -43,6 +43,7 @@
 #include "DVDPlayer.h"
 #include "linux/RBP.h"
 #include "cores/AudioEngine/AEFactory.h"
+#include "cores/DataCacheCore.h"
 
 #include <iostream>
 #include <sstream>
@@ -145,6 +146,8 @@ void OMXPlayerAudio::OpenStream(CDVDStreamInfo &hints, COMXAudioCodecOMX *codec)
   m_format.m_dataFormat    = GetDataFormat(m_hints);
   m_format.m_sampleRate    = 0;
   m_format.m_channelLayout = 0;
+
+  g_dataCacheCore.SignalAudioInfoChange();
 }
 
 void OMXPlayerAudio::CloseStream(bool bWaitForBuffers)
@@ -206,6 +209,7 @@ bool OMXPlayerAudio::CodecChange()
      (!m_passthrough && minor_change) || !m_DecoderOpen)
   {
     m_hints_current = m_hints;
+    g_dataCacheCore.SignalAudioInfoChange();
     return true;
   }
 
@@ -524,6 +528,11 @@ AEDataFormat OMXPlayerAudio::GetDataFormat(CDVDStreamInfo hints)
   if(hints.codec == AV_CODEC_ID_AC3 && CAEFactory::SupportsRaw(AE_FMT_AC3, hints.samplerate) && !CSettings::Get().GetBool("audiooutput.dualaudio"))
   {
     dataFormat = AE_FMT_AC3;
+    m_passthrough = true;
+  }
+  if(hints.codec == AV_CODEC_ID_EAC3 && CAEFactory::SupportsRaw(AE_FMT_AC3, hints.samplerate * 4) && !CSettings::Get().GetBool("audiooutput.dualaudio"))
+  {
+    dataFormat = AE_FMT_EAC3;
     m_passthrough = true;
   }
   if(hints.codec == AV_CODEC_ID_DTS && CAEFactory::SupportsRaw(AE_FMT_DTS, hints.samplerate) && !CSettings::Get().GetBool("audiooutput.dualaudio"))

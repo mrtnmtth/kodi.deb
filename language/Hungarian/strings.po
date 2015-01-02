@@ -389,6 +389,10 @@ msgctxt "#121"
 msgid "Confirm file move"
 msgstr "Áthelyezés megerősítése"
 
+msgctxt "#122"
+msgid "Confirm delete"
+msgstr "Törlés megerősítése"
+
 msgctxt "#123"
 msgid "Copy these files?"
 msgstr "Kijelölt mappák és fájlok átmásolása?"
@@ -685,6 +689,10 @@ msgctxt "#199"
 msgid "Web interface"
 msgstr "Webes kezelőfelület"
 
+msgctxt "#200"
+msgid "Audio encoders"
+msgstr "Hang kódolók"
+
 msgctxt "#202"
 msgid "Tagline"
 msgstr "Röviden"
@@ -844,6 +852,10 @@ msgstr "Teljes képernyő"
 msgctxt "#245"
 msgid "Sizing: (%i,%i)->(%i,%i) (Zoom x%2.2f) AR:%2.2f:1 (Pixels: %2.2f:1) (VShift: %2.2f)"
 msgstr "Méretezés: (%i,%i)->(%i,%i) (Nagyítás: x%2.2f) Arány:%2.2f:1 (Képpontarány: %2.2f:1) (Függőleges Eltolás: %2.2f)"
+
+msgctxt "#246"
+msgid "Monitor"
+msgstr "Monitor"
 
 msgctxt "#247"
 msgid "Scripts"
@@ -1085,6 +1097,10 @@ msgctxt "#309"
 msgid "User interface language"
 msgstr "Kezelőfelület nyelve"
 
+msgctxt "#310"
+msgid "Keyboard layouts"
+msgstr "Billentyűzetkiosztás"
+
 msgctxt "#312"
 msgid "(0=auto)"
 msgstr "(0=auto)"
@@ -1222,8 +1238,8 @@ msgid "Year"
 msgstr "Év"
 
 msgctxt "#346"
-msgid "Normalize levels on downmix"
-msgstr "Csatornalekeverésnél hangerő kiegyenlítése"
+msgid "Maintain original volume on downmix"
+msgstr "Eredeti hangerő megtartása lekeverés esetén"
 
 msgctxt "#347"
 msgid "DTS-HD capable receiver"
@@ -1747,7 +1763,7 @@ msgstr "Hangbeállítások"
 
 msgctxt "#482"
 msgid "About Kodi"
-msgstr "Az Kodi-ről"
+msgstr "A Kodi-ről"
 
 msgctxt "#485"
 msgid "Delete album"
@@ -1980,6 +1996,10 @@ msgstr "Nincs életrajz ehhez az előadóhoz"
 msgctxt "#548"
 msgid "Downmix multichannel audio to stereo"
 msgstr "A többcsatornás hangok lekeverése sztereóra"
+
+msgctxt "#549"
+msgid "Number"
+msgstr "Szám"
 
 msgctxt "#550"
 msgid "Sort by: %s"
@@ -2283,11 +2303,11 @@ msgstr "Egyéni"
 
 msgctxt "#637"
 msgid "ReplayGain"
-msgstr "LejátszásSzint"
+msgstr "Lejátszásszint"
 
 msgctxt "#638"
 msgid "ReplayGain volume adjustments"
-msgstr "VisszajátszásSzint hangerő állítása"
+msgstr "Visszajátszásszint hangerő állítása"
 
 msgctxt "#639"
 msgid "Use track levels"
@@ -2299,15 +2319,15 @@ msgstr "Album szintekhez"
 
 msgctxt "#641"
 msgid "PreAmp Level - ReplayGained files"
-msgstr "Előerősítés Szintje - VisszajátszásSzinttel rendelkező fájlok"
+msgstr "Előerősítés szintje - visszajátszásszinttel rendelkező fájlok"
 
 msgctxt "#642"
 msgid "PreAmp Level - Non ReplayGained files"
-msgstr "Előerősítés Szintje -  VisszajátszásSzinttel nem rendelkező fájlok"
+msgstr "Előerősítés szintje -  visszajátszásszinttel nem rendelkező fájlok"
 
 msgctxt "#643"
 msgid "Avoid clipping on ReplayGained files"
-msgstr "Kattogás elkerülése  VisszajátszásSzinttel rendelkező fájloknál"
+msgstr "Kattogás elkerülése visszajátszásszinttel rendelkező fájloknál"
 
 msgctxt "#644"
 msgid "Crop black bars"
@@ -2397,41 +2417,65 @@ msgctxt "#665"
 msgid "Compression level"
 msgstr "Tömörítés erőssége"
 
+msgctxt "#666"
+msgid "Enable component-specific logging"
+msgstr "Komponens-specifikus naplózás engedélyezése"
+
 msgctxt "#667"
 msgid "Enable Dolby Digital transcoding"
 msgstr "Dolby Digital átkódolás engedélyezése"
 
+msgctxt "#668"
+msgid "Specify component-specific logging..."
+msgstr "Komponens-specifikus naplózás megadása"
+
 msgctxt "#669"
 msgid "Verbose logging for SMB library"
-msgstr "SMB könyvtár bőbeszédű naplózása"
+msgstr "SMB könyvtár részletes naplózása"
 
 msgctxt "#670"
 msgid "Verbose logging for CURL library (http, dav)"
-msgstr "CURL könyvtár (http, dav) bőbeszédű naplózása"
+msgstr "CURL könyvtár (http, dav) részletes naplózása"
 
 msgctxt "#671"
 msgid "Verbose logging for CMYTH library"
-msgstr "CMYTH könyvtár bőbeszédű naplózása"
+msgstr "CMYTH könyvtár részletes naplózása"
 
 msgctxt "#672"
 msgid "Verbose logging for FFMPEG libraries"
-msgstr "FFMPEG könyvtárak bőbeszédű naplózása"
+msgstr "FFMPEG könyvtárak részletes naplózása"
 
 msgctxt "#673"
 msgid "Verbose logging for RTMP library"
-msgstr "RTMP könyvtár bőbeszédű naplózása"
+msgstr "RTMP könyvtár részletes naplózása"
 
 msgctxt "#674"
 msgid "Verbose logging for DBUS calls"
-msgstr "DBUS hívások bőbeszédű naplózása"
+msgstr "DBUS hívások részletes naplózása"
 
 msgctxt "#675"
 msgid "Verbose logging for JSON-RPC requests"
-msgstr "JSON-RPC hívások bőbeszédű naplózása"
+msgstr "JSON-RPC hívások részletes naplózása"
 
 msgctxt "#676"
 msgid "Verbose logging for AUDIO component"
 msgstr "Az AUDIO komponens részletes naplózása"
+
+msgctxt "#677"
+msgid "Verbose logging for AirTunes library"
+msgstr "AirTunes könyvtár részletes naplózása"
+
+msgctxt "#678"
+msgid "Verbose logging for UPnP components"
+msgstr "Az UPnP komponens részletes naplózása"
+
+msgctxt "#679"
+msgid "Verbose logging for CEC library"
+msgstr "CEC könyvtár részletes naplózása"
+
+msgctxt "#680"
+msgid "Verbose logging for VIDEO component"
+msgstr "A VIDEO összetevő részletes naplózása"
 
 msgctxt "#700"
 msgid "Cleaning up library"
@@ -2775,11 +2819,15 @@ msgstr "Zenetár frissítése"
 
 msgctxt "#800"
 msgid "Music library needs to rescan tags from files."
-msgstr "A zenetárhoz szükséges a fájlokból újraolvasni a címkéket."
+msgstr "A zenetárhoz szükséges a címkék újraolvasása a fájlokból."
 
 msgctxt "#801"
 msgid "Would you like to scan now?"
 msgstr "Most akarod az átvizsgálást indítani?"
+
+msgctxt "#802"
+msgid "%s of %s available"
+msgstr "%s a %s-ból elérhető"
 
 msgctxt "#850"
 msgid "Invalid port number entered"
@@ -3161,13 +3209,17 @@ msgctxt "#1260"
 msgid "Announce these services to other systems via Zeroconf"
 msgstr "Szolgáltatások hirdetése más rendszerek felé a Zeroconf segítségével"
 
+msgctxt "#1268"
+msgid "iOS 8 compatibility mode"
+msgstr "iOS 8 kompatibilis mód"
+
 msgctxt "#1269"
 msgid "Allow volume control"
 msgstr "Hangerőszabályozás engedélyezése"
 
 msgctxt "#1270"
 msgid "Allow Kodi to receive AirPlay content"
-msgstr "AirPlay tartalom vételének engedélyezése az Kodi számára"
+msgstr "AirPlay tartalom fogadásának engedélyezése"
 
 msgctxt "#1271"
 msgid "Device name"
@@ -3196,6 +3248,90 @@ msgstr "Egyedi hanglejátszó eszköz megadása"
 msgctxt "#1301"
 msgid "Custom passthrough device"
 msgstr "Egyedi hangtovábbító eszköz megadása"
+
+msgctxt "#1375"
+msgid "Temperature"
+msgstr "Hőmérséklet"
+
+msgctxt "#1376"
+msgid "Pressure"
+msgstr "Légnyomás"
+
+msgctxt "#1377"
+msgid "Proximity"
+msgstr "Közelség"
+
+msgctxt "#1378"
+msgid "Intensity"
+msgstr "Intenzitás"
+
+msgctxt "#1379"
+msgid "Ragged"
+msgstr "Egyenetlen"
+
+msgctxt "#1380"
+msgid "Very"
+msgstr "Nagyon"
+
+msgctxt "#1381"
+msgid "Extreme"
+msgstr "Extrém"
+
+msgctxt "#1382"
+msgid "Whirls"
+msgstr "Forgószél"
+
+msgctxt "#1383"
+msgid "Sky Is Clear"
+msgstr "Az ég tiszta"
+
+msgctxt "#1384"
+msgid "Broken"
+msgstr "Működésképtelen"
+
+msgctxt "#1385"
+msgid "Tornado"
+msgstr "Tornádó"
+
+msgctxt "#1386"
+msgid "Tropical"
+msgstr "Trópusi"
+
+msgctxt "#1387"
+msgid "Hurricane"
+msgstr "Hurrikán"
+
+msgctxt "#1388"
+msgid "Cold"
+msgstr "Hideg"
+
+msgctxt "#1389"
+msgid "Windy"
+msgstr "Szeles"
+
+msgctxt "#1390"
+msgid "Settings"
+msgstr "Beállítások"
+
+msgctxt "#1391"
+msgid "Breeze"
+msgstr "Szellő"
+
+msgctxt "#1392"
+msgid "Gentle"
+msgstr "Enyhe"
+
+msgctxt "#1393"
+msgid "High wind, near gale"
+msgstr "Nagyon szeles, közel viharos"
+
+msgctxt "#1394"
+msgid "Severe"
+msgstr "Erőteljes"
+
+msgctxt "#1395"
+msgid "Violent"
+msgstr "Durva"
 
 msgctxt "#1396"
 msgid "Drifting"
@@ -3547,7 +3683,7 @@ msgstr "Visszaállítás"
 
 msgctxt "#10036"
 msgid "Basic"
-msgstr "Alapvető"
+msgstr "Alapszint"
 
 msgctxt "#10037"
 msgid "Standard"
@@ -3591,7 +3727,7 @@ msgstr "Nem áll rendelkezésre kategória"
 
 msgctxt "#10047"
 msgid "Try changing the setting level to see additional categories and settings."
-msgstr "A beállítás módosítása a több kategória és beállítás megtekintéséhez."
+msgstr "A beállítási szint módosítása, több kategória és beállítás megjelenítéséhez."
 
 msgctxt "#10100"
 msgid "Yes/No dialogue"
@@ -3651,7 +3787,7 @@ msgstr "Kiegészítő beállítások"
 
 msgctxt "#10146"
 msgid "Add-ons/Info"
-msgstr "Bővítmények/Infó"
+msgstr "Kiegészítők/Infó"
 
 msgctxt "#10210"
 msgid "Looking for subtitles..."
@@ -3767,11 +3903,11 @@ msgstr "Teljesképernyős videó"
 
 msgctxt "#12006"
 msgid "Audio visualisation"
-msgstr "Audió vizualizáció"
+msgstr "Zene vizualizáció"
 
 msgctxt "#12008"
 msgid "File stacking dialogue"
-msgstr "Fájl kiválasztó dialógusablak"
+msgstr "Fájlcsoportosítás dialógusablak"
 
 msgctxt "#12009"
 msgid "Rebuild index..."
@@ -4049,6 +4185,18 @@ msgctxt "#12395"
 msgid "Battery level"
 msgstr "Akkumlátor töltöttsége"
 
+msgctxt "#12396"
+msgid "Auto updates: On"
+msgstr "Auto-frissítés: Be"
+
+msgctxt "#12397"
+msgid "Auto updates: Notify"
+msgstr "Auto-frissítés: Értesítés"
+
+msgctxt "#12398"
+msgid "Auto updates: Never"
+msgstr "Auto-frissítés: Soha"
+
 msgctxt "#12600"
 msgid "Weather"
 msgstr "Időjárás"
@@ -4303,7 +4451,7 @@ msgstr "Aktív kapcsolatok észlelhetők!"
 
 msgctxt "#13141"
 msgid "If you proceed, you might not be able to control Kodi"
-msgstr "Továbblépés esetén az Kodi esetleg nem lesz irányítható."
+msgstr "Továbblépés esetén a Kodi esetleg nem lesz irányítható."
 
 msgctxt "#13142"
 msgid "any longer. Are you sure you want to stop the Event server?"
@@ -4547,7 +4695,7 @@ msgstr "Teljes rendszer újraindítása"
 
 msgctxt "#13309"
 msgid "instead of just Kodi?"
-msgstr "csak az Kodi helyett?"
+msgstr "csak a Kodi helyett?"
 
 msgctxt "#13310"
 msgid "Zoom effect"
@@ -4999,15 +5147,27 @@ msgstr "VDPAU Videókeverő preferálása"
 
 msgctxt "#13438"
 msgid "Allow hardware acceleration (amcodec)"
-msgstr "Hardvergyorsítás engedélyezése (amcodec)"
+msgstr "Hardveres gyorsítás engedélyezése (amcodec)"
 
 msgctxt "#13439"
 msgid "Allow hardware acceleration (MediaCodec)"
-msgstr "Hardvergyorsítás engedélyezése (MediaCodec)"
+msgstr "Hardveres gyorsítás engedélyezése (MediaCodec)"
 
-msgctxt "#13440"
-msgid "Allow multi threaded software decoding"
-msgstr "Több-szálú dekódolás engedélyezése"
+msgctxt "#13441"
+msgid "Use MPEG-2 VDPAU"
+msgstr "MPEG-2 VDPAU használata"
+
+msgctxt "#13442"
+msgid "Enable this option to use hardware acceleration for MPEG-(1/2) codecs. If disabled the CPU will be used instead. Older Radeon Cards tend to segfault with this enabled."
+msgstr "Az MPEG-(1/2) kodekek hardveres gyorsításának bekapcsolása. Tiltás esetén a CPU dekódol. Régebbi Radeon kártyákon szegmenshiba fordulhat elő."
+
+msgctxt "#13443"
+msgid "Use MPEG-4 VDPAU"
+msgstr "MPEG-4 VDPAU használata"
+
+msgctxt "#13444"
+msgid "Enable this option to use hardware acceleration for the MPEG-4 codec. If disabled the CPU will be used instead. Some ION Hardware has problems with this being enabled by default."
+msgstr "Az MPEG-4 kodek hardveres gyorsításának bekapcsolása. Tiltás esetén a CPU dekódol.  Néhány ION alapú rendszerrel probléma lehet engedélyezés esetén."
 
 msgctxt "#13445"
 msgid "Use VC-1 VDPAU"
@@ -5015,7 +5175,23 @@ msgstr "VC-1 VDPAU használata"
 
 msgctxt "#13446"
 msgid "Enable this option to use hardware acceleration for VC-1 based codecs. If disabled the CPU will be used instead. AMD Hardware with VDPAU cannot decode VC-1 Simple."
-msgstr "A VC-1 kodek hardveres gyorsításának bekapcsolása. Tiltott esetén a CPU dekódol.  AMD hardver VDPAU nem ismeri a VC-1 Egyszerű üzemmódot."
+msgstr "A VC-1 kodek hardveres gyorsításának bekapcsolása. Tiltás esetén a CPU dekódol. Az AMD hardver VDPAU nem tudja dekódolni a VC-1-Egyszerű formátumot."
+
+msgctxt "#13447"
+msgid "Use MPEG-2 VAAPI"
+msgstr "MPEG-2 VAAPI használata"
+
+msgctxt "#13448"
+msgid "Enable this option to use hardware acceleration for MPEG-(1/2) codecs. If disabled the CPU will be used instead. Some MPEG-2 Videos might have green artifacts."
+msgstr "Az MPEG-(1/2) kodekek hardveres gyorsításának bekapcsolása. Tiltás esetén a CPU dekódol.  Néhány MPEG-2 videónak zöldes hibái lehetnek."
+
+msgctxt "#13449"
+msgid "Use MPEG-4 VAAPI"
+msgstr "MPEG-4 VAAPI használata"
+
+msgctxt "#13450"
+msgid "Enable this option to use hardware acceleration for the MPEG-4 codec. If disabled the CPU will be used instead."
+msgstr "Az MPEG-4 kodek hardveres gyorsításának bekapcsolása. Tiltás esetén a CPU dekódol. "
 
 msgctxt "#13451"
 msgid "Use VC-1 VAAPI"
@@ -5023,11 +5199,11 @@ msgstr "VC-1 VAAPI használata"
 
 msgctxt "#13452"
 msgid "Enable this option to use hardware acceleration for VC-1 based codecs. If disabled the CPU will be used instead. Especially VC-1 Interlaced fails hard on Intel hardware."
-msgstr "A VC-1 kodek hardveres gyorsításának bekapcsolása. Tiltott esetén a CPU dekódol. Különösen a váltottsoros VC-1 nagyban hibázik Intel hardvernél."
+msgstr "A VC-1 kodek hardveres gyorsításának bekapcsolása. Tiltás esetén a CPU dekódol. Különösen a váltottsoros VC-1 dekódolása esetén lehetnek problémák Intel hardveren."
 
 msgctxt "#13454"
 msgid "Decoding method"
-msgstr "Visszafejtés módja"
+msgstr "Dekódolás módja"
 
 msgctxt "#13455"
 msgid "Software"
@@ -5036,6 +5212,18 @@ msgstr "Szoftveres"
 msgctxt "#13456"
 msgid "Hardware accelerated"
 msgstr "Hardveres gyorsítás"
+
+msgctxt "#13457"
+msgid "Prefer VAAPI render method"
+msgstr "VAAPI renderelő előnyben részesítése"
+
+msgctxt "#13458"
+msgid "Allow hardware acceleration (OMXPlayer)"
+msgstr "Hardveres gyorsítás engedélyezése (OMXPlayer)"
+
+msgctxt "#13459"
+msgid "Use OMXPlayer for decoding of video files."
+msgstr "OMXPlayer használata a videófájlok dekódoláshoz."
 
 msgctxt "#13500"
 msgid "A/V sync method"
@@ -5307,7 +5495,7 @@ msgstr "A hálózati beállítások megváltoztatva"
 
 msgctxt "#14039"
 msgid "Kodi requires to restart to change your"
-msgstr "Az Kodi-t újra kell indítani, a hálózati beállítások"
+msgstr "A Kodi-t újra kell indítani, a hálózati beállítások"
 
 msgctxt "#14040"
 msgid "network setup.  Would you like to restart now?"
@@ -5360,6 +5548,10 @@ msgstr "Dátumformátum(N-H/H-N)"
 msgctxt "#14053"
 msgid "GUI filters"
 msgstr "GUI szűrők"
+
+msgctxt "#14054"
+msgid "%2.1f dB"
+msgstr "%2.1f dB"
 
 msgctxt "#14055"
 msgid "Use background scanning"
@@ -5478,8 +5670,8 @@ msgid "Playback"
 msgstr "Lejátszás"
 
 msgctxt "#14087"
-msgid "DVDs"
-msgstr "DVD lemezek"
+msgid "Discs"
+msgstr "Lemezek"
 
 msgctxt "#14088"
 msgid "Play DVDs automatically"
@@ -5536,6 +5728,18 @@ msgstr "CD bemásolás megszakítása"
 msgctxt "#14101"
 msgid "Acceleration"
 msgstr "Gyorsítás"
+
+msgctxt "#14102"
+msgid "Blu-ray playback mode"
+msgstr "Blu-ray lejátszás mód"
+
+msgctxt "#14103"
+msgid "Play main movie"
+msgstr "Fő film lejátszása"
+
+msgctxt "#14104"
+msgid "Show simplified menu"
+msgstr "Egyszerűsített menü mutatása"
 
 msgctxt "#15012"
 msgid "Unavailable source"
@@ -5600,6 +5804,10 @@ msgstr "Navigációs hangok"
 msgctxt "#15109"
 msgid "Skin default"
 msgstr "Felszín alapértelmezése"
+
+msgctxt "#15110"
+msgid "Larger font size"
+msgstr "Nagyobb betűméret"
 
 msgctxt "#15111"
 msgid "Theme"
@@ -5977,6 +6185,34 @@ msgctxt "#16326"
 msgid "DXVA-HD"
 msgstr "DXVA-HD"
 
+msgctxt "#16327"
+msgid "VAAPI Bob"
+msgstr "VAAPI Bob"
+
+msgctxt "#16328"
+msgid "VAAPI Motion Adaptive"
+msgstr "VAAPI Mozgáshoz adaptált"
+
+msgctxt "#16329"
+msgid "VAAPI Motion Compensated"
+msgstr "VAAPI Mozgás kompenzált"
+
+msgctxt "#16330"
+msgid "MMAL - Advanced"
+msgstr "MMAL - Haladó"
+
+msgctxt "#16331"
+msgid "MMAL - Advanced (Half)"
+msgstr "MMAL - Haladó (Felezett)"
+
+msgctxt "#16332"
+msgid "MMAL - Bob"
+msgstr "MMAL - Bob"
+
+msgctxt "#16333"
+msgid "MMAL - Bob (Half)"
+msgstr "MMAL - Bob (Felezett)"
+
 msgctxt "#16400"
 msgid "Post-processing"
 msgstr "Videó minőségjavítás (post processing)"
@@ -6008,6 +6244,10 @@ msgstr "Keresőszavak elválasztása az ÉS, VAGY, NOT szavakkal."
 msgctxt "#19002"
 msgid "or use phrases to find an exact match, like \"The wizard of Oz\"."
 msgstr "Vagy használj szókapcsolatot a pontos találathoz, pl. \"Óz, a csodák csodája\"."
+
+msgctxt "#19003"
+msgid "Find similar"
+msgstr "Hasonló keresése"
 
 msgctxt "#19004"
 msgid "Importing EPG from clients"
@@ -6067,7 +6307,7 @@ msgstr "Felvételek"
 
 msgctxt "#19018"
 msgid "Folder with channel icons"
-msgstr "Mappa csatorna ikonokkal"
+msgstr "Mappa csatornaikonokkal"
 
 msgctxt "#19019"
 msgid "Channels"
@@ -6255,7 +6495,7 @@ msgstr "Ugrás a végére"
 
 msgctxt "#19066"
 msgid "Channel icons"
-msgstr "Csatorna ikonok"
+msgstr "Csatornaikonok"
 
 msgctxt "#19067"
 msgid "This event is already being recorded."
@@ -6391,7 +6631,7 @@ msgstr "Szolgáltatás"
 
 msgctxt "#19100"
 msgid "Mux"
-msgstr "Keverés"
+msgstr "Mux"
 
 msgctxt "#19101"
 msgid "Provider"
@@ -6401,9 +6641,17 @@ msgctxt "#19102"
 msgid "Please switch to another channel."
 msgstr "Kérlek válts át egy másik csatornára."
 
+msgctxt "#19103"
+msgid "Go to channel"
+msgstr "Csatornához ugrás"
+
 msgctxt "#19104"
 msgid "Enter the name of the folder for the recording"
 msgstr "Add meg a felvételek mappájának nevét"
+
+msgctxt "#19105"
+msgid "Please select a channel"
+msgstr "Csatorna választása"
 
 msgctxt "#19106"
 msgid "Next timer on"
@@ -6424,6 +6672,14 @@ msgstr "Ismeretlen hiba történt. Próbáld később, vagy nézd meg a naplót 
 msgctxt "#19111"
 msgid "PVR backend error. Check the log for details."
 msgstr "PVR háttér-kiszolgáló hiba. Nézd meg a naplót a részletekért."
+
+msgctxt "#19112"
+msgid "Delete this recording?"
+msgstr "Felvétel törlése?"
+
+msgctxt "#19113"
+msgid "Delete all recordings in this folder?"
+msgstr "Minden felvétel törlésre kerüljön a mappában?"
 
 msgctxt "#19114"
 msgid "Version"
@@ -6528,6 +6784,10 @@ msgstr "Kérlek előbb hozz létre csoportokat"
 msgctxt "#19139"
 msgid "Name of the new group"
 msgstr "Az új csoport neve"
+
+msgctxt "#19140"
+msgid "Search..."
+msgstr "Keresés..."
 
 msgctxt "#19141"
 msgid "Group"
@@ -6919,7 +7179,7 @@ msgstr "A PVR kezelő, PVR kiegészítő nélkül lett"
 
 msgctxt "#19242"
 msgid "enabled PVR Add-on. Enable at least one Add-on"
-msgstr "engedélyezve. Engedélyezz legalább egy"
+msgstr "engedélyezve. Engedélyezz legalább egy kiegészítőt"
 
 msgctxt "#19243"
 msgid "in order to use the PVR functionality."
@@ -7029,6 +7289,10 @@ msgctxt "#19269"
 msgid "Do not show 'connection lost' warnings"
 msgstr "A 'kapcsolat megszakadt' figyelmeztetés elrejtése"
 
+msgctxt "#19270"
+msgid "Group Items"
+msgstr "Elemek csoportosítása"
+
 msgctxt "#19271"
 msgid "No PVR Add-ons could be found"
 msgstr "Nem található PVR kiegészítő"
@@ -7039,11 +7303,11 @@ msgstr "A PVR használatához szükség van egy TV kártyára,"
 
 msgctxt "#19273"
 msgid "Add-on for the backend to be able to use PVR."
-msgstr "Egy háttér-kiszolgáló kiegészítő a PVR használatához."
+msgstr "Háttér-kiszolgáló kiegészítő a PVR használatához."
 
 msgctxt "#19274"
-msgid "Please visit xbmc.org/pvr to learn more."
-msgstr "Látogasd meg az xbmc.org/pvr oldalt a részletekért."
+msgid "Please visit http://kodi.wiki/view/PVR to learn more."
+msgstr "Látogasd meg a http://kodi.wiki/view/PVR oldalt a részletekért."
 
 msgctxt "#19275"
 msgid "Conflict warning"
@@ -7088,6 +7352,18 @@ msgstr "Ikon választás"
 msgctxt "#19285"
 msgid "Browse for icon"
 msgstr "Ikon keresése"
+
+msgctxt "#19286"
+msgid "Searching for channel icons"
+msgstr "Csatornaikonok keresése"
+
+msgctxt "#19287"
+msgid "All channels"
+msgstr "Minden csatorna"
+
+msgctxt "#19288"
+msgid "Foreground"
+msgstr "Előtér"
 
 msgctxt "#19499"
 msgid "Other/Unknown"
@@ -8183,7 +8459,7 @@ msgstr "Tárolt zenei adatok felülbírálása online adatokkal"
 
 msgctxt "#20221"
 msgid "With this enabled, any information that is downloaded for albums and artists will override anything you have set in your song tags, such as genres, year, song artists etc. Useful if you have MusicBrainz identifiers in your song tags."
-msgstr "Ezzel a funkcióval bármely információ ami letöltésre kerül felülbírálja a zene helyi adataiban az információkat úgymint műfaj, év, előadó stb. Akkor hasznos ha a MusicBrainz azonosító szerepel a tag-ekben."
+msgstr "Ezt engedélyezve, bármely adat ami letöltésre kerül az albumokhoz és előadókhoz, felülírhatja a dalok olyan címkéit, mint például a műfaj, év, előadó stb. Akkor hasznos ha van MusicBrainz azonosítód a címkékben."
 
 msgctxt "#20240"
 msgid "Android music"
@@ -8252,6 +8528,10 @@ msgstr "Biztonsági héj (SSH/SFTP)"
 msgctxt "#20261"
 msgid "Apple Filing Protocol (AFP)"
 msgstr "Apple fájlrendszer (AFP)"
+
+msgctxt "#20262"
+msgid "Zeroconf Browser"
+msgstr "Zeroconf Böngésző"
 
 msgctxt "#20300"
 msgid "Web server directory (HTTP)"
@@ -8335,7 +8615,7 @@ msgstr "Kalibrációs értékek törlése %s számára"
 
 msgctxt "#20327"
 msgid "to its default values."
-msgstr "az alapértelmezett értékekre"
+msgstr "az alapértelmezett értékekre."
 
 msgctxt "#20328"
 msgid "Browse for destination"
@@ -8391,7 +8671,7 @@ msgstr "A megadott elérési út minden elemének"
 
 msgctxt "#20341"
 msgid "this path from the Kodi library?"
-msgstr "eltávolítása az Kodi médiatárból?"
+msgstr "eltávolítása a Kodi médiatárból?"
 
 msgctxt "#20342"
 msgid "Movies"
@@ -9369,6 +9649,10 @@ msgctxt "#21469"
 msgid "%s to %s"
 msgstr "ettől: %s eddig: %s"
 
+msgctxt "#21470"
+msgid "%s [%d]"
+msgstr "%s [%d]"
+
 msgctxt "#21602"
 msgid "(External)"
 msgstr "(külső)"
@@ -10105,6 +10389,10 @@ msgctxt "#24055"
 msgid "Check for updates"
 msgstr "Frissítések keresése"
 
+msgctxt "#24056"
+msgid "Last updated %s"
+msgstr "Utoljára frissítve %s"
+
 msgctxt "#24059"
 msgid "Would you like to enable this Add-on?"
 msgstr "Akarod engedélyezni ezt a kiegészítőt?"
@@ -10180,6 +10468,22 @@ msgstr "Kiegészítő szükséges"
 msgctxt "#24080"
 msgid "Try to reconnect?"
 msgstr "Próbáljon újra csatlakozni?"
+
+msgctxt "#24081"
+msgid "Helper Add-ons"
+msgstr "Súgó kiegészítők"
+
+msgctxt "#24082"
+msgid "Add-on libraries"
+msgstr "Kiegészítő könyvtárak"
+
+msgctxt "#24083"
+msgid "Information libraries"
+msgstr "Információs könyvtárak"
+
+msgctxt "#24084"
+msgid "Visualisation libraries"
+msgstr "Vizualizációs könyvtárak"
 
 msgctxt "#24089"
 msgid "Add-on restarts"
@@ -10263,11 +10567,11 @@ msgstr "Felirat letöltése..."
 
 msgctxt "#24111"
 msgid "Languages to download subtitles for"
-msgstr "Letölthető felirat nyelvek ehhez:"
+msgstr "Feliratok letöltése ezekhez  a nyelvekhez:"
 
 msgctxt "#24112"
 msgid "Set languages to use when searching for subtitles. Not all subtitle services will use all languages."
-msgstr "Nyelvek beállítása a feliratok kereséséhez. Nem minden felirat szolgáltató támogat minden nyelvet."
+msgstr "Nyelvek beállítása a feliratok kereséséhez. Nem minden feliratszolgáltató támogat minden nyelvet."
 
 msgctxt "#24113"
 msgid "Failed to download subtitle"
@@ -10287,15 +10591,15 @@ msgstr "Alapértelmezett TV Szolgáltatás"
 
 msgctxt "#24117"
 msgid "Select service that will be used as default to search for TV Show subtitles."
-msgstr "Alapértelmezett szolgáltatás kiválasztása a Sorozat felirat kereséshez"
+msgstr "Alapértelmezett szolgáltatás kiválasztása a sorozatok feliratának kereséséhez"
 
 msgctxt "#24118"
 msgid "Default Movie Service"
-msgstr "Alapértelmezett Film Szolgáltatás"
+msgstr "Alapértelmezett film szolgáltatás"
 
 msgctxt "#24119"
 msgid "Select service that will be used as default to search for Movie subtitles."
-msgstr "Alapértelmezett szolgáltatás kiválasztása a Film felirat kereséshez"
+msgstr "Alapértelmezett szolgáltatás kiválasztása a film feliratok kereséshez"
 
 msgctxt "#24120"
 msgid "Manual search string"
@@ -10321,6 +10625,26 @@ msgctxt "#24125"
 msgid "Custom location"
 msgstr "Egyedi hely"
 
+msgctxt "#24126"
+msgid "Auto download first subtitle"
+msgstr "Első felirat automatikus letöltése"
+
+msgctxt "#24127"
+msgid "Automatically download first subtitle from the search result list"
+msgstr "Automatikusan letölti a feliratkeresés első találatát a listáról"
+
+msgctxt "#24128"
+msgid "Configuration has been moved"
+msgstr "A konfiguráció át lett helyezve"
+
+msgctxt "#24129"
+msgid "The configuration of XBMC has been moved to the new location for Kodi. Please refer to http://kodi.wiki/view/Migration - this message will not be shown again!"
+msgstr "Az XBMC konfigurációja új helyre lett másolva a Kodi számára. Tájékozódjon a  http://kodi.wiki/view/Migration webcímen a részletekről - ez az üzenet nem fog többet megjelenni!"
+
+msgctxt "#24999"
+msgid "Hide incompatible"
+msgstr "Nem kompatibilisek elrejtése"
+
 msgctxt "#25000"
 msgid "Notifications"
 msgstr "Értesítések"
@@ -10334,7 +10658,7 @@ msgid "Select from all titles ..."
 msgstr "Választás a teljes tartalomból..."
 
 msgctxt "#25003"
-msgid "Show Blu-ray menus"
+msgid "Show Blu-ray menu"
 msgstr "Blu-ray menü mutatása"
 
 msgctxt "#25004"
@@ -10525,6 +10849,14 @@ msgctxt "#33038"
 msgid "%s day"
 msgstr "%s nap"
 
+msgctxt "#33039"
+msgid "%s Streams"
+msgstr "%s Folyam"
+
+msgctxt "#33040"
+msgid "%s Devices"
+msgstr "%s Eszköz"
+
 msgctxt "#33049"
 msgid "Alert"
 msgstr "Riasztás"
@@ -10631,7 +10963,7 @@ msgstr "%s vagy magasabb Kodi verzió szükséges."
 
 msgctxt "#33076"
 msgid "Please update Kodi."
-msgstr "Frissítsd az Kodi-t."
+msgstr "Frissítsd a Kodi-t."
 
 msgctxt "#33077"
 msgid "No data found!"
@@ -11007,7 +11339,7 @@ msgstr "HDMI eszközhöz csatlakoztatva"
 
 msgctxt "#36020"
 msgid "Make Kodi the active source when starting"
-msgstr "Az Kodi az aktív forrás a kezdésnél"
+msgstr "A Kodi az aktív forrás a kezdésnél"
 
 msgctxt "#36021"
 msgid "Physical address (overrules HDMI port)"
@@ -11083,7 +11415,7 @@ msgstr "TV és AVR eszköz"
 
 msgctxt "#36040"
 msgid "Unsupported libCEC interface version. %x is lower than the version Kodi supports (%x)"
-msgstr "Nem támogatott libCEC interfész verzió. A meglévő verzió (%x) alacsonyabb mint az Kodi által támogatott (%x)"
+msgstr "Nem támogatott libCEC interfész verzió. A meglévő verzió (%x) alacsonyabb mint a Kodi által támogatott (%x)"
 
 msgctxt "#36041"
 msgid "* Item folder"
@@ -11103,7 +11435,7 @@ msgstr "Kategória amely a Felszín beállításait tartalmazza."
 
 msgctxt "#36103"
 msgid "Select the skin for the user interface. This will define the look and feel of Kodi."
-msgstr "Válassza ki a felhasználói felület felszínét. Ez meghatározza a az Kodi kinézetét és kezelését."
+msgstr "Válassza ki a felhasználói felület felszínét. Ez meghatározza a Kodi kinézetét és kezelését."
 
 msgctxt "#36104"
 msgid "Change specific skin settings. The available options are dependent on the skin used."
@@ -11127,7 +11459,7 @@ msgstr "A felhasználói felület nézetének átméretezése."
 
 msgctxt "#36109"
 msgid "Select the media window that Kodi displays on startup."
-msgstr "Az Kodi indulásakor megjelenő médiaablak választása."
+msgstr "A Kodi indulásakor megjelenő médiaablak választása."
 
 msgctxt "#36110"
 msgid "Select or disable the sound scheme used in the user interface."
@@ -11223,7 +11555,7 @@ msgstr "Képernyővédő előnézete."
 
 msgctxt "#36133"
 msgid "If music is being played, Kodi will start the selected visualisation instead of displaying the screensaver."
-msgstr "Zenelejátszás esetén az Kodi a kiválasztott vizualizációt indítja el a képernyővédő helyett."
+msgstr "Zenelejátszás esetén a Kodi a kiválasztott vizualizációt indítja el a képernyővédő helyett."
 
 msgctxt "#36134"
 msgid "Dim the display when media is paused. Not valid for the 'Dim' screensaver mode."
@@ -11271,7 +11603,7 @@ msgstr "Csoportosítsa a filmeket 'filmgyűjteményekbe' a médiatár böngész�
 
 msgctxt "#36146"
 msgid "Check for new media files on Kodi startup."
-msgstr "Új állományok keresése az Kodi indulásakor."
+msgstr "Új állományok keresése a Kodi indulásakor."
 
 msgctxt "#36147"
 msgid "Hide the library scanning progress bar during scans."
@@ -11371,7 +11703,7 @@ msgstr "Kiválasztja a nagyítási értéket, ami a 4:3-as videót szélesvászn
 
 msgctxt "#36172"
 msgid "VDPAU studio level conversion provides a way for advanced applications like Kodi to influence the colour space conversion."
-msgstr "A VDPAU studió szintű konverzió lehetővé teszi hogy az olyan haladó programok mint az Kodi befolyásolja a színtér konverziót."
+msgstr "A VDPAU studió szintű konverzió lehetővé teszi hogy az olyan haladó programok mint a Kodi befolyásolja a színtér konverziót."
 
 msgctxt "#36173"
 msgid "Enable upscaling using VDPAU."
@@ -11503,11 +11835,11 @@ msgstr "Csatorna csoportok importálása a PVR háttérszolgáltatásból (ha t�
 
 msgctxt "#36205"
 msgid "Sort the channels by channel number on the backend, but use Kodi's own numbering for channels."
-msgstr "A csatornák rendezése a háttérszolgáltatás csatornakiosztása szerint, de az Kodi saját sorszámozását használja."
+msgstr "A csatornák rendezése a háttérszolgáltatás csatornakiosztása szerint, de a Kodi saját sorszámozását használja."
 
 msgctxt "#36206"
 msgid "Use numbering from the backend, instead of configuring them manually over Kodi."
-msgstr "Sorszámozás használata a háttérszolgáltatásból, az Kodi-n belüli kézi sorszámozás használata helyett. "
+msgstr "Sorszámozás használata a háttérszolgáltatásból, a Kodi-n belüli kézi sorszámozás használata helyett. "
 
 msgctxt "#36207"
 msgid "Open the channel manager, which allows modifying the channel order, channel name, icon, etc."
@@ -11523,7 +11855,7 @@ msgstr "Csatorna/EPG adatbázis törlése, ezt követően a hátérszolgáltatá
 
 msgctxt "#36210"
 msgid "Prevent the 'connection lost' notification window from displaying when Kodi is unable to talk to the PVR backend server."
-msgstr "Megakadályozza, hogy a \"kapcsolat megszakadt' figyelmeztetés megjelenjen, amikor az Kodi nem képes kommunikálni a PVR háttérkiszolgálóval."
+msgstr "Megakadályozza, hogy a \"kapcsolat megszakadt' figyelmeztetés megjelenjen, amikor a Kodi nem képes kommunikálni a PVR háttérkiszolgálóval."
 
 msgctxt "#36211"
 msgid "Category for PVR menus and on-screen display settings, as well as channel info windows."
@@ -11539,11 +11871,11 @@ msgstr "A képernyőn megjelenő vezérlők bezárása csatornaváltás után."
 
 msgctxt "#36216"
 msgid "Folder where channel icons are stored."
-msgstr "A csatorna ikonokat tartalmazó mappa."
+msgstr "A csatornaikonokat tartalmazó mappa."
 
 msgctxt "#36217"
 msgid "Scan for missing channel icons."
-msgstr "Hiányzó csatorna ikonok keresése."
+msgstr "Hiányzó csatornaikonok keresése."
 
 msgctxt "#36218"
 msgid "Category for electronic programming guide settings."
@@ -11563,7 +11895,7 @@ msgstr "EPG adat importálás mellőzése TV nézés közben a CPU terhelés min
 
 msgctxt "#36223"
 msgid "By default, EPG data is stored in a local database to speed up importing when Kodi is restarted."
-msgstr "Alapértelmezésben az EPG adat tárolásra kerül egy helyi adatbázisban az importálás gyorsításához ha az Kodi újraindításra kerül."
+msgstr "Alapértelmezésben az EPG adat tárolásra kerül egy helyi adatbázisban az importálás gyorsításához ha a Kodi újraindításra kerül."
 
 msgctxt "#36224"
 msgid "Hide \"no information available\" labels when no EPG data can be retrieved for a channel."
@@ -11571,7 +11903,7 @@ msgstr "A \"nem található információ\" címkék elrejtése ha az adott csato
 
 msgctxt "#36225"
 msgid "Delete the EPG database in Kodi and reimport the data afterwards from the backend."
-msgstr "Az EPG adatbázis törlése az Kodi-ből, és az adatok újraimportálása a háttérkiszolgálóktól."
+msgstr "Az EPG adatbázis törlése a Kodi-ből, és az adatok újraimportálása a háttérkiszolgálóktól."
 
 msgctxt "#36226"
 msgid "Category for PVR playback and channel switching settings."
@@ -11591,7 +11923,7 @@ msgstr "Jelminőség kijelzése a kodekinformácós ablakban (ha a kiegészítő
 
 msgctxt "#36230"
 msgid "How long Kodi will wait to change the channel if the channel isn't being received. Useful for over-the-air channels that occasionally lose signal strength."
-msgstr "Az Kodi milyen hosszan várjon a csatornaváltásra, ha a csatornavétel nem elérhető. Hasznos azoknál a csatornáknál, melyek időszakosan gyengébben foghatók."
+msgstr "A Kodi milyen hosszan várjon a csatornaváltásra, ha a csatornavétel nem elérhető. Hasznos azoknál a csatornáknál, melyek időszakosan gyengébben foghatók."
 
 msgctxt "#36231"
 msgid "Pressing a number button in full screen mode will automatically switch to the channel number that was entered after 1 second."
@@ -11635,7 +11967,7 @@ msgstr "Kategória a PVR energiagazdálkodás beállításaival, mint például 
 
 msgctxt "#36241"
 msgid "Execute the \"wakeup command\" below when Kodi exits or is going into hibernation mode. The timestamp of the next scheduled recording is passed as parameter."
-msgstr "\"ébresztési parancs\" végrehajtása mialatt az Kodi nem fut, vagy hibernált módba került. A következő időzített felvétel időbélyegzője kerül átadásra mint paraméter."
+msgstr "\"ébresztési parancs\" végrehajtása mialatt a Kodi nem fut, vagy hibernált módba került. A következő időzített felvétel időbélyegzője kerül átadásra mint paraméter."
 
 msgctxt "#36242"
 msgid "The command will not be executed when a recording will be started within this timeout."
@@ -11675,11 +12007,11 @@ msgstr "Kód ismételt kérése zárolt csatorna eléréséhez ha eltelt ennyi i
 
 msgctxt "#36251"
 msgid "Category for any specific settings for your PVR backend, if the PVR backend supports changing those settings in Kodi."
-msgstr "Kategória a PVR háttérkiszolgálóval kapcsolatos bármilyen egyedi beállításával, ha a PVR háttérkiszolgáló, támogatja annak megváltoztatását az Kodi-ben."
+msgstr "Kategória a PVR háttérkiszolgálóval kapcsolatos bármilyen egyedi beállításával, ha a PVR háttérkiszolgáló, támogatja annak megváltoztatását a Kodi-ban."
 
 msgctxt "#36252"
 msgid "This option will bring you to any specific settings for your PVR backend, if the PVR backend supports changing those settings in Kodi."
-msgstr "Ez a lehetőség odaugrik a PVR háttér kiszolgáló egyedi beállításaihoz, ha a PVR háttérkiszolgáló támogatja azok megváltoztatását az Kodi-ben."
+msgstr "Ez a lehetőség odaugrik a PVR háttér kiszolgáló egyedi beállításaihoz, ha a PVR háttérkiszolgáló támogatja azok megváltoztatását a Kodi-ban."
 
 msgctxt "#36253"
 msgid "Section that contains settings related to music files and how they are handled."
@@ -11707,7 +12039,7 @@ msgstr "Alapértelmezett előadóadatbázis-forrás kiválasztása. Lásd a kieg
 
 msgctxt "#36259"
 msgid "Check for new and removed media files on Kodi startup."
-msgstr "Új és eltávolított állományok keresése az Kodi indulásakor."
+msgstr "Új és eltávolított állományok keresése a Kodi indulásakor."
 
 msgctxt "#36260"
 msgid "No info available yet."
@@ -11727,7 +12059,7 @@ msgstr "Kategória ami a zene lejátszással kapcsolatos beállításokat tartal
 
 msgctxt "#36265"
 msgid "Kodi automatically plays the next item in the current folder. For example, in Files View: After a track has been played, Kodi would automatically play the next track in the same folder."
-msgstr "Az Kodi automatikusan lejátssza a következő elemet az aktuális könyvtárban. Például Fájl nézet: Miután a szám lejátszásra került, az Kodi automatikusan lejátssza a következő számot ugyanabban az alkönyvtárban. "
+msgstr "A Kodi automatikusan lejátssza a következő elemet az aktuális könyvtárban. Például Fájl nézet: Miután a szám lejátszásra került, a Kodi automatikusan lejátssza a következő számot ugyanabban az alkönyvtárban. "
 
 msgctxt "#36266"
 msgid "When songs are selected they are queued instead of playback starting immediately."
@@ -11735,7 +12067,7 @@ msgstr "Mikor egy zeneszám kiválasztásra kerül, akkor a lejátszási sor vé
 
 msgctxt "#36267"
 msgid "Kodi will read the ReplayGain information encoded in your audio files by a program such as MP3Gain and normalise the sound levels accordingly."
-msgstr "Az Kodi beolvassa az olyan programokkal mint az MP3Gain az audiofájlokba kódolt VisszajátszásSzint információt hogy ezzel pontosabb hangerőkiegyenlítést végezzen."
+msgstr "A Kodi beolvassa az olyan programokkal mint az MP3Gain az audiofájlokba kódolt visszajátszásszint információt hogy ezzel pontosabb hangerőkiegyenlítést végezzen."
 
 msgctxt "#36268"
 msgid "Default is 89dB per standard. Change with caution."
@@ -11839,7 +12171,7 @@ msgstr "Kategória a karaoke kezelés beállítási lehetőségeivel."
 
 msgctxt "#36293"
 msgid "When playing any music file, Kodi will look for a matching .cdg file and display its graphics."
-msgstr "Zenelejátszás alatt az Kodi keresi a .cdg fájlt, is megmutatja a kapcsolódó grafikát."
+msgstr "Zenelejátszás alatt a Kodi keresi a .cdg fájlt, is megmutatja a kapcsolódó grafikát."
 
 msgctxt "#36294"
 msgid "Show song selection dialog once the last song in the queue has been played."
@@ -11971,7 +12303,7 @@ msgstr "UPnP kliens engedélyezése. Ez lehetővé teszi egy UPnP kiszolgálór�
 
 msgctxt "#36326"
 msgid "Enable the UPnP control point. This allows you to stream media to any UPnP client and control playback from Kodi."
-msgstr "UPnP vezérlő pont engedélyezése. Ez lehetővé teszi az anyagok sugárzását bármely UPnP kliens részére és a lejátszás vezérlését az Kodi-ből."
+msgstr "UPnP vezérlő pont engedélyezése. Ez lehetővé teszi az anyagok sugárzását bármely UPnP kliens részére és a lejátszás vezérlését a Kodi-ből."
 
 msgctxt "#36327"
 msgid "Category containing settings for how the webserver service is handled."
@@ -11979,11 +12311,19 @@ msgstr "Kategória a webkiszolgáló szolgáltatások beállítási lehetősége
 
 msgctxt "#36328"
 msgid "Enable remote users to control Kodi through the built-in webserver."
-msgstr "Távoli kliensek számára az Kodi vezérlésének engedélyezése a beépített webkiszolgálón keresztül."
+msgstr "Távoli kliensek számára a Kodi vezérlésének engedélyezése a beépített webkiszolgálón keresztül."
 
 msgctxt "#36329"
 msgid "Define the webserver port."
 msgstr "Webkiszolgáló portjának megadása."
+
+msgctxt "#36330"
+msgid "Define the webserver username. This only takes effect when both the username and the password are set."
+msgstr "Webszerver felhasználónevének megadása. Ez csak akkor érvényesül ha a felhasználónév és a jelszó is megadásra kerül."
+
+msgctxt "#36331"
+msgid "Define the webserver password. This only takes effect when both the username and the password are set."
+msgstr "Webszerverjelszavának megadása. Ez csak akkor érvényesül ha a felhasználónév és a jelszó is megadásra kerül."
 
 msgctxt "#36332"
 msgid "Select between web interfaces installed via the Add-on Manager."
@@ -11995,7 +12335,7 @@ msgstr "Kategória a távvezérlési-szolgáltatás beállításaival."
 
 msgctxt "#36334"
 msgid "Allow programs on this computer to control Kodi via the Web Interface or the JSON-RPC interface protocol."
-msgstr "Az Kodi erre a gépre telepített programokkal való vezérlésének engedélyezése a Webkiszolgálón vagy az JSON-RPC illesztőn keresztül."
+msgstr "A Kodi erre a gépre telepített programokkal való vezérlésének engedélyezése a Webkiszolgálón vagy az JSON-RPC illesztőn keresztül."
 
 msgctxt "#36335"
 msgid "Define the remote control port."
@@ -12011,7 +12351,7 @@ msgstr "Meghatározza a kapcsolódó kliensek maximális számát."
 
 msgctxt "#36338"
 msgid "Allow programs on the network to control Kodi."
-msgstr "Az Kodi vezérlésének engedélyezése a hálózaton lévő programok számára."
+msgstr "A Kodi vezérlésének engedélyezése a hálózaton lévő programok számára."
 
 msgctxt "#36339"
 msgid "Initial repeat delay (ms)."
@@ -12027,11 +12367,11 @@ msgstr "Kategória a zeroconf hálózati felderítési szolgáltatás beállít�
 
 msgctxt "#36342"
 msgid "Allows applications on the network to discover Kodi's running services."
-msgstr "Megengedi a hálózat más rendszereinek, hogy észleljék az Kodi-n futó szolgáltatásokat."
+msgstr "Megengedi a hálózat más rendszereinek, hogy észleljék a Kodi-n futó szolgáltatásokat."
 
 msgctxt "#36343"
 msgid "Allows Kodi to receive content from other AirPlay devices or applications."
-msgstr "AirPlay tartalom vételének engedélyezése az Kodi számára."
+msgstr "AirPlay tartalom fogadásának engedélyezése más eszközökről és alkalmazásokról."
 
 msgctxt "#36344"
 msgid "Enable AirPlay password protection."
@@ -12055,7 +12395,7 @@ msgstr "Ha fut WINS kiszolgáló a hálózaton, add meg az munkacsoport nevét, 
 
 msgctxt "#36349"
 msgid "Section that contains the System related settings for the device Kodi is installed on."
-msgstr "Csoport amely az Kodi-t futtató eszköz rendszerbeállításait tartalmazza."
+msgstr "Csoport amely a Kodi-t futtató eszköz rendszerbeállításait tartalmazza."
 
 msgctxt "#36350"
 msgid "Automatically send 'Wake-On-Lan' to server(s) right before trying to access shared files or services."
@@ -12063,7 +12403,7 @@ msgstr "Automatikus 'Wake-On-Lan\" küldése a szerver(ek)nek a megosztás vagy 
 
 msgctxt "#36351"
 msgid "Display Kodi in a window, or fullscreen on the selected screen."
-msgstr "Az Kodi megjelenítése ablakban, vagy teljes képernyőn a kiválasztott megjelenítőn."
+msgstr "A Kodi megjelenítése ablakban, vagy teljes képernyőn a kiválasztott megjelenítőn."
 
 msgctxt "#36352"
 msgid "Changes the resolution that the user interface is displayed in."
@@ -12075,7 +12415,7 @@ msgstr "A felhasználói felület frissítési frekvenciáját változtatja meg.
 
 msgctxt "#36354"
 msgid "Display Kodi in a fullscreen window. The main benefit is for multi-screen configurations, so that Kodi can be used without minimising other applications. This uses more resources so playback may be less smooth."
-msgstr "Az Kodi megjelenítése teljes képernyő méretű ablakban. A fő előny többképernyős módban jelentkezik, ahol így nem kell minimalizálni a többi alkalmazást. Ez a mód több erőforrást igényel és emiatt lehet, hogy a lejátszás kevésbé lesz folyamatos."
+msgstr "A Kodi megjelenítése teljes képernyő méretű ablakban. A fő előny többképernyős módban jelentkezik, ahol így nem kell minimalizálni a többi alkalmazást. Ez a mód több erőforrást igényel és emiatt lehet, hogy a lejátszás kevésbé lesz folyamatos."
 
 msgctxt "#36355"
 msgid "In a multi-screen configuration, the screens where Kodi is not displayed are blacked out."
@@ -12167,11 +12507,11 @@ msgstr "Mikor aktiválva van a kurzornyilak a virtuális gombsoron mozgatják a 
 
 msgctxt "#36377"
 msgid "Use a mouse or touch screen device to control Kodi. Note: disabling will cause you to lose control over Kodi when no keyboard or remote is present."
-msgstr "Egér vagy érintőképernyő használata az Kodi irányításához. Megjegyzés: kikapcsolása azt eredményezheti hogy elveszíti az irányítás lehetőségét ha a billentyűzet vagy távvezérlő nem elérhető."
+msgstr "Egér vagy érintőképernyő használata a Kodi irányításához. Megjegyzés: kikapcsolása azt eredményezheti hogy elveszíti az irányítás lehetőségét ha a billentyűzet vagy távvezérlő nem elérhető."
 
 msgctxt "#36378"
 msgid "Use a joystick to control Kodi."
-msgstr "Joystick használata az Kodi irányításához."
+msgstr "Joystick használata a Kodi irányításához."
 
 msgctxt "#36379"
 msgid "Category containing settings for internet access."
@@ -12203,7 +12543,7 @@ msgstr "Proxy szerver jelszó megadása."
 
 msgctxt "#36386"
 msgid "If you have limited bandwidth available, Kodi will try to keep within these limits."
-msgstr "Ha az elérhető sávszélesség limitált akkor az Kodi próbál ehhez az értékhez igazodni."
+msgstr "Ha az elérhető sávszélesség limitált akkor a Kodi próbál ehhez az értékhez igazodni."
 
 msgctxt "#36387"
 msgid "Category containing settings for power saving."
@@ -12215,11 +12555,11 @@ msgstr "Képernyő kikapcsolása tétlenség esetén. Hasznos lehet olyan telev�
 
 msgctxt "#36389"
 msgid "Define how long Kodi should idle before shutting down."
-msgstr "Mennyi ideig legyen tétlen az Kodi mielőtt kikapcsolásra kerüljön."
+msgstr "Mennyi ideig legyen tétlen a Kodi mielőtt kikapcsolásra kerüljön."
 
 msgctxt "#36390"
 msgid "Define what action Kodi should do when it has been idle for a long period of time."
-msgstr "Adja meg mi történjen ha az Kodi tartósan tétlen."
+msgstr "Adja meg mi történjen ha a Kodi tartósan tétlen."
 
 msgctxt "#36391"
 msgid "Category containing settings for debugging functions."
@@ -12231,7 +12571,11 @@ msgstr "Debug információk naplózásának ki- bekapcsolása.  Hasznos hibakere
 
 msgctxt "#36393"
 msgid "Folder used to save screenshots taken within Kodi."
-msgstr "Könyvtár megadása az Kodi képernyőmentéseihez."
+msgstr "Könyvtár megadása a Kodi képernyőmentéseihez."
+
+msgctxt "#36394"
+msgid "Enables log messages from additional libraries to be included in the log."
+msgstr "A debug naplóba bekerülendő egyéb könyvtárak megadása."
 
 msgctxt "#36395"
 msgid "Category containing settings for the master lock function."
@@ -12243,11 +12587,11 @@ msgstr "Az általános zároláshoz használt PIN kód megadása."
 
 msgctxt "#36397"
 msgid "If enabled, the master lock code is required to unlock Kodi on startup."
-msgstr "Ha engedélyezett akkor mester-kód megadása szükséges az Kodi elindulásakor."
+msgstr "Ha engedélyezett akkor mester-kód megadása szükséges a Kodi elindulásakor."
 
 msgctxt "#36398"
 msgid "Define the maximum number of retries before Kodi is closed down."
-msgstr "Adja meg a próbálkozások maximális számát mielőtt az Kodi zárolásra kerül."
+msgstr "Adja meg a próbálkozások maximális számát mielőtt a Kodi zárolásra kerül."
 
 msgctxt "#36399"
 msgid "Category containing settings for the cache function."
@@ -12323,7 +12667,7 @@ msgstr "A távkapcsoló típusának meghatározása."
 
 msgctxt "#36417"
 msgid "Always run an Kodi helper so that the remote can be used to start Kodi."
-msgstr "Minden esetben használjon Kodi segítőt hogy a távkapcsoló alkalmas legyen az Kodi elindítására."
+msgstr "Minden esetben használjon Kodi segítőt hogy a távkapcsoló alkalmas legyen a Kodi elindítására."
 
 msgctxt "#36418"
 msgid "Specify the delay between button sequences on a universal remote."
@@ -12340,10 +12684,6 @@ msgstr "Kihagyja a VDPAU keverőt, ezáltal erőforrást takarít meg az alacson
 msgctxt "#36422"
 msgid "Enable hardware video decode using AMLogic decoder."
 msgstr "Engedélyezi az AMLogic hardvergyorsítást."
-
-msgctxt "#36423"
-msgid "Enables frame-multi-threaded software decoding (less reliable than the default single threaded mode)."
-msgstr "Többszálas dekódolás használata (kevésbé megbízható mint az alapértelmezett egyszálú üzemmód)."
 
 msgctxt "#36424"
 msgid "Select what will happen when an EPG item is selected: [Show context menu] will trigger the contextual menu from where you can choose further actions; [Switch to channel] will instantly tune to the related channel; [Show information] will display a detailed information with plot and further options; [Record] will create a recording timer for the selected item."
@@ -12377,6 +12717,30 @@ msgctxt "#36431"
 msgid "Defines whether video decoding should be performed in software (requires more CPU) or with hardware acceleration where possible."
 msgstr "Meghatározza, hogy a videó dekódolás szoftveresen történjen -e (több CPU erőforrást igényel), vagy hardveresen a GPU segítségével amikor lehetséges."
 
+msgctxt "#36432"
+msgid "Select virtual keyboard layouts."
+msgstr "Válassza ki a virtuális billentyűzet kiosztását."
+
+msgctxt "#36433"
+msgid "If enabled VAAPI render method is prefered. This puts less load on the CPU but driver may hang!"
+msgstr "Engedélyezéskor a VAAPI lesz az előnyben részesített renderelő. A CPU terhelése kisebb lesz, mert a képkockák nem kerülnek visszamásolásra a memóriába. Meghajtóprogramtól függően esetleg fagyás jelentkezhet!"
+
+msgctxt "#36434"
+msgid "Allow hardware acceleration (MMAL)"
+msgstr "Hardveres gyorsítás engedélyezése (MMAL)"
+
+msgctxt "#36435"
+msgid "Use DVDPlayer for decoding of video files with MMAL acceleration."
+msgstr "A DVDPlayer használata a videó fájlok lejátszásához MMAL gyorsítással."
+
+msgctxt "#36500"
+msgid "Stereoscopic 3D mode (current)"
+msgstr "Sztereógráf 3D mód (aktuális)"
+
+msgctxt "#36501"
+msgid "Stereoscopic 3D mode"
+msgstr "Sztereógráf 3D mód"
+
 msgctxt "#36502"
 msgid "Disabled"
 msgstr "Letiltva"
@@ -12405,6 +12769,14 @@ msgctxt "#36508"
 msgid "Hardware Based"
 msgstr "Hardver Alapú"
 
+msgctxt "#36509"
+msgid "Monoscopic (2D)"
+msgstr "Monoszkópikus (2D)"
+
+msgctxt "#36520"
+msgid "Playback mode of stereoscopic 3D videos"
+msgstr "A sztereógráf 3D videók lejátszási módja"
+
 msgctxt "#36521"
 msgid "Ask me"
 msgstr "Kérdezzen"
@@ -12421,6 +12793,18 @@ msgctxt "#36525"
 msgid "Same as movie (autodetect)"
 msgstr "Az állomány szerinti (detektálás)"
 
+msgctxt "#36526"
+msgid "Disable stereoscopic 3D mode when playback ended"
+msgstr "Sztereógráf 3D mód letiltása a lejátszás befejezésekor"
+
+msgctxt "#36527"
+msgid "Select playback mode"
+msgstr "Lejátszási mód kiválasztása"
+
+msgctxt "#36528"
+msgid "Select stereoscopic 3D mode"
+msgstr "Sztereógráf 3D mód kiválasztása"
+
 msgctxt "#36531"
 msgid "Select alternate mode..."
 msgstr "Válasszon más módot..."
@@ -12430,12 +12814,36 @@ msgid "Same as movie"
 msgstr "A film szerinti"
 
 msgctxt "#36533"
-msgid "Select how audio is downmixed, for example from 5.1 to 2.0: [Enabled] maintains the dynamic range of the original audio source when downmixed however volume will be lower [Disabled] maintains volume level of the original audio source however the dynamic range is compressed. Note - Dynamic range is the difference between the quietest and loudest sounds in a audio source."
-msgstr "Audió lekeverés beállítása például 5.1-ről 2.0-ra: [Engedélyez] Fenntartja a hangok dinamikatartományát még ha a lekevert hang halkabbá is válik [Letiltott] fenntartja a forrás hangerejét még ha a dinamika tartomány szélessége csökken is. Megjegyzés - A dinamika tartomány a különbség a legalacsonyabb és a legmagasabb hangerő között a hangforrásban."
+msgid "Select how audio is downmixed, for example from 5.1 to 2.0: [Enabled] maintains volume level of the original audio source however the dynamic range is compressed. [Disabled] maintains the dynamic range of the original audio source when downmixed however volume will be lower. Note - Dynamic range is the difference between the quietest and loudest sounds in an audio source. Enable this setting if movie dialogues are barely audible."
+msgstr "Válassza ki hogyan legyen lekeverve a hang, például 5.1-ről 2.0-ra: [Engedélyezve] megtartja a hangerő szintjét az eredeti hangnak a dinamikatartomány szűkülése árán. [Letiltott] megtartja a dinamikatartományt, a hangerő csökkenése árán. Megjegyzés - A dinamikatartomány a különbség a leghalkabb és a leghangosabb hang között a hangforrásban. Engedélyezze ezt a beállítást ha a párbeszédek rosszul halhatóak."
+
+msgctxt "#36534"
+msgid "Specify additional libraries whose log messages are to be included in the log."
+msgstr "A debug naplóba bekerülendő egyéb komponensek megadása."
+
+msgctxt "#36535"
+msgid "Stereoscopic 3D mode of video"
+msgstr "A videó sztereógráf 3D módja"
+
+msgctxt "#36536"
+msgid "Invert Stereoscopic 3D mode (flip eyes)"
+msgstr "Sztereógráf 3D mód invertálása (szemek felcserélése)"
+
+msgctxt "#36537"
+msgid "Select in which mode stereoscopic 3D videos will be played. [Ask me] will show a dialog to select the desired mode for each playback. [Preferred mode] will use of the preferred mode specified in the 'System -> Video Hardware' section of the settings. [Monoscopic (2D)] will play the video in mono/2D. [Ignore] disables any stereoscopic 3D processing and handling"
+msgstr "Sztereógráf 3D mód kiválasztása a lejátszáshoz. [Rákérdez] egy dialógusablakban kiválasztható minden lejátszáskor a kívánt mód. [Előnyben részesített mód] a 'Rendszer -> Video Hardver' szekcióban megadott mód használata. [Monoszkópikus (2D)] lejátsza a videót mono/2D módban. [Figyelmen kívül hagy] letilt minden Sztereógráf 3D kezelést."
+
+msgctxt "#36538"
+msgid "[Enabled] Switch GUI (and some TVs) back to 2D mode when playback ended. [Disabled] GUI and TV will stay in stereoscopic 3D mode. For video playlists the stereoscopic 3D mode won't change between videos, not even for non stereoscopic ones."
+msgstr "[Engedélyez] GUI váltása (és néhány TV) vissza 2D módba ha a lejátszás véget ér. [Letiltva] GUI és a TV Sztereógráf 3D módban marad. Lejátszási listáknál a Sztereógráf 3D mód nem változik a videók között, még a nem Sztereógráf videóknál sem."
 
 msgctxt "#36539"
 msgid "Changes the stereoscopic 3D mode of the user interface."
 msgstr "Beállítja a a sztereográf 3D módot a felhasználói felületen."
+
+msgctxt "#36540"
+msgid "The preferred mode in which stereoscopic 3D media such as videos should be played."
+msgstr "Az előnyben részesített Sztereógráf 3D mód amiben a médiák mint pl. a videók lejátszásra kerülnek."
 
 msgctxt "#36541"
 msgid "Allows volume control from AirPlay clients."
@@ -12453,6 +12861,10 @@ msgctxt "#36544"
 msgid "Enable hardware decoding of video files."
 msgstr "Videófájlok hardveres dekódolásának engedélyezése."
 
+msgctxt "#36545"
+msgid "Stereoscopic 3D depth of subtitles"
+msgstr "A feliratok sztereógráf 3D mélysége"
+
 msgctxt "#36546"
 msgid "Sets the visual depth of subtitles for stereoscopic 3D videos. The higher the value, the closer the subtitles will appear to the viewer."
 msgstr "Beállítja a feliratok 3D videóknál látható térbeli mélységét. Minél magasabb az érték, a felirat annál közelebbinek fog látszani a nézőhöz."
@@ -12460,6 +12872,14 @@ msgstr "Beállítja a feliratok 3D videóknál látható térbeli mélységét. 
 msgctxt "#36547"
 msgid "Use higher quality textures for covers and fanart (uses more memory)"
 msgstr "Nagyobb felbontású képek használata a borítókhoz és a fanartokhoz (magasabb memóriahasználat)"
+
+msgctxt "#36548"
+msgid "Limits resolution of GUI to save memory. Does not affect video playback. Requires restart."
+msgstr "GUI felbontásának limitálása memória megtakarításhoz. Nem érvényes a videólejátszásra. Újraindítás szükséges."
+
+msgctxt "#36549"
+msgid "Use iOS8 compatible AirPlay support. If you have trouble with older iOS devices detecting Kodi as a valid target try switching this off. This option takes effect on the next restart of Kodi only!"
+msgstr "iOS8 kompatibilis AirPlay támogatás. Ha probléma lép fel régebbi iOS eszközöknél hogy a Kodit nem ismeri fel mint lejátszó próbálja meg ezt az opciót kikapcsolni. Ez az opció csak a Kodi újraindításával lép életbe!"
 
 msgctxt "#36600"
 msgid "Category containing the settings for how the music library is handled."
@@ -12477,6 +12897,14 @@ msgctxt "#36603"
 msgid "Category containing settings for how video output is handled."
 msgstr "Kategória a képkimenet beállításaival."
 
+msgctxt "#36900"
+msgid "movie"
+msgstr "film"
+
+msgctxt "#36901"
+msgid "movies"
+msgstr "filmek"
+
 msgctxt "#36902"
 msgid "TV show"
 msgstr "Sorozat"
@@ -12485,6 +12913,14 @@ msgctxt "#36903"
 msgid "TV shows"
 msgstr "Sorozatok"
 
+msgctxt "#36904"
+msgid "season"
+msgstr "évad"
+
+msgctxt "#36905"
+msgid "seasons"
+msgstr "évadok"
+
 msgctxt "#36906"
 msgid "episode"
 msgstr "epizód"
@@ -12492,6 +12928,62 @@ msgstr "epizód"
 msgctxt "#36907"
 msgid "episodes"
 msgstr "epizód"
+
+msgctxt "#36908"
+msgid "musicvideo"
+msgstr "klip"
+
+msgctxt "#36909"
+msgid "musicvideos"
+msgstr "klippek"
+
+msgctxt "#36910"
+msgid "set"
+msgstr "összeállítás"
+
+msgctxt "#36911"
+msgid "sets"
+msgstr "összeállítások"
+
+msgctxt "#36912"
+msgid "video"
+msgstr "videó"
+
+msgctxt "#36913"
+msgid "videos"
+msgstr "videók"
+
+msgctxt "#36914"
+msgid "music"
+msgstr "zene"
+
+msgctxt "#36915"
+msgid "music"
+msgstr "zenék"
+
+msgctxt "#36916"
+msgid "artist"
+msgstr "előadó"
+
+msgctxt "#36917"
+msgid "artists"
+msgstr "előadók"
+
+msgctxt "#36918"
+msgid "album"
+msgstr "album"
+
+msgctxt "#36919"
+msgid "albums"
+msgstr "albumok"
+
+msgctxt "#36920"
+msgid "song"
+msgstr "dal"
+
+msgctxt "#36921"
+msgid "songs"
+msgstr "dalok"
 
 msgctxt "#37000"
 msgid "(Visually Impaired)"
@@ -12557,6 +13049,34 @@ msgctxt "#37024"
 msgid "Select this if the audio out connection only supports multichannel audio as Dolby Digital 5.1, this allows multichannel audio such as AAC5.1 or FLAC5.1 to be listened to in 5.1 surround sound. Note - Not recommended on Pi as this requires a lot of CPU."
 msgstr "Ez a beállítás akkor szükséges ha a hangkimenet csak a Dolby Digital 5.1-et támogatja, ezzel lehetővé válik egyéb többcsatornás hangfolyam átvitele is úgymint AAC5.1 vagy FLAC5.1 többcsatornásként. Megjegyzés - nem javasolt a használata Pi eszköznél az erős CPU igény miatt."
 
+msgctxt "#37025"
+msgid "Configure audio encoder settings such as quality and compression level"
+msgstr "Az audió kódoló beállítása úgymint minőség és tömörítés mértéke"
+
 msgctxt "#37026"
 msgid "Auto"
 msgstr "Auto"
+
+msgctxt "#37027"
+msgid "540"
+msgstr "540"
+
+msgctxt "#37028"
+msgid "720"
+msgstr "720"
+
+msgctxt "#37029"
+msgid "900"
+msgstr "900"
+
+msgctxt "#37030"
+msgid "Unlimited"
+msgstr "Végtelen"
+
+msgctxt "#37031"
+msgid "Specifies how Blu-rays should be opened/played back. Disc menus are not fully supported yet and may cause problems."
+msgstr "Meghatározza hogy a Blu-ray hogyan kerül megnyitásra/lejátszásra. A lemez menük nem teljes mértékben támogatottak és problémát okozhatnak."
+
+msgctxt "#38010"
+msgid "GPU accelerated"
+msgstr "GPU gyorsított"

@@ -389,6 +389,10 @@ msgctxt "#121"
 msgid "Confirm file move"
 msgstr "Vahvista tiedoston siirto"
 
+msgctxt "#122"
+msgid "Confirm delete"
+msgstr "Vahvista poisto"
+
 msgctxt "#123"
 msgid "Copy these files?"
 msgstr "Kopioidaanko valitut tiedostot?"
@@ -852,6 +856,10 @@ msgstr "Kieli"
 msgctxt "#249"
 msgid "Music"
 msgstr "Musiikki"
+
+msgctxt "#250"
+msgid "Visualisation"
+msgstr "Visualisointi"
 
 msgctxt "#251"
 msgid "Select destination directory"
@@ -1940,6 +1948,10 @@ msgstr "Esittäjästä ei ole tietoja"
 msgctxt "#548"
 msgid "Downmix multichannel audio to stereo"
 msgstr "Yhdistä monikanavaiset äänet stereoksi"
+
+msgctxt "#549"
+msgid "Number"
+msgstr "Numero"
 
 msgctxt "#550"
 msgid "Sort by: %s"
@@ -3097,6 +3109,34 @@ msgctxt "#1301"
 msgid "Custom passthrough device"
 msgstr "Mukautettu pakatun äänen laite"
 
+msgctxt "#1375"
+msgid "Temperature"
+msgstr "Lämpötila"
+
+msgctxt "#1376"
+msgid "Pressure"
+msgstr "Ilmanpaine"
+
+msgctxt "#1381"
+msgid "Extreme"
+msgstr "Erittäin korkea"
+
+msgctxt "#1382"
+msgid "Whirls"
+msgstr "Pyörteitä"
+
+msgctxt "#1384"
+msgid "Broken"
+msgstr "Viallinen"
+
+msgctxt "#1389"
+msgid "Windy"
+msgstr "tuulinen"
+
+msgctxt "#1390"
+msgid "Settings"
+msgstr "Asetukset"
+
 msgctxt "#1396"
 msgid "Drifting"
 msgstr "kasaantuvaa"
@@ -3461,6 +3501,10 @@ msgctxt "#10039"
 msgid "Expert"
 msgstr "Expertti"
 
+msgctxt "#10040"
+msgid "Add-on browser"
+msgstr "Lisäosaselain"
+
 msgctxt "#10041"
 msgid "Reset above settings to default"
 msgstr "Resetoi ylläolevat asetukset vakioihin."
@@ -3480,6 +3524,10 @@ msgstr "Ohjetta ei ole saatavilla"
 msgctxt "#10100"
 msgid "Yes/No dialogue"
 msgstr "Kyllä/Ei -dialogi"
+
+msgctxt "#10101"
+msgid "Progress dialogue"
+msgstr "Tila -dialogi"
 
 msgctxt "#10126"
 msgid "File browser"
@@ -4657,6 +4705,10 @@ msgctxt "#13391"
 msgid "Eject/Load"
 msgstr "Poista/Lataa"
 
+msgctxt "#13392"
+msgid "Use visualisation if playing audio"
+msgstr "Näytön visualisoinnit käytössä musiikkitiedostoilla"
+
 msgctxt "#13393"
 msgid "Calculate size"
 msgstr "Laske koko"
@@ -5249,10 +5301,6 @@ msgctxt "#14086"
 msgid "Playback"
 msgstr "Toisto"
 
-msgctxt "#14087"
-msgid "DVDs"
-msgstr "DVD-levyt"
-
 msgctxt "#14088"
 msgid "Play DVDs automatically"
 msgstr "Toista DVD-levyt automaattisesti"
@@ -5740,6 +5788,10 @@ msgstr "Erottele hakusanat käyttämällä \"AND\", \"OR\" ja/tai \"NOT\" -opera
 msgctxt "#19002"
 msgid "or use phrases to find an exact match, like \"The wizard of Oz\"."
 msgstr "Tai käytä lainausmerkkejä löytääksesi kokonaisia virkkeitä esim. \"The wizard of Oz\"."
+
+msgctxt "#19003"
+msgid "Find similar"
+msgstr "Etsi samankaltaisia"
 
 msgctxt "#19004"
 msgid "Importing EPG from clients"
@@ -6241,6 +6293,10 @@ msgctxt "#19139"
 msgid "Name of the new group"
 msgstr "Uuden ryhmän nimi"
 
+msgctxt "#19140"
+msgid "Search..."
+msgstr "Etsi..."
+
 msgctxt "#19141"
 msgid "Group"
 msgstr "Ryhmä"
@@ -6717,10 +6773,6 @@ msgctxt "#19272"
 msgid "You need a tuner, backend software, and an"
 msgstr "Tarvitset virittimen, ohjelmiston, ja"
 
-msgctxt "#19274"
-msgid "Please visit xbmc.org/pvr to learn more."
-msgstr "Lisätietoja on osoitteessa xbmc.org/pvr."
-
 msgctxt "#19275"
 msgid "Conflict warning"
 msgstr "Ristiriitavaroitus"
@@ -6764,6 +6816,10 @@ msgstr "Valitse kuvake"
 msgctxt "#19285"
 msgid "Browse for icon"
 msgstr "Hae kuvake"
+
+msgctxt "#19287"
+msgid "All channels"
+msgstr "Kaikki kanavat"
 
 msgctxt "#19499"
 msgid "Other/Unknown"
@@ -9529,6 +9585,10 @@ msgctxt "#24009"
 msgid "Script"
 msgstr "Skriptit"
 
+msgctxt "#24010"
+msgid "Visualisation"
+msgstr "Visualisointi"
+
 msgctxt "#24011"
 msgid "Add-on repository"
 msgstr "Lisäosien ohjelmavarasto"
@@ -9848,10 +9908,6 @@ msgstr "Piilota vieras"
 msgctxt "#25002"
 msgid "Select from all titles ..."
 msgstr "Valitse kaikista otsakkeista"
-
-msgctxt "#25003"
-msgid "Show Blu-ray menus"
-msgstr "Näytä Blu-ray-valikot"
 
 msgctxt "#25004"
 msgid "Play main title: %d"
@@ -10801,6 +10857,10 @@ msgctxt "#36504"
 msgid "Side by side"
 msgstr "Vierekkäin"
 
+msgctxt "#36508"
+msgid "Hardware Based"
+msgstr "Laitteisto"
+
 msgctxt "#36521"
 msgid "Ask me"
 msgstr "Kysy minulta"
@@ -10824,6 +10884,34 @@ msgstr "jakso"
 msgctxt "#36907"
 msgid "episodes"
 msgstr "jaksoa"
+
+msgctxt "#36910"
+msgid "set"
+msgstr "Aseta"
+
+msgctxt "#36911"
+msgid "sets"
+msgstr "Setit"
+
+msgctxt "#36912"
+msgid "video"
+msgstr "Näyttö"
+
+msgctxt "#36913"
+msgid "videos"
+msgstr "Videot"
+
+msgctxt "#36918"
+msgid "album"
+msgstr "Albumi"
+
+msgctxt "#36920"
+msgid "song"
+msgstr "Kappale"
+
+msgctxt "#36921"
+msgid "songs"
+msgstr "Kappaleet"
 
 msgctxt "#37001"
 msgid "(Directors Comments)"

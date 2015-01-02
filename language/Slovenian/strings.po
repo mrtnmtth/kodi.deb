@@ -51,7 +51,7 @@ msgstr "Vreme"
 
 msgctxt "#9"
 msgid "Kodi media center"
-msgstr "Kodi media center"
+msgstr "Media center Kodi"
 
 msgctxt "#11"
 msgid "Monday"
@@ -1236,10 +1236,6 @@ msgstr "Igralci"
 msgctxt "#345"
 msgid "Year"
 msgstr "Leto"
-
-msgctxt "#346"
-msgid "Normalize levels on downmix"
-msgstr "Normiraj glasnost pri združevanju kanalov"
 
 msgctxt "#347"
 msgid "DTS-HD capable receiver"
@@ -2821,6 +2817,10 @@ msgctxt "#801"
 msgid "Would you like to scan now?"
 msgstr "Ali želite pregledati sedaj?"
 
+msgctxt "#802"
+msgid "%s of %s available"
+msgstr "na voljo %s od %s"
+
 msgctxt "#850"
 msgid "Invalid port number entered"
 msgstr "Vnešena je neveljavna številka vrat"
@@ -3236,6 +3236,66 @@ msgstr "Poljubna zvočna naprava"
 msgctxt "#1301"
 msgid "Custom passthrough device"
 msgstr "Poljubna naprava za preusmerjen zvok"
+
+msgctxt "#1375"
+msgid "Temperature"
+msgstr "Temperatura"
+
+msgctxt "#1376"
+msgid "Pressure"
+msgstr "Zračni pritisk"
+
+msgctxt "#1377"
+msgid "Proximity"
+msgstr "Bližina"
+
+msgctxt "#1378"
+msgid "Intensity"
+msgstr "Intenzivnost"
+
+msgctxt "#1380"
+msgid "Very"
+msgstr "Zelo"
+
+msgctxt "#1381"
+msgid "Extreme"
+msgstr "Ekstremno"
+
+msgctxt "#1382"
+msgid "Whirls"
+msgstr "Vrtinci"
+
+msgctxt "#1384"
+msgid "Broken"
+msgstr "Nedelujoč"
+
+msgctxt "#1385"
+msgid "Tornado"
+msgstr "Tornado"
+
+msgctxt "#1386"
+msgid "Tropical"
+msgstr "Tropsko"
+
+msgctxt "#1387"
+msgid "Hurricane"
+msgstr "Hurikan"
+
+msgctxt "#1388"
+msgid "Cold"
+msgstr "Mraz"
+
+msgctxt "#1389"
+msgid "Windy"
+msgstr "Vetrovno"
+
+msgctxt "#1390"
+msgid "Settings"
+msgstr "Nastavitve"
+
+msgctxt "#1392"
+msgid "Gentle"
+msgstr "Nežen"
 
 msgctxt "#1396"
 msgid "Drifting"
@@ -5057,10 +5117,6 @@ msgctxt "#13439"
 msgid "Allow hardware acceleration (MediaCodec)"
 msgstr "Dovoli strojno pospeševanje (MediaCodec)"
 
-msgctxt "#13440"
-msgid "Allow multi threaded software decoding"
-msgstr "Omogoči večnivojsko programsko dekodiranje"
-
 msgctxt "#13441"
 msgid "Use MPEG-2 VDPAU"
 msgstr "Uporabi MPEG-2 VDPAU"
@@ -5570,8 +5626,8 @@ msgid "Playback"
 msgstr "Predvajanje"
 
 msgctxt "#14087"
-msgid "DVDs"
-msgstr "DVD-ji"
+msgid "Discs"
+msgstr "Diski"
 
 msgctxt "#14088"
 msgid "Play DVDs automatically"
@@ -5628,6 +5684,10 @@ msgstr "Prekini zajemanje CD-ja"
 msgctxt "#14101"
 msgid "Acceleration"
 msgstr "Pospeševanje"
+
+msgctxt "#14104"
+msgid "Show simplified menu"
+msgstr "Prikaži enostavni meni"
 
 msgctxt "#15012"
 msgid "Unavailable source"
@@ -6072,6 +6132,10 @@ msgstr "VDPAU - Bob"
 msgctxt "#16326"
 msgid "DXVA-HD"
 msgstr "DXVA-HD"
+
+msgctxt "#16330"
+msgid "MMAL - Advanced"
+msgstr "MMAL - Napredno"
 
 msgctxt "#16400"
 msgid "Post-processing"
@@ -7164,10 +7228,6 @@ msgstr "Za PVR potrebujete sprejemnik, program za hrbtenico"
 msgctxt "#19273"
 msgid "Add-on for the backend to be able to use PVR."
 msgstr "Dodatek za hrbtenico, ki bo omogočal uporabo PVR."
-
-msgctxt "#19274"
-msgid "Please visit xbmc.org/pvr to learn more."
-msgstr "Obiščite xbmc.org/pvr za več informacij."
 
 msgctxt "#19275"
 msgid "Conflict warning"
@@ -8384,6 +8444,10 @@ msgstr "Varna lupina (SSH/SFTP)"
 msgctxt "#20261"
 msgid "Apple Filing Protocol (AFP)"
 msgstr "Datotečni protokol Apple (AFP)"
+
+msgctxt "#20262"
+msgid "Zeroconf Browser"
+msgstr "Brskalnik ZeroConf"
 
 msgctxt "#20300"
 msgid "Web server directory (HTTP)"
@@ -10485,6 +10549,14 @@ msgctxt "#24127"
 msgid "Automatically download first subtitle from the search result list"
 msgstr "Samodejno prenesi prve podnapise iz seznama rezultatov iskanja"
 
+msgctxt "#24128"
+msgid "Configuration has been moved"
+msgstr "Nastavitve so bile premaknjene"
+
+msgctxt "#24999"
+msgid "Hide incompatible"
+msgstr "Skrij nezdružljive"
+
 msgctxt "#25000"
 msgid "Notifications"
 msgstr "Obvestila"
@@ -10498,8 +10570,8 @@ msgid "Select from all titles ..."
 msgstr "Izberi med vsemi naslovi ..."
 
 msgctxt "#25003"
-msgid "Show Blu-ray menus"
-msgstr "Prikaži menije Blu-ray-ja"
+msgid "Show Blu-ray menu"
+msgstr "Prikaži menije s plošče Blu-Ray"
 
 msgctxt "#25004"
 msgid "Play main title: %d"
@@ -10688,6 +10760,14 @@ msgstr "Vikend"
 msgctxt "#33038"
 msgid "%s day"
 msgstr "%s dan"
+
+msgctxt "#33039"
+msgid "%s Streams"
+msgstr "% pretoki"
+
+msgctxt "#33040"
+msgid "%s Devices"
+msgstr "%s Naprave"
 
 msgctxt "#33049"
 msgid "Alert"
@@ -12061,6 +12141,10 @@ msgctxt "#36336"
 msgid "Define the remote control port range."
 msgstr "Določite območje vrat oddaljenega upravljanja."
 
+msgctxt "#36337"
+msgid "Define the maximum number of clients that can connect."
+msgstr "Izberi največje število dovoljenih povezav."
+
 msgctxt "#36338"
 msgid "Allow programs on the network to control Kodi."
 msgstr "Dovolite programom v omrežju, da upravljajo z Kodi-jem."
@@ -12104,6 +12188,10 @@ msgstr "Razdelek sistemskih nastavitev za napravo, na katero je nameščen Kodi.
 msgctxt "#36350"
 msgid "Automatically send 'Wake-On-Lan' to server(s) right before trying to access shared files or services."
 msgstr "Samodejno pošljite signal 'Wake-On-Lan' strežniku(om) tik pred dostopom do datotek v skupni rabi in storitev."
+
+msgctxt "#36351"
+msgid "Display Kodi in a window, or fullscreen on the selected screen."
+msgstr "Prikaži Kodi v oknu ali celozaslonsko na izbranem zaslonu."
 
 msgctxt "#36355"
 msgid "In a multi-screen configuration, the screens where Kodi is not displayed are blacked out."
@@ -12341,6 +12429,18 @@ msgctxt "#36428"
 msgid "Record"
 msgstr "Snemaj"
 
+msgctxt "#36432"
+msgid "Select virtual keyboard layouts."
+msgstr "Izberi razporeditev tipk na virtualni tipkovnici"
+
+msgctxt "#36500"
+msgid "Stereoscopic 3D mode (current)"
+msgstr "Stereoskopski 3D način (trenutno)"
+
+msgctxt "#36501"
+msgid "Stereoscopic 3D mode"
+msgstr "Stereoskopski 3D način"
+
 msgctxt "#36502"
 msgid "Disabled"
 msgstr "Onemogočeno"
@@ -12369,6 +12469,10 @@ msgctxt "#36508"
 msgid "Hardware Based"
 msgstr "Temelji na strojni opremi"
 
+msgctxt "#36520"
+msgid "Playback mode of stereoscopic 3D videos"
+msgstr "Način predvajanja stereoskopskih 3D videov"
+
 msgctxt "#36521"
 msgid "Ask me"
 msgstr "Vprašaj me"
@@ -12381,6 +12485,14 @@ msgctxt "#36525"
 msgid "Same as movie (autodetect)"
 msgstr "Enako kot film (samodejno)"
 
+msgctxt "#36527"
+msgid "Select playback mode"
+msgstr "Izberi način predvajanja"
+
+msgctxt "#36528"
+msgid "Select stereoscopic 3D mode"
+msgstr "Izberite stereoskopski 3D način"
+
 msgctxt "#36531"
 msgid "Select alternate mode..."
 msgstr "Izberi nadomestni način ..."
@@ -12389,13 +12501,17 @@ msgctxt "#36532"
 msgid "Same as movie"
 msgstr "Isto kot film"
 
-msgctxt "#36533"
-msgid "Select how audio is downmixed, for example from 5.1 to 2.0: [Enabled] maintains the dynamic range of the original audio source when downmixed however volume will be lower [Disabled] maintains volume level of the original audio source however the dynamic range is compressed. Note - Dynamic range is the difference between the quietest and loudest sounds in a audio source."
-msgstr "Izberite, kako se združujejo zvočni kanali, na primer s 5.1 na 2.0: [Omogočeno] ohrani dinamični razpon izvirnega zvočnega vira po združevanju, vendar bo glasnost nižja; [Onemogočeno] ohrani glasnost izvirnega zvočnega vira, a zmanjša dinamični razpon. Opomba - Dinamični razpon je razlika med najtišjim in najglasnejšim zvokom iz vira."
-
 msgctxt "#36534"
 msgid "Specify additional libraries whose log messages are to be included in the log."
 msgstr "Določite dodatne knjižnice ki bodo vključene v zapisnik."
+
+msgctxt "#36535"
+msgid "Stereoscopic 3D mode of video"
+msgstr "Stereoskopski 3D način videa"
+
+msgctxt "#36536"
+msgid "Invert Stereoscopic 3D mode (flip eyes)"
+msgstr "Obraten stereoskopski 3D način videa (zamenjani očesi)"
 
 msgctxt "#36539"
 msgid "Changes the stereoscopic 3D mode of the user interface."
@@ -12416,6 +12532,10 @@ msgstr "Omogočite to možnost, da bodo dialogi glasnejši glede na ozadje pri z
 msgctxt "#36544"
 msgid "Enable hardware decoding of video files."
 msgstr "Omogočite strojno dekodiranje video datotek."
+
+msgctxt "#36545"
+msgid "Stereoscopic 3D depth of subtitles"
+msgstr "Stereoskopska 3D globina podnapisov"
 
 msgctxt "#36546"
 msgid "Sets the visual depth of subtitles for stereoscopic 3D videos. The higher the value, the closer the subtitles will appear to the viewer."
@@ -12616,3 +12736,7 @@ msgstr "900"
 msgctxt "#37030"
 msgid "Unlimited"
 msgstr "Neomejeno"
+
+msgctxt "#38010"
+msgid "GPU accelerated"
+msgstr "Pospešeno z GPU"

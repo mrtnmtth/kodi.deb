@@ -1924,9 +1924,6 @@
     <ClCompile Include="..\..\xbmc\filesystem\AddonsDirectory.cpp">
       <Filter>filesystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\xbmc\cores\paplayer\PCMCodec.cpp">
-      <Filter>cores\paplayer</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\xbmc\filesystem\AFPDirectory.cpp">
       <Filter>filesystem</Filter>
     </ClCompile>
@@ -2275,9 +2272,6 @@
       <Filter>cores\AudioEngine\Sinks</Filter>
     </ClCompile>
     <ClCompile Include="..\..\xbmc\cores\AudioEngine\Sinks\AESinkNULL.cpp">
-      <Filter>cores\AudioEngine\Sinks</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\xbmc\cores\AudioEngine\Sinks\AESinkProfiler.cpp">
       <Filter>cores\AudioEngine\Sinks</Filter>
     </ClCompile>
     <ClCompile Include="..\..\xbmc\cores\AudioEngine\Sinks\AESinkWASAPI.cpp">
@@ -3082,6 +3076,9 @@
     </ClCompile>
     <ClCompile Include="..\..\xbmc\video\videosync\VideoSyncD3D.cpp">
       <Filter>video\videosync</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\cores\DataCacheCore.cpp">
+      <Filter>cores</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -5200,9 +5197,6 @@
     <ClInclude Include="..\..\xbmc\filesystem\ZipFile.h">
       <Filter>filesystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\xbmc\cores\paplayer\PCMCodec.h">
-      <Filter>cores\paplayer</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\xbmc\XbmcContext.h" />
     <ClInclude Include="..\..\xbmc\filesystem\MemBufferCache.h">
       <Filter>filesystem</Filter>
@@ -5319,9 +5313,6 @@
       <Filter>cores\AudioEngine\Sinks</Filter>
     </ClInclude>
     <ClInclude Include="..\..\xbmc\cores\AudioEngine\Sinks\AESinkNULL.h">
-      <Filter>cores\AudioEngine\Sinks</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\xbmc\cores\AudioEngine\Sinks\AESinkProfiler.h">
       <Filter>cores\AudioEngine\Sinks</Filter>
     </ClInclude>
     <ClInclude Include="..\..\xbmc\cores\AudioEngine\Sinks\AESinkWASAPI.h">
@@ -6033,6 +6024,9 @@
     </ClInclude>
     <ClInclude Include="..\..\xbmc\video\videosync\VideoSync.h">
       <Filter>video\videosync</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\cores\DataCacheCore.h">
+      <Filter>cores</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

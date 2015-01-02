@@ -51,7 +51,7 @@ msgstr "Clima"
 
 msgctxt "#9"
 msgid "Kodi media center"
-msgstr "Kodi media center"
+msgstr "Kodi Media Center"
 
 msgctxt "#11"
 msgid "Monday"
@@ -243,31 +243,31 @@ msgstr "S"
 
 msgctxt "#80"
 msgid "SSW"
-msgstr "SSW"
+msgstr "SSO"
 
 msgctxt "#81"
 msgid "SW"
-msgstr "SW"
+msgstr "SO"
 
 msgctxt "#82"
 msgid "WSW"
-msgstr "WSW"
+msgstr "OSO"
 
 msgctxt "#83"
 msgid "W"
-msgstr "W"
+msgstr "O"
 
 msgctxt "#84"
 msgid "WNW"
-msgstr "WNW"
+msgstr "ONO"
 
 msgctxt "#85"
 msgid "NW"
-msgstr "NW"
+msgstr "NO"
 
 msgctxt "#86"
 msgid "NNW"
-msgstr "NNW"
+msgstr "NNO"
 
 msgctxt "#87"
 msgid "VAR"
@@ -647,7 +647,7 @@ msgstr "Selecionar todos"
 
 msgctxt "#189"
 msgid "Scanning media info"
-msgstr "Procurando informações da mídia"
+msgstr "Examinando por informações da mídia"
 
 msgctxt "#190"
 msgid "Save"
@@ -1238,8 +1238,8 @@ msgid "Year"
 msgstr "Ano"
 
 msgctxt "#346"
-msgid "Normalize levels on downmix"
-msgstr "Normalizar os níveis de downmix"
+msgid "Maintain original volume on downmix"
+msgstr "Mantenha o volume original no downmix"
 
 msgctxt "#347"
 msgid "DTS-HD capable receiver"
@@ -1299,7 +1299,7 @@ msgstr "Proteção de tela"
 
 msgctxt "#361"
 msgid "R. Slideshow"
-msgstr "Apresentação recursiva"
+msgstr "Apresentação de slides recursiva"
 
 msgctxt "#362"
 msgid "Screensaver dim level"
@@ -2473,6 +2473,10 @@ msgctxt "#679"
 msgid "Verbose logging for CEC library"
 msgstr "Registro detalhado para biblioteca CEC"
 
+msgctxt "#680"
+msgid "Verbose logging for VIDEO component"
+msgstr "Registro detalhado para o componente VÍDEO"
+
 msgctxt "#700"
 msgid "Cleaning up library"
 msgstr "Limpando a coleção"
@@ -2711,7 +2715,7 @@ msgstr "Procurando"
 
 msgctxt "#774"
 msgid "Slideshow folder"
-msgstr "Pasta de apresentação (slideshow)"
+msgstr "Pasta de apresentação de slides"
 
 msgctxt "#775"
 msgid "Network interface"
@@ -2815,11 +2819,15 @@ msgstr "Atualizar Coleção"
 
 msgctxt "#800"
 msgid "Music library needs to rescan tags from files."
-msgstr "É necessário reanalisar as etiquetas dos ficheiros da Biblioteca de música"
+msgstr "É necessário reexaminar as etiquetas dos arquivos da biblioteca de música"
 
 msgctxt "#801"
 msgid "Would you like to scan now?"
-msgstr "Você deseja escanear agora?"
+msgstr "Você deseja examinar agora?"
+
+msgctxt "#802"
+msgid "%s of %s available"
+msgstr "%s de %s disponível"
 
 msgctxt "#850"
 msgid "Invalid port number entered"
@@ -3023,7 +3031,7 @@ msgstr "Selecionar ícone de plug-in"
 
 msgctxt "#1045"
 msgid "Add-on settings"
-msgstr "Ajustes de addon"
+msgstr "Configurações do add-on"
 
 msgctxt "#1046"
 msgid "Access points"
@@ -3039,7 +3047,7 @@ msgstr "Usuário"
 
 msgctxt "#1049"
 msgid "Script settings"
-msgstr "Ajustes do Script"
+msgstr "Configurações do script"
 
 msgctxt "#1050"
 msgid "Singles"
@@ -3201,13 +3209,17 @@ msgctxt "#1260"
 msgid "Announce these services to other systems via Zeroconf"
 msgstr "Anunciar estes serviços para outros sistemas via Zeroconf"
 
+msgctxt "#1268"
+msgid "iOS 8 compatibility mode"
+msgstr "Modo de compatibilidade iOS 8"
+
 msgctxt "#1269"
 msgid "Allow volume control"
 msgstr "Permitir controle volume"
 
 msgctxt "#1270"
 msgid "Allow Kodi to receive AirPlay content"
-msgstr "Permitir ao Kodi receber conteúdo AirPlay"
+msgstr "Permitir ao Kodi receber conteúdo via AirPlay"
 
 msgctxt "#1271"
 msgid "Device name"
@@ -3236,6 +3248,90 @@ msgstr "Dispositivo de áudio personalizado"
 msgctxt "#1301"
 msgid "Custom passthrough device"
 msgstr "Dispositivo passthrough personalizado"
+
+msgctxt "#1375"
+msgid "Temperature"
+msgstr "Temperatura"
+
+msgctxt "#1376"
+msgid "Pressure"
+msgstr "Pressão"
+
+msgctxt "#1377"
+msgid "Proximity"
+msgstr "Proximidade"
+
+msgctxt "#1378"
+msgid "Intensity"
+msgstr "Intensidade"
+
+msgctxt "#1379"
+msgid "Ragged"
+msgstr "Irregular"
+
+msgctxt "#1380"
+msgid "Very"
+msgstr "Muito"
+
+msgctxt "#1381"
+msgid "Extreme"
+msgstr "Extrema"
+
+msgctxt "#1382"
+msgid "Whirls"
+msgstr "Turbilhões"
+
+msgctxt "#1383"
+msgid "Sky Is Clear"
+msgstr "Céu Limpo"
+
+msgctxt "#1384"
+msgid "Broken"
+msgstr "Indisponível"
+
+msgctxt "#1385"
+msgid "Tornado"
+msgstr "Tornado"
+
+msgctxt "#1386"
+msgid "Tropical"
+msgstr "Tropical"
+
+msgctxt "#1387"
+msgid "Hurricane"
+msgstr "Furacão "
+
+msgctxt "#1388"
+msgid "Cold"
+msgstr "Frio"
+
+msgctxt "#1389"
+msgid "Windy"
+msgstr "Ventoso"
+
+msgctxt "#1390"
+msgid "Settings"
+msgstr "Configurações"
+
+msgctxt "#1391"
+msgid "Breeze"
+msgstr "Brisa"
+
+msgctxt "#1392"
+msgid "Gentle"
+msgstr "Gentil"
+
+msgctxt "#1393"
+msgid "High wind, near gale"
+msgstr "Vento forte, perto de vendaval"
+
+msgctxt "#1394"
+msgid "Severe"
+msgstr "Severo"
+
+msgctxt "#1395"
+msgid "Violent"
+msgstr "Violento"
 
 msgctxt "#1396"
 msgid "Drifting"
@@ -3523,7 +3619,7 @@ msgstr "Configurações - Aparência - Ajustar Interface"
 
 msgctxt "#10011"
 msgid "Settings - Videos - Screen Calibration"
-msgstr "Configurações-  Vídeos - Ajustar Tela"
+msgstr "Configurações -  Vídeos - Ajustar Tela"
 
 msgctxt "#10012"
 msgid "Settings - Pictures"
@@ -3607,11 +3703,11 @@ msgstr "Navegador de complementos"
 
 msgctxt "#10041"
 msgid "Reset above settings to default"
-msgstr "Redefinir ajustes acima para o padrão"
+msgstr "Redefinir configurações acima para o padrão"
 
 msgctxt "#10042"
 msgid "Are you sure you want to reset the settings in this category?"
-msgstr "Você tem certeza que quer redefinir os ajustes desta categoria?"
+msgstr "Você tem certeza que quer redefinir as configurações desta categoria?"
 
 msgctxt "#10043"
 msgid "Help"
@@ -3623,7 +3719,7 @@ msgstr "Nenhuma ajuda disponível"
 
 msgctxt "#10045"
 msgid "Resets all the visible settings to their default values."
-msgstr "Redefine todos os ajustes visíveis para os seus valores originais."
+msgstr "Redefine todas as configurações visíveis para os seus valores originais."
 
 msgctxt "#10046"
 msgid "No categories available"
@@ -3663,7 +3759,7 @@ msgstr "Bloquear Ajustes"
 
 msgctxt "#10132"
 msgid "Content settings"
-msgstr "Ajustes de Conteúdos"
+msgstr "Configurações de conteúdo"
 
 msgctxt "#10134"
 msgid "Favourites"
@@ -4067,7 +4163,7 @@ msgstr "Mês/Dia"
 
 msgctxt "#12390"
 msgid "System uptime"
-msgstr "Uptime do sistema"
+msgstr "Tempo de atividade do sistema"
 
 msgctxt "#12391"
 msgid "Minutes"
@@ -4083,11 +4179,11 @@ msgstr "Dias"
 
 msgctxt "#12394"
 msgid "Total uptime"
-msgstr "Uptime total"
+msgstr "Tempo de atividade total"
 
 msgctxt "#12395"
 msgid "Battery level"
-msgstr "Nível Bateria"
+msgstr "Nível da bateria"
 
 msgctxt "#12396"
 msgid "Auto updates: On"
@@ -4251,7 +4347,7 @@ msgstr "Falhou para %s"
 
 msgctxt "#13050"
 msgid "Running low on battery"
-msgstr "Bateria fraca"
+msgstr "Bateria com pouca carga"
 
 msgctxt "#13100"
 msgid "Flicker filter"
@@ -4631,11 +4727,11 @@ msgstr "Ícones recursivos"
 
 msgctxt "#13317"
 msgid "View slideshow"
-msgstr "Ver apresentação"
+msgstr "Ver apresentação de slides"
 
 msgctxt "#13318"
 msgid "Recursive slideshow"
-msgstr "Apresentação recursiva"
+msgstr "Apresentação de slides recursiva"
 
 msgctxt "#13319"
 msgid "Randomise"
@@ -4743,11 +4839,11 @@ msgstr "Adicionar à fila"
 
 msgctxt "#13348"
 msgid "Search IMDb..."
-msgstr "Pesquisar no IMDb..."
+msgstr "Buscar no IMDb..."
 
 msgctxt "#13349"
 msgid "Scan for new content"
-msgstr "Pesquisar por novas informações"
+msgstr "Examinar por novos conteúdos"
 
 msgctxt "#13350"
 msgid "Current playlist"
@@ -4763,7 +4859,7 @@ msgstr "Examinar item para a coleção"
 
 msgctxt "#13353"
 msgid "Stop scanning"
-msgstr "Parar procura"
+msgstr "Parar de examinar"
 
 msgctxt "#13354"
 msgid "Render method"
@@ -4987,7 +5083,7 @@ msgstr "VDPAU"
 
 msgctxt "#13422"
 msgid "Start slideshow here"
-msgstr "Iniciar apresentação aqui"
+msgstr "Iniciar apresentação de slides aqui"
 
 msgctxt "#13423"
 msgid "Remember for this path"
@@ -5056,10 +5152,6 @@ msgstr "Permitir aceleração por hardware (amcodec)"
 msgctxt "#13439"
 msgid "Allow hardware acceleration (MediaCodec)"
 msgstr "Permitir aceleração por hardware (MediaCodec)"
-
-msgctxt "#13440"
-msgid "Allow multi threaded software decoding"
-msgstr "Permitir decodificação por software de múltiplos segmentos"
 
 msgctxt "#13441"
 msgid "Use MPEG-2 VDPAU"
@@ -5463,15 +5555,15 @@ msgstr "%2.1f dB"
 
 msgctxt "#14055"
 msgid "Use background scanning"
-msgstr "Usar busca em segundo plano"
+msgstr "Examinar por novos conteúdos em segundo plano"
 
 msgctxt "#14056"
 msgid "Stop scan"
-msgstr "Parar busca"
+msgstr "Parar de examinar"
 
 msgctxt "#14057"
 msgid "Not possible while scanning for media info"
-msgstr "Impossível enquanto estiver buscando informações da mídia"
+msgstr "Impossível enquanto estiver examinando por informações da mídia"
 
 msgctxt "#14058"
 msgid "Film grain effect"
@@ -5578,7 +5670,7 @@ msgid "Playback"
 msgstr "Execução"
 
 msgctxt "#14087"
-msgid "DVDs"
+msgid "Discs"
 msgstr "Discos"
 
 msgctxt "#14088"
@@ -5636,6 +5728,18 @@ msgstr "Parar de ripar o CD"
 msgctxt "#14101"
 msgid "Acceleration"
 msgstr "Aceleração"
+
+msgctxt "#14102"
+msgid "Blu-ray playback mode"
+msgstr "Modo de Reprodução Blu-ray"
+
+msgctxt "#14103"
+msgid "Play main movie"
+msgstr "Reproduzir vídeo principal"
+
+msgctxt "#14104"
+msgid "Show simplified menu"
+msgstr "Apresentar menu do disco"
 
 msgctxt "#15012"
 msgid "Unavailable source"
@@ -6092,6 +6196,22 @@ msgstr "VAAPI Motion Adaptive"
 msgctxt "#16329"
 msgid "VAAPI Motion Compensated"
 msgstr "VAAPI Motion Compensated"
+
+msgctxt "#16330"
+msgid "MMAL - Advanced"
+msgstr "MMAL - Avançado"
+
+msgctxt "#16331"
+msgid "MMAL - Advanced (Half)"
+msgstr "MMAL - Avançado (Half)"
+
+msgctxt "#16332"
+msgid "MMAL - Bob"
+msgstr "MMAL - Bob"
+
+msgctxt "#16333"
+msgid "MMAL - Bob (Half)"
+msgstr "MMAL - Bob (Half)"
 
 msgctxt "#16400"
 msgid "Post-processing"
@@ -6575,7 +6695,7 @@ msgstr "Tamanho do Disco"
 
 msgctxt "#19117"
 msgid "Search for channels"
-msgstr "Procurar por canais"
+msgstr "Buscar por canais"
 
 msgctxt "#19118"
 msgid "Cannot use PVR functions while searching."
@@ -6583,7 +6703,7 @@ msgstr "Não e possível usar funções PVR ao fazer uma busca."
 
 msgctxt "#19119"
 msgid "On which server do you want to search?"
-msgstr "Em qual servidor você deseja procurar?"
+msgstr "Em qual servidor você deseja buscar?"
 
 msgctxt "#19120"
 msgid "Client number"
@@ -6667,7 +6787,7 @@ msgstr "Nome do novo grupo"
 
 msgctxt "#19140"
 msgid "Search..."
-msgstr "Procurar..."
+msgstr "Buscar..."
 
 msgctxt "#19141"
 msgid "Group"
@@ -6675,7 +6795,7 @@ msgstr "Grupo"
 
 msgctxt "#19142"
 msgid "Search guide"
-msgstr "Guia de pesquisa"
+msgstr "Guia de busca"
 
 msgctxt "#19143"
 msgid "Group management"
@@ -6771,7 +6891,7 @@ msgstr "Informações do PVR"
 
 msgctxt "#19167"
 msgid "Scan for missing icons"
-msgstr "Escanear por ícones faltantes"
+msgstr "Examinar por ícones faltantes"
 
 msgctxt "#19169"
 msgid "Hide video information box"
@@ -7186,8 +7306,8 @@ msgid "Add-on for the backend to be able to use PVR."
 msgstr "Add-on para poder usar o PVR."
 
 msgctxt "#19274"
-msgid "Please visit xbmc.org/pvr to learn more."
-msgstr "Por favor visite xbmc.org/pvr para maiores informações."
+msgid "Please visit http://kodi.wiki/view/PVR to learn more."
+msgstr "Por favor visite http://kodi.wiki/view/PVR para maiores detalhes."
 
 msgctxt "#19275"
 msgid "Conflict warning"
@@ -7235,7 +7355,7 @@ msgstr "Procurar por logo do canal"
 
 msgctxt "#19286"
 msgid "Searching for channel icons"
-msgstr "Procurando por logos de canais"
+msgstr "Buscando por logos de canais"
 
 msgctxt "#19287"
 msgid "All channels"
@@ -8409,6 +8529,10 @@ msgctxt "#20261"
 msgid "Apple Filing Protocol (AFP)"
 msgstr "Apple Filing Protocol (AFP)"
 
+msgctxt "#20262"
+msgid "Zeroconf Browser"
+msgstr "Navegador Zeroconf"
+
 msgctxt "#20300"
 msgid "Web server directory (HTTP)"
 msgstr "Diretório do servidor Web (HTTP)"
@@ -8839,7 +8963,7 @@ msgstr "Exibir Fanart nas coleções de video e música"
 
 msgctxt "#20415"
 msgid "Scanning for new content"
-msgstr "Procurando por conteúdo novo"
+msgstr "Buscando por conteúdo novo"
 
 msgctxt "#20416"
 msgid "First aired"
@@ -8879,7 +9003,7 @@ msgstr "Falso"
 
 msgctxt "#20425"
 msgid "Fanart slideshow"
-msgstr "Apresentação de Fanart"
+msgstr "Apresentação de fanarts"
 
 msgctxt "#20426"
 msgid "Export to a single file or separate"
@@ -9871,7 +9995,7 @@ msgstr "Posição da legenda"
 
 msgctxt "#22007"
 msgid "OpenGL vendor:"
-msgstr "Fabricante OpenGL:"
+msgstr "Provedor do OpenGL:"
 
 msgctxt "#22008"
 msgid "OpenGL renderer:"
@@ -9883,11 +10007,11 @@ msgstr "Versão OpenGL:"
 
 msgctxt "#22010"
 msgid "GPU temperature:"
-msgstr "Temperatura GPU:"
+msgstr "Temperatura da GPU:"
 
 msgctxt "#22011"
 msgid "CPU temperature:"
-msgstr "Temperatura CPU:"
+msgstr "Temperatura da CPU:"
 
 msgctxt "#22012"
 msgid "Total memory"
@@ -9935,11 +10059,11 @@ msgstr "Incluir arquivos de vídeo nas listagens"
 
 msgctxt "#22023"
 msgid "DirectX vendor:"
-msgstr "Fabricante DirectX:"
+msgstr "Provedor do DirectX:"
 
 msgctxt "#22024"
 msgid "Direct3D version:"
-msgstr "Versão Direct3D:"
+msgstr "Versão do Direct3D:"
 
 msgctxt "#22030"
 msgid "Font"
@@ -10419,7 +10543,7 @@ msgstr "Add-on é incompatível devido a dependências não satisfeitas."
 
 msgctxt "#24105"
 msgid "Pause when searching for subtitles"
-msgstr "Pausar quando procurando por legendas"
+msgstr "Pausar quando buscar por legendas"
 
 msgctxt "#24106"
 msgid "Specify where downloaded subtitles should be saved, the same location as the video or a custom location."
@@ -10427,7 +10551,7 @@ msgstr "Especifique onde legendas transferidas serão salvas, no mesmo local do 
 
 msgctxt "#24107"
 msgid "Searching for subtitles ..."
-msgstr "Procurando por legendas..."
+msgstr "Buscando por legendas..."
 
 msgctxt "#24108"
 msgid "%d subtitles found"
@@ -10509,6 +10633,18 @@ msgctxt "#24127"
 msgid "Automatically download first subtitle from the search result list"
 msgstr "Automaticamente efetue download da legenda sincronizada da lista de resultados da busca"
 
+msgctxt "#24128"
+msgid "Configuration has been moved"
+msgstr "Configuração foi movida"
+
+msgctxt "#24129"
+msgid "The configuration of XBMC has been moved to the new location for Kodi. Please refer to http://kodi.wiki/view/Migration - this message will not be shown again!"
+msgstr "A configuração do XBMC foi movida para um novo local para o Kodi. Por favor verifique em http://kodi.wiki/view/Migration - Este alerta não será mostrado novamente!"
+
+msgctxt "#24999"
+msgid "Hide incompatible"
+msgstr "Ocultar incompatíveis"
+
 msgctxt "#25000"
 msgid "Notifications"
 msgstr "Notificações"
@@ -10522,8 +10658,8 @@ msgid "Select from all titles ..."
 msgstr "Selecione a partir de todos os títulos ..."
 
 msgctxt "#25003"
-msgid "Show Blu-ray menus"
-msgstr "Apresentar menus Blu-ray"
+msgid "Show Blu-ray menu"
+msgstr "Apresentar menu de discos Blu-ray"
 
 msgctxt "#25004"
 msgid "Play main title: %d"
@@ -10712,6 +10848,14 @@ msgstr "Final de semana"
 msgctxt "#33038"
 msgid "%s day"
 msgstr "Dia %s"
+
+msgctxt "#33039"
+msgid "%s Streams"
+msgstr "Streams %s"
+
+msgctxt "#33040"
+msgid "%s Devices"
+msgstr "Dispositivos %s"
 
 msgctxt "#33049"
 msgid "Alert"
@@ -11115,7 +11259,7 @@ msgstr "Nome"
 
 msgctxt "#35503"
 msgid "Vendor"
-msgstr "Fabricante"
+msgstr "Provedor"
 
 msgctxt "#35504"
 msgid "Product ID"
@@ -12099,19 +12243,19 @@ msgstr "Nenhuma informação disponível ainda."
 
 msgctxt "#36311"
 msgid "Category containing settings for how picture slideshows are handled."
-msgstr "Categoria contém os ajustes de como imagens nos slideshows são manuseadas."
+msgstr "Categoria contém os ajustes de como imagens nas apresentações de slides são manuseadas."
 
 msgctxt "#36312"
 msgid "Select the amount of time that each image is displayed in a slideshow."
-msgstr "Selecionar a quantidade de tempo a exibir cada imagem numa apresentação de slides."
+msgstr "Selecionar a quantidade de tempo que cada imagem é exibida numa apresentação de slides."
 
 msgctxt "#36313"
 msgid "Images in a slideshow will pan and zoom while displayed."
-msgstr "Imagens na apresentação de imagens irão apresentar efeito pan e zoom enquanto mostradas."
+msgstr "Imagens na apresentação de slides serão exibidas em panorama com zoom."
 
 msgctxt "#36314"
 msgid "View slideshow images in a random order."
-msgstr "Exibir imagens de slides numa ordem aleatória."
+msgstr "Exibir imagens de apresentações de slides numa ordem aleatória."
 
 msgctxt "#36315"
 msgid "Section that contains weather related settings."
@@ -12541,10 +12685,6 @@ msgctxt "#36422"
 msgid "Enable hardware video decode using AMLogic decoder."
 msgstr "Ativar decodificação de vídeo por hardware usando decoder AMLogic."
 
-msgctxt "#36423"
-msgid "Enables frame-multi-threaded software decoding (less reliable than the default single threaded mode)."
-msgstr "Ativar a decodificação de segmentos múltiplos por software (Menos confiável do que o modo padrão de decodificação única)."
-
 msgctxt "#36424"
 msgid "Select what will happen when an EPG item is selected: [Show context menu] will trigger the contextual menu from where you can choose further actions; [Switch to channel] will instantly tune to the related channel; [Show information] will display a detailed information with plot and further options; [Record] will create a recording timer for the selected item."
 msgstr "lecione o que vai acontecer quando um item é selecionado EPG: [Mostrar menu de contexto] irá acionar o menu contextual aonde você poderá escolher novas ações; [Mudar para o canal] irá imediatamente sintonizar o canal selecionado; [Mostrar informações] irá mostrar informações detalhadas como enredo e outras opções; [Gravar] criará um temporizador de gravação para o item selecionado."
@@ -12584,6 +12724,14 @@ msgstr "Selecione o layout do teclado virtual."
 msgctxt "#36433"
 msgid "If enabled VAAPI render method is prefered. This puts less load on the CPU but driver may hang!"
 msgstr "Se ativado o método de renderização VAAPI como preferido. Isto coloca menos carga na CPU mas o driver poderá vir a travar!"
+
+msgctxt "#36434"
+msgid "Allow hardware acceleration (MMAL)"
+msgstr "Permitir aceleração por hardware (MMAL)"
+
+msgctxt "#36435"
+msgid "Use DVDPlayer for decoding of video files with MMAL acceleration."
+msgstr "Usar o DVDPlayer para decodificação de arquivos de vídeos com aceleração MMAL."
 
 msgctxt "#36500"
 msgid "Stereoscopic 3D mode (current)"
@@ -12666,8 +12814,8 @@ msgid "Same as movie"
 msgstr "Igual ao do filme"
 
 msgctxt "#36533"
-msgid "Select how audio is downmixed, for example from 5.1 to 2.0: [Enabled] maintains the dynamic range of the original audio source when downmixed however volume will be lower [Disabled] maintains volume level of the original audio source however the dynamic range is compressed. Note - Dynamic range is the difference between the quietest and loudest sounds in a audio source."
-msgstr "Escolha como o áudio é misturado, por exemplo de 5.1 para 2.0: [Ativado] mantém a gama dinâmica da fonte de áudio original quando mixados no entanto o volume será menor [Desativado] mantém o nível da fonte de áudio original, porém a faixa dinâmica é comprimida. Nota - Faixa dinâmica é a diferença entre os sons mais silenciosos e o mais alto em uma fonte de áudio."
+msgid "Select how audio is downmixed, for example from 5.1 to 2.0: [Enabled] maintains volume level of the original audio source however the dynamic range is compressed. [Disabled] maintains the dynamic range of the original audio source when downmixed however volume will be lower. Note - Dynamic range is the difference between the quietest and loudest sounds in an audio source. Enable this setting if movie dialogues are barely audible."
+msgstr "Selecione como o áudio é convertido, por exemplo de 5.1 para 2.0: [Ativado] mantém o nível de volume da fonte de áudio original, porém a gama dinâmica é comprimida. [Disabled] mantém a faixa dinâmica da fonte de áudio original quando convertido no entanto o volume será menor. Nota - Faixa dinâmica é a diferença entre os sons mais silenciosos e mais alto em uma fonte de áudio. Ative essa configuração se os diálogos do vídeo forem quase inaudíveis."
 
 msgctxt "#36534"
 msgid "Specify additional libraries whose log messages are to be included in the log."
@@ -12680,6 +12828,10 @@ msgstr "Modo de vídeo estereoscópico 3D"
 msgctxt "#36536"
 msgid "Invert Stereoscopic 3D mode (flip eyes)"
 msgstr "Modo estereoscópico 3D invertido"
+
+msgctxt "#36537"
+msgid "Select in which mode stereoscopic 3D videos will be played. [Ask me] will show a dialog to select the desired mode for each playback. [Preferred mode] will use of the preferred mode specified in the 'System -> Video Hardware' section of the settings. [Monoscopic (2D)] will play the video in mono/2D. [Ignore] disables any stereoscopic 3D processing and handling"
+msgstr "Selecione em qual modo estereoscópico 3D os vídeos serão reproduzidos. [ Pergunte-me ] irá mostrar uma caixa de diálogo para selecionar o modo desejado para cada reprodução. [ Modo Preferencial ] vai usar o modo preferido especificado em 'Sistema -> Hardware Vídeo' seção das configurações. [ Monoscópica (2D) ] irá reproduzir o vídeo em mono/2D. [ Ignorar] desativa qualquer processamento 3D estereoscópico e manipulação"
 
 msgctxt "#36538"
 msgid "[Enabled] Switch GUI (and some TVs) back to 2D mode when playback ended. [Disabled] GUI and TV will stay in stereoscopic 3D mode. For video playlists the stereoscopic 3D mode won't change between videos, not even for non stereoscopic ones."
@@ -12724,6 +12876,10 @@ msgstr "Usar texturas de maior qualidade para as capas e fanart (usa mais memór
 msgctxt "#36548"
 msgid "Limits resolution of GUI to save memory. Does not affect video playback. Requires restart."
 msgstr "Limitar a resolução da interface gráfica para economizar memória. Não afeta a reprodução de vídeo. Requer reinicializar."
+
+msgctxt "#36549"
+msgid "Use iOS8 compatible AirPlay support. If you have trouble with older iOS devices detecting Kodi as a valid target try switching this off. This option takes effect on the next restart of Kodi only!"
+msgstr "Use suporte AirPlay compatível com iOS 8. Se você tiver problemas com dispositivos iOS mais antigos para detectar o Kodi como um destino válido, tente desligar este recurso. Esta opção tem efeito apenas na próxima reinicialização do Kodi!"
 
 msgctxt "#36600"
 msgid "Category containing the settings for how the music library is handled."
@@ -12916,3 +13072,11 @@ msgstr "900"
 msgctxt "#37030"
 msgid "Unlimited"
 msgstr "Ilimitado"
+
+msgctxt "#37031"
+msgid "Specifies how Blu-rays should be opened/played back. Disc menus are not fully supported yet and may cause problems."
+msgstr "Especifica como discos de bds devem ser abertos/reproduzidos. Menus de disco ainda não são suportados inteiramente e podem apresentar problemas."
+
+msgctxt "#38010"
+msgid "GPU accelerated"
+msgstr "Acelerado pela GPU"

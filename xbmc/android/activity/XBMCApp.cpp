@@ -71,6 +71,7 @@
 #include "android/jni/Cursor.h"
 #include "android/jni/ContentResolver.h"
 #include "android/jni/MediaStore.h"
+#include "android/jni/Build.h"
 #include "CompileInfo.h"
 
 #define GIGABYTES       1073741824
@@ -343,7 +344,7 @@ int CXBMCApp::android_printf(const char *format, ...)
   // For use before CLog is setup by XBMC_Run()
   va_list args;
   va_start(args, format);
-  int result = __android_log_vprint(ANDROID_LOG_VERBOSE, "XBMC", format, args);
+  int result = __android_log_vprint(ANDROID_LOG_VERBOSE, "Kodi", format, args);
   va_end(args);
   return result;
 }
@@ -376,7 +377,9 @@ std::vector<androidPackage> CXBMCApp::GetApplications()
       newPackage.packageName = packageList.get(i).packageName;
       newPackage.packageLabel = GetPackageManager().getApplicationLabel(packageList.get(i)).toString();
       CJNIIntent intent = GetPackageManager().getLaunchIntentForPackage(newPackage.packageName);
-      if (!intent || !intent.hasCategory("android.intent.category.LAUNCHER"))
+      if (!intent && CJNIBuild::SDK_INT >= 21)
+        intent = GetPackageManager().getLeanbackLaunchIntentForPackage(newPackage.packageName);
+      if (!intent)
         continue;
 
       m_applications.push_back(newPackage);
@@ -426,6 +429,8 @@ bool CXBMCApp::StartActivity(const string &package, const string &intent, const 
     GetPackageManager().getLaunchIntentForPackage(package) :
     CJNIIntent(intent);
 
+  if (!newIntent && CJNIBuild::SDK_INT >= 21)
+    newIntent = GetPackageManager().getLeanbackLaunchIntentForPackage(package);
   if (!newIntent)
     return false;
 
@@ -619,13 +624,13 @@ void CXBMCApp::SetupEnv()
   if (xbmcHome.empty())
   {
     std::string cacheDir = getCacheDir().getAbsolutePath();
-    setenv("APP_BIN_HOME", (cacheDir + "/apk/assets").c_str(), 0);
-    setenv("APP_HOME", (cacheDir + "/apk/assets").c_str(), 0);
+    setenv("KODI_BIN_HOME", (cacheDir + "/apk/assets").c_str(), 0);
+    setenv("KODI_HOME", (cacheDir + "/apk/assets").c_str(), 0);
   }
   else
   {
-    setenv("APP_BIN_HOME", (xbmcHome + "/assets").c_str(), 0);
-    setenv("APP_HOME", (xbmcHome + "/assets").c_str(), 0);
+    setenv("KODI_BIN_HOME", (xbmcHome + "/assets").c_str(), 0);
+    setenv("KODI_HOME", (xbmcHome + "/assets").c_str(), 0);
   }
 
   std::string externalDir = CJNISystem::getProperty("xbmc.data", "");
@@ -642,7 +647,7 @@ void CXBMCApp::SetupEnv()
   if (!externalDir.empty())
     setenv("HOME", externalDir.c_str(), 0);
   else
-    setenv("HOME", getenv("APP_TEMP"), 0);
+    setenv("HOME", getenv("KODI_TEMP"), 0);
 }
 
 std::string CXBMCApp::GetFilenameFromIntent(const CJNIIntent &intent)

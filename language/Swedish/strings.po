@@ -691,7 +691,7 @@ msgstr "Webbgränssnitt"
 
 msgctxt "#200"
 msgid "Audio encoders"
-msgstr "Ljud-omkodare"
+msgstr "Ljud-avkodare"
 
 msgctxt "#202"
 msgid "Tagline"
@@ -1238,8 +1238,8 @@ msgid "Year"
 msgstr "År"
 
 msgctxt "#346"
-msgid "Normalize levels on downmix"
-msgstr "Normalisera nivåerna vid nedmixning"
+msgid "Maintain original volume on downmix"
+msgstr "Behåll originalvolym vid nedmixning"
 
 msgctxt "#347"
 msgid "DTS-HD capable receiver"
@@ -2473,6 +2473,10 @@ msgctxt "#679"
 msgid "Verbose logging for CEC library"
 msgstr "Detaljerad loggning för CEC bibliotek"
 
+msgctxt "#680"
+msgid "Verbose logging for VIDEO component"
+msgstr "Utförlig loggning av VIDEO-komponent"
+
 msgctxt "#700"
 msgid "Cleaning up library"
 msgstr "Städar bibliotek"
@@ -2820,6 +2824,10 @@ msgstr "Musikbiblioteket behöver skanna om filtaggarna."
 msgctxt "#801"
 msgid "Would you like to scan now?"
 msgstr "Vill du skanna nu?"
+
+msgctxt "#802"
+msgid "%s of %s available"
+msgstr "%s av %s tillgängligt"
 
 msgctxt "#850"
 msgid "Invalid port number entered"
@@ -3201,6 +3209,10 @@ msgctxt "#1260"
 msgid "Announce these services to other systems via Zeroconf"
 msgstr "Presentera dessa tjänster till andra system via Zeroconf"
 
+msgctxt "#1268"
+msgid "iOS 8 compatibility mode"
+msgstr "iOS 8 kompabilitetsläge"
+
 msgctxt "#1269"
 msgid "Allow volume control"
 msgstr "Tillåt volymkontroll"
@@ -3236,6 +3248,90 @@ msgstr "Anpassad ljudenhet"
 msgctxt "#1301"
 msgid "Custom passthrough device"
 msgstr "Anpassad ljudutgångsenhet för genomströmning"
+
+msgctxt "#1375"
+msgid "Temperature"
+msgstr "Temperatur"
+
+msgctxt "#1376"
+msgid "Pressure"
+msgstr "Tryck"
+
+msgctxt "#1377"
+msgid "Proximity"
+msgstr "Närhet"
+
+msgctxt "#1378"
+msgid "Intensity"
+msgstr "Intensitet"
+
+msgctxt "#1379"
+msgid "Ragged"
+msgstr "Ruggig"
+
+msgctxt "#1380"
+msgid "Very"
+msgstr "Väldigt"
+
+msgctxt "#1381"
+msgid "Extreme"
+msgstr "Extrem"
+
+msgctxt "#1382"
+msgid "Whirls"
+msgstr "Virvlar"
+
+msgctxt "#1383"
+msgid "Sky Is Clear"
+msgstr "Himlen är klar"
+
+msgctxt "#1384"
+msgid "Broken"
+msgstr "Trasigt"
+
+msgctxt "#1385"
+msgid "Tornado"
+msgstr "Tornado"
+
+msgctxt "#1386"
+msgid "Tropical"
+msgstr "Tropisk"
+
+msgctxt "#1387"
+msgid "Hurricane"
+msgstr "Orkan"
+
+msgctxt "#1388"
+msgid "Cold"
+msgstr "Kallt"
+
+msgctxt "#1389"
+msgid "Windy"
+msgstr "Blåsigt"
+
+msgctxt "#1390"
+msgid "Settings"
+msgstr "Buffertinställningar"
+
+msgctxt "#1391"
+msgid "Breeze"
+msgstr "Bris"
+
+msgctxt "#1392"
+msgid "Gentle"
+msgstr "Mild"
+
+msgctxt "#1393"
+msgid "High wind, near gale"
+msgstr "Hård vind, nästan storm"
+
+msgctxt "#1394"
+msgid "Severe"
+msgstr "Allvarlig"
+
+msgctxt "#1395"
+msgid "Violent"
+msgstr "Våldsam"
 
 msgctxt "#1396"
 msgid "Drifting"
@@ -5057,10 +5153,6 @@ msgctxt "#13439"
 msgid "Allow hardware acceleration (MediaCodec)"
 msgstr "Tillåt hårdvaruacceleration (MediaCodec)"
 
-msgctxt "#13440"
-msgid "Allow multi threaded software decoding"
-msgstr "Tillåt flertrådig mjukvaruavkodning"
-
 msgctxt "#13441"
 msgid "Use MPEG-2 VDPAU"
 msgstr "Använd MPEG-2 VDPAU"
@@ -5578,8 +5670,8 @@ msgid "Playback"
 msgstr "Uppspelning"
 
 msgctxt "#14087"
-msgid "DVDs"
-msgstr "DVD'er"
+msgid "Discs"
+msgstr "Skivor"
 
 msgctxt "#14088"
 msgid "Play DVDs automatically"
@@ -5636,6 +5728,18 @@ msgstr "Avbryt CD-rippning"
 msgctxt "#14101"
 msgid "Acceleration"
 msgstr "Acceleration"
+
+msgctxt "#14102"
+msgid "Blu-ray playback mode"
+msgstr "Blu-ray uppspelningsläge"
+
+msgctxt "#14103"
+msgid "Play main movie"
+msgstr "Spela huvudfilm"
+
+msgctxt "#14104"
+msgid "Show simplified menu"
+msgstr "Visa förenklad meny"
 
 msgctxt "#15012"
 msgid "Unavailable source"
@@ -6092,6 +6196,22 @@ msgstr "VAAPI Motion Adaptive"
 msgctxt "#16329"
 msgid "VAAPI Motion Compensated"
 msgstr "VAAPI Motion Compensated"
+
+msgctxt "#16330"
+msgid "MMAL - Advanced"
+msgstr "MMAL - Avancerad"
+
+msgctxt "#16331"
+msgid "MMAL - Advanced (Half)"
+msgstr "MMAL - Avancerad (halv)"
+
+msgctxt "#16332"
+msgid "MMAL - Bob"
+msgstr "MMAL - Bob"
+
+msgctxt "#16333"
+msgid "MMAL - Bob (Half)"
+msgstr "MMAL - Bob (halv)"
 
 msgctxt "#16400"
 msgid "Post-processing"
@@ -7186,8 +7306,8 @@ msgid "Add-on for the backend to be able to use PVR."
 msgstr "Tillägg för backend för att kunna använda PVR."
 
 msgctxt "#19274"
-msgid "Please visit xbmc.org/pvr to learn more."
-msgstr "Var god besök xbmc.org/pvr för att lära dig mer."
+msgid "Please visit http://kodi.wiki/view/PVR to learn more."
+msgstr "Gå till http://kodi.wiki/view/PVR för mer information."
 
 msgctxt "#19275"
 msgid "Conflict warning"
@@ -8408,6 +8528,10 @@ msgstr "Secure Shell (SSH/SFTP)"
 msgctxt "#20261"
 msgid "Apple Filing Protocol (AFP)"
 msgstr "Apple Filing Protocol (AFP)"
+
+msgctxt "#20262"
+msgid "Zeroconf Browser"
+msgstr "Zeroconf Läsare"
 
 msgctxt "#20300"
 msgid "Web server directory (HTTP)"
@@ -10509,6 +10633,18 @@ msgctxt "#24127"
 msgid "Automatically download first subtitle from the search result list"
 msgstr "Ladda ner första undertexten i söklistan automatiskt "
 
+msgctxt "#24128"
+msgid "Configuration has been moved"
+msgstr "Konfigurationen har flyttats"
+
+msgctxt "#24129"
+msgid "The configuration of XBMC has been moved to the new location for Kodi. Please refer to http://kodi.wiki/view/Migration - this message will not be shown again!"
+msgstr "Konfigurationen för Kodi har flyttats till den nya platsen för Kodi. Se http://kodi.wiki/view/Migration - detta meddelande kommer inte att visas igen!"
+
+msgctxt "#24999"
+msgid "Hide incompatible"
+msgstr "Dölj  ej kompatibla"
+
 msgctxt "#25000"
 msgid "Notifications"
 msgstr "Notifieringar"
@@ -10522,8 +10658,8 @@ msgid "Select from all titles ..."
 msgstr "Välj från alla titlar ..."
 
 msgctxt "#25003"
-msgid "Show Blu-ray menus"
-msgstr "Visa Blu-ray-menyer"
+msgid "Show Blu-ray menu"
+msgstr "Visa Blu-ray meny"
 
 msgctxt "#25004"
 msgid "Play main title: %d"
@@ -10712,6 +10848,14 @@ msgstr "Helg"
 msgctxt "#33038"
 msgid "%s day"
 msgstr "%s dag"
+
+msgctxt "#33039"
+msgid "%s Streams"
+msgstr "%s strömmar"
+
+msgctxt "#33040"
+msgid "%s Devices"
+msgstr "%s enheter"
 
 msgctxt "#33049"
 msgid "Alert"
@@ -12541,10 +12685,6 @@ msgctxt "#36422"
 msgid "Enable hardware video decode using AMLogic decoder."
 msgstr "Aktivera AMLogic-hårdvaruavkodning av video."
 
-msgctxt "#36423"
-msgid "Enables frame-multi-threaded software decoding (less reliable than the default single threaded mode)."
-msgstr "Aktiverar frame-flertråds mjukvaruavkodning (mindre pålitlig än det vanliga enkeltrådiga läget)."
-
 msgctxt "#36424"
 msgid "Select what will happen when an EPG item is selected: [Show context menu] will trigger the contextual menu from where you can choose further actions; [Switch to channel] will instantly tune to the related channel; [Show information] will display a detailed information with plot and further options; [Record] will create a recording timer for the selected item."
 msgstr "Ange vad som skall ske när ett EPG-objekt är valt: [Visa meny] - visar undermeny med ytterligare funktioner; [Byt till kanal] - byter till den valda kanalen; [Visa information] - visar detaljerad information med innehåll och ytterligare funktioner; [Spela in] - skapar en inspelningstimer för det valda objektet"
@@ -12585,6 +12725,22 @@ msgctxt "#36433"
 msgid "If enabled VAAPI render method is prefered. This puts less load on the CPU but driver may hang!"
 msgstr "Om VAAPI-rendering är aktiverad, så pressas CPU'n inte lika mycket men drivrutinen kan hänga sig."
 
+msgctxt "#36434"
+msgid "Allow hardware acceleration (MMAL)"
+msgstr "Tillåt hårdvaruacceleration (MMAL)"
+
+msgctxt "#36435"
+msgid "Use DVDPlayer for decoding of video files with MMAL acceleration."
+msgstr "Använd DVDPlayer för avkodning av videofiler med MMAL-acceleration."
+
+msgctxt "#36500"
+msgid "Stereoscopic 3D mode (current)"
+msgstr "Stereoskopiskt 3D-läge (nuvarande)"
+
+msgctxt "#36501"
+msgid "Stereoscopic 3D mode"
+msgstr "Stereoskopiskt 3D-läge"
+
 msgctxt "#36502"
 msgid "Disabled"
 msgstr "Inaktiverad"
@@ -12613,6 +12769,14 @@ msgctxt "#36508"
 msgid "Hardware Based"
 msgstr "Hårdvarubaserad"
 
+msgctxt "#36509"
+msgid "Monoscopic (2D)"
+msgstr "Monoskopiskt (2D)"
+
+msgctxt "#36520"
+msgid "Playback mode of stereoscopic 3D videos"
+msgstr "Uppspelningsläge av stereoskopiska 3D-videor"
+
 msgctxt "#36521"
 msgid "Ask me"
 msgstr "Fråga mig"
@@ -12629,6 +12793,18 @@ msgctxt "#36525"
 msgid "Same as movie (autodetect)"
 msgstr "Samma som filmen (autodetektera)"
 
+msgctxt "#36526"
+msgid "Disable stereoscopic 3D mode when playback ended"
+msgstr "Inaktivera stereoskopiskt 3D-läge när uppspelning har slutförts"
+
+msgctxt "#36527"
+msgid "Select playback mode"
+msgstr "Välj uppspelningsläge"
+
+msgctxt "#36528"
+msgid "Select stereoscopic 3D mode"
+msgstr "Välj stereoskopiskt 3D-läge"
+
 msgctxt "#36531"
 msgid "Select alternate mode..."
 msgstr "Välj alternativt läge..."
@@ -12638,16 +12814,36 @@ msgid "Same as movie"
 msgstr "Samma som filmen"
 
 msgctxt "#36533"
-msgid "Select how audio is downmixed, for example from 5.1 to 2.0: [Enabled] maintains the dynamic range of the original audio source when downmixed however volume will be lower [Disabled] maintains volume level of the original audio source however the dynamic range is compressed. Note - Dynamic range is the difference between the quietest and loudest sounds in a audio source."
-msgstr "Ange hur ljudet skall nedmixas, exempelvi från 5.1 till 2.0: [Aktiverat] - bibehåller originalets dynamiska omfång vid nedmixning men ljudvolymen kommer bli lägre [Avaktiverat] - ljudvolymen bibehålls men det dynamiska omfånget kommer komprimeras. Notera - Dynamiskt omfång är skillnaden mellan det lägsta och högsta ljudet i en ljukälla."
+msgid "Select how audio is downmixed, for example from 5.1 to 2.0: [Enabled] maintains volume level of the original audio source however the dynamic range is compressed. [Disabled] maintains the dynamic range of the original audio source when downmixed however volume will be lower. Note - Dynamic range is the difference between the quietest and loudest sounds in an audio source. Enable this setting if movie dialogues are barely audible."
+msgstr "Välj hur ljud ska nedmixas, exempelvis från 5.1 till 2.0 [Aktiverat] behåller ljudvolymen av originalljudkällan men den dynamiska räckvidden blir komprimerad. [Inaktiverat] behåller den dynamiska räckvidden av originalljudkällan när den är nedmixad men ljudvolymen blir lägre. Notera - Den dynamiska räckvidden är skillnaden mellan lägsta och högsta ljudet i en ljudkälla. Aktivera den här inställningen om filmdialoger knappt kan höras."
 
 msgctxt "#36534"
 msgid "Specify additional libraries whose log messages are to be included in the log."
 msgstr "Specifiera ytterligare bibliotek, vars logg-meddelanden som ska inkluderas i loggen."
 
+msgctxt "#36535"
+msgid "Stereoscopic 3D mode of video"
+msgstr "Stereoskopiskt 3D-läge av video"
+
+msgctxt "#36536"
+msgid "Invert Stereoscopic 3D mode (flip eyes)"
+msgstr "Invertera stereoskopiskt 3D-läge (flip eyes)"
+
+msgctxt "#36537"
+msgid "Select in which mode stereoscopic 3D videos will be played. [Ask me] will show a dialog to select the desired mode for each playback. [Preferred mode] will use of the preferred mode specified in the 'System -> Video Hardware' section of the settings. [Monoscopic (2D)] will play the video in mono/2D. [Ignore] disables any stereoscopic 3D processing and handling"
+msgstr "Välj vilket läge stereoskopisk 3D-video ska spelas. [Fråga mig] kommer att visa ett meddelande för önskat läge för varje spelning. [Valt läge] kommer att använda föredraget läge specificierat i 'System -> Video Hårdvara' sektionen av inställningar. [Monoskopisk (2D)] kommer att spela video i mono/2D. [Ignorera] inaktiverar all stereoskopisk 3D-bearbetning och hantering"
+
+msgctxt "#36538"
+msgid "[Enabled] Switch GUI (and some TVs) back to 2D mode when playback ended. [Disabled] GUI and TV will stay in stereoscopic 3D mode. For video playlists the stereoscopic 3D mode won't change between videos, not even for non stereoscopic ones."
+msgstr "[Aktiverat] Ändra GUI (och vissa TV) tillbaka till 2D-läge när spelning har avslutats. [Inaktiverat] GUI och TV kommer att stå i stereoskopiskt 3D-läge. För videospellistor kommer inte stereoskopisk 3D-läge att ändras mellan videos, inte ens för icke stereoskopiska."
+
 msgctxt "#36539"
 msgid "Changes the stereoscopic 3D mode of the user interface."
 msgstr "Ändrar det stereoskopiska 3D-läget i användargränssnittet."
+
+msgctxt "#36540"
+msgid "The preferred mode in which stereoscopic 3D media such as videos should be played."
+msgstr "Föredraget läge i hur stereoskopisk 3D-media som tex videos ska spelas."
 
 msgctxt "#36541"
 msgid "Allows volume control from AirPlay clients."
@@ -12665,6 +12861,10 @@ msgctxt "#36544"
 msgid "Enable hardware decoding of video files."
 msgstr "Aktivera hårdvaruavkodning av videofiler."
 
+msgctxt "#36545"
+msgid "Stereoscopic 3D depth of subtitles"
+msgstr "Stereoskopiskt 3D-ljup på undertexter"
+
 msgctxt "#36546"
 msgid "Sets the visual depth of subtitles for stereoscopic 3D videos. The higher the value, the closer the subtitles will appear to the viewer."
 msgstr "Anger det visuella djupet för undertexter i stereoskopiska 3D-filmer. Ju högre värde, ju närmare upplever betraktaren att undertexterna hamnar."
@@ -12676,6 +12876,10 @@ msgstr "Använd högkvalitetstexturer för fanart och omslag (använder mer minn
 msgctxt "#36548"
 msgid "Limits resolution of GUI to save memory. Does not affect video playback. Requires restart."
 msgstr "Begränsar upplösningen av gränssnittet för att spara minne. Påverkar inte videouppspelningen. Kräver omstart."
+
+msgctxt "#36549"
+msgid "Use iOS8 compatible AirPlay support. If you have trouble with older iOS devices detecting Kodi as a valid target try switching this off. This option takes effect on the next restart of Kodi only!"
+msgstr "Använd iOS8 kompatibel med AirPlay stöd. Om du har problem med att äldre iOS-enheter inte identifierar Kodi som ett giltigt mål, försök med att stänga av detta. Den här inställningen kräver omstart av Kodi."
 
 msgctxt "#36600"
 msgid "Category containing the settings for how the music library is handled."
@@ -12868,3 +13072,11 @@ msgstr "900"
 msgctxt "#37030"
 msgid "Unlimited"
 msgstr "Obegränsat"
+
+msgctxt "#37031"
+msgid "Specifies how Blu-rays should be opened/played back. Disc menus are not fully supported yet and may cause problems."
+msgstr "Specificerar hur Blu-rays ska öppnas/spelas. Skivmenyer har inte fullt stöd ännu och kan medföra problem."
+
+msgctxt "#38010"
+msgid "GPU accelerated"
+msgstr "GPU-accelererad"

@@ -689,6 +689,10 @@ msgctxt "#199"
 msgid "Web interface"
 msgstr "ส่วนติดต่อผ่านเว็บ"
 
+msgctxt "#200"
+msgid "Audio encoders"
+msgstr "ตัวถอดรหัสเสียง"
+
 msgctxt "#202"
 msgid "Tagline"
 msgstr "คำโปรย"
@@ -848,6 +852,10 @@ msgstr "เต็มจอ"
 msgctxt "#245"
 msgid "Sizing: (%i,%i)->(%i,%i) (Zoom x%2.2f) AR:%2.2f:1 (Pixels: %2.2f:1) (VShift: %2.2f)"
 msgstr "Sizing: (%i,%i)->(%i,%i) (Zoom x%2.2f) AR:%2.2f:1 (Pixels: %2.2f:1) (VShift: %2.2f)"
+
+msgctxt "#246"
+msgid "Monitor"
+msgstr "จอแสดงผล"
 
 msgctxt "#247"
 msgid "Scripts"
@@ -1089,6 +1097,10 @@ msgctxt "#309"
 msgid "User interface language"
 msgstr "ภาษาของส่วนติดต่อผู้ใช้"
 
+msgctxt "#310"
+msgid "Keyboard layouts"
+msgstr "คีย์บอร์ด เลเอาท์"
+
 msgctxt "#312"
 msgid "(0=auto)"
 msgstr "(0=อัตโนมัติ)"
@@ -1226,8 +1238,8 @@ msgid "Year"
 msgstr "ปี"
 
 msgctxt "#346"
-msgid "Normalize levels on downmix"
-msgstr "ปรับระดับเสียงให้ปกติ เมื่อรวมช่องเสียง"
+msgid "Maintain original volume on downmix"
+msgstr "รักษาระดับความดัง เมื่อรวมช่องเสียง"
 
 msgctxt "#347"
 msgid "DTS-HD capable receiver"
@@ -1985,6 +1997,10 @@ msgctxt "#548"
 msgid "Downmix multichannel audio to stereo"
 msgstr "รวมสัญญาณเสียงหลายช่องไปยังระบบสเตอริโอ"
 
+msgctxt "#549"
+msgid "Number"
+msgstr "หมายเลข"
+
 msgctxt "#550"
 msgid "Sort by: %s"
 msgstr "เรียงลำดับ: %s"
@@ -2401,9 +2417,17 @@ msgctxt "#665"
 msgid "Compression level"
 msgstr "ระดับการบีบอัด"
 
+msgctxt "#666"
+msgid "Enable component-specific logging"
+msgstr "เปิดใช้งาน การบันทึกในเฉพาะส่วนประกอบ"
+
 msgctxt "#667"
 msgid "Enable Dolby Digital transcoding"
 msgstr "เปิดใช้ ส่งผ่านการเข้ารหัส Dolby Digital"
+
+msgctxt "#668"
+msgid "Specify component-specific logging..."
+msgstr "ระบุ ส่วนประกอบเฉพาะ ที่จะบันทึก"
 
 msgctxt "#669"
 msgid "Verbose logging for SMB library"
@@ -2436,6 +2460,22 @@ msgstr "ใช้ถ้อยคำมากเกินไปในการบ
 msgctxt "#676"
 msgid "Verbose logging for AUDIO component"
 msgstr "ใช้ถ้อยคำมากเกินไปในการบันทึกล็อค AUDIO component"
+
+msgctxt "#677"
+msgid "Verbose logging for AirTunes library"
+msgstr "บันทึกข้อมูลอย่างละเอียด สำหรับคลังข้อมูล AirTunes"
+
+msgctxt "#678"
+msgid "Verbose logging for UPnP components"
+msgstr "บันทึกข้อมูลอย่างละเอียด สำหรับส่วนประกอบ UPnP"
+
+msgctxt "#679"
+msgid "Verbose logging for CEC library"
+msgstr "บันทึกข้อมูลอย่างละเอียด สำหรับคลังข้อมูล CEC"
+
+msgctxt "#680"
+msgid "Verbose logging for VIDEO component"
+msgstr "บันทึกข้อมูลอย่างละเอียด สำหรับส่วนประกอบวิดีโอ"
 
 msgctxt "#700"
 msgid "Cleaning up library"
@@ -2784,6 +2824,10 @@ msgstr "คลังข้อมูลเพลง ต้องสำรวจ t
 msgctxt "#801"
 msgid "Would you like to scan now?"
 msgstr "คุณต้องการที่จะสแกนตอนนี้หรือไม่?"
+
+msgctxt "#802"
+msgid "%s of %s available"
+msgstr "%s of %s ทีมีอยู่"
 
 msgctxt "#850"
 msgid "Invalid port number entered"
@@ -3165,6 +3209,10 @@ msgctxt "#1260"
 msgid "Announce these services to other systems via Zeroconf"
 msgstr "ประกาศการให้บริการผ่านทาง Zeroconf"
 
+msgctxt "#1268"
+msgid "iOS 8 compatibility mode"
+msgstr "โหมดความเข้ากันได้กับ iOS 8"
+
 msgctxt "#1269"
 msgid "Allow volume control"
 msgstr "อนุญาตให้มีการควบคุมระดับเสียง"
@@ -3200,6 +3248,86 @@ msgstr "ปรับแต่งอุปกรณ์เสียง"
 msgctxt "#1301"
 msgid "Custom passthrough device"
 msgstr "ปรับแต่งอุปกรณ์ส่งผ่านเสียง"
+
+msgctxt "#1375"
+msgid "Temperature"
+msgstr "อุณหภูมิ"
+
+msgctxt "#1376"
+msgid "Pressure"
+msgstr "ความกดอากาศ"
+
+msgctxt "#1377"
+msgid "Proximity"
+msgstr "ความใกล้ชิด"
+
+msgctxt "#1378"
+msgid "Intensity"
+msgstr "ความหนาแน่น"
+
+msgctxt "#1380"
+msgid "Very"
+msgstr "มาก"
+
+msgctxt "#1381"
+msgid "Extreme"
+msgstr "สูงสุด"
+
+msgctxt "#1382"
+msgid "Whirls"
+msgstr "พายุ"
+
+msgctxt "#1383"
+msgid "Sky Is Clear"
+msgstr "ท้องฟ้าโปร่ง"
+
+msgctxt "#1384"
+msgid "Broken"
+msgstr "เสียหาย"
+
+msgctxt "#1385"
+msgid "Tornado"
+msgstr "พายุทอร์นาโด"
+
+msgctxt "#1386"
+msgid "Tropical"
+msgstr "พายุโซนร้อน"
+
+msgctxt "#1387"
+msgid "Hurricane"
+msgstr "พายุเฮอริเคน"
+
+msgctxt "#1388"
+msgid "Cold"
+msgstr "หนาวเย็น"
+
+msgctxt "#1389"
+msgid "Windy"
+msgstr "ลมแรง"
+
+msgctxt "#1390"
+msgid "Settings"
+msgstr "การตั้งค่า"
+
+msgctxt "#1391"
+msgid "Breeze"
+msgstr "มีลม"
+
+msgctxt "#1392"
+msgid "Gentle"
+msgstr "เบาๆ"
+
+msgctxt "#1393"
+msgid "High wind, near gale"
+msgstr "ลมแรง, ใกล้พายุ"
+
+msgctxt "#1394"
+msgid "Severe"
+msgstr "สภาพเลวร้าย"
+
+msgctxt "#1395"
+msgid "Violent"
+msgstr "รุนแรง"
 
 msgctxt "#1396"
 msgid "Drifting"
@@ -5021,9 +5149,21 @@ msgctxt "#13439"
 msgid "Allow hardware acceleration (MediaCodec)"
 msgstr "เปิดใช้การเร่งความเร็วฮาร์ดแวร์ (MediaCodec)"
 
-msgctxt "#13440"
-msgid "Allow multi threaded software decoding"
-msgstr "ยอมให้ใช้การถอดรหัสด้วยซอฟท์แวร์ แบบหลายงาน"
+msgctxt "#13441"
+msgid "Use MPEG-2 VDPAU"
+msgstr "ใช้ MPEG-2 VDPAU"
+
+msgctxt "#13442"
+msgid "Enable this option to use hardware acceleration for MPEG-(1/2) codecs. If disabled the CPU will be used instead. Older Radeon Cards tend to segfault with this enabled."
+msgstr "เปิดใช้ตัวเลือกนี้ เพื่อใข้การเร่งความเร็วด้วยฮาร์ดแวร์ สำหรับการเข้ารหัส Mpeg-(1/2). ถ้าปิดใช้งาน จะใช้ซีพียูแทน. การ์ด Radeon รุ่นเก่า อาจมีการแสดงบางส่วนผิดพลาด ถ้าเปิดใช้ส่วนนี้."
+
+msgctxt "#13443"
+msgid "Use MPEG-4 VDPAU"
+msgstr "ใช้งาน MPEG-4 VDPAU"
+
+msgctxt "#13444"
+msgid "Enable this option to use hardware acceleration for the MPEG-4 codec. If disabled the CPU will be used instead. Some ION Hardware has problems with this being enabled by default."
+msgstr "เปิดใช้ตัวเลือกนี้ เพื่อใข้การเร่งความเร็วด้วยฮาร์ดแวร์ สำหรับการเข้ารหัส Mpeg-4. ถ้าปิดใช้งาน จะใช้ซีพียูแทน. ฮาร์ดแวร์ ION บางรุ่น อาจมีปัญหากับการเปิดใช้ส่วนนี้โดยค่าเริ่มต้น."
 
 msgctxt "#13445"
 msgid "Use VC-1 VDPAU"
@@ -5032,6 +5172,22 @@ msgstr "ใช้งาน VC-1 VDPAU"
 msgctxt "#13446"
 msgid "Enable this option to use hardware acceleration for VC-1 based codecs. If disabled the CPU will be used instead. AMD Hardware with VDPAU cannot decode VC-1 Simple."
 msgstr "เปิดใช้ตัวเลือกนี้ เพื่อใข้การเร่งความเร็วด้วยฮาร์ดแวร์ สำหรับการเข้ารหัสหลัก VC-1. ถ้าปิดใช้งาน จะใช้ซีพียูแทน. ฮาร์ดแวร์ AMD ที่ใช้ VDPAU ไม่สามารถถอดรหัส VC-1 แบบพื้นๆได้."
+
+msgctxt "#13447"
+msgid "Use MPEG-2 VAAPI"
+msgstr "ใช้งาน MPEG-2 VAAPI"
+
+msgctxt "#13448"
+msgid "Enable this option to use hardware acceleration for MPEG-(1/2) codecs. If disabled the CPU will be used instead. Some MPEG-2 Videos might have green artifacts."
+msgstr "เปิดใช้ตัวเลือกนี้ เพื่อใข้การเร่งความเร็วด้วยฮาร์ดแวร์ สำหรับการเข้ารหัส Mpeg-(1/2). ถ้าปิดใช้งาน จะใช้ซีพียูแทน. วิดีโอ Mpeg-2 บางส่วน อาจมีการแตกสีเขียว."
+
+msgctxt "#13449"
+msgid "Use MPEG-4 VAAPI"
+msgstr "ใช้งาน MPEG-4 VAAPI"
+
+msgctxt "#13450"
+msgid "Enable this option to use hardware acceleration for the MPEG-4 codec. If disabled the CPU will be used instead."
+msgstr "เปิดใช้ตัวเลือกนี้ เพื่อใข้การเร่งความเร็วด้วยฮาร์ดแวร์ สำหรับการเข้ารหัส Mpeg-4. ถ้าปิดใช้งาน จะใช้ซีพียูแทน."
 
 msgctxt "#13451"
 msgid "Use VC-1 VAAPI"
@@ -5052,6 +5208,18 @@ msgstr "ซอฟแวร์"
 msgctxt "#13456"
 msgid "Hardware accelerated"
 msgstr "เร่งความเร็วฮาร์ดแวร์แล้ว"
+
+msgctxt "#13457"
+msgid "Prefer VAAPI render method"
+msgstr "กำหนดไห้ใช้ กระบวนการแสดงผลด้วย VAAPI"
+
+msgctxt "#13458"
+msgid "Allow hardware acceleration (OMXPlayer)"
+msgstr "เปิดใช้การเร่งความเร็วฮาร์ดแวร์ (OMXPlayer)"
+
+msgctxt "#13459"
+msgid "Use OMXPlayer for decoding of video files."
+msgstr "ใช้ OMXPlayer ในการถอดรหัสสำหรับไฟล์วิดีโอ."
 
 msgctxt "#13500"
 msgid "A/V sync method"
@@ -5377,6 +5545,10 @@ msgctxt "#14053"
 msgid "GUI filters"
 msgstr "GUI filters"
 
+msgctxt "#14054"
+msgid "%2.1f dB"
+msgstr "%2.1f dB"
+
 msgctxt "#14055"
 msgid "Use background scanning"
 msgstr "ใช้การสำรวจแบบเบื้องหลัง"
@@ -5494,8 +5666,8 @@ msgid "Playback"
 msgstr "เล่นเพลง"
 
 msgctxt "#14087"
-msgid "DVDs"
-msgstr "ดีวีดี"
+msgid "Discs"
+msgstr "แผ่นดิสก์"
 
 msgctxt "#14088"
 msgid "Play DVDs automatically"
@@ -5552,6 +5724,18 @@ msgstr "หยุดการริป แผ่นซีดี"
 msgctxt "#14101"
 msgid "Acceleration"
 msgstr "การเร่งความเร็ว"
+
+msgctxt "#14102"
+msgid "Blu-ray playback mode"
+msgstr "โหมดการเล่น บลูเรย์"
+
+msgctxt "#14103"
+msgid "Play main movie"
+msgstr "เล่นภาพยนตร์หลัก"
+
+msgctxt "#14104"
+msgid "Show simplified menu"
+msgstr "แสดงเมนูแบบง่าย"
 
 msgctxt "#15012"
 msgid "Unavailable source"
@@ -5997,6 +6181,34 @@ msgctxt "#16326"
 msgid "DXVA-HD"
 msgstr "DXVA-HD"
 
+msgctxt "#16327"
+msgid "VAAPI Bob"
+msgstr "VAAPI Bob"
+
+msgctxt "#16328"
+msgid "VAAPI Motion Adaptive"
+msgstr "VAAPI ปรับการเคลื่อนไหว"
+
+msgctxt "#16329"
+msgid "VAAPI Motion Compensated"
+msgstr "VAAPI ชดเชยการเคลื่อนไหว"
+
+msgctxt "#16330"
+msgid "MMAL - Advanced"
+msgstr "MMAL - ขั้นสูง"
+
+msgctxt "#16331"
+msgid "MMAL - Advanced (Half)"
+msgstr "MMAL - ขั้นสูง (ครึ่ง)"
+
+msgctxt "#16332"
+msgid "MMAL - Bob"
+msgstr "MMAL - Bob"
+
+msgctxt "#16333"
+msgid "MMAL - Bob (Half)"
+msgstr "MMAL - Bob (ครึ่ง)"
+
 msgctxt "#16400"
 msgid "Post-processing"
 msgstr "การประมวลผลหลัง"
@@ -6028,6 +6240,10 @@ msgstr "แยกคำค้นหาโดยใช้ AND, OR และ / ห
 msgctxt "#19002"
 msgid "or use phrases to find an exact match, like \"The wizard of Oz\"."
 msgstr "หรือใช้วลีที่จะหาจับคู่ที่ตรงกันเช่น \"Wizard of Oz\""
+
+msgctxt "#19003"
+msgid "Find similar"
+msgstr "พบวิดีโอที่คล้ายกัน"
 
 msgctxt "#19004"
 msgid "Importing EPG from clients"
@@ -6421,9 +6637,17 @@ msgctxt "#19102"
 msgid "Please switch to another channel."
 msgstr "โปรดเปลี่ยนไปยังช่องอื่น"
 
+msgctxt "#19103"
+msgid "Go to channel"
+msgstr "ไปยังช่องรายการ"
+
 msgctxt "#19104"
 msgid "Enter the name of the folder for the recording"
 msgstr "ป้อนชื่อโฟลเดอร์สำหรับการบันทึก"
+
+msgctxt "#19105"
+msgid "Please select a channel"
+msgstr "กรุณาเลือกช่องรายการ"
 
 msgctxt "#19106"
 msgid "Next timer on"
@@ -7061,6 +7285,10 @@ msgctxt "#19269"
 msgid "Do not show 'connection lost' warnings"
 msgstr "ไม่แสดงคำเตือน 'การเชื่อมต่อที่ขาดหาย'"
 
+msgctxt "#19270"
+msgid "Group Items"
+msgstr "จัดกลุ่มรายการ"
+
 msgctxt "#19271"
 msgid "No PVR Add-ons could be found"
 msgstr "ไม่มี ส่วนเสริม PVR ที่สามารถค้นพบ"
@@ -7074,8 +7302,8 @@ msgid "Add-on for the backend to be able to use PVR."
 msgstr "ส่วนเสริม เพื่อให้ backend สามารถใช้งาน PVR ได้."
 
 msgctxt "#19274"
-msgid "Please visit xbmc.org/pvr to learn more."
-msgstr "กรุณาเยี่ยมชม xbmc.org/pvr เพื่อเรียนรู้เพิ่มเติม"
+msgid "Please visit http://kodi.wiki/view/PVR to learn more."
+msgstr "กรุณาเยี่ยมชม http://kodi.wiki/view/PVR เพื่อเรียนรู้เพิ่มเติม"
 
 msgctxt "#19275"
 msgid "Conflict warning"
@@ -7121,9 +7349,17 @@ msgctxt "#19285"
 msgid "Browse for icon"
 msgstr "เรียกดูไอคอน"
 
+msgctxt "#19286"
+msgid "Searching for channel icons"
+msgstr "ค้นหา ไอคอนช่องรายการ"
+
 msgctxt "#19287"
 msgid "All channels"
 msgstr "ช่องรายการทั้งหมด"
+
+msgctxt "#19288"
+msgid "Foreground"
+msgstr "เบื้องหน้า"
 
 msgctxt "#19499"
 msgid "Other/Unknown"
@@ -8289,6 +8525,10 @@ msgctxt "#20261"
 msgid "Apple Filing Protocol (AFP)"
 msgstr "Apple Filing Protocol (AFP)"
 
+msgctxt "#20262"
+msgid "Zeroconf Browser"
+msgstr "ตัวเรียกดู Zeroconf"
+
 msgctxt "#20300"
 msgid "Web server directory (HTTP)"
 msgstr "Web server directory (HTTP)"
@@ -9405,6 +9645,10 @@ msgctxt "#21469"
 msgid "%s to %s"
 msgstr "%s to %s"
 
+msgctxt "#21470"
+msgid "%s [%d]"
+msgstr "%s [%d]"
+
 msgctxt "#21602"
 msgid "(External)"
 msgstr "(ภายนอก)"
@@ -10221,6 +10465,22 @@ msgctxt "#24080"
 msgid "Try to reconnect?"
 msgstr "ลองเชื่อมต่ออีกครั้ง"
 
+msgctxt "#24081"
+msgid "Helper Add-ons"
+msgstr "ส่วนเสริม ตัวช่วยเหลือ"
+
+msgctxt "#24082"
+msgid "Add-on libraries"
+msgstr "คลังข้อมูล ส่วนเสริม"
+
+msgctxt "#24083"
+msgid "Information libraries"
+msgstr "คลังข้อมูล รายละเอียด"
+
+msgctxt "#24084"
+msgid "Visualisation libraries"
+msgstr "คลังข้อมูล การแสดงแสงสี"
+
 msgctxt "#24089"
 msgid "Add-on restarts"
 msgstr "เริ่ม ส่วนเสริม ใหม่"
@@ -10369,6 +10629,18 @@ msgctxt "#24127"
 msgid "Automatically download first subtitle from the search result list"
 msgstr "ดาวน์โหลดบทบรรยายแรกจากผลการค้นหาอัตโนมัติ"
 
+msgctxt "#24128"
+msgid "Configuration has been moved"
+msgstr "การกำหนดค่าได้ถูกย้าย"
+
+msgctxt "#24129"
+msgid "The configuration of XBMC has been moved to the new location for Kodi. Please refer to http://kodi.wiki/view/Migration - this message will not be shown again!"
+msgstr "การกำหนดค่าของ XBMC ได้ถูกย้ายไปยังตำแห่งใหม่สำหรับ Kodi โปรดดูอ้างอิง http://kodi.wiki/view/Migration - ข้อความนี้จะไม่ปรากฏอีก!"
+
+msgctxt "#24999"
+msgid "Hide incompatible"
+msgstr "ซ่อน ที่ไม่รองรับ"
+
 msgctxt "#25000"
 msgid "Notifications"
 msgstr "การแจ้งเตือน"
@@ -10382,7 +10654,7 @@ msgid "Select from all titles ..."
 msgstr "เลือกจากชื่อเรื่องทั้งหมด ..."
 
 msgctxt "#25003"
-msgid "Show Blu-ray menus"
+msgid "Show Blu-ray menu"
 msgstr "แสดง เมนูบลูเรย์"
 
 msgctxt "#25004"
@@ -10572,6 +10844,14 @@ msgstr "สุดสัปดาห์"
 msgctxt "#33038"
 msgid "%s day"
 msgstr "%s วัน"
+
+msgctxt "#33039"
+msgid "%s Streams"
+msgstr "%s กระแสข้อมูล"
+
+msgctxt "#33040"
+msgid "%s Devices"
+msgstr "%s อุปกรณ์"
 
 msgctxt "#33049"
 msgid "Alert"
@@ -12033,6 +12313,14 @@ msgctxt "#36329"
 msgid "Define the webserver port."
 msgstr "กำหนด พอร์ต เว็บเซิร์ฟเวอร์."
 
+msgctxt "#36330"
+msgid "Define the webserver username. This only takes effect when both the username and the password are set."
+msgstr "กำหนดชื่อผู้ใช้ของเว็บเซิร์ฟเวอร์ ซึ่งจะมีผลก็ต่อเมื่อ ทั้งชื่อผู้ใช้และรหัสผ่าน ได้ถูกกำหนดค่า"
+
+msgctxt "#36331"
+msgid "Define the webserver password. This only takes effect when both the username and the password are set."
+msgstr "กำหนดรหัสผ่านของเว็บเซิร์ฟเวอร์ ซึ่งจะมีผลก็ต่อเมื่อ ทั้งชื่อผู้ใช้และรหัสผ่าน ได้ถูกกำหนดค่า"
+
 msgctxt "#36332"
 msgid "Select between web interfaces installed via the Add-on Manager."
 msgstr "เลือกใช้ส่วนติดต่อผ่านเว็บ ที่ได้ติดตั้งผ่าน ตัวจัดการ ส่วนเสริม."
@@ -12281,6 +12569,10 @@ msgctxt "#36393"
 msgid "Folder used to save screenshots taken within Kodi."
 msgstr "โฟลเดอร์ที่ใช้ในการบันทึกภาพหน้าจอ ที่จับได้ใน Kodi."
 
+msgctxt "#36394"
+msgid "Enables log messages from additional libraries to be included in the log."
+msgstr "เปิดใช้ข้อความบันทึกจุดบกพร่องจากคลังข้อมูลเพิ่มเติม ที่จะรวมเข้าในบันทึกการแก้ไขจุดบกพร่อง."
+
 msgctxt "#36395"
 msgid "Category containing settings for the master lock function."
 msgstr "หมวดหมู่ที่ประกอบด้วยการตั้งค่า สำหรับการทำงานของมาสเตอร์ล็อค."
@@ -12389,10 +12681,6 @@ msgctxt "#36422"
 msgid "Enable hardware video decode using AMLogic decoder."
 msgstr "เปิดใช้งาน การถอดรหัสวิดีโอด้วยฮาร์ดแวร์ โดยใช้ ตัวถอดรหัส AMLogic."
 
-msgctxt "#36423"
-msgid "Enables frame-multi-threaded software decoding (less reliable than the default single threaded mode)."
-msgstr "ใช้การถอดรหัส หลายงานในแต่ละเฟรม ด้วยซอฟท์แวร์ (เชื่อถือได้น้อยกว่าค่าเริ่มต้นคือ โหมดงานเดี่ยว)."
-
 msgctxt "#36424"
 msgid "Select what will happen when an EPG item is selected: [Show context menu] will trigger the contextual menu from where you can choose further actions; [Switch to channel] will instantly tune to the related channel; [Show information] will display a detailed information with plot and further options; [Record] will create a recording timer for the selected item."
 msgstr "เลือกการกระทำเมื่อรายการ EPG ถูกเลือก: [แสดงเมนูเนื้อหา] จะเปิดเมนูเนื้อหาจากการกระทำที่คุณสามารถเลือกใช้ต่อไป; [เปลียนไปยังช่องรายการ] จะปรับไปยังช่องรายการนั้นทันที; [แสดงข้อมูล] จะแสดงรายละเอียด ที่ประกอบด้วยเนื้อเรื่องย่อและตัวเลือกเพิ่มเติม; [บันทึก] จะสร้างตัวตั้งเวลาบันทึก สำหรับรายการที่เลือก."
@@ -12425,6 +12713,30 @@ msgctxt "#36431"
 msgid "Defines whether video decoding should be performed in software (requires more CPU) or with hardware acceleration where possible."
 msgstr "ปรับแต่ง ว่าการถอดรหัสวิดีโอจะถูกดำเนินการด้วยซอฟท์แวร์ (ใช้ ซีพียู มากขึ้น) หรือด้วยการเร่งความเร็วด้วยฮาร์ดแวร์ เมื่อเป็นไปได้."
 
+msgctxt "#36432"
+msgid "Select virtual keyboard layouts."
+msgstr "เลือกการจัดวางของคีย์บอร์ดเสมือน"
+
+msgctxt "#36433"
+msgid "If enabled VAAPI render method is prefered. This puts less load on the CPU but driver may hang!"
+msgstr "ถ้าเปิดการเลือกใช้กระบวนการแปลงภาพด้วย VAAPI ที่จะทำให้ใช้ซีพียูลดลง แต่ไดรเวอร์อาจค้างได้!"
+
+msgctxt "#36434"
+msgid "Allow hardware acceleration (MMAL)"
+msgstr "เปิดใช้การเร่งความเร็วฮาร์ดแวร์ (MMAL)"
+
+msgctxt "#36435"
+msgid "Use DVDPlayer for decoding of video files with MMAL acceleration."
+msgstr "ใช้ DVDPlayer ในการถอดรหัสของแฟ้มวิดีโอ ด้วยการเร่งความเร็ว MMAL"
+
+msgctxt "#36500"
+msgid "Stereoscopic 3D mode (current)"
+msgstr "โหมดการแยกภาพ 3 มิติ (ปัจจุบัน)"
+
+msgctxt "#36501"
+msgid "Stereoscopic 3D mode"
+msgstr "โหมดการแยกภาพ 3 มิติ"
+
 msgctxt "#36502"
 msgid "Disabled"
 msgstr "ปิดการใช้งาน"
@@ -12453,6 +12765,14 @@ msgctxt "#36508"
 msgid "Hardware Based"
 msgstr "ใช้ฮาร์ดแวร์"
 
+msgctxt "#36509"
+msgid "Monoscopic (2D)"
+msgstr "มุมมองเดียว (2 มิติ)"
+
+msgctxt "#36520"
+msgid "Playback mode of stereoscopic 3D videos"
+msgstr "โหมดการเล่น ของการแยกภาพวิดีโอ 3 มิติ"
+
 msgctxt "#36521"
 msgid "Ask me"
 msgstr "ถามฉัน"
@@ -12469,6 +12789,14 @@ msgctxt "#36525"
 msgid "Same as movie (autodetect)"
 msgstr "แบบเดียวกับภาพยนตร์ (ตรวจสอบอัตโนมัติ)"
 
+msgctxt "#36526"
+msgid "Disable stereoscopic 3D mode when playback ended"
+msgstr "เลิกใช้ โหมดการแยกภาพ 3 มิติ เมื่อจบการเล่น"
+
+msgctxt "#36527"
+msgid "Select playback mode"
+msgstr "เลือกโหมดการเล่น"
+
 msgctxt "#36531"
 msgid "Select alternate mode..."
 msgstr "เลือกโหมดอื่น..."
@@ -12476,10 +12804,6 @@ msgstr "เลือกโหมดอื่น..."
 msgctxt "#36532"
 msgid "Same as movie"
 msgstr "แบบเดียวกับภาพยนตร์"
-
-msgctxt "#36533"
-msgid "Select how audio is downmixed, for example from 5.1 to 2.0: [Enabled] maintains the dynamic range of the original audio source when downmixed however volume will be lower [Disabled] maintains volume level of the original audio source however the dynamic range is compressed. Note - Dynamic range is the difference between the quietest and loudest sounds in a audio source."
-msgstr "เลือกวิธีการรวมช่องสัญญาณเสียง, ตัวอย่างเช่น จาก 5.1 ไปยัง 2.0: [เปิดใช้งาน] ยังคงช่วงไดนามิคของแหล่งกำเนิดเสียงเดิมเมื่อรวมช่องสัญญาณเสียง แต่ความดังจะลดลง [ปิดใช้งาน] รักษาระดับความดังของเสียงเดิม แต่ช่วงไดนามิคจะถูกบีบอัด. หมายเหตุ - ช่วงไดนามิกคือความแตกต่างระหว่างเสียงเงียบที่สุดและดังที่สุดในเสียงต้นฉบับ."
 
 msgctxt "#36539"
 msgid "Changes the stereoscopic 3D mode of the user interface."
@@ -12548,6 +12872,22 @@ msgstr "ตอน"
 msgctxt "#36907"
 msgid "episodes"
 msgstr "ตอน"
+
+msgctxt "#36910"
+msgid "set"
+msgstr "ตั้งค่า"
+
+msgctxt "#36911"
+msgid "sets"
+msgstr "ตั้งค่า"
+
+msgctxt "#36912"
+msgid "video"
+msgstr "วิดีโอ"
+
+msgctxt "#36913"
+msgid "videos"
+msgstr "วิดีโอ"
 
 msgctxt "#36914"
 msgid "music"

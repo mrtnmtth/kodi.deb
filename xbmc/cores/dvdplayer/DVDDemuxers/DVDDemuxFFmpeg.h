@@ -141,13 +141,15 @@ protected:
   std::string GetStereoModeFromMetadata(AVDictionary *pMetadata);
   std::string ConvertCodecToInternalStereoMode(const std::string &mode, const StereoModeConversionMap *conversionMap);
 
+  void GetL16Parameters(int &channels, int &samplerate);
+
   CCriticalSection m_critSection;
   std::map<int, CDemuxStream*> m_streams;
   std::vector<std::map<int, CDemuxStream*>::iterator> m_stream_index;
 
   AVIOContext* m_ioContext;
 
-  double   m_iCurrentPts; // used for stream length estimation
+  double   m_currentPts; // used for stream length estimation
   bool     m_bMatroska;
   bool     m_bAVI;
   int      m_speed;

@@ -104,6 +104,86 @@ Default font lacks support for all characters
       <row>`~</row>
     </keyboard>
   </layout>
+  <layout name="German QWERTZ">
+    <keyboard>
+      <row>1234567890</row>
+      <row>qwertzuiopü</row>
+      <row>asdfghjklöä</row>
+      <row>yxcvbnm</row>
+    </keyboard>
+    <keyboard modifiers="shift">
+      <row>1234567890</row>
+      <row>QWERTZUIOPÜ</row>
+      <row>ASDFGHJKLÖÄ</row>
+      <row>YXCVBNM</row>
+    </keyboard>
+    <keyboard modifiers="symbol,shift+symbol">
+      <row>)!@#$%^&amp;*(</row>
+      <row>[]{}-_=+;:</row>
+      <row>'",.&lt;&gt;/?\|</row>
+      <row>`~</row>
+    </keyboard>
+  </layout>
+  <layout name="Hungarian QWERTZ">
+    <keyboard>
+      <row>0123456789öüó</row>
+      <row>qwertzuiopőú</row>
+      <row>asdfghjkléáű</row>
+      <row>íyxcvbnm,.-</row>
+    </keyboard>
+    <keyboard modifiers="shift">
+      <row>0123456789ÖÜÓ</row>
+      <row>QWERTZUIOPŐÚ</row>
+      <row>ASDFGHJKLÉÁŰ</row>
+      <row>ÍYXCVBNM,.-</row>
+    </keyboard>
+    <keyboard modifiers="symbol,shift+symbol">
+      <row>§'"+!/=()~</row>
+      <row>^;\|Ä€Í÷×ä</row>
+      <row>đĐ[]íłŁ$ß¤</row>
+      <row>#@{}&lt;&gt;*?:_</row>
+    </keyboard>
+  </layout>
+  <layout name="Polish QWERTY">
+    <keyboard>
+      <row>`1234567890-</row>
+      <row>qwertyuiopąć</row>
+      <row>asdfghjklęłń</row>
+      <row>zxcvbnmóśżź</row>
+    </keyboard>
+    <keyboard modifiers="shift">
+      <row>~1234567890_</row>
+      <row>QWERTYUIOPĄĆ</row>
+      <row>ASDFGHJKLĘŁŃ</row>
+      <row>ZXCVBNMÓŚŻŹ</row>
+    </keyboard>
+    <keyboard modifiers="symbol,shift+symbol">
+      <row>!@#$%^&amp;*()=+</row>
+      <row>\|€£§[]{};',</row>
+      <row>./:"&lt;&gt;?</row>
+      <row></row>
+    </keyboard>
+  </layout>
+  <layout name="Portuguese (Portugal) QWERTY">
+    <keyboard>
+      <row>\1234567890'</row>
+      <row>qwertyuiop+´</row>
+      <row>asdfghjklçº~</row>
+      <row>&lt;zxcvbnm,.-</row>
+    </keyboard>
+    <keyboard modifiers="shift">
+      <row>|1234567890?</row>
+      <row>QWERTYUIOP*`</row>
+      <row>ASDFGHJKLÇª^</row>
+      <row>&gt;ZXCVBNM;:_</row>
+    </keyboard>
+    <keyboard modifiers="symbol,shift+symbol">
+      <row>|!"#$%&amp;/()=?</row>
+      <row>@£§{[]}€áãâà</row>
+      <row>éêíóõôúÁÃÂÀÉ</row>
+      <row>ÊÍÓÕÔÚ«»¨</row>
+    </keyboard>
+  </layout>
   <layout name="Russian ЙЦУКЕН">
     <keyboard>
       <row>ё1234567890</row>
@@ -262,6 +342,66 @@ Default font lacks support for all characters
       <row>[]{}-_=+;:</row>
       <row>'",.&lt;&gt;/?\|</row>
       <row>`~</row>
+    </keyboard>
+  </layout>
+  <layout name="Ukrainian ЙЦУКЕН">
+    <keyboard>
+      <row>'1234567890</row>
+      <row>йцукенгшщзхї</row>
+      <row>фівапролджє</row>
+      <row>ґячсмитьбю</row>
+    </keyboard>
+    <keyboard modifiers="shift">
+      <row>'1234567890</row>
+      <row>ЙЦУКЕНГШЩЗХЇ</row>
+      <row>ФІВАПРОЛДЖЄ</row>
+      <row>ҐЯЧСМИТЬБЮ</row>
+    </keyboard>
+    <keyboard modifiers="symbol,shift+symbol">
+      <row>)!@#$%^&amp;*(</row>
+      <row>[]{}-_=+;:</row>
+      <row>'",.&lt;&gt;/?\|</row>
+      <row>`~</row>
+    </keyboard>
+  </layout>
+  <layout name="Ukrainian АБВ">
+    <keyboard>
+      <row>0123456789</row>
+      <row>абвгґдеєжзиі</row>
+      <row>їйклмнопрст</row>
+      <row>уфхцчшцьюя'</row>
+    </keyboard>
+    <keyboard modifiers="shift">
+      <row>0123456789</row>
+      <row>АБВГҐДЕЄЖЗИІ</row>
+      <row>ЇЙКЛМНОПРСТ</row>
+      <row>УФХЦЧШЩЬЮЯ'</row>
+    </keyboard>
+    <keyboard modifiers="symbol,shift+symbol">
+      <row>)!@#$%^&amp;*(</row>
+      <row>[]{}-_=+;:</row>
+      <row>'",.&lt;&gt;/?\|</row>
+      <row>`~</row>
+    </keyboard>
+  </layout>
+  <layout name="Greek QWERTY">
+    <keyboard>
+      <row>1234567890</row>
+      <row>ςερτυθιοπ</row>
+      <row>ασδφγηξκλ</row>
+      <row>ζχψωβνμ</row>
+    </keyboard>
+    <keyboard modifiers="shift">
+      <row>1234567890</row>
+      <row>ΕΡΤΥΘΙΟΠ</row>
+      <row>ΑΣΔΦΓΗΞΚΛ</row>
+      <row>ΖΧΨΩΒΝΜ</row>
+    </keyboard>
+    <keyboard modifiers="symbol,shift+symbol">
+      <row>)!@#$%^&amp;*(€</row>
+      <row>[]{}-_=+;:~</row>
+      <row>'",.&lt;&gt;/?\|`</row>
+      <row>έύίόάήώϋϊΰΐ</row>
     </keyboard>
   </layout>
 </keyboardlayouts>

@@ -677,7 +677,11 @@ bool CVideoDatabase::GetSubPaths(const CStdString &basepath, vector< pair<int,st
 
     CStdString path(basepath);
     URIUtils::AddSlashAtEnd(path);
-    sql = PrepareSQL("SELECT idPath,strPath FROM path WHERE SUBSTR(strPath,1,%i)='%s'", StringUtils::utf8_strlen(path.c_str()), path.c_str());
+    sql = PrepareSQL("SELECT idPath,strPath FROM path WHERE SUBSTR(strPath,1,%i)='%s'"
+                     " AND idPath NOT IN (SELECT idPath FROM files WHERE strFileName LIKE 'video_ts.ifo')"
+                     " AND idPath NOT IN (SELECT idPath FROM files WHERE strFileName LIKE 'index.bdmv')"
+                     , StringUtils::utf8_strlen(path.c_str()), path.c_str());
+
     m_pDS->query(sql.c_str());
     while (!m_pDS->eof())
     {
@@ -8140,24 +8144,28 @@ void CVideoDatabase::CleanDatabase(CGUIDialogProgressBarHandle* handle, const se
       m_pDS->exec(sql.c_str());
     }
 
-    tvshowsToDelete = "";
-    sql = "SELECT tvshow.idShow FROM tvshow "
-            "JOIN tvshowlinkpath ON tvshow.idShow = tvshowlinkpath.idShow "
-            "JOIN path ON path.idPath = tvshowlinkpath.idPath "
-          "WHERE NOT EXISTS (SELECT 1 FROM episode WHERE episode.idShow = tvshow.idShow) "
-            "AND (path.strContent IS NULL OR path.strContent = '')";
-    m_pDS->query(sql.c_str());
-    while (!m_pDS->eof())
+    // Keep empty series if the user wants to hide them
+    if (!g_advancedSettings.m_bVideoLibraryHideEmptySeries)
     {
-      tvshowIDs.push_back(m_pDS->fv(0).get_asInt());
-      tvshowsToDelete += m_pDS->fv(0).get_asString() + ",";
-      m_pDS->next();
-    }
-    m_pDS->close();
-    if (!tvshowsToDelete.empty())
-    {
-      sql = "DELETE FROM tvshow WHERE idShow IN (" + StringUtils::TrimRight(tvshowsToDelete, ",") + ")";
-      m_pDS->exec(sql.c_str());
+      tvshowsToDelete = "";
+      sql = "SELECT tvshow.idShow FROM tvshow "
+              "JOIN tvshowlinkpath ON tvshow.idShow = tvshowlinkpath.idShow "
+              "JOIN path ON path.idPath = tvshowlinkpath.idPath "
+            "WHERE NOT EXISTS (SELECT 1 FROM episode WHERE episode.idShow = tvshow.idShow) "
+              "AND (path.strContent IS NULL OR path.strContent = '')";
+      m_pDS->query(sql.c_str());
+      while (!m_pDS->eof())
+      {
+        tvshowIDs.push_back(m_pDS->fv(0).get_asInt());
+        tvshowsToDelete += m_pDS->fv(0).get_asString() + ",";
+        m_pDS->next();
+      }
+      m_pDS->close();
+      if (!tvshowsToDelete.empty())
+      {
+        sql = "DELETE FROM tvshow WHERE idShow IN (" + StringUtils::TrimRight(tvshowsToDelete, ",") + ")";
+        m_pDS->exec(sql.c_str());
+      }
     }
 
     if (!musicVideoIDs.empty())

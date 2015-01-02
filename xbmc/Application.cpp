@@ -589,7 +589,7 @@ void CApplication::Preflight()
   CStdString install_path;
 
   CUtil::GetHomePath(install_path);
-  setenv("APP_HOME", install_path.c_str(), 0);
+  setenv("KODI_HOME", install_path.c_str(), 0);
   install_path += "/tools/darwin/runtime/preflight";
   system(install_path.c_str());
 #endif
@@ -1085,9 +1085,9 @@ bool CApplication::InitDirectoriesLinux()
   std::string appName = CCompileInfo::GetAppName();
   std::string dotLowerAppName = "." + appName;
   StringUtils::ToLower(dotLowerAppName);
-  const char* envAppHome = "APP_HOME";
-  const char* envAppBinHome = "APP_BIN_HOME";
-  const char* envAppTemp = "APP_TEMP";
+  const char* envAppHome = "KODI_HOME";
+  const char* envAppBinHome = "KODI_BIN_HOME";
+  const char* envAppTemp = "KODI_TEMP";
 
 
   CUtil::GetHomePath(appBinPath, envAppBinHome);
@@ -1178,7 +1178,7 @@ bool CApplication::InitDirectoriesOSX()
 
   std::string appPath;
   CUtil::GetHomePath(appPath);
-  setenv("APP_HOME", appPath.c_str(), 0);
+  setenv("KODI_HOME", appPath.c_str(), 0);
 
 #if defined(TARGET_DARWIN_IOS)
   CStdString fontconfigPath;
@@ -1258,7 +1258,7 @@ bool CApplication::InitDirectoriesWin32()
   CStdString xbmcPath;
 
   CUtil::GetHomePath(xbmcPath);
-  CEnvironment::setenv("APP_HOME", xbmcPath);
+  CEnvironment::setenv("KODI_HOME", xbmcPath);
   CSpecialProtocol::SetXBMCBinPath(xbmcPath);
   CSpecialProtocol::SetXBMCPath(xbmcPath);
 
@@ -1269,7 +1269,7 @@ bool CApplication::InitDirectoriesWin32()
   CSpecialProtocol::SetMasterProfilePath(URIUtils::AddFileToFolder(strWin32UserFolder, "userdata"));
   CSpecialProtocol::SetTempPath(URIUtils::AddFileToFolder(strWin32UserFolder,"cache"));
 
-  CEnvironment::setenv("APP_PROFILE_USERDATA", CSpecialProtocol::TranslatePath("special://masterprofile/"));
+  CEnvironment::setenv("KODI_PROFILE_USERDATA", CSpecialProtocol::TranslatePath("special://masterprofile/"));
 
   CreateUserDirs();
 
@@ -1783,7 +1783,7 @@ bool CApplication::OnSettingUpdate(CSetting* &setting, const char *oldSettingId,
     if (!aml_present())
     {
       CSettingBool *useamcodec = (CSettingBool*)setting;
-      useamcodec->SetValue(false);
+      return useamcodec->SetValue(false);
     }
   }
 #endif
@@ -1796,13 +1796,13 @@ bool CApplication::OnSettingUpdate(CSetting* &setting, const char *oldSettingId,
     if (CAndroidFeatures::GetVersion() < 16)
     {
       CSettingBool *usemediacodec = (CSettingBool*)setting;
-      usemediacodec->SetValue(false);
+      return usemediacodec->SetValue(false);
     }
   }
   else if (settingId == "videoplayer.usestagefright")
   {
     CSettingBool *usestagefright = (CSettingBool*)setting;
-    usestagefright->SetValue(false);
+    return usestagefright->SetValue(false);
   }
 #endif
 #if defined(TARGET_DARWIN_OSX)
@@ -2326,10 +2326,11 @@ void CApplication::Render()
     if (frameTime < singleFrameTime)
       Sleep(singleFrameTime - frameTime);
   }
-  m_lastFrameTime = XbmcThreads::SystemClockMillis();
 
   if (flip)
     g_graphicsContext.Flip(dirtyRegions);
+
+  m_lastFrameTime = XbmcThreads::SystemClockMillis();
   CTimeUtils::UpdateFrameTime(flip);
 
   g_renderManager.UpdateResolution();
@@ -3480,7 +3481,8 @@ void CApplication::Stop(int exitCode)
 {
   try
   {
-    CVariant vExitCode(exitCode);
+    CVariant vExitCode(CVariant::VariantTypeObject);
+    vExitCode["exitcode"] = exitCode;
     CAnnouncementManager::Get().Announce(System, "xbmc", "OnQuit", vExitCode);
 
     SaveFileState(true);
@@ -3552,6 +3554,10 @@ void CApplication::Stop(int exitCode)
 
 #ifdef HAS_FILESYSTEM_SFTP
     CSFTPSessionManager::DisconnectAllSessions();
+#endif
+
+#if defined(TARGET_POSIX) && defined(HAS_FILESYSTEM_SMB)
+    smb.Deinit();
 #endif
 
     CLog::Log(LOGNOTICE, "unload skin");
@@ -3654,6 +3660,10 @@ bool CApplication::PlayMedia(const CFileItem& item, int iPlaylist)
           return PlayFile(*(*pPlayList)[0], false) == PLAYBACK_OK;
       }
     }
+  }
+  else if (item.IsPVR())
+  {
+    return g_PVRManager.PlayMedia(item);
   }
 
   //nothing special just play
@@ -4310,7 +4320,7 @@ void CApplication::OnPlayBackSeek(int iTime, int seekOffset)
   param["player"]["playerid"] = g_playlistPlayer.GetCurrentPlaylist();
   param["player"]["speed"] = m_pPlayer->GetPlaySpeed();
   CAnnouncementManager::Get().Announce(Player, "xbmc", "OnSeek", m_itemCurrentFile, param);
-  g_infoManager.SetDisplayAfterSeek(2500, seekOffset/1000);
+  g_infoManager.SetDisplayAfterSeek(2500, seekOffset);
 }
 
 void CApplication::OnPlayBackSeekChapter(int iChapter)
@@ -4358,8 +4368,9 @@ void CApplication::UpdateFileState()
   // Did the file change?
   if (m_progressTrackingItem->GetPath() != "" && m_progressTrackingItem->GetPath() != CurrentFile())
   {
-    // Ignore for PVR channels, PerformChannelSwitch takes care of this
-    if (!m_progressTrackingItem->IsPVRChannel())
+    // Ignore for PVR channels, PerformChannelSwitch takes care of this.
+    // Also ignore playlists as correct video settings have already been saved in PlayFile() - we're causing off-by-1 errors here.
+    if (!m_progressTrackingItem->IsPVRChannel() && g_playlistPlayer.GetCurrentPlaylist() == PLAYLIST_NONE)
       SaveFileState();
 
     // Reset tracking item
@@ -5623,7 +5634,13 @@ void CApplication::StartVideoCleanup(bool userInitiated /* = true */)
   if (m_videoInfoScanner->IsScanning())
     return;
 
-  m_videoInfoScanner->CleanDatabase(NULL, NULL, userInitiated);
+  if (userInitiated)
+    m_videoInfoScanner->CleanDatabase(NULL, NULL, true);
+  else
+  {
+    m_videoInfoScanner->ShowDialog(false);
+    m_videoInfoScanner->StartCleanDatabase();
+  }
 }
 
 void CApplication::StartVideoScan(const CStdString &strDirectory, bool userInitiated /* = true */, bool scanAll /* = false */)
@@ -5634,6 +5651,20 @@ void CApplication::StartVideoScan(const CStdString &strDirectory, bool userIniti
   m_videoInfoScanner->ShowDialog(userInitiated);
 
   m_videoInfoScanner->Start(strDirectory,scanAll);
+}
+
+void CApplication::StartMusicCleanup(bool userInitiated /* = true */)
+{
+  if (m_musicInfoScanner->IsScanning())
+    return;
+
+  if (userInitiated)
+    m_musicInfoScanner->CleanDatabase(true);
+  else
+  {
+    m_musicInfoScanner->ShowDialog(false);
+    m_musicInfoScanner->StartCleanDatabase();
+  }
 }
 
 void CApplication::StartMusicScan(const CStdString &strDirectory, bool userInitiated /* = true */, int flags /* = 0 */)

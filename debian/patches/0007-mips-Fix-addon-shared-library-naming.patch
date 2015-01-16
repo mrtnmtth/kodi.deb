@@ -1,0 +1,27 @@
+From 378c6034335b959a6f48dd020ce0ceba5cb6b3d8 Mon Sep 17 00:00:00 2001
+From: Andriy Prystupa <andriy.prystupa@globallogic.com>
+Date: Sat, 17 Jan 2015 00:23:52 +0100
+Subject: [PATCH] mips: Fix addon shared library naming
+
+---
+ addons/library.xbmc.addon/libXBMC_addon.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/addons/library.xbmc.addon/libXBMC_addon.h b/addons/library.xbmc.addon/libXBMC_addon.h
+index 3e822f4..c3ed54f 100644
+--- a/addons/library.xbmc.addon/libXBMC_addon.h
++++ b/addons/library.xbmc.addon/libXBMC_addon.h
+@@ -55,8 +55,8 @@ typedef intptr_t      ssize_t;
+ #define ADDON_HELPER_ARCH       "powerpc64-linux"
+ #elif defined(__ARMEL__)
+ #define ADDON_HELPER_ARCH       "arm"
+-#elif defined(_MIPSEL)
+-#define ADDON_HELPER_ARCH       "mipsel-linux"
++#elif defined(__mips__)
++#define ADDON_HELPER_ARCH       "mips"
+ #else
+ #define ADDON_HELPER_ARCH       "i486-linux"
+ #endif
+-- 
+2.1.4
+

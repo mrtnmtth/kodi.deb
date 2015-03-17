@@ -83,3 +83,1982 @@ License: LGPL-3+
  .
  On Debian systems, the complete text of the GNU Lesser General
  Public License can be found in "/usr/share/common-licenses/LGPL-3".
+
+Files: addons/*
+Copyright: 2005-2013, Team XBMC
+License: GPL-2+
+
+Files: addons/library.xbmc.addon/*
+Copyright: 2007, Ramiro Polla
+License: LGPL-2.1+
+
+Files: addons/library.xbmc.addon/libXBMC_addon.h
+Copyright: 2005-2013, Team XBMC
+License: GPL-2+
+
+Files: lib/*
+Copyright: 2005-2013, Team XBMC
+License: GPL-2+
+
+Files: lib/DllModplug.h
+Copyright: 2009-2013, Team XBMC
+License: GPL-2+
+
+Files: lib/SlingboxLib/*
+Copyright: 2010, 2011, Stonyx
+License: GPL
+
+Files: lib/addons/*
+Copyright: 2012, 2013, Team XBMC
+License: GPL-2+
+
+Files: lib/asap/*
+Copyright: 2005-2009, Piotr Fusik
+License: GPL-2+
+
+Files: lib/asap/asap.h
+Copyright: 2009, Marek Konopka
+  2005-2009, Piotr Fusik
+  2002-2005, Radek Sterba
+  1999, David Spilka
+  1994-2005, Marcin Lewandowski
+License: GPL-2+
+
+Files: lib/asap/gsplayer/*
+Copyright: 2003-2005, Y.Nagamidori
+License: GPL-2+
+
+Files: lib/asap/win32/winamp/wa_ipc.h
+Copyright: 2003, Nullsoft, Inc
+License: Zlib
+
+Files: lib/boost/*
+Copyright: 2007, Andy Tompkins
+License: BSL-1.0
+
+Files: lib/cmyth/*
+Copyright: 2004-2012, Eric Lund, Jon Gettler
+License: LGPL-2.1+
+
+Files: lib/cmyth/include/refmem/atomic.h
+Copyright: 2004-2008, Eric Lund, Jon Gettler
+License: LGPL-2.1+
+
+Files: lib/cmyth/libcmyth/*
+Copyright: 2004-2010, Eric Lund
+License: LGPL-2.1+
+
+Files: lib/cmyth/libcmyth/bookmark.c
+Copyright: 2005-2009, Jon Gettler
+License: LGPL-2.1+
+
+Files: lib/cmyth/libcmyth/cmyth_local.h
+ lib/cmyth/libcmyth/connection.c
+Copyright: 2004-2012, Eric Lund, Jon Gettler
+License: LGPL-2.1+
+
+Files: lib/cmyth/libcmyth/cmyth_msc.h
+Copyright: 2012, Jon Gettler
+License: LGPL-2.1+
+
+Files: lib/cmyth/libcmyth/commbreak.c
+ lib/cmyth/libcmyth/event.c
+Copyright: 2005-2012, Jon Gettler
+License: LGPL-2.1+
+
+Files: lib/cmyth/libcmyth/debug.c
+Copyright: 2004-2009, Eric Lund
+License: LGPL-2.1+
+
+Files: lib/cmyth/libcmyth/file.c
+ lib/cmyth/libcmyth/mythtv_mysql.c
+ lib/cmyth/libcmyth/ringbuf.c
+ lib/cmyth/libcmyth/socket.c
+Copyright: 2004-2012, Eric Lund
+License: LGPL-2.1+
+
+Files: lib/cmyth/libcmyth/livetv.c
+Copyright: 2006-2012, Sergio Slobodrian
+License: LGPL-2.1+
+
+Files: lib/cmyth/libcmyth/mysql_query.c
+ lib/cmyth/libcmyth/safe_string.h
+Copyright: 2006-2009, Simon Hyde
+License: LGPL-2.1+
+
+Files: lib/cmyth/libcmyth/recorder.c
+Copyright: 2004-2009, Eric Lund, Jon Gettler
+License: LGPL-2.1+
+
+Files: lib/cmyth/libcmyth/utf8tolatin1.c
+Copyright: 2002, Ulric Eriksson <ulric@siag.nu>
+License: GPL-2+
+
+Files: lib/cmyth/librefmem/alloc.c
+Copyright: 2005, 2006, Eric Lund, Jon Gettler
+License: LGPL-2.1+
+
+Files: lib/cmyth/librefmem/debug_refmem.c
+Copyright: 2004-2006, Eric Lund
+License: LGPL-2.1+
+
+Files: lib/cpluff/*
+Copyright: 2007, Johannes Lehtinen
+License: Expat
+
+Files: lib/cpluff/autogen.sh
+Copyright: 2007, Johannes Lehtinen
+License: UNKNOWN
+
+Files: lib/cpluff/examples/*
+Copyright: 2007, Johannes Lehtinen
+License: UNKNOWN
+
+Files: lib/cpluff/kazlib/*
+Copyright: 1997, Kaz Kylheku <kaz@ashi.footprints.net>
+License: UNKNOWN
+
+Files: lib/cpluff/libcpluff/win32/cpluffdef.h
+Copyright: 2007, Johannes Lehtinen
+License: Expat
+
+Files: lib/cpluff/libcpluff/win32/dirent.h
+Copyright: Kevlin Henney, 1997, 2003. All rights reserved
+License: UNKNOWN
+
+Files: lib/cximage-6.0/CxImage/xfile.h
+Copyright: 2002, Davide Pizzolato
+License: Zlib
+
+Files: lib/cximage-6.0/CxImage/ximabmp.h
+Copyright: 2001, Davide Pizzolato
+  1995, Alejandro Aguilar Sierra <asierra(at)servidor(dot)unam(dot)mx>
+License: UNKNOWN
+
+Files: lib/cximage-6.0/CxImage/ximage.h
+Copyright: 2001-2008, Davide Pizzolato
+  1995, Alejandro Aguilar Sierra (asierra(at)servidor(dot)unam(dot)mx)
+License: Zlib
+
+Files: lib/cximage-6.0/CxImage/ximagif.h
+Copyright: 2001, Davide Pizzolato
+  1995, Alejandro Aguilar Sierra <asierra(at)servidor(dot)unam(dot)mx>
+  1994, C++ version by Alejandro Aguilar Sierra
+  1987, by Steven A. Bennett
+License: UNKNOWN
+
+Files: lib/cximage-6.0/CxImage/ximaico.h
+Copyright: 2001, Davide Pizzolato
+License: UNKNOWN
+
+Files: lib/cximage-6.0/CxImage/ximaiter.h
+Copyright: 1995, Alejandro Aguilar Sierra <asierra(at)servidor(dot)unam(dot)mx>
+License: UNKNOWN
+
+Files: lib/cximage-6.0/CxImage/ximajas.h
+Copyright: 2003, Davide Pizzolato
+  2001-2003, Michael David Adams - All rights reserved
+License: UNKNOWN
+
+Files: lib/cximage-6.0/CxImage/ximajbg.h
+Copyright: 2002, Markus Kuhn - All rights reserved
+  2002, Davide Pizzolato
+License: UNKNOWN
+
+Files: lib/cximage-6.0/CxImage/ximajpg.h
+Copyright: 2001, Davide Pizzolato
+  1995, Alejandro Aguilar Sierra <asierra(at)servidor(dot)unam(dot)mx>
+  1991-1998, Thomas G. Lane
+License: UNKNOWN
+
+Files: lib/cximage-6.0/CxImage/ximamng.h
+Copyright: 2001, Davide Pizzolato
+  2000, 2001, Gerard Juyn (gerard@libmng.com)
+License: UNKNOWN
+
+Files: lib/cximage-6.0/CxImage/ximapcx.cpp
+Copyright: 1994, by Ingo Wilken (Ingo.Wilken@informatik.uni-oldenburg.de)
+License: UNKNOWN
+
+Files: lib/cximage-6.0/CxImage/ximapcx.h
+ lib/cximage-6.0/CxImage/ximatga.h
+Copyright: 2002, Davide Pizzolato
+  1996-1998, Ulrich von Zadow
+License: UNKNOWN
+
+Files: lib/cximage-6.0/CxImage/ximapng.h
+Copyright: 2001, Davide Pizzolato
+  1998-2003, Glenn Randers-Pehrson
+  1995, Alejandro Aguilar Sierra <asierra(at)servidor(dot)unam(dot)mx>
+License: UNKNOWN
+
+Files: lib/cximage-6.0/CxImage/ximaraw.cpp
+Copyright: 2006, pdw63
+  1997-2007, by Dave Coffin, dcoffin a cybercom o net
+License: UNKNOWN
+
+Files: lib/cximage-6.0/CxImage/ximaraw.h
+Copyright: 2007, Davide Pizzolato
+  2006, pdw63
+  1997-2007, by Dave Coffin, dcoffin a cybercom o net
+License: UNKNOWN
+
+Files: lib/cximage-6.0/CxImage/ximaska.h
+Copyright: 2007, Davide Pizzolato
+License: UNKNOWN
+
+Files: lib/cximage-6.0/CxImage/ximatif.h
+Copyright: 2001, Davide Pizzolato
+  1991-1997, Silicon Graphics, Inc
+  1988-1997, Sam Leffler
+License: UNKNOWN
+
+Files: lib/cximage-6.0/CxImage/ximawbmp.h
+Copyright: 2002, Davide Pizzolato
+License: UNKNOWN
+
+Files: lib/cximage-6.0/raw/*
+Copyright: 2007-2009, Davide Pizzolato
+  1997-2009, by Dave Coffin, dcoffin a cybercom o net
+License: UNKNOWN
+
+Files: lib/cximage-6.0/raw/dcr.c
+Copyright: 1997-2008, by Dave Coffin, dcoffin a cybercom o net
+License: UNKNOWN
+
+Files: lib/cximage-6.0/raw/dcraw.c
+Copyright: 1997-2009, by Dave Coffin, dcoffin a cybercom o net
+License: UNKNOWN
+
+Files: lib/libRTV/*
+Copyright: 2002, John Todd Larason <jtl@molehill.org>
+License: GPL-2+
+
+Files: lib/libRTV/interface.c
+Copyright: 2003, 2004, rtvguy
+  2002, John Todd Larason <jtl@molehill.org>
+  2002, 2003, Lee Thompson <thompsonl@logh.net>
+License: GPL-2+
+
+Files: lib/libUPnP/*
+Copyright: 2004-2010, Plutinosoft, LLC
+License: GPL-2+
+
+Files: lib/libUPnP/Neptune/Extras/Scripts/*
+Copyright: 2002-2010, Axiomatic Systems, LLC
+License: BSD-3-clause
+
+Files: lib/libUPnP/Neptune/Source/*
+Copyright: 2001-2005, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Apps/MiniHttpServer/*
+Copyright: 2001-2009, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Apps/NetBench/*
+Copyright: 2001-2013, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Apps/NetGet/*
+Copyright: 2001-2010, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Apps/NetPump/*
+Copyright: 2001, 2002, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Apps/NetResolve/*
+Copyright: 2001-2011, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Apps/ZipHttpServer/*
+Copyright: 2001-2014, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Core/*
+Copyright: 2002-2008, Axiomatic Systems, LLC
+License: BSD-3-clause
+
+Files: lib/libUPnP/Neptune/Source/Core/NptCrypto.cpp
+ lib/libUPnP/Neptune/Source/Core/NptCrypto.h
+ lib/libUPnP/Neptune/Source/Core/NptDigest.cpp
+ lib/libUPnP/Neptune/Source/Core/NptDigest.h
+ lib/libUPnP/Neptune/Source/Core/NptHash.cpp
+ lib/libUPnP/Neptune/Source/Core/NptHash.h
+ lib/libUPnP/Neptune/Source/Core/NptResults.cpp
+ lib/libUPnP/Neptune/Source/Core/NptTlsDefaultTrustAnchorsBase.h
+ lib/libUPnP/Neptune/Source/Core/NptTlsDefaultTrustAnchorsExtended.h
+Copyright: 2002-2010, Axiomatic Systems, LLC
+License: BSD-3-clause
+
+Files: lib/libUPnP/Neptune/Source/Core/NptJson.cpp
+ lib/libUPnP/Neptune/Source/Core/NptJson.h
+Copyright: 2002-2012, Axiomatic Systems, LLC
+License: BSD-3-clause
+
+Files: lib/libUPnP/Neptune/Source/Data/*
+Copyright: 2002-2010, Axiomatic Systems, LLC
+License: BSD-3-clause
+
+Files: lib/libUPnP/Neptune/Source/System/Android/NptAndroidConsole.cpp
+Copyright: 2002-2006, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/Android/NptAndroidDebug.cpp
+Copyright: 2002-2009, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/Bsd/NptBsdSockets.cpp
+Copyright: 2001-2008, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/Cocoa/*
+Copyright: 2001-2008, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/Null/*
+Copyright: 2001, 2002, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/Null/NptNullHttpProxy.cpp
+ lib/libUPnP/Neptune/Source/System/Null/NptNullSerialPort.cpp
+Copyright: 2001-2007, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/Null/NptNullNetwork.cpp
+Copyright: 2001-2006, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/Null/NptNullSystem.cpp
+Copyright: 2001-2003, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/PS3/*
+Copyright: 2001-2006, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/Posix/*
+Copyright: 2001, 2002, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/Posix/NptPosixDynamicLibraries.cpp
+ lib/libUPnP/Neptune/Source/System/Posix/NptPosixFile.cpp
+Copyright: 2001-2008, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/Posix/NptPosixEnvironment.cpp
+Copyright: 2002-2006, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/Posix/NptPosixNetwork.cpp
+Copyright: 2001-2005, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/Posix/NptPosixSystem.cpp
+ lib/libUPnP/Neptune/Source/System/Posix/NptSelectableMessageQueue.cpp
+Copyright: 2001-2003, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/Posix/NptPosixTime.cpp
+Copyright: 2002-2009, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/StdC/*
+Copyright: 2002-2006, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/StdC/NptStdcDebug.cpp
+Copyright: 2002-2009, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/StdC/NptStdcFile.cpp
+Copyright: 2001-2008, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/Symbian/*
+Copyright: 2001-2006, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/Win32/*
+Copyright: 2001-2008, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/Win32/NptWin32Console.cpp
+ lib/libUPnP/Neptune/Source/System/Win32/NptWin32Debug.cpp
+Copyright: 2002-2006, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/Win32/NptWin32HttpProxy.cpp
+ lib/libUPnP/Neptune/Source/System/Win32/NptWin32SerialPort.cpp
+Copyright: 2001-2007, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/Win32/NptWin32Network.cpp
+ lib/libUPnP/Neptune/Source/System/Win32/NptWin32Network.h
+ lib/libUPnP/Neptune/Source/System/Win32/NptWin32System.cpp
+Copyright: 2001-2006, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/Win32/NptWin32Queue.cpp
+Copyright: 2001, 2002, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/Win32/NptWin32Threads.h
+Copyright: 2001-2003, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/Win32/NptWin32Time.cpp
+Copyright: 2002-2009, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/WinCE/*
+Copyright: 2002-2006, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/WinCE/NptWinCeUtils.h
+Copyright: 2001-2006, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/WinRT/*
+Copyright: 2002-2012, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/WinRT/NptWinRtConsole.cpp
+Copyright: 2002-2006, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/WinRT/NptWinRtFile.cpp
+ lib/libUPnP/Neptune/Source/System/WinRT/NptWinRtSockets.cpp
+ lib/libUPnP/Neptune/Source/System/WinRT/NptWinRtSystem.cpp
+ lib/libUPnP/Neptune/Source/System/WinRT/NptWinRtThreads.cpp
+ lib/libUPnP/Neptune/Source/System/WinRT/NptWinRtThreads.h
+Copyright: 2001-2012, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/System/WinRT/NptWinRtNetwork.cpp
+Copyright: 2011, 2012, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/*
+Copyright: 2005, 2006, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/Arrays1/*
+Copyright: 2005, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/BufferedStreams1/*
+Copyright: 2001-2005, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/Crypto1/*
+Copyright: 2005-2010, Axiomatic Systems, LLC
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/Digests1/*
+Copyright: 2005-2010, Axiomatic Systems, LLC
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/FileTest1/*
+Copyright: 2005-2008, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/FileTest2/*
+Copyright: 2005-2008, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/HttpClient1/*
+Copyright: 2001-2003, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/HttpClient2/*
+Copyright: 2001-2011, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/HttpServer1/*
+Copyright: 2001-2006, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/Logging1/*
+Copyright: 2002-2006, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/Logging2/*
+Copyright: 2002-2008, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/Messages1/*
+Copyright: 2001-2008, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/Messages2/*
+Copyright: 2001-2008, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/Network1/*
+Copyright: 2001-2012, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/Queue1/*
+Copyright: 2008, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/RingBuffer1/*
+Copyright: 2001-2005, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/SharedVariables1/*
+Copyright: 2001-2012, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/Sockets1/*
+Copyright: 2001-2010, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/Strings1/*
+Copyright: 2001-2003, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/Threads1/*
+Copyright: 2001, 2002, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/Tls1/TlsTest1.cpp
+Copyright: 2001-2006, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/Udp1/*
+Copyright: 2001, 2002, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/Url1/*
+Copyright: 2001-2006, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/Xml1/XmlTest1.cpp
+Copyright: 2001-2003, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/Source/Tests/Zip1/ZipTest1.cpp
+Copyright: 2001-2006, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Neptune/ThirdParty/axTLS/*
+Copyright: 2007, Cameron Rich
+License: BSD-3-clause
+
+Files: lib/libUPnP/Neptune/ThirdParty/axTLS/ssl/os_port.h
+Copyright: 2002-2008, Axiomatic Systems, LLC
+License: BSD-3-clause
+
+Files: lib/libUPnP/Neptune/ThirdParty/zlib-1.2.8/adler32.c
+ lib/libUPnP/Neptune/ThirdParty/zlib-1.2.8/infback.c
+Copyright: 1995-2011, Mark Adler
+License: Zlib
+
+Files: lib/libUPnP/Neptune/ThirdParty/zlib-1.2.8/compress.c
+Copyright: 1995-2005, Jean-loup Gailly
+License: Zlib
+
+Files: lib/libUPnP/Neptune/ThirdParty/zlib-1.2.8/crc32.c
+Copyright: 1995-2006, 2010-2012, Mark Adler
+License: Zlib
+
+Files: lib/libUPnP/Neptune/ThirdParty/zlib-1.2.8/deflate.c
+Copyright: 1995-2013, Jean-loup Gailly and Mark Adler ";
+  1995-2013, Jean-loup Gailly and Mark Adler
+License: Zlib
+
+Files: lib/libUPnP/Neptune/ThirdParty/zlib-1.2.8/deflate.h
+ lib/libUPnP/Neptune/ThirdParty/zlib-1.2.8/trees.c
+Copyright: 1995-2012, Jean-loup Gailly
+License: Zlib
+
+Files: lib/libUPnP/Neptune/ThirdParty/zlib-1.2.8/gzguts.h
+Copyright: 2004, 2005, 2010-2013, Mark Adler
+License: Zlib
+
+Files: lib/libUPnP/Neptune/ThirdParty/zlib-1.2.8/inffast.c
+Copyright: 1995-2008, 2010, 2013, Mark Adler
+License: Zlib
+
+Files: lib/libUPnP/Neptune/ThirdParty/zlib-1.2.8/inffast.h
+Copyright: 1995-2003, 2010, Mark Adler
+License: Zlib
+
+Files: lib/libUPnP/Neptune/ThirdParty/zlib-1.2.8/inflate.c
+Copyright: 1995-2012, Mark Adler
+License: Zlib
+
+Files: lib/libUPnP/Neptune/ThirdParty/zlib-1.2.8/inflate.h
+Copyright: 1995-2009, Mark Adler
+License: Zlib
+
+Files: lib/libUPnP/Neptune/ThirdParty/zlib-1.2.8/inftrees.c
+Copyright: 1995-2013, Mark Adler
+  1995-2013, Mark Adler
+License: Zlib
+
+Files: lib/libUPnP/Neptune/ThirdParty/zlib-1.2.8/inftrees.h
+Copyright: 1995-2005, 2010, Mark Adler
+License: Zlib
+
+Files: lib/libUPnP/Neptune/ThirdParty/zlib-1.2.8/zconf.h
+Copyright: 1995-2013, Jean-loup Gailly
+License: Zlib
+
+Files: lib/libUPnP/Neptune/ThirdParty/zlib-1.2.8/zlib.h
+Copyright: 1995-2013, Jean-loup Gailly and Mark Adler
+License: Zlib
+
+Files: lib/libUPnP/Neptune/ThirdParty/zlib-1.2.8/zutil.c
+Copyright: 1995-2005, 2010-2012, Jean-loup Gailly
+License: Zlib
+
+Files: lib/libUPnP/Neptune/ThirdParty/zlib-1.2.8/zutil.h
+Copyright: 1995-2013, Jean-loup Gailly
+License: Zlib
+
+Files: lib/libUPnP/Platinum/Build/*
+Copyright: , 2010")]
+License: UNKNOWN
+
+Files: lib/libUPnP/Platinum/Build/Targets/mipsel-psp-linux/*
+Copyright: 2004, Metrowerks Inc. All rights reserved
+License: UNKNOWN
+
+Files: lib/libUPnP/Platinum/Build/Targets/x86-microsoft-win32-vs2008/Platinum.Managed.SsdpTest/*
+Copyright: , Plutinosoft 2010")]
+License: UNKNOWN
+
+Files: lib/libUPnP/Platinum/Build/Targets/x86-microsoft-win32-vs2008/Platinum.Managed/AssemblyInfo.cpp
+Copyright: , Plutinosoft 2010")];
+License: UNKNOWN
+
+Files: lib/libUPnP/Platinum/Build/Targets/x86-microsoft-win32-vs2010/Platinum.Managed.SsdpTest/*
+Copyright: , Plutinosoft 2010")]
+License: UNKNOWN
+
+Files: lib/libUPnP/Platinum/Build/Targets/x86-microsoft-win32-vs2010/Platinum.Managed/AssemblyInfo.cpp
+Copyright: , Plutinosoft 2010")];
+License: UNKNOWN
+
+Files: lib/libUPnP/Platinum/Source/Apps/CocoaTouchBrowser/*
+Copyright: 2004-2008, Plutinosoft, LLC
+License: GPL-2+
+
+Files: lib/libUPnP/Platinum/Source/Apps/CocoaTouchBrowser/CocoaTouchBrowserAppDelegate.m
+ lib/libUPnP/Platinum/Source/Apps/CocoaTouchBrowser/main.m
+Copyright: 2004-2010, Plutinosoft, LLC
+License: GPL-2+
+
+Files: lib/libUPnP/Platinum/Source/Devices/MediaServer/ContentDirectorySCPD.cpp
+Copyright: 2004-2008, Plutinosoft, LLC
+License: GPL-2+
+
+Files: lib/libUPnP/Platinum/Source/Extras/ObjectiveC/*
+Copyright: 2010, Plutinosoft LLC. All rights reserved
+License: UNKNOWN
+
+Files: lib/libUPnP/Platinum/Source/Platform/Android/module/platinum/jni/platinum-jni.cpp
+Copyright: 2002-2012, Plutinosoft LLC
+License: UNKNOWN
+
+Files: lib/libUPnP/Platinum/Source/Tests/MediaServerCocoaTest/*
+Copyright: Plutinosoft LLC 2010, . All rights reserved
+License: UNKNOWN
+
+Files: lib/libUPnP/Platinum/Source/Tests/MediaServerCocoaTest/MediaServerCocoaTestController.h
+Copyright: 2010, Plutinosoft LLC. All rights reserved
+License: UNKNOWN
+
+Files: lib/libUPnP/Platinum/Source/Tools/*
+Copyright: 2004-2008, Plutinosoft, LLC
+License: GPL-2+
+
+Files: lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/Neptune.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptArray.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptAutomaticCleaner.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptAutoreleasePool.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptBase64.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptBufferedStreams.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptCommon.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptConfig.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptConsole.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptConstants.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptDataBuffer.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptDebug.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptDynamicCast.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptDynamicLibraries.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptFile.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptHttp.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptInterfaces.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptList.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptLogging.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptMap.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptMessaging.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptNetwork.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptQueue.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptReferences.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptResults.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptRingBuffer.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptSelectableMessageQueue.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptSerialPort.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptSimpleMessageQueue.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptSockets.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptStack.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptStreams.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptStrings.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptSystem.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptThreads.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptTime.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptTls.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptTypes.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptUri.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptUtils.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptVersion.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptXml.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptZip.h
+Copyright: 2002-2008, Axiomatic Systems, LLC
+License: BSD-3-clause
+
+Files: lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptCocoaMessageQueue.h
+Copyright: 2001-2008, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptCrypto.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptDigest.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptHash.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptTlsDefaultTrustAnchorsBase.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/NptTlsDefaultTrustAnchorsExtended.h
+Copyright: 2002-2010, Axiomatic Systems, LLC
+License: BSD-3-clause
+
+Files: lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/PltMediaServerObject.h
+ lib/libUPnP/Platinum/Targets/universal-apple-ios/Release/Platinum.framework/Versions/A/Headers/PltUPnPObject.h
+Copyright: 2010, Plutinosoft LLC. All rights reserved
+License: UNKNOWN
+
+Files: lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/Neptune.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptArray.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptAutomaticCleaner.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptAutoreleasePool.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptBase64.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptBufferedStreams.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptCommon.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptConfig.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptConsole.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptConstants.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptDataBuffer.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptDebug.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptDynamicCast.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptDynamicLibraries.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptFile.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptHttp.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptInterfaces.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptList.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptLogging.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptMap.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptMessaging.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptNetwork.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptQueue.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptReferences.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptResults.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptRingBuffer.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptSelectableMessageQueue.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptSerialPort.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptSimpleMessageQueue.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptSockets.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptStack.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptStreams.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptStrings.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptSystem.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptThreads.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptTime.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptTls.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptTypes.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptUri.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptUtils.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptVersion.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptXml.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptZip.h
+Copyright: 2002-2008, Axiomatic Systems, LLC
+License: BSD-3-clause
+
+Files: lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptCocoaMessageQueue.h
+Copyright: 2001-2008, Gilles Boccon-Gibod
+License: UNKNOWN
+
+Files: lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptCrypto.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptDigest.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptHash.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptTlsDefaultTrustAnchorsBase.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/NptTlsDefaultTrustAnchorsExtended.h
+Copyright: 2002-2010, Axiomatic Systems, LLC
+License: BSD-3-clause
+
+Files: lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/PltMediaServerObject.h
+ lib/libUPnP/Platinum/Targets/universal-apple-macosx/Release/Platinum.framework/Versions/A/Headers/PltUPnPObject.h
+Copyright: 2010, Plutinosoft LLC. All rights reserved
+License: UNKNOWN
+
+Files: lib/libXDAAP/*
+Copyright: 2004, David Hammerton
+License: Expat
+
+Files: lib/libXDAAP/Authentication/*
+Copyright: 2004, David Hammerton
+  2003, Apple Computer, Inc.
+License: Expat
+
+Files: lib/libXDAAP/Authentication/hasher.h
+Copyright: 2004, David Hammerton
+License: Expat
+
+Files: lib/libXDAAP/Authentication/md5.c
+Copyright: 2004, David Hammerton <crazney@crazney.net>
+License: Public and domain and Expat
+
+Files: lib/libXDAAP/daap_contentcodes.h
+ lib/libXDAAP/debug.c
+Copyright: David Hammerton 2003
+License: Expat
+
+Files: lib/libXDAAP/debug.h
+Copyright: , David Hammerton, 2003
+License: Expat
+
+Files: lib/libXDAAP/global.c
+ lib/libXDAAP/private.h
+Copyright: 2003, David Hammerton
+License: Expat
+
+Files: lib/libXDAAP/libXDAAP.c
+Copyright: 2004, Forza (Chris Barnett)
+  2004, David Hammerton
+License: Expat
+
+Files: lib/libdvd/libdvdnav/doc/*
+Copyright: , information
+License: UNKNOWN
+
+Files: lib/libdvd/libdvdnav/examples/*
+Copyright: 2003, by the libdvdnav project
+License: GPL-2+
+
+Files: lib/libdvd/libdvdnav/msvc/*
+Copyright: , Kevlin Henney, 1997. All rights reserved
+License: UNKNOWN
+
+Files: lib/libdvd/libdvdnav/msvc/contrib/dlfcn.c
+Copyright: , Apache Software Foundation
+License: UNKNOWN
+
+Files: lib/libdvd/libdvdnav/msvc/contrib/getopt.c
+Copyright: 88-96, 1987, 97
+License: LGPL-2+
+
+Files: lib/libdvd/libdvdnav/msvc/contrib/timer/*
+Copyright: 2000, 2001, the xine project
+License: GPL-2+
+
+Files: lib/libdvd/libdvdnav/msvc/include/*
+Copyright: 2000, 2001, the xine project
+License: GPL-2+
+
+Files: lib/libdvd/libdvdnav/msvc/include/dvdnav_internal.h
+Copyright: 2001, Rich Wareham <richwareham@users.sourceforge.net>
+License: GPL-2+
+
+Files: lib/libdvd/libdvdnav/msvc/include/getopt.h
+Copyright: 90-94, 96, 97, 1989, Free Software Foundation, Inc
+License: LGPL-2+
+
+Files: lib/libdvd/libdvdnav/msvc/include/pthreads/*
+Copyright: , 1998
+License: LGPL-2+
+
+Files: lib/libdvd/libdvdnav/src/*
+Copyright: 2000, Rich Wareham <richwareham@users.sourceforge.net>
+License: GPL-2+
+
+Files: lib/libdvd/libdvdnav/src/dvdnav/*
+Copyright: 2001, Rich Wareham <richwareham@users.sourceforge.net>
+License: GPL-2+
+
+Files: lib/libdvd/libdvdnav/src/dvdnav/dvd_types.h
+Copyright: 2000, 2001, Björn Englund, Håkan Hjort
+License: GPL-2+
+
+Files: lib/libdvd/libdvdnav/src/dvdnav_internal.h
+Copyright: 2001-2004, Rich Wareham <richwareham@users.sourceforge.net>
+License: GPL-2+
+
+Files: lib/libdvd/libdvdnav/src/vm/*
+Copyright: 2000, 2001, Martin Norbäck, Håkan Hjort
+License: GPL-2+
+
+Files: lib/libdvd/libdvdnav/src/vm/vm.c
+ lib/libdvd/libdvdnav/src/vm/vm.h
+Copyright: 2001, Rich Wareham <richwareham@users.sourceforge.net>
+  2000, 2001, Håkan Hjort
+License: GPL-2+
+
+Files: lib/libdvd/libdvdread/msvc/*
+Copyright: , Kevlin Henney, 1997. All rights reserved
+License: UNKNOWN
+
+Files: lib/libdvd/libdvdread/msvc/contrib/dlfcn.c
+Copyright: , Apache Software Foundation
+License: UNKNOWN
+
+Files: lib/libdvd/libdvdread/msvc/contrib/getopt.c
+Copyright: 88-96, 1987, 97
+License: LGPL-2+
+
+Files: lib/libdvd/libdvdread/msvc/contrib/timer/*
+Copyright: 2000, 2001, the xine project
+License: GPL-2+
+
+Files: lib/libdvd/libdvdread/msvc/include/*
+Copyright: 2000, 2001, the xine project
+License: GPL-2+
+
+Files: lib/libdvd/libdvdread/msvc/include/dvdnav_internal.h
+Copyright: 2001, Rich Wareham <richwareham@users.sourceforge.net>
+License: GPL-2+
+
+Files: lib/libdvd/libdvdread/msvc/include/getopt.h
+Copyright: 90-94, 96, 97, 1989, Free Software Foundation, Inc
+License: LGPL-2+
+
+Files: lib/libdvd/libdvdread/msvc/include/pthreads/*
+Copyright: , 1998
+License: LGPL-2+
+
+Files: lib/libdvd/libdvdread/src/bitreader.c
+ lib/libdvd/libdvdread/src/nav_read.c
+Copyright: 2000-2003, Håkan Hjort <d95hjort@dtek.chalmers.se>
+License: GPL-2+
+
+Files: lib/libdvd/libdvdread/src/bswap.h
+Copyright: 2000, 2001, Billy Biggs <vektor@dumbterm.net>
+License: GPL-2+
+
+Files: lib/libdvd/libdvdread/src/dvd_input.c
+Copyright: 2002, Samuel Hocevar <sam@zoy.org>
+License: GPL-2+
+
+Files: lib/libdvd/libdvdread/src/dvd_input.h
+Copyright: 2001, 2002, Samuel Hocevar <sam@zoy.org>
+License: GPL-2+
+
+Files: lib/libdvd/libdvdread/src/dvd_reader.c
+Copyright: 2001-2004, Billy Biggs <vektor@dumbterm.net>
+License: GPL-2+
+
+Files: lib/libdvd/libdvdread/src/dvd_udf.c
+Copyright: 1999, Christian Wolff for convergence integrated media
+License: GPL-2+
+
+Files: lib/libdvd/libdvdread/src/dvdread/*
+Copyright: 2000-2002, Håkan Hjort <d95hjort@dtek.chalmers.se>
+License: GPL-2+
+
+Files: lib/libdvd/libdvdread/src/dvdread/dvd_reader.h
+ lib/libdvd/libdvdread/src/dvdread/nav_print.h
+Copyright: 2001, 2002, Billy Biggs <vektor@dumbterm.net>
+License: GPL-2+
+
+Files: lib/libdvd/libdvdread/src/dvdread/dvd_udf.h
+Copyright: 1999, Christian Wolff for convergence integrated media
+License: GPL-2+
+
+Files: lib/libdvd/libdvdread/src/dvdread/ifo_read.h
+Copyright: 2000-2002, Björn Englund <d4bjorn@dtek.chalmers.se>
+License: GPL-2+
+
+Files: lib/libdvd/libdvdread/src/dvdread/ifo_types.h
+Copyright: 2000, 2001, Björn Englund <d4bjorn@dtek.chalmers.se>
+License: GPL-2+
+
+Files: lib/libdvd/libdvdread/src/dvdread/nav_types.h
+Copyright: 2000-2002, Håkan Hjort <d95hjort@dtek.chalmers.se>
+  1998, 1999, Eric Smith <eric@brouhaha.com>
+License: GPL-2
+
+Files: lib/libdvd/libdvdread/src/ifo_read.c
+Copyright: 2000-2002, 2003
+License: GPL-2+
+
+Files: lib/libdvd/libdvdread/src/md5.c
+Copyright: 1995, 1996, 2001, Free Software Foundation, Inc
+License: GPL-2+
+
+Files: lib/libdvd/libdvdread/src/md5.h
+Copyright: 1995, 1996, 1999, Free Software Foundation, Inc
+License: GPL-2+
+
+Files: lib/libdvd/libdvdread/src/nav_print.c
+Copyright: 2000-2003, Håkan Hjort <d95hjort@dtek.chalmers.se>
+  1998, 1999, Eric Smith <eric@brouhaha.com>
+License: GPL-2
+
+Files: lib/libexif/ExifParse.cpp
+ lib/libexif/IptcParse.cpp
+ lib/libexif/JpegParse.cpp
+Copyright: 2005-2007, Team XboxMediaCenter
+License: GPL-2+
+
+Files: lib/libhts/*
+Copyright: 2007, Andreas Öman
+License: GPL-2+
+
+Files: lib/libhts/Win32/include/getopt.h
+Copyright: 1987, 1993, 1994, 1996
+License: BSD-4-clause
+
+Files: lib/libhts/Win32/include/inttypes.h
+Copyright: 2006, Alexander Chemeris
+License: BSD-2-clause
+
+Files: lib/libhts/Win32/include/sys/*
+Copyright: 1991, 1993
+License: BSD-3-clause
+
+Files: lib/libhts/htsatomic.c
+ lib/libhts/htsatomic.h
+ lib/libhts/htsbuf.c
+ lib/libhts/htsbuf.h
+Copyright: 2008, Andreas Öman
+License: GPL-2+
+
+Files: lib/libhts/htsstr.c
+ lib/libhts/htsstr.h
+Copyright: 2008, Mattias Wadman
+  2008, Andreas Öman
+License: GPL-2+
+
+Files: lib/libhts/net.h
+ lib/libhts/net_posix.c
+Copyright: 2007, 2008, Andreas Öman
+License: GPL-2+
+
+Files: lib/libhts/net_winsock.c
+Copyright: 2007, 2008, Joakim Plate
+  2007, 2008, Andreas Öman
+License: GPL-2+
+
+Files: lib/libhts/sha1.c
+ lib/libhts/sha1.h
+Copyright: 2007, Michael Niedermayer <michaelni@gmx.at>
+License: LGPL-2.1+
+
+Files: lib/libsquish/*
+Copyright: 2006, Simon Brown si@sjbrown.co.uk
+License: Expat
+
+Files: lib/libsquish/clusterfit.cpp
+ lib/libsquish/clusterfit.h
+Copyright: 2007, Ignacio Castano icastano@nvidia.com
+  2006, Simon Brown si@sjbrown.co.uk
+License: Expat
+
+Files: lib/nosefart/*
+Copyright: 2008-2013, Team XBMC
+License: GPL-2+
+
+Files: lib/nosefart/src/*
+Copyright: 1998-2000, Matthew Conte (matt@conte.com)
+License: LGPL-2
+
+Files: lib/nosefart/src/memguard.c
+Copyright: 1998-2000, Matthew Conte (matt@conte.com)
+  1998, the Retrocade group
+License: LGPL-2
+
+Files: lib/nosefart/src/sndhrdw/fmopl.c
+Copyright: 1999, Tatsuyuki Satoh , MultiArcadeMachineEmurator development
+License: UNKNOWN
+
+Files: lib/snesapu/A2Misc.h
+Copyright: 2006, Alpha-II Productions *
+License: LGPL-2.1+
+
+Files: lib/snesapu/SNES/SNESAPU/SNESAPU.cpp
+Copyright: 2001-2006, Alpha-II Productions *
+License: UNKNOWN
+
+Files: lib/snesapu/SNES/SNESAPU/SNESAPU.h
+Copyright: 2001-2006, Alpha-II Productions *
+License: LGPL-2.1+
+
+Files: lib/stsound/*
+Copyright: 1995-1999, Arnaud Carre ( http://leonard.oxg.free.fr )
+License: GPL-2+
+
+Files: lib/stsound/StSoundLibrary/LZH/*
+Copyright: 1996, Kerwin F. Medina
+  1991, Haruhiko Okumura
+License: UNKNOWN
+
+Files: lib/stsound/StSoundLibrary/XBMCYM.cpp
+Copyright: 2008-2013, Team XBMC
+License: GPL-2+
+
+Files: lib/timidity/*
+Copyright: 1999-2002, Masanao Izumo <mo@goice.co.jp>
+  1995, Tuukka Toivonen <tt@cgs.fi>
+License: GPL-2+
+
+Files: lib/timidity/interface/VTPrsTbl.c
+ lib/timidity/interface/VTparse.h
+Copyright: 1987, by Digital Equipment Corporation, Maynard, Massachusetts
+License: UNKNOWN
+
+Files: lib/timidity/interface/alsaseq_c.c
+Copyright: 2000, Takashi Iwai <tiwai@suse.de>
+  1999-2004, Masanao Izumo <iz@onicos.co.jp>
+  1995, Tuukka Toivonen <tt@cgs.fi>
+License: GPL-2+
+
+Files: lib/timidity/interface/ncurs_c.c
+ lib/timidity/interface/server_c.c
+ lib/timidity/interface/slang_c.c
+ lib/timidity/interface/vt100_c.c
+ lib/timidity/interface/w32g_i.c
+ lib/timidity/interface/w32g_syn.c
+ lib/timidity/interface/xaw_i.c
+Copyright: 1999-2004, Masanao Izumo <iz@onicos.co.jp>
+  1995, Tuukka Toivonen <tt@cgs.fi>
+License: GPL-2+
+
+Files: lib/timidity/interface/portmidisyn_c.c
+ lib/timidity/interface/rtsyn.h
+ lib/timidity/interface/rtsyn_portmidi.c
+ lib/timidity/interface/rtsyn_winmm.c
+Copyright: 2003, Keishi Suenaga <s_keishi@mutt.freemail.ne.jp>
+  2000, Takashi Iwai <tiwai@suse.de>
+  1999-2002, Masanao Izumo <mo@goice.co.jp>
+  1995, Tuukka Toivonen <tt@cgs.fi>
+License: GPL-2+
+
+Files: lib/timidity/interface/rtsyn_common.c
+Copyright: 2003, Keishi Suenaga <s_keishi@mutt.freemail.ne.jp>
+  2000, Takashi Iwai <tiwai@suse.de>
+  1999-2004, Masanao Izumo <iz@onicos.co.jp>
+  1995, Tuukka Toivonen <tt@cgs.fi>
+License: GPL-2+
+
+Files: lib/timidity/interface/w32g_c.c
+ lib/timidity/interface/w32g_ini.c
+ lib/timidity/interface/w32g_playlist.c
+ lib/timidity/interface/w32g_utl.c
+Copyright: 1999-2002, Masanao Izumo <mo@goice.co.jp>
+  1995, Tuukka Toivonen <toivonen@clinet.fi>
+License: GPL-2+
+
+Files: lib/timidity/interface/winsyn_c.c
+Copyright: 2002, 2003, Keishi Suenaga <s_keishi@mutt.freemail.ne.jp>
+  2000, Takashi Iwai <tiwai@suse.de>
+  1999-2002, Masanao Izumo <mo@goice.co.jp>
+  1995, Tuukka Toivonen <tt@cgs.fi>
+License: GPL-2+
+
+Files: lib/timidity/interface/xaw_redef.c
+Copyright: 1987, 1988, by Digital Equipment Corporation, Maynard, Massachusetts
+  1987, 1988, 1994, X Consortium
+License: Expat
+
+Files: lib/timidity/libarc/deflate.c
+Copyright: 1999-2002, Masanao Izumo <mo@goice.co.jp>
+  1995, Tuukka Toivonen <tt@cgs.fi>
+  1992, 1993, Jean-loup Gailly
+License: GPL-2+
+
+Files: lib/timidity/libunimod/*
+Copyright: 1998, 1999, Miodrag Vallat and others - see file AUTHORS for
+License: LGPL-2+
+
+Files: lib/timidity/libunimod/load_gdm.c
+Copyright: 1998, 1999, Miodrag Vallat and others - see file AUTHORS for
+License: LGPL
+
+Files: lib/timidity/libunimod/load_okt.c
+Copyright: 1999, 2000, Miodrag Vallat and others - see file AUTHORS for
+License: LGPL-2+
+
+Files: lib/timidity/script/*
+Copyright: 1999-2004, Masanao Izumo <iz@onicos.co.jp>
+  1995, Tuukka Toivonen <tt@cgs.fi>
+License: GPL-2+
+
+Files: lib/timidity/script/wcc386_w.sh
+Copyright: 2004, Keishi Suenaga <s_kesihi@mutt.freemail.ne.jp>
+License: GPL-2+
+
+Files: lib/timidity/timidity/dl_dyld.c
+Copyright: 1999-2001, Masanao Izumo <mo@goice.co.jp>
+  1995, Tuukka Toivonen <tt@cgs.fi>
+License: GPL-2+
+
+Files: lib/timidity/timidity/effect.c
+ lib/timidity/timidity/instrum.c
+ lib/timidity/timidity/loadtab.c
+ lib/timidity/timidity/playmidi.c
+ lib/timidity/timidity/playmidi.h
+ lib/timidity/timidity/readmidi.c
+ lib/timidity/timidity/readmidi.h
+ lib/timidity/timidity/recache.c
+ lib/timidity/timidity/tables.c
+ lib/timidity/timidity/tables.h
+ lib/timidity/timidity/timidity.c
+Copyright: 1999-2004, Masanao Izumo <iz@onicos.co.jp>
+  1995, Tuukka Toivonen <tt@cgs.fi>
+License: GPL-2+
+
+Files: lib/timidity/timidity/hpux_d_a.c
+Copyright: 1999-2002, Masanao Izumo <mo@goice.co.jp>
+  1997, Lawrence T. Hoff
+  1995, Tuukka Toivonen <tt@cgs.fi>
+License: GPL-2+
+
+Files: lib/timidity/timidity/jack_a.c
+Copyright: 2003, Takashi Iwai <tiwai@suse.de>
+  1999-2002, Masanao Izumo <mo@goice.co.jp>
+  1995, Tuukka Toivonen <tt@cgs.fi>
+License: GPL-2+
+
+Files: lib/timidity/timidity/mod.c
+Copyright: 1999-2002, Masanao Izumo <mo@goice.co.jp>
+  1998, 1999, Miodrag Vallat and others - see file libunimod
+  1995, Tuukka Toivonen <tt@cgs.fi>
+  , AUTHORS
+License: GPL-2+
+
+Files: lib/timidity/timidity/mt19937ar.c
+Copyright: 1997-2002, Makoto Matsumoto and Takuji Nishimura
+License: BSD-2-clause
+
+Files: lib/timidity/timidity/nas_a.c
+Copyright: 1999-2002, Masanao Izumo <mo@goice.co.jp>
+  1999, Michael Haardt <michael@moria.de>
+  1995, Tuukka Toivonen <tt@cgs.fi>
+License: GPL-2+
+
+Files: lib/timidity/timidity/reverb.c
+ lib/timidity/timidity/reverb.h
+Copyright: 1999-2002, Masanao Izumo <mo@goice.co.jp>
+  1997-1999, Masaki Kiryu <mkiryu@usa.net>
+  1995, Tuukka Toivonen <tt@cgs.fi>
+License: GPL-2+
+
+Files: lib/timidity/timidity/sbkconv.c
+ lib/timidity/timidity/sffile.c
+ lib/timidity/timidity/sffile.h
+ lib/timidity/timidity/sndfont.c
+Copyright: 1999-2002, Masanao Izumo <mo@goice.co.jp>
+  1996, 1997, Takashi Iwai
+  1995, Tuukka Toivonen <tt@cgs.fi>
+License: GPL-2+
+
+Files: lib/timidity/timidity_codec.h
+Copyright: 1995, Tuukka Toivonen <toivonen@clinet.fi>
+License: GPL-2+
+
+Files: lib/timidity/utils/fft4g.c
+ lib/timidity/utils/fft4g.h
+Copyright: 1996-1999, Takuya OOURA
+License: UNKNOWN
+
+Files: lib/timidity/utils/nkflib.c
+Copyright: 1999-2002, Masanao Izumo <mo@goice.co.jp>
+  1996, 1998
+  1995, Tuukka Toivonen <tt@cgs.fi>
+  1987, Fujitsu LTD. (Itaru ICHIKAWA)
+License: GPL-2+
+
+Files: lib/timidity/utils/tmdy_getopt.h
+Copyright: 90-94, 96-99, 1989, Free Software Foundation, Inc
+License: LGPL-2+
+
+Files: lib/vgmstream/*
+Copyright: 2008-2013, Team XBMC
+License: GPL-2+
+
+Files: lib/vgmstream/ext_includes/*
+Copyright: 2005-2007, Paul Hsieh
+License: BSD-3-clause
+
+Files: lib/vgmstream/src/coding/acm_decoder.c
+ lib/vgmstream/src/coding/acm_decoder.h
+Copyright: 2008, Adam Gashlin
+  2004-2008, Marko Kreen
+License: ISC
+
+Files: tools/EventClients/*
+Copyright: 2008-2013, Team XBMC
+License: GPL-2+
+
+Files: tools/EventClients/Clients/J2ME Client/*
+Copyright: 2008, topfs2
+License: GPL-2+
+
+Files: tools/EventClients/Clients/Kodi Send/*
+Copyright: 2009, team-xbmc
+License: GPL-2+
+
+Files: tools/EventClients/Clients/OSXRemote/*
+Copyright: 2008, University Heidelberg. All rights reserved
+License: UNKNOWN
+
+Files: tools/EventClients/Clients/OSXRemote/HIDRemote/*
+Copyright: 2007-2009, IOSPIRIT GmbH. All rights reserved / 2007-2009, IOSPIRIT GmbH (http://www.iospirit.com/)
+License: BSD-3-clause
+
+Files: tools/EventClients/Clients/OSXRemote/HIDRemote/HIDRemote.m
+Copyright: 2007-2009, IOSPIRIT GmbH (http://www.iospirit.com/) / 2007-2009, IOSPIRIT GmbH. All rights reserved
+License: BSD-3-clause
+
+Files: tools/EventClients/Clients/OSXRemote/XBMCDebugHelpers.h
+Copyright: 2008, University Heidelberg. All rights reserved
+  2007, 2008, Eric Steil III
+License: GPL-3+
+
+Files: tools/EventClients/Clients/OSXRemote/xbmcclientwrapper.h
+Copyright: 2008, Stephan Diederich. All rights reserved
+License: GPL-3+
+
+Files: tools/EventClients/Clients/WiiRemote/*
+Copyright: 2007-2013, Team XBMC
+  2007, by Tobias Arrskog
+License: GPL-2+
+
+Files: tools/EventClients/Clients/WiiRemote/WiiUse_WiiRemote.cpp
+ tools/EventClients/Clients/WiiRemote/WiiUse_WiiRemote.h
+Copyright: 2009, by Cory Fields
+License: GPL-3+
+
+Files: tools/EventClients/Clients/WiiRemote/wiiuse_v0.12/*
+Copyright: , 2006-2007
+License: GPL-3+
+
+Files: tools/EventClients/Clients/Xbox360 Controller/Xbox360Controller.cpp
+ tools/EventClients/Clients/Xbox360 Controller/Xbox360Controller.h
+ tools/EventClients/Clients/Xbox360 Controller/Xbox360EventClient.cpp
+Copyright: 2009-2013, Team XBMC
+License: GPL-2+
+
+Files: tools/EventClients/lib/python/ps3/keymaps.py
+ tools/EventClients/lib/python/ps3/sixaxis.py
+Copyright: 2008-2013, Team XBMC
+License: GPL-2+
+
+Files: tools/Fake Episode Maker/*
+Copyright: 2008-2013, Team XBMC
+License: GPL-2+
+
+Files: tools/Linux/*
+Copyright: 2013, Team XBMC
+License: GPL-2+
+
+Files: tools/TexturePacker/*
+Copyright: 2005-2013, Team XBMC
+License: GPL-2+
+
+Files: tools/TexturePacker/SDL_anigif.cpp
+Copyright: 1996, Torsten Martinsen. | */ / 1997-2006, Sam Lantinga / 2006, Doug McFadyen / 1990, 1991, 1993, David Koblas. | */
+License: LGPL-2.1+
+
+Files: tools/TexturePacker/SDL_anigif.h
+Copyright: 2006, Doug McFadyen
+  1997-2006, Sam Lantinga
+License: LGPL-2.1+
+
+Files: tools/TexturePacker/Win32/*
+Copyright: Kevlin Henney, 1997, 2003. All rights reserved
+License: UNKNOWN
+
+Files: tools/UpdateThumbs.py
+Copyright: 2005-2013, Team XBMC
+License: GPL-2+
+
+Files: tools/darwin/*
+Copyright: 2008-2013, Team Kodi
+License: GPL-2+
+
+Files: tools/depends/native/JsonSchemaBuilder/src/JsonSchemaBuilder.cpp
+Copyright: 2011, Tobias Arrskog
+License: GPL-2+
+
+Files: tools/depends/target/android-libc-replacements/*
+Copyright: 1991, 1993
+License: BSD-4-clause
+
+Files: tools/depends/target/android-sources-ics/*
+Copyright: 2010-2013, Team XBMC
+License: GPL-2+
+
+Files: tools/depends/target/ffmpeg/*
+Copyright: 2005-2013, Team XBMC
+License: GPL-2+
+
+Files: tools/depends/target/libamplayer/libamplayer/include/amcodec/*
+Copyright: 2007-2011, Amlogic Inc
+License: UNKNOWN
+
+Files: tools/depends/target/libamplayer/libamplayer/include/amcodec/amports/*
+Copyright: 2007-2011, Amlogic Inc
+License: GPL
+
+Files: tools/depends/target/libomxil-bellagio/*
+Copyright: 1998-2009, PacketVideo
+License: Apache-2.0
+
+Files: tools/depends/target/libomxil-bellagio/oscl/oscl_base_macros.h
+ tools/depends/target/libomxil-bellagio/oscl/osclconfig.h
+ tools/depends/target/libomxil-bellagio/oscl/osclconfig_check.h
+ tools/depends/target/libomxil-bellagio/oscl/osclconfig_io.h
+ tools/depends/target/libomxil-bellagio/oscl/osclconfig_lib.h
+ tools/depends/target/libomxil-bellagio/oscl/osclconfig_memory.h
+ tools/depends/target/libomxil-bellagio/oscl/osclconfig_no_os.h
+ tools/depends/target/libomxil-bellagio/oscl/osclconfig_time.h
+ tools/depends/target/libomxil-bellagio/oscl/osclconfig_time_check.h
+ tools/depends/target/libomxil-bellagio/oscl/osclconfig_unix_android.h
+ tools/depends/target/libomxil-bellagio/oscl/osclconfig_unix_common.h
+Copyright: 1998-2010, PacketVideo
+License: Apache-2.0
+
+Files: xbmc-xrandr.c
+Copyright: 2006, Intel Corporation / 2002, Hewlett Packard Company, Inc / 2001, Keith Packard, member of The XFree86 Project, Inc
+License: UNKNOWN
+
+Files: xbmc/*
+Copyright: 2005-2014, Team XBMC
+License: GPL-2+
+
+Files: xbmc/addons/AudioEncoder.cpp
+ xbmc/addons/AudioEncoder.h
+Copyright: 2013, Arne Morten Kvarving
+License: GPL-2+
+
+Files: xbmc/android/bionic_supplement/*
+Copyright: 1991, 1992, 1995-1997, Free Software Foundation, Inc
+License: LGPL-2+
+
+Files: xbmc/android/bionic_supplement/rand_r.c
+Copyright: 1996, 1999, Free Software Foundation, Inc
+License: LGPL-2.1+
+
+Files: xbmc/android/jni/JNIThreading.cpp
+ xbmc/android/jni/JNIThreading.h
+Copyright: 2011, 2012, Dmitry Moskalchuk <dm@crystax.net>
+  2005-2013, Team XBMC
+License: BSD-2-clause
+
+Files: xbmc/android/jni/jutils.cpp
+Copyright: 2013, Team XBMC
+  2011, 2012, Dmitry Moskalchuk <dm@crystax.net>
+License: BSD and (2 and clause) and GPL-2+
+
+Files: xbmc/android/jni/jutils/*
+Copyright: 2013, Team XBMC
+  2011, 2012, Dmitry Moskalchuk <dm@crystax.net>
+License: BSD and (2 and clause) and GPL-2+
+
+Files: xbmc/android/jni/jutils/jni.inc
+Copyright: 2011, 2012, Dmitry Moskalchuk <dm@crystax.net>
+License: BSD-2-clause
+
+Files: xbmc/cores/VideoRenderers/LinuxRendererGL.cpp
+Copyright: 2007-2013, Team XBMC
+  2007, Frodo
+  , xvid
+  , vulkanr
+  , mplayer
+  , jcmarshall
+  , d4rk
+  , by the authors of ffmpeg
+License: GPL-2+
+
+Copyright: 2007-2013, Team XBMC
+  2007, d4rk
+License: GPL-2+
+
+Files: xbmc/cores/dvdplayer/DVDCodecs/Overlay/libspucc/*
+Copyright: 2000-2008, the xine project
+  , Christian Vogler
+License: GPL-2+
+
+Files: xbmc/cores/dvdplayer/DVDCodecs/Video/libmpeg2/*
+Copyright: 2000-2004, Michel Lespinasse <walken@zoy.org>
+  1999, 2000, Aaron Holtzman <aholtzma@ess.engr.uvic.ca>
+License: GPL-2+
+
+Files: xbmc/cores/dvdplayer/DVDCodecs/Video/libmpeg2/mpeg2convert.h
+Copyright: 2000-2003, Michel Lespinasse <walken@zoy.org>
+  1999, 2000, Aaron Holtzman <aholtzma@ess.engr.uvic.ca>
+License: GPL-2+
+
+Files: xbmc/cores/dvdplayer/DVDCodecs/Video/libstagefrightICS/StageFrightInterface.cpp
+Copyright: 2013, Team XBMC
+License: UNKNOWN
+
+Files: xbmc/cores/dvdplayer/DVDInputStreams/dvdnav/*
+Copyright: 2001, Rich Wareham <richwareham@users.sourceforge.net>
+License: GPL-2+
+
+Files: xbmc/cores/dvdplayer/DVDInputStreams/dvdnav/decoder.h
+ xbmc/cores/dvdplayer/DVDInputStreams/dvdnav/vmcmd.h
+Copyright: 2000, 2001, Martin Norbäck, Håkan Hjort
+License: GPL-2+
+
+Files: xbmc/cores/dvdplayer/DVDInputStreams/dvdnav/dvd_reader.h
+Copyright: 2001, 2002, Billy Biggs <vektor@dumbterm.net>
+License: GPL-2+
+
+Files: xbmc/cores/dvdplayer/DVDInputStreams/dvdnav/dvd_types.h
+Copyright: 2000, 2001, Björn Englund, Håkan Hjort
+License: GPL-2+
+
+Files: xbmc/cores/dvdplayer/DVDInputStreams/dvdnav/dvdnav_internal.h
+Copyright: 2001-2004, Rich Wareham <richwareham@users.sourceforge.net>
+License: GPL-2+
+
+Files: xbmc/cores/dvdplayer/DVDInputStreams/dvdnav/ifo_types.h
+Copyright: 2000, 2001, Björn Englund <d4bjorn@dtek.chalmers.se>
+License: GPL-2+
+
+Files: xbmc/cores/dvdplayer/DVDInputStreams/dvdnav/nav_types.h
+Copyright: 2000-2002, Håkan Hjort <d95hjort@dtek.chalmers.se>
+  1998, 1999, Eric Smith <eric@brouhaha.com>
+License: GPL-2
+
+Files: xbmc/cores/dvdplayer/DVDInputStreams/dvdnav/vm.h
+Copyright: 2001, Rich Wareham <richwareham@users.sourceforge.net>
+  2000, 2001, Håkan Hjort
+License: GPL-2+
+
+Files: xbmc/cores/omxplayer/OMXAudio.cpp
+ xbmc/cores/omxplayer/OMXAudio.h
+Copyright: 2012, 2013, Team XBMC
+  2002, d7o3g4q and RUNTiME & by the authors of ffmpeg and xvid
+License: GPL-2+
+
+Files: xbmc/dbwrappers/*
+Copyright: 2004, Leo Seib, Hannover
+License: Expat
+
+Files: xbmc/dbwrappers/Database.cpp
+ xbmc/dbwrappers/Database.h
+ xbmc/dbwrappers/mysqldataset.cpp
+ xbmc/dbwrappers/mysqldataset.h
+Copyright: 2005-2013, Team XBMC
+License: GPL-2+
+
+Files: xbmc/dbwrappers/DatabaseQuery.cpp
+ xbmc/dbwrappers/DatabaseQuery.h
+Copyright: 2013, Team XBMC
+License: GPL-2+
+
+Files: xbmc/dbwrappers/dataset.h
+Copyright: 2002, Leo Seib, Hannover
+License: Expat
+
+Files: xbmc/filesystem/DAAPDirectory.cpp
+ xbmc/filesystem/DAAPDirectory.h
+ xbmc/filesystem/DAAPFile.cpp
+ xbmc/filesystem/DAAPFile.h
+Copyright: 2005-2013, Team XBMC
+  2004, Forza (Chris Barnett)
+  , by the authors of libOpenDAAP
+License: GPL-2+
+
+Files: xbmc/filesystem/File.cpp
+ xbmc/filesystem/File.h
+ xbmc/filesystem/FileReaderFile.cpp
+ xbmc/filesystem/FileReaderFile.h
+ xbmc/filesystem/IFile.cpp
+ xbmc/filesystem/IFile.h
+ xbmc/filesystem/ISOFile.cpp
+ xbmc/filesystem/ISOFile.h
+ xbmc/filesystem/PipeFile.h
+Copyright: 2002-2013, Team XBMC
+  2002, Frodo
+  , by the authors of ffmpeg and xvid
+License: GPL-2+
+
+Files: xbmc/filesystem/NptXbmcFile.cpp
+Copyright: 2002-2008, Axiomatic Systems, LLC
+License: BSD-3-clause
+
+Files: xbmc/filesystem/SAPDirectory.cpp
+ xbmc/filesystem/SAPDirectory.h
+ xbmc/filesystem/SAPFile.cpp
+ xbmc/filesystem/SAPFile.h
+Copyright: 2008-2013, Team XBMC
+  2008, elupus (Joakim Plate)
+License: GPL-2+
+
+Files: xbmc/filesystem/UDFDirectory.cpp
+ xbmc/filesystem/UDFDirectory.h
+ xbmc/filesystem/UDFFile.cpp
+ xbmc/filesystem/UDFFile.h
+ xbmc/filesystem/udf25.cpp
+ xbmc/filesystem/udf25.h
+Copyright: 2010-2013, Team XBMC
+  2010, Team Boxee
+License: GPL-2+
+
+Files: xbmc/filesystem/UPnPDirectory.cpp
+ xbmc/filesystem/UPnPDirectory.h
+Copyright: 2010-2013, Team XBMC
+  2006, c0diq (Sylvain Rebaud)
+  , by the authors of libPlatinum
+License: GPL-2+
+
+Files: xbmc/filesystem/iso9660.cpp
+ xbmc/filesystem/iso9660.h
+Copyright: 2003-2013, Team XBMC
+  2003, by The Joker
+  , Avalaunch team
+License: GPL-2+
+
+Files: xbmc/freebsd/*
+Copyright: 2009, David Schultz <das@FreeBSD.org>
+  1991, 1992, 1995-1997, Free Software Foundation, Inc
+License: BSD and (2 and clause) and LGPL-2+
+
+Files: xbmc/freebsd/FreeBSDGNUReplacements.h
+Copyright: 2009, David Schultz <das@FreeBSD.org>
+License: BSD-2-clause
+
+Files: xbmc/guilib/AnimatedGif.cpp
+ xbmc/guilib/AnimatedGif.h
+Copyright: 2000, Juan Soulie <jsoulie@cplusplus.com>
+License: UNKNOWN
+
+Files: xbmc/input/XBMC_keyboard.h
+ xbmc/input/XBMC_keysym.h
+ xbmc/input/XBMC_mouse.h
+ xbmc/input/XBMC_vkeys.h
+Copyright: 1997-2009, Sam Lantinga
+License: LGPL-2.1+
+
+Files: xbmc/input/linux/LinuxInputDevices.cpp
+Copyright: 2005-2013, Team XBMC
+  2001-2009, The world wide DirectFB Open Source Community (directfb.org)
+  2000-2004, Convergence (integrated media) GmbH
+License: GPL-2+
+
+Files: xbmc/network/Socket.cpp
+ xbmc/network/Socket.h
+Copyright: 2008-2013, Team XBMC
+  2008, d4rk
+License: GPL-2+
+
+Files: xbmc/network/UdpClient.h
+Copyright: 2002-2013, Team XBMC
+  2002, Frodo
+  , by the authors of ffmpeg and xvid
+License: GPL-2+
+
+Files: xbmc/network/upnp/UPnP.cpp
+ xbmc/network/upnp/UPnP.h
+Copyright: 2006-2013, Team XBMC
+  2006, c0diq (Sylvain Rebaud)
+  , by the authors of libPlatinum
+License: GPL-2+
+
+Files: xbmc/network/upnp/UPnPPlayer.cpp
+ xbmc/network/upnp/UPnPPlayer.h
+Copyright: 2006-2013, Team XBMC
+  2006, elupus (Joakim Plate)
+License: GPL-2+
+
+Files: xbmc/osx/atv2/XBMCDebugHelpers.h
+Copyright: 2008-2013, Team XBMC
+  2008, University Heidelberg. All rights reserved
+  2007, 2008, Eric Steil III
+License: GPL-2+
+
+Files: xbmc/osx/atv2/kodiclientwrapper.h
+Copyright: 2008-2013, Team XBMC
+  2008, Stephan Diederich. All rights reserved
+License: GPL-2+
+
+Files: xbmc/osx/ios/XBMCDebugHelpers.h
+Copyright: 2008-2013, Team XBMC
+  2008, University Heidelberg. All rights reserved
+  2007, 2008, Eric Steil III
+License: GPL-2+
+
+Files: xbmc/osx/smc.c
+ xbmc/osx/smc.h
+Copyright: 2006, devnull
+License: GPL-2+
+
+Files: xbmc/powermanagement/linux/LogindUPowerSyscall.cpp
+ xbmc/powermanagement/linux/LogindUPowerSyscall.h
+Copyright: 2012, Denis Yantarev
+  2005-2013, Team XBMC
+License: GPL-2+
+
+Files: xbmc/screensavers/*
+Copyright: 1989-2006, Free Software Foundation, Inc
+License: GPL-2+
+
+License: GPL-2+
+
+Files: xbmc/screensavers/rsxs-0.9/src/*
+Copyright: 2002-2006, Michael Chapman
+  2002, Terence M. Welsh, available from www.reallyslick.com
+License: GPL-2
+
+Files: xbmc/screensavers/rsxs-0.9/src/hyperspace/*
+Copyright: 2005, Terence M. Welsh, available from www.reallyslick.com
+  2002-2006, Michael Chapman
+License: GPL-2
+
+Files: xbmc/screensavers/rsxs-0.9/src/hyperspace/caustic.cc
+Copyright: 2005, Terence M. Welsh, available from www.reallyslick.com
+  2002-2006, Michael Chapman
+License: GPL
+
+Files: xbmc/screensavers/rsxs-0.9/src/vroot.hh
+Copyright: 1990, by Solbourne Computer Inc. **/ / 1991, by Andreas Stolcke **/ / 2002, Terence M. Welsh, available from www.reallyslick.com / 2002-2006, Michael Chapman
+License: GPL-2
+
+Files: xbmc/storage/IoSupport.cpp
+ xbmc/storage/IoSupport.h
+Copyright: 2002-2013, Team XBMC
+  2002, Frodo
+  , by the authors of ffmpeg and xvid
+License: GPL-2+
+
+Files: xbmc/threads/Event.cpp
+ xbmc/threads/SingleLock.h
+ xbmc/threads/Thread.cpp
+Copyright: 2002-2013, Team XBMC
+  2002, Frodo
+  , by the authors of ffmpeg and xvid
+License: GPL-2+
+
+Files: xbmc/utils/BitstreamConverter.cpp
+Copyright: 2010-2013, Team XBMC
+  2008, Wim Taymans <wim.taymans@gmail.com>
+  2005, Michal Benes <michal.benes@itonis.tv>
+License: GPL-2+
+
+Files: xbmc/utils/BitstreamConverter.h
+Copyright: 2010-2013, Team XBMC
+  2006, Baptiste Coudurier <baptiste.coudurier@smartjog.com>
+License: GPL-2+
+
+Files: xbmc/utils/StringUtils.cpp
+Copyright: 2005-2013, Team XBMC
+  , Leigh Brasington 2012. All rights reserved
+License: GPL-2+
+
+Files: xbmc/utils/fft.cpp
+ xbmc/utils/fft.h
+Copyright: 1998, Arvin Schnell
+License: GPL-2+
+
+Files: xbmc/utils/fstrcmp.c
+Copyright: 1997-2010, The PHP Group |
+License: PHP-3.01
+
+Files: xbmc/utils/fstrcmp.h
+Copyright: 1995, Free Software Foundation, Inc
+License: GPL-2+
+
+Files: xbmc/visualizations/DirectXSpectrum/*
+Copyright: 1998-2000, Peter Alm, Mikael Alm, Olle Hallnas, Thomas Nilsson and 4Front Technologies
+License: GPL-2+
+
+Files: xbmc/visualizations/Goom/goom2k4-0/gtk-gui-devel/intl/*
+Copyright: 1995-1998, Free Software Foundation, Inc
+License: GPL-2+
+
+Files: xbmc/visualizations/Goom/goom2k4-0/mac/StandAlone/CoreAudioDevice.cpp
+ xbmc/visualizations/Goom/goom2k4-0/mac/StandAlone/CoreAudioDevice.h
+ xbmc/visualizations/Goom/goom2k4-0/mac/StandAlone/CoreAudioHardware.cpp
+ xbmc/visualizations/Goom/goom2k4-0/mac/StandAlone/CoreAudioHardware.h
+Copyright: 2005, iOS Software. All rights reserved
+License: UNKNOWN
+
+Files: xbmc/visualizations/Goom/goom2k4-0/mac/StandAlone/Goom.h
+ xbmc/visualizations/Goom/goom2k4-0/mac/StandAlone/Goom.m
+ xbmc/visualizations/Goom/goom2k4-0/mac/StandAlone/GoomFXParam.h
+ xbmc/visualizations/Goom/goom2k4-0/mac/StandAlone/GoomFXParam.m
+ xbmc/visualizations/Goom/goom2k4-0/mac/StandAlone/GoomFXView.h
+ xbmc/visualizations/Goom/goom2k4-0/mac/StandAlone/GoomFXView.m
+Copyright: 2003, iOS. All rights reserved
+License: UNKNOWN
+
+Files: xbmc/visualizations/Goom/goom2k4-0/mac/StandAlone/SoundSampler.h
+Copyright: 2004, iOS. All rights reserved
+License: UNKNOWN
+
+Files: xbmc/visualizations/Goom/goom2k4-0/mac/iTunes/iTuneVisualAPI/*
+Copyright: 2001, by Apple Computer, Inc., all rights reserved.
+License: UNKNOWN
+
+Files: xbmc/visualizations/Goom/goom2k4-0/mac/iTunes/iTuneVisualAPI/iTunesAPI.h
+Copyright: 2001, by Apple Computer, Inc., all rights reserved.
+License: UNKNOWN
+
+Files: xbmc/visualizations/Goom/goom2k4-0/mac/iTunes/iTuneVisualAPI/iTunesVisualAPI.h
+Copyright: 2001, by Apple Computer, Inc., all rights reserved.
+License: UNKNOWN
+
+Files: xbmc/visualizations/Goom/goom2k4-0/sdl-goom/pixeldoubler.h
+Copyright: 2001, JC Hoelt for iOS software
+License: UNKNOWN
+
+Files: xbmc/visualizations/Goom/goom2k4-0/src/config_param.c
+ xbmc/visualizations/Goom/goom2k4-0/src/cpu_info.c
+ xbmc/visualizations/Goom/goom2k4-0/src/cpu_info.h
+ xbmc/visualizations/Goom/goom2k4-0/src/mathtools.c
+ xbmc/visualizations/Goom/goom2k4-0/src/ppc_drawings.h
+ xbmc/visualizations/Goom/goom2k4-0/src/ppc_zoom_ultimate.h
+Copyright: 2003, iOS. All rights reserved
+License: UNKNOWN
+
+Files: xbmc/visualizations/Goom/goom2k4-0/src/goomsl_yacc.c
+ xbmc/visualizations/Goom/goom2k4-0/src/goomsl_yacc.h
+Copyright: 1984, 1989, 1990, 2000-2002, Free Software Foundation, Inc
+License: GPL-2+
+
+Files: xbmc/visualizations/Goom/goom2k4-0/src/ifs.c
+Copyright: 1997, by Massimino Pascal <Pascal.Massimon@ens.fr>
+License: UNKNOWN
+
+Files: xbmc/visualizations/Goom/goom2k4-0/src/jitc_x86.h
+Copyright: 2004, Jean-Christophe Hoelt <jeko@ios-software.com>
+License: UNKNOWN
+
+Files: xbmc/visualizations/Goom/goom2k4-0/src/lines.h
+Copyright: 2000-2003, iOS-software. All rights reserved
+License: UNKNOWN
+
+Files: xbmc/visualizations/Milkdrop/vis_milkdrop/*
+Copyright: 2005, Nullsoft, Inc
+License: BSD-3-clause
+
+Files: xbmc/visualizations/Milkdrop/vis_milkdrop/evallib/Lexget.c
+Copyright: , pos++;
+License: UNKNOWN
+
+Files: xbmc/visualizations/Milkdrop/vis_milkdrop/evallib/Yylex.c
+Copyright: 2005, Nullsoft, Inc
+License: BSD-3-clause
+
+Files: xbmc/visualizations/OpenGLSpectrum/opengl_spectrum.cpp
+Copyright: 1998-2000, Peter Alm, Mikael Alm, Olle Hallnas, Thomas Nilsson and 4Front Technologies
+License: GPL-2+
+
+Files: xbmc/visualizations/Vortex/*
+Copyright: 2010-2013, Team XBMC
+License: GPL-2+
+
+Files: xbmc/visualizations/Vortex/VortexVis/Core/fft.cpp
+ xbmc/visualizations/Vortex/VortexVis/Core/fft.h
+Copyright: 2005, Nullsoft, Inc
+License: BSD-3-clause
+
+Files: xbmc/visualizations/Vortex/angelscript/add_on/clib/*
+Copyright: 2003-2009, Andreas Jonsson
+License: Zlib
+
+Files: xbmc/visualizations/Vortex/angelscript/angelscript/*
+Copyright: 2003-2009, Andreas Jonsson
+License: Zlib
+
+Files: xbmc/visualizations/Vortex/angelscript/angelscript/source/as_criticalsection.h
+ xbmc/visualizations/Vortex/angelscript/angelscript/source/as_outputbuffer.h
+ xbmc/visualizations/Vortex/angelscript/angelscript/source/as_scriptcode.cpp
+ xbmc/visualizations/Vortex/angelscript/angelscript/source/as_thread.cpp
+ xbmc/visualizations/Vortex/angelscript/angelscript/source/as_thread.h
+ xbmc/visualizations/Vortex/angelscript/angelscript/source/as_tokenizer.h
+Copyright: 2003-2008, Andreas Jonsson
+License: Zlib
+
+Files: xbmc/visualizations/Vortex/angelscript/angelscript/source/as_debug.h
+ xbmc/visualizations/Vortex/angelscript/angelscript/source/as_map.h
+ xbmc/visualizations/Vortex/angelscript/angelscript/source/as_outputbuffer.cpp
+ xbmc/visualizations/Vortex/angelscript/angelscript/source/as_scriptcode.h
+ xbmc/visualizations/Vortex/angelscript/angelscript/source/as_scriptnode.cpp
+ xbmc/visualizations/Vortex/angelscript/angelscript/source/as_typeinfo.cpp
+ xbmc/visualizations/Vortex/angelscript/angelscript/source/as_typeinfo.h
+ xbmc/visualizations/Vortex/angelscript/angelscript/source/as_variablescope.cpp
+ xbmc/visualizations/Vortex/angelscript/angelscript/source/as_variablescope.h
+Copyright: 2003-2007, Andreas Jonsson
+License: Zlib
+
+Files: xbmc/visualizations/Vortex/angelscript/docs/doxygen/source/angelscript.h
+Copyright: 2003-2009, Andreas Jonsson
+License: Zlib
+
+Files: xbmc/visualizations/Vortex/angelscript/docs/doxygen/source/doc_license.h
+Copyright: 2003-2009, Andreas J&ouml;nsson
+License: Zlib
+
+Files: xbmc/visualizations/WaveForm/Main_gles.cpp
+Copyright: 1998-2000, Peter Alm, Mikael Alm, Olle Hallnas, Thomas Nilsson and 4Front Technologies
+License: GPL-2+
+
+Files: xbmc/visualizations/XBMCProjectM/libprojectM/*
+Copyright: 2003-2007, projectM Team
+License: LGPL-2.1+
+
+Files: xbmc/visualizations/XBMCProjectM/libprojectM/ConfigFile.h
+Copyright: 2004, Richard J. Wagner
+License: Expat
+
+Files: xbmc/visualizations/XBMCProjectM/libprojectM/RandomNumberGenerators.hpp
+Copyright: 1997, Tao Pang
+License: UNKNOWN
+
+Files: xbmc/visualizations/XBMCProjectM/libprojectM/glew.c
+Copyright: 2002-2008, Milan Ikits <milan ikits[]ieee org>
+  2002-2008, Marcelo E. Magallon <mmagallo[]debian org>
+  2002, Lev Povalahev
+License: BSD-2-clause
+
+Files: xbmc/visualizations/XBMCProjectM/libprojectM/glew.h
+ xbmc/visualizations/XBMCProjectM/libprojectM/glxew.h
+Copyright: 2007, The Khronos Group Inc
+  2002-2008, Milan Ikits <milan ikits[]ieee org>
+  2002-2008, Marcelo E. Magallon <mmagallo[]debian org>
+  2002, Lev Povalahev
+  1999-2007, Brian Paul All Rights Reserved
+License: BSD and (2 and clause) and Expat
+
+Files: xbmc/visualizations/XBMCProjectM/libprojectM/win32-dirent.h
+Copyright: Kevlin Henney, 1997, 2003. All rights reserved
+License: UNKNOWN
+
+Files: xbmc/visualizations/XBMCProjectM/win32/*
+Copyright: 1998, John E. Bossom
+License: LGPL-2+
+
+Files: xbmc/visualizations/fishBMC/fishbmc_addon.cpp
+Copyright: 2012, Marcel Ebmer
+License: GPL-2+
+
+
+Files: xbmc/win32/dirent.h
+Copyright: 2006-2012, Toni Ronkko
+License: Expat
+
+Files: xbmc/win32/strverscmp.cpp
+Copyright: 1997, 2000, Free Software Foundation, Inc
+License: LGPL-2+
+
+Files: xbmc/windowing/XBMC_events.h
+Copyright: 2005-2013, Team XBMC
+  1997-2009, Sam Lantinga
+License: GPL-2+

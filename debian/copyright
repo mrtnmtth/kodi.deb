@@ -19,6 +19,8 @@ Files-Excluded: lib/afpfs-ng
  lib/libass
  lib/libbluray
  lib/libcec
+ lib/libdvd/includes/dvdcss
+ lib/libdvd/libdvdcss
  lib/libdvd/libdvdnav/msvc
  lib/libdvd/libdvdread/msvc
  lib/libhdhomerun
@@ -36,6 +38,7 @@ Files-Excluded: lib/afpfs-ng
  lib/libUPnP/Platinum/Targets/universal-apple-*
  lib/groovy
  lib/taglib
+ lib/UnrarXLib
  lib/win32
  project/Win32BuildSetup
  addons/service.xbmc.versioncheck
@@ -43,6 +46,7 @@ Files-Excluded: lib/afpfs-ng
  addons/webinterface.default/js/jquery-1.8.2.min.js
  addons/skin.confluence/fonts/Roboto-*.ttf
  media/Fonts/arial.ttf
+ project/VS2010Express
  tools/EventClients/Clients/OSXRemote
  tools/TexturePacker/Win32
  tools/depends/target/android-libc-replacements

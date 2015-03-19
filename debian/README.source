@@ -1,0 +1,8 @@
+The XBMC/Kodi project embeds many external projects under lib/ using a wide
+range of licenses.
+Some source files embedded with external libraries have ambiguous license
+texts. While writing debian/copyright in those cases I assumed that the
+original projects did not violate the licenses of those files by embedding them
+and assumed the external librarys' license being in effect.
+
+ -- Balint Reczey <rbalint@chaos.sz13.dyndns.org>, Fri, 20 Mar 2015 20:21:38 +0100

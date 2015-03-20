@@ -1,6 +1,16 @@
-kodi (14.0+dfsg1-2) UNRELEASED; urgency=medium
+kodi (14.1+dfsg1-1) UNRELEASED; urgency=medium
 
-  * 
+  * Fix addon shared library naming on MIPS
+  * Drop non-machine-readable parts of debian/copyright
+  * Generate machine-readable debian/copyright for all files
+  * Clean up generated debian/copyright
+  * Remove non-free files in d/copyright
+  * Fix debian/watch file
+  * Use external kazlib
+  * Update debian/copyright with new removals
+  * Drop get-orig-source target from d/rules.
+    Use uscan for generating repacked original tarball.
+  * Imported Upstream version 14.1+dfsg1
 
  -- Balint Reczey <balint@balintreczey.hu>  Sat, 17 Jan 2015 00:30:36 +0100
 

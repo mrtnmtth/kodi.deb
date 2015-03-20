@@ -65,10 +65,8 @@ Files-Excluded: lib/afpfs-ng
  xbmc/visualizations/XBMCProjectM/win32
  xbmc/win32
 
-Files: debian/*
-Copyright: Copyright 2008-2009 Ouattara Oumar Aziz <wattazoum@gmail.com>
-           Copyright 2012-2013 Andres Mejia <amejia@debian.org>
-           Copyright 2014-2015 Balint Reczey <balint@balintreczey.hu>
+Files: *
+Copyright: 2005-2013, Team XBMC
 License: GPL-2+
  This program is free software; you can redistribute it
  and/or modify it under the terms of the GNU General Public
@@ -82,14 +80,15 @@ License: GPL-2+
  PURPOSE.  See the GNU General Public License for more
  details.
  .
- You should have received a copy of the GNU General Public
- License along with this package; if not, write to the Free
- Software Foundation, Inc., 51 Franklin St, Fifth Floor,
- Boston, MA  02110-1301 USA
- .
  On Debian systems, the full text of the GNU General Public
  License version 2 can be found in the file
  `/usr/share/common-licenses/GPL-2'.
+
+Files: debian/*
+Copyright: Copyright 2008-2009 Ouattara Oumar Aziz <wattazoum@gmail.com>
+           Copyright 2012-2013 Andres Mejia <amejia@debian.org>
+           Copyright 2014-2015 Balint Reczey <balint@balintreczey.hu>
+License: GPL-2+
 
 Files: debian/from-debian-logo.svg
 Copyright: Copyright 1999 Software in the Public Interest, Inc.
@@ -244,6 +243,29 @@ License: public-domain
 Files: lib/cximage-6.0/CxImage/*
 Copyright: 1995-2008, Davide Pizzolato
 License: Zlib
+ Covered code is provided under this license on an "as is" basis, without warranty
+ of any kind, either expressed or implied, including, without limitation, warranties
+ that the covered code is free of defects, merchantable, fit for a particular purpose
+ or non-infringing. The entire risk as to the quality and performance of the covered
+ code is with you. Should any covered code prove defective in any respect, you (not
+ the initial developer or any other contributor) assume the cost of any necessary
+ servicing, repair or correction. This disclaimer of warranty constitutes an essential
+ part of this license. No use of any covered code is authorized hereunder except under
+ this disclaimer.
+ .
+ Permission is hereby granted to use, copy, modify, and distribute this
+ source code, or portions hereof, for any purpose, including commercial applications,
+ freely and without fee, subject to the following restrictions:
+ ,
+ 1. The origin of this software must not be misrepresented; you must not
+ claim that you wrote the original software. If you use this software
+ in a product, an acknowledgment in the product documentation would be
+ appreciated but is not required.
+ .
+ 2. Altered source versions must be plainly marked as such, and must not be
+ misrepresented as being the original software.
+ .
+ 3. This notice may not be removed or altered from any source distribution.
 
 Files: lib/cximage-6.0/CxImage/ximabmp.h
  lib/cximage-6.0/CxImage/ximage.h
@@ -330,7 +352,7 @@ License: GPL-2+
 
 Files: lib/cximage-6.0/raw/dcr.c
 Copyright: 1997-2008, by Dave Coffin, dcoffin a cybercom o net
-License: GPL2-+
+License: GPL-2+
 
 Files: lib/cximage-6.0/raw/dcraw.c
 Copyright: 1997-2009, by Dave Coffin, dcoffin a cybercom o net
@@ -382,6 +404,29 @@ License: Expat
 Files: lib/libXDAAP/Authentication/md5.c
 Copyright: 2004, David Hammerton <crazney@crazney.net>
 License: public-domain and Expat
+ Parts found in the public domain with no copyright claim.
+ .
+ see rfc1321
+ .
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and associated documentation
+ files (the "Software"), to deal in the Software without
+ restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, sublicense, and/or
+ sell copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following conditions:
+ .
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
 
 Files: lib/libXDAAP/daap_contentcodes.h
  lib/libXDAAP/debug.c
@@ -545,6 +590,19 @@ Files: lib/nosefart/src/memguard.c
 Copyright: 1998-2000, Matthew Conte (matt@conte.com)
   1998, the Retrocade group
 License: LGPL-2
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of version 2 of the GNU Library General
+ Public License as published by the Free Software Foundation.
+ .
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Library General Public License for more details.  To obtain a
+ copy of the GNU Library General Public License, write to the Free
+ Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ .
+ Any permitted reproduction of these routines, in whole or in part,
+ must bear this legend.
 
 Files: lib/nosefart/src/sndhrdw/fmopl.c
 Copyright: 1999, Tatsuyuki Satoh , MultiArcadeMachineEmurator development
@@ -763,6 +821,17 @@ Files: lib/vgmstream/src/coding/acm_decoder.c
 Copyright: 2008, Adam Gashlin
   2004-2008, Marko Kreen
 License: ISC
+ Permission to use, copy, modify, and distribute this software for any
+ purpose with or without fee is hereby granted, provided that the above
+ copyright notice and this permission notice appear in all copies.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 Files: tools/EventClients/*
 Copyright: 2008-2013, Team XBMC
@@ -833,36 +902,6 @@ Files: tools/darwin/*
 Copyright: 2008-2013, Team Kodi
 License: GPL-2+
 
-Files: tools/depends/native/JsonSchemaBuilder/src/JsonSchemaBuilder.cpp
-Copyright: 2011, Tobias Arrskog
-License: GPL-2+
-
-Files: tools/depends/target/android-sources-ics/*
-Copyright: 2010-2013, Team XBMC
-License: GPL-2+
-
-Files: tools/depends/target/ffmpeg/*
-Copyright: 2005-2013, Team XBMC
-License: GPL-2+
-
-Files: tools/depends/target/libomxil-bellagio/*
-Copyright: 1998-2009, PacketVideo
-License: Apache-2.0
-
-Files: tools/depends/target/libomxil-bellagio/oscl/oscl_base_macros.h
- tools/depends/target/libomxil-bellagio/oscl/osclconfig.h
- tools/depends/target/libomxil-bellagio/oscl/osclconfig_check.h
- tools/depends/target/libomxil-bellagio/oscl/osclconfig_io.h
- tools/depends/target/libomxil-bellagio/oscl/osclconfig_lib.h
- tools/depends/target/libomxil-bellagio/oscl/osclconfig_memory.h
- tools/depends/target/libomxil-bellagio/oscl/osclconfig_no_os.h
- tools/depends/target/libomxil-bellagio/oscl/osclconfig_time.h
- tools/depends/target/libomxil-bellagio/oscl/osclconfig_time_check.h
- tools/depends/target/libomxil-bellagio/oscl/osclconfig_unix_android.h
- tools/depends/target/libomxil-bellagio/oscl/osclconfig_unix_common.h
-Copyright: 1998-2010, PacketVideo
-License: Apache-2.0
-
 Files: xbmc-xrandr.c
 Copyright: 2006, Intel Corporation
  2002, Hewlett Packard Company, Inc
@@ -902,6 +941,18 @@ License: LGPL-2+
 Files: xbmc/android/bionic_supplement/rand_r.c
 Copyright: 1996, 1999, Free Software Foundation, Inc
 License: LGPL-2.1+
+ This file is part of the GNU C Library.
+ Contributed by Ulrich Drepper <drepper@cygnus.com <mailto:drepper@cygnus.com>>, 1996.
+ .
+ The GNU C Library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 2.1 of the License, or (at your option) any later version.
+ .
+ The GNU C Library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
 
 Files: xbmc/android/jni/JNIThreading.cpp
  xbmc/android/jni/JNIThreading.h
@@ -912,12 +963,12 @@ License: BSD-2-clause
 Files: xbmc/android/jni/jutils.cpp
 Copyright: 2013, Team XBMC
   2011, 2012, Dmitry Moskalchuk <dm@crystax.net>
-License: BSD and (2 and clause) and GPL-2+
+License: GPL-2+
 
 Files: xbmc/android/jni/jutils/*
 Copyright: 2013, Team XBMC
   2011, 2012, Dmitry Moskalchuk <dm@crystax.net>
-License: BSD and (2 and clause) and GPL-2+
+License: GPL-2+
 
 Files: xbmc/android/jni/jutils/jni.inc
 Copyright: 2011, 2012, Dmitry Moskalchuk <dm@crystax.net>
@@ -1067,7 +1118,7 @@ License: GPL-2+
 Files: xbmc/freebsd/*
 Copyright: 2009, David Schultz <das@FreeBSD.org>
   1991, 1992, 1995-1997, Free Software Foundation, Inc
-License: BSD and (2 and clause) and LGPL-2+
+License: BSD-2-clause and LGPL-2+
 
 Files: xbmc/freebsd/FreeBSDGNUReplacements.h
 Copyright: 2009, David Schultz <das@FreeBSD.org>
@@ -1157,8 +1208,6 @@ Files: xbmc/screensavers/*
 Copyright: 1989-2006, Free Software Foundation, Inc
 License: GPL-2+
 
-License: GPL-2+
-
 Files: xbmc/screensavers/rsxs-0.9/src/*
 Copyright: 2002-2006, Michael Chapman
   2002, Terence M. Welsh, available from www.reallyslick.com
@@ -1220,6 +1269,13 @@ License: GPL-2+
 Files: xbmc/utils/fstrcmp.c
 Copyright: 1997-2010, The PHP Group |
 License: PHP-3.01
+ This source file is subject to version 3.01 of the PHP license,
+ that is bundled with this package in the file LICENSE, and is
+ available through the world-wide-web at the following url:
+ http://www.php.net/license/3_01.txt
+ If you did not receive a copy of the PHP license and are unable to
+ obtain it through the world-wide-web, please send a note to
+ license@php.net so we can mail you a copy immediately.
 
 Files: xbmc/utils/fstrcmp.h
 Copyright: 1995, Free Software Foundation, Inc
@@ -1277,6 +1333,28 @@ License: LGPL
 Files: xbmc/visualizations/Milkdrop/vis_milkdrop/*
 Copyright: 2005, Nullsoft, Inc
 License: BSD-3-clause
+ All rights reserved.
+ .
+ Redistribution and use in source and binary forms, with or without modification,
+ are permitted provided that the following conditions are met:
+ .
+  * Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+ .
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+ .
+  * Neither the name of Nullsoft nor the names of its contributors may be used to
+    endorse or promote products derived from this software without specific prior written permission. .
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+ FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Files: xbmc/visualizations/OpenGLSpectrum/opengl_spectrum.cpp
 Copyright: 1998-2000, Peter Alm, Mikael Alm, Olle Hallnas, Thomas Nilsson and 4Front Technologies
@@ -1310,6 +1388,23 @@ License: LGPL-2.1+
 Files: xbmc/visualizations/XBMCProjectM/libprojectM/ConfigFile.h
 Copyright: 2004, Richard J. Wagner
 License: Expat
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to
+ deal in the Software without restriction, including without limitation the
+ rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ sell copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ IN THE SOFTWARE.
 
 Files: xbmc/visualizations/XBMCProjectM/libprojectM/RandomNumberGenerators.hpp
 Copyright: 1997, Tao Pang
@@ -1320,6 +1415,28 @@ Copyright: 2002-2008, Milan Ikits <milan ikits[]ieee org>
   2002-2008, Marcelo E. Magallon <mmagallo[]debian org>
   2002, Lev Povalahev
 License: BSD-2-clause
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+ .
+ * Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+ * Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+ * The name of the author may be used to endorse or promote products
+   derived from this software without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ THE POSSIBILITY OF SUCH DAMAGE.
 
 Files: xbmc/visualizations/XBMCProjectM/libprojectM/glew.h
  xbmc/visualizations/XBMCProjectM/libprojectM/glxew.h
@@ -1328,7 +1445,7 @@ Copyright: 2007, The Khronos Group Inc
   2002-2008, Marcelo E. Magallon <mmagallo[]debian org>
   2002, Lev Povalahev
   1999-2007, Brian Paul All Rights Reserved
-License: BSD and (2 and clause) and Expat
+License: BSD-2-clause and Expat
 
 Files: xbmc/visualizations/fishBMC/fishbmc_addon.cpp
 Copyright: 2012, Marcel Ebmer

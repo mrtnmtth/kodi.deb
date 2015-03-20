@@ -32,29 +32,36 @@ Files-Excluded: lib/afpfs-ng
  lib/libmodplug
  lib/libmpeg2
  lib/libnfs
+ lib/libRTV/*.lib
  lib/librtmp
  lib/libshairport
  lib/libsidplay2
+ lib/snesapu/SNES/SNESAPU/SNESAPU.lib
  lib/libUPnP/Platinum/Build/Targets/mipsel-psp-linux
  lib/libUPnP/Platinum/Targets/universal-apple-*
+ lib/libUPnP/Platinum/ThirdParty/log4net
  lib/groovy
  lib/taglib
  lib/UnrarXLib
  lib/win32
+ project/BuildDependencies
  project/Win32BuildSetup
  addons/service.xbmc.versioncheck
  addons/webinterface.default/js/iscroll-min.js
  addons/webinterface.default/js/jquery-1.8.2.min.js
  addons/skin.confluence/fonts/Roboto-*.ttf
  media/Fonts/arial.ttf
+ media/weather.zip
  project/VS2010Express
  tools/EventClients/Clients/OSXRemote
  tools/TexturePacker/Win32
- tools/depends/target/android-libc-replacements
- tools/depends/target/libamplayer
+ tools/depends/target
+ tools/rbp
+ tools/windows
+ xbmc/visualizations/Vortex/angelscript/angelscript/lib/angelscript.lib
+ xbmc/visualizations/Goom/goom2k4-0/mac
  xbmc/visualizations/XBMCProjectM/libprojectM/fonts/Vera*.ttf
  xbmc/visualizations/XBMCProjectM/libprojectM/win32-dirent.h
- xbmc/visualizations/Goom/goom2k4-0/mac
  xbmc/visualizations/XBMCProjectM/win32
  xbmc/win32
 
@@ -920,10 +927,6 @@ Files: xbmc/cores/VideoRenderers/LinuxRendererGL.cpp
 Copyright: 2007-2013, Team XBMC
  2007, Frodo, vulkanr, jcmarshall, d4rk
  2007, authors of ffmpeg & xvid & mplayer
-License: GPL-2+
-
-Copyright: 2007-2013, Team XBMC
-  2007, d4rk
 License: GPL-2+
 
 Files: xbmc/cores/dvdplayer/DVDCodecs/Overlay/libspucc/*

@@ -154,3 +154,106 @@ Forwarded: not-needed
   #include "dvdnav/dvdnav_internal.h"
   #include "dvdnav/vm.h"
   #include "dvdnav/dvd_types.h"
+--- a/lib/cpluff/libcpluff/Makefile.am
++++ b/lib/cpluff/libcpluff/Makefile.am
+@@ -6,7 +6,7 @@
+ 
+ SUBDIRS = docsrc
+ 
+-LIBS = @LIBS_LIBCPLUFF@ @LTLIBINTL@ @LIBS@
++LIBS = @LIBS_LIBCPLUFF@ @LTLIBINTL@ @LIBS@ -lkaz
+ 
+ CPPFLAGS = @CPPFLAGS@
+ CPPFLAGS += -I. -DCP_C_API=CP_EXPORT -DCP_HOST="\"$(host)\"" -DCP_DATADIR="\"$(datadir)\""
+@@ -16,7 +16,7 @@
+ DOXYGEN_STYLE = $(top_srcdir)/docsrc/doxygen.footer $(top_srcdir)/docsrc/doxygen.css
+ 
+ lib_LTLIBRARIES = libcpluff.la
+-libcpluff_la_SOURCES = psymbol.c pscan.c ploader.c pinfo.c pcontrol.c serial.c logging.c context.c cpluff.c util.c ../kazlib/list.c ../kazlib/list.h ../kazlib/hash.c ../kazlib/hash.h internal.h thread.h util.h defines.h
++libcpluff_la_SOURCES = psymbol.c pscan.c ploader.c pinfo.c pcontrol.c serial.c logging.c context.c cpluff.c util.c  internal.h thread.h util.h defines.h
+ if POSIX_THREADS
+ libcpluff_la_SOURCES += thread_posix.c
+ endif
+--- a/lib/cpluff/libcpluff/context.c
++++ b/lib/cpluff/libcpluff/context.c
+@@ -30,7 +30,7 @@
+ #include <assert.h>
+ #include <stdarg.h>
+ #include <string.h>
+-#include "../kazlib/list.h"
++#include <kazlib/list.h>
+ #include "cpluff.h"
+ #include "util.h"
+ #ifdef CP_THREADS
+--- a/lib/cpluff/libcpluff/internal.h
++++ b/lib/cpluff/libcpluff/internal.h
+@@ -40,8 +40,8 @@
+ #elif defined(DLOPEN_LIBTOOL)
+ #include <ltdl.h>
+ #endif
+-#include "../kazlib/list.h"
+-#include "../kazlib/hash.h"
++#include <kazlib/list.h>
++#include <kazlib/hash.h>
+ #include "cpluff.h"
+ #ifdef CP_THREADS
+ #include "thread.h"
+--- a/lib/cpluff/libcpluff/pcontrol.c
++++ b/lib/cpluff/libcpluff/pcontrol.c
+@@ -34,8 +34,8 @@
+ #include <assert.h>
+ #include <string.h>
+ #include <stddef.h>
+-#include "../kazlib/list.h"
+-#include "../kazlib/hash.h"
++#include <kazlib/list.h>
++#include <kazlib/hash.h>
+ #include "cpluff.h"
+ #include "defines.h"
+ #include "util.h"
+--- a/lib/cpluff/libcpluff/pinfo.c
++++ b/lib/cpluff/libcpluff/pinfo.c
+@@ -28,7 +28,7 @@
+ #include <string.h>
+ #include <stdlib.h>
+ #include <assert.h>
+-#include "../kazlib/hash.h"
++#include <kazlib/hash.h>
+ #include "cpluff.h"
+ #include "defines.h"
+ #include "util.h"
+--- a/lib/cpluff/libcpluff/psymbol.c
++++ b/lib/cpluff/libcpluff/psymbol.c
+@@ -28,7 +28,7 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #include <assert.h>
+-#include "../kazlib/hash.h"
++#include <kazlib/hash.h>
+ #include "cpluff.h"
+ #include "defines.h"
+ #include "internal.h"
+--- a/lib/cpluff/libcpluff/util.c
++++ b/lib/cpluff/libcpluff/util.c
+@@ -30,7 +30,7 @@
+ #include <string.h>
+ #include <limits.h>
+ #include <assert.h>
+-#include "../kazlib/list.h"
++#include <kazlib/list.h>
+ #include "cpluff.h"
+ #include "defines.h"
+ #include "util.h"
+--- a/lib/cpluff/libcpluff/util.h
++++ b/lib/cpluff/libcpluff/util.h
+@@ -28,8 +28,8 @@
+ #ifndef UTIL_H_
+ #define UTIL_H_
+ 
+-#include "../kazlib/list.h"
+-#include "../kazlib/hash.h"
++#include <kazlib/list.h>
++#include <kazlib/hash.h>
+ #include "cpluff.h"
+ #include "defines.h"
+ 

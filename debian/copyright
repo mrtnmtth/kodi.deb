@@ -25,6 +25,7 @@ Files-Excluded: lib/afpfs-ng
  lib/libdvd/libdvdread/msvc
  lib/libhdhomerun
  lib/libhts/Win32
+ lib/cpluff/kazlib
  lib/liblame
  lib/libmad
  lib/libmicrohttpd
@@ -232,10 +233,6 @@ Copyright: 2007, Johannes Lehtinen
 License: public-domain
  These examples are free software; Johannes Lehtinen gives unlimited
  permission to copy, distribute and modify them.
-
-Files: lib/cpluff/kazlib/*
-Copyright: 1997, Kaz Kylheku <kaz@ashi.footprints.net>
-License: UNKNOWN
 
 Files: lib/cximage-6.0/CxImage/*
 Copyright: 1995-2008, Davide Pizzolato

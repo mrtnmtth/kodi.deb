@@ -1,0 +1,43 @@
+From f122e4fdd7971bbbbeab46c295ff23373d49bdc3 Mon Sep 17 00:00:00 2001
+From: Rainer Hochecker <fernetmenta@online.de>
+Date: Sat, 7 Mar 2015 10:03:43 +0100
+Subject: [PATCH] [ffmpeg] bump to 2.6
+
+---
+ configure.in                                        | 12 ++++++------
+ tools/depends/target/ffmpeg/FFMPEG-VERSION          |  2 +-
+ xbmc/cores/dvdplayer/DVDDemuxers/DVDDemuxFFmpeg.cpp |  2 +-
+ 3 files changed, 8 insertions(+), 8 deletions(-)
+
+--- a/configure.in
++++ b/configure.in
+@@ -1683,12 +1683,12 @@
+ fi
+ 
+ # FFmpeg
+-FFMPEG_LIBNAMES="libavcodec >= 56.1.100
+-                 libavfilter >= 5.1.100
+-                 libavformat >= 56.4.101
+-                 libavutil >= 54.7.100
+-                 libpostproc >= 53.0.100
+-                 libswscale >= 3.0.100
++FFMPEG_LIBNAMES="libavcodec >= 56.26.100
++                 libavfilter >= 5.11.102
++                 libavformat >= 56.25.101
++                 libavutil >= 54.20.100
++                 libpostproc >= 53.3.100
++                 libswscale >= 3.1.101
+                  libswresample >= 1.1.100"
+ 
+ ffmpeg_build="${abs_top_srcdir}/tools/depends/target/ffmpeg"
+--- a/xbmc/cores/dvdplayer/DVDDemuxers/DVDDemuxFFmpeg.cpp
++++ b/xbmc/cores/dvdplayer/DVDDemuxers/DVDDemuxFFmpeg.cpp
+@@ -541,7 +541,7 @@
+ {
+   // naughty usage of an internal ffmpeg function
+   if (m_pFormatContext)
+-    av_read_frame_flush(m_pFormatContext);
++    avformat_flush(m_pFormatContext);
+ 
+   m_currentPts = DVD_NOPTS_VALUE;
+ 

@@ -5,7 +5,7 @@
 0005-mips-Don-t-use-ASM-rounding-on-MIPS.patch
 0006-mips-Fix-build-with-using-OpenGL-rendering.patch
 0007-mips-Fix-addon-shared-library-naming.patch
-01-Stop-using-internal-ffmpeg-functions.patch
+01-ffmpeg-bump-to-2.6.patch
 03-privacy.patch
 04-differentiate-from-vanilla-Kodi.patch
 06-use-external-libraries.patch

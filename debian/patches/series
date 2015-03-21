@@ -11,3 +11,4 @@
 06-use-external-libraries.patch
 07-use-system-groovy.patch
 09-use-correct-ftgl.h
+10-dont-use-omitted-files.patch

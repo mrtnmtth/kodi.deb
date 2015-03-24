@@ -7,6 +7,7 @@ Files-Excluded: addons/service.xbmc.versioncheck
  addons/webinterface.default/js/jquery-1.8.2.min.js
  lib/afpfs-ng
  lib/asap/win32
+ lib/boost
  lib/cpluff/kazlib
  lib/cpluff/libcpluff/win32
  lib/cximage-6.0/jasper
@@ -153,10 +154,6 @@ License: GPL-2+
 Files: lib/asap/gsplayer/*
 Copyright: 2003-2005, Y.Nagamidori
 License: GPL-2+
-
-Files: lib/boost/*
-Copyright: 2007, Andy Tompkins
-License: BSL-1.0
 
 Files: lib/cmyth/*
 Copyright: 2004-2012, Eric Lund, Jon Gettler

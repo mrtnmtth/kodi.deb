@@ -156,6 +156,7 @@ namespace VIDEO
         }
       }
 
+      g_infoManager.ResetLibraryBools();
       m_database.Close();
 
       tick = XbmcThreads::SystemClockMillis() - tick;
@@ -194,10 +195,20 @@ namespace VIDEO
     }
     else
     { // scan all the paths of this subtree that is in the database
-      vector< pair<int, string> > subpaths;
-      m_database.GetSubPaths(m_strStartDir, subpaths);
-      for (vector< pair<int, string> >::iterator it = subpaths.begin(); it < subpaths.end(); ++it)
-        m_pathsToScan.insert(it->second);
+      vector<string> rootDirs;
+      if (URIUtils::IsMultiPath(strDirectory))
+        CMultiPathDirectory::GetPaths(strDirectory, rootDirs);
+      else
+        rootDirs.push_back(strDirectory);
+
+      for (vector<string>::const_iterator it = rootDirs.begin(); it < rootDirs.end(); ++it)
+      {
+        m_pathsToScan.insert(*it);
+        vector< pair<int, string> > subpaths;
+        m_database.GetSubPaths(*it, subpaths);
+        for (vector< pair<int, string> >::iterator it = subpaths.begin(); it < subpaths.end(); ++it)
+          m_pathsToScan.insert(it->second);
+      }
     }
     m_database.Close();
     m_bClean = g_advancedSettings.m_bVideoLibraryCleanOnUpdate;
@@ -307,7 +318,10 @@ namespace VIDEO
         m_handle->SetTitle(StringUtils::Format(g_localizeStrings.Get(str).c_str(), info->Name().c_str()));
       }
 
-      CStdString fastHash = GetFastHash(strDirectory, regexps);
+      CStdString fastHash;
+      if (g_advancedSettings.m_bVideoLibraryUseFastHash)
+        fastHash = GetFastHash(strDirectory, regexps);
+
       if (m_database.GetPathHash(strDirectory, dbHash) && !fastHash.empty() && fastHash == dbHash)
       { // fast hashes match - no need to process anything
         hash = fastHash;
@@ -357,10 +371,7 @@ namespace VIDEO
         GetPathHash(items, hash);
         bSkip = true;
         if (!m_database.GetPathHash(strDirectory, dbHash) || dbHash != hash)
-        {
-          m_database.SetPathHash(strDirectory, hash);
           bSkip = false;
-        }
         else
           items.Clear();
       }
@@ -509,7 +520,6 @@ namespace VIDEO
     if(pDlgProgress)
       pDlgProgress->ShowProgressBar(false);
 
-    g_infoManager.ResetLibraryBools();
     m_database.Close();
     return FoundSomeInfo;
   }
@@ -719,7 +729,9 @@ namespace VIDEO
         m_pathsToScan.erase(it);
 
       CStdString hash, dbHash;
-      hash = GetRecursiveFastHash(item->GetPath(), regexps);
+      if (g_advancedSettings.m_bVideoLibraryUseFastHash)
+        hash = GetRecursiveFastHash(item->GetPath(), regexps);
+
       if (m_database.GetPathHash(item->GetPath(), dbHash) && !hash.empty() && dbHash == hash)
       {
         // fast hashes match - no need to process anything
@@ -1766,6 +1778,9 @@ namespace VIDEO
 
   bool CVideoInfoScanner::CanFastHash(const CFileItemList &items, const vector<string> &excludes) const
   {
+    if (!g_advancedSettings.m_bVideoLibraryUseFastHash)
+      return false;
+
     for (int i = 0; i < items.Size(); ++i)
     {
       if (items[i]->m_bIsFolder && !CUtil::ExcludeFileOrFolder(items[i]->GetPath(), excludes))

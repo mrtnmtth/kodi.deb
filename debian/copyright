@@ -8,7 +8,6 @@ Files-Excluded: addons/service.xbmc.versioncheck
  lib/afpfs-ng
  lib/asap/win32
  lib/boost
- lib/cpluff/kazlib
  lib/cpluff/libcpluff/win32
  lib/cximage-6.0/jasper
  lib/cximage-6.0/jbig
@@ -236,6 +235,10 @@ Copyright: 2007, Johannes Lehtinen
 License: public-domain
  These examples are free software; Johannes Lehtinen gives unlimited
  permission to copy, distribute and modify them.
+
+Files: lib/cpluff/kazlib/*
+Copyright: 1997, Kaz Kylheku <kaz@ashi.footprints.net>
+License: UNKNOWN
 
 Files: lib/cximage-6.0/CxImage/*
 Copyright: 1995-2008, Davide Pizzolato

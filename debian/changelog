@@ -1,4 +1,4 @@
-kodi (14.1+dfsg1-1) UNRELEASED; urgency=medium
+kodi (14.2+dfsg1-1) experimental; urgency=medium
 
   * Fix addon shared library naming on MIPS
   * Drop non-machine-readable parts of debian/copyright
@@ -6,11 +6,19 @@ kodi (14.1+dfsg1-1) UNRELEASED; urgency=medium
   * Clean up generated debian/copyright
   * Remove non-free files in d/copyright
   * Fix debian/watch file
-  * Use external kazlib
   * Update debian/copyright with new removals
   * Drop get-orig-source target from d/rules.
     Use uscan for generating repacked original tarball.
   * Imported Upstream version 14.1+dfsg1
+    http://kodi.tv/kodi-14-1-helix-bugfix-release
+  * Copyright updates
+  * Use avformat_flush(), it is now exported by FFmpeg
+  * Stop using files omitted from DFSG-free tarballs
+  * Sort filenames omitted from original tarball
+  * Omit embedded Boost header from original tarball
+  * Download original tarball from GitHub
+  * Imported Upstream version 14.2+dfsg1
+    http://kodi.tv/kodi-14-2-helix-the-final-translation
 
  -- Balint Reczey <balint@balintreczey.hu>  Sat, 17 Jan 2015 00:30:36 +0100
 

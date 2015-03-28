@@ -599,7 +599,7 @@ msgstr "Wyświetlaj wideo w formacie 4:3 w trybie"
 
 msgctxt "#175"
 msgid "Moods"
-msgstr "Nastrój"
+msgstr "Nastroje"
 
 msgctxt "#176"
 msgid "Styles"
@@ -4291,7 +4291,7 @@ msgstr "Niebezpieczne odłączenie urządzenia"
 
 msgctxt "#13023"
 msgid "Successfully removed device"
-msgstr "Bezpiecznie odłączenie urządzenia"
+msgstr "Bezpieczne odłączenie urządzenia"
 
 msgctxt "#13024"
 msgid "Joystick plugged"
@@ -4535,7 +4535,7 @@ msgstr "Alarm"
 
 msgctxt "#13209"
 msgid "Alarm clock interval (in minutes)"
-msgstr "Alarmuj w interwale (w minutach)"
+msgstr "Częstotliwość ponawiania alarmu (w minutach)"
 
 msgctxt "#13210"
 msgid "Started, alarm in %im"
@@ -4751,7 +4751,7 @@ msgstr "Tylko prawy"
 
 msgctxt "#13323"
 msgid "Enable karaoke support"
-msgstr "Aktywuj obsługę karaoke"
+msgstr "Uruchom obsługę karaoke"
 
 msgctxt "#13324"
 msgid "Background transparency"
@@ -4839,7 +4839,7 @@ msgstr "Dodaj do kolejki"
 
 msgctxt "#13348"
 msgid "Search IMDb..."
-msgstr "Przeszukiwanie IMDb..."
+msgstr "Wyszukiwanie w IMDb..."
 
 msgctxt "#13349"
 msgid "Scan for new content"
@@ -5875,7 +5875,7 @@ msgstr "Ogólne"
 
 msgctxt "#16002"
 msgid "Internet lookup"
-msgstr "Przeszukiwanie w Internecie"
+msgstr "Wyszukiwanie w Internecie"
 
 msgctxt "#16003"
 msgid "Player"
@@ -6287,11 +6287,11 @@ msgstr "Serwer TV"
 
 msgctxt "#19013"
 msgid "Free to air"
-msgstr "Kanały niekodowane"
+msgstr "Brak"
 
 msgctxt "#19014"
 msgid "Fixed"
-msgstr "Stała"
+msgstr "Stałe"
 
 msgctxt "#19015"
 msgid "Encryption"
@@ -6515,7 +6515,7 @@ msgstr "Przejdź do aktualnych"
 
 msgctxt "#19071"
 msgid "EPG update interval"
-msgstr "Odświeżaj przewodnik w interwale"
+msgstr "Częstotliwość odświeżania przewodnika"
 
 msgctxt "#19072"
 msgid "Do not store the EPG in the database"
@@ -6755,7 +6755,7 @@ msgstr "Maksymalny czas trwania"
 
 msgctxt "#19132"
 msgid "Include unknown genres"
-msgstr "Uwzględnij nieznane gatunki"
+msgstr "Uwzględniaj nieznane gatunki"
 
 msgctxt "#19133"
 msgid "Search string"
@@ -6763,7 +6763,7 @@ msgstr "Wyrażenie wyszukiwania"
 
 msgctxt "#19134"
 msgid "Include description"
-msgstr "Uwzględnij opis"
+msgstr "Uwzględniaj opis"
 
 msgctxt "#19135"
 msgid "Case sensitive"
@@ -8579,15 +8579,15 @@ msgstr "Sortuj: Identyfikator"
 
 msgctxt "#20317"
 msgid "Scanning movies using %s"
-msgstr "Przeszukiwanie filmów przy użyciu %s"
+msgstr "Wyszukiwanie filmów przy użyciu %s"
 
 msgctxt "#20318"
 msgid "Scanning music videos using %s"
-msgstr "Przeszukiwanie teledysków przy użyciu %s"
+msgstr "Wyszukiwanie teledysków przy użyciu %s"
 
 msgctxt "#20319"
 msgid "Scanning tvshows using %s"
-msgstr "Przeszukiwanie seriali przy użyciu %s"
+msgstr "Wyszukiwanie seriali przy użyciu %s"
 
 msgctxt "#20320"
 msgid "Scanning artists using %s"
@@ -8595,7 +8595,7 @@ msgstr "Wyszukiwanie wykonawców przy użyciu %s"
 
 msgctxt "#20321"
 msgid "Scanning albums using %s"
-msgstr "Przeszukiwanie albumów przy użyciu %s"
+msgstr "Wyszukiwanie albumów przy użyciu %s"
 
 msgctxt "#20323"
 msgid "Movie plot"
@@ -9035,7 +9035,7 @@ msgstr "Pomijaj ścieżkę podczas aktualizacji biblioteki"
 
 msgctxt "#20433"
 msgid "Extract thumbnails and video information"
-msgstr "Ekstrahuj miniatury i informacje o wideo"
+msgstr "Wykonuj ekstrakcję miniatur i informacji o wideo"
 
 msgctxt "#20434"
 msgid "Sets"
@@ -9255,7 +9255,7 @@ msgstr "Zastępuj czcionki w napisach ASS/SSA"
 
 msgctxt "#21369"
 msgid "Enable mouse and touch screen support"
-msgstr "Aktywuj obsługę myszy i ekranu dotykowego"
+msgstr "Uruchom obsługę myszy i ekranu dotykowego"
 
 msgctxt "#21370"
 msgid "Play navigation sounds during media playback"
@@ -10943,7 +10943,7 @@ msgstr "Niestandardowe tło"
 
 msgctxt "#33071"
 msgid "Custom backgrounds"
-msgstr "Niestandardowe tło"
+msgstr "Niestandardowe tła"
 
 msgctxt "#33072"
 msgid "View Readme"
@@ -11239,7 +11239,7 @@ msgstr "Nie używaj niestandardowej mapy klawiszy dla tego urządzenia"
 
 msgctxt "#35100"
 msgid "Enable joystick and gamepad support"
-msgstr "Aktywuj obsługę dżojstika i pada"
+msgstr "Uruchom obsługę dżojstika i pada"
 
 msgctxt "#35102"
 msgid "Disable joystick when this device is present"
@@ -11691,7 +11691,7 @@ msgstr "Maksymalna prędkość dopasowania wideo do aktualnej częstotliwości o
 
 msgctxt "#36169"
 msgid "Select the quality of resampling for cases where the audio output needs to be at a different sampling rate from that used by the source. [Low] is fast and will have minimal impact on system resources such as the use of the CPU, [Medium] & [High] will use progressively more system resources."
-msgstr "Określa jakość próbkowania w przypadku, gdy urządzenie podłączone do wyjścia dźwięku wymaga innego próbkowania niż to używane przez źródło. [Niska] jest szybkie i ma minimalny wpływ na zasoby systemowe takie, jak użycie procesora, [Średnia] i [Wysoka] będzie używać proporcjonalnie więcej zasobów systemowych."
+msgstr "Określa jakość próbkowania w przypadku, gdy urządzenie podłączone do wyjścia dźwięku wymaga innego próbkowania niż to używane przez źródło. [Niska] jest szybkie i ma minimalny wpływ na zasoby systemowe takie, jak użycie procesora, [Średnia] i [Wysoka] używa proporcjonalnie więcej zasobów systemowych."
 
 msgctxt "#36170"
 msgid "Allow video player to ignoring aspect ratio by a certain amount to fill a larger amount of the screen with video."
@@ -11819,7 +11819,7 @@ msgstr "Domyślnie używany ekstraktor metadanych teledysków podczas aktualizac
 
 msgctxt "#36201"
 msgid "Settings for PVR/Live TV features."
-msgstr "Ustawienia funkcji odtwarzania i nagrywania programów telewizyjnych"
+msgstr "Ustawienia funkcji odtwarzania i nagrywania programów telewizyjnych."
 
 msgctxt "#36202"
 msgid "Category for general settings for PVR/Live TV features."
@@ -11971,7 +11971,7 @@ msgstr "Uruchamia \"polecenie wznowienia\", kiedy Kodi będzie zamykane lub prze
 
 msgctxt "#36242"
 msgid "The command will not be executed when a recording will be started within this timeout."
-msgstr "Polecenie nie zostanie wykonane, jeśli nagranie nie rozpocznie się przed upłynięciem wprowadzonego tutaj czasu."
+msgstr "Polecenie nie zostanie wykonane, jeśli nagranie nie rozpocznie się przed upłynięciem wprowadzonegoczasu."
 
 msgctxt "#36243"
 msgid "The command to execute."
@@ -12027,7 +12027,7 @@ msgstr "Określa czy wykonawcy, którzy pojawiają się tylko w kompilacjach, b�
 
 msgctxt "#36256"
 msgid "Automatically fetch album and artist information via scrapers during scan."
-msgstr "Automatycznie pobiera informacje o albumie i wykonawcy podczas skanowania."
+msgstr "Pobiera automatycznie informacje o albumie i wykonawcy podczas skanowania."
 
 msgctxt "#36257"
 msgid "Select the default album information source."
@@ -12711,7 +12711,7 @@ msgstr "Zaznacz tę opcję, gdy złącze dźwiękowe obsługuje wielokanałowy d
 
 msgctxt "#36430"
 msgid "Configure how video processing will be accelerated. This includes things like decoding and scaling."
-msgstr "Określa sposób akceleracji przetwarzania wideo. Obejmuje to dekodowanie i skalowanie."
+msgstr "Określa sposób sprzętowej akceleracji przetwarzania wideo, z uwzględnieniem dekodowania i skalowania."
 
 msgctxt "#36431"
 msgid "Defines whether video decoding should be performed in software (requires more CPU) or with hardware acceleration where possible."

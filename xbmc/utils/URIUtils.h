@@ -78,7 +78,7 @@ public:
     \param toPath the base path of the resulting URL
     \return the full path.
    */
-  static std::string ChangeBasePath(const std::string &fromPath, const std::string &fromFile, const std::string &toPath);
+  static std::string ChangeBasePath(const std::string &fromPath, const std::string &fromFile, const std::string &toPath, const bool &bAddPath = true);
 
   static CURL SubstitutePath(const CURL& url, bool reverse = false);
   static CStdString SubstitutePath(const CStdString& strPath, bool reverse = false);
@@ -106,10 +106,11 @@ public:
    Comparison is case-sensitive.
    \param path1 a std::string path.
    \param path2 the second path the path should be compared against.
+   \param ignoreTrailingSlash ignore any trailing slashes in both paths
    \return true if the paths are equal, false otherwise.
    \sa IsProtocol, PathStarts
    */
-  static bool PathEquals(const std::string& path1, const std::string &path2);
+  static bool PathEquals(const std::string& path1, const std::string &path2, bool ignoreTrailingSlash = false);
 
   static bool IsAddonsPath(const CStdString& strFile);
   static bool IsSourcesPath(const CStdString& strFile);

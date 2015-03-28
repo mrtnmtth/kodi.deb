@@ -5,4 +5,9 @@ texts. While writing debian/copyright in those cases I assumed that the
 original projects did not violate the licenses of those files by embedding them
 and assumed the external librarys' license being in effect.
 
- -- Balint Reczey <rbalint@chaos.sz13.dyndns.org>, Fri, 20 Mar 2015 20:21:38 +0100
+Kazlib has been relicensed under the 3 clause BSD license [1] thus I use BSD-3-clause
+in d/copyright.
+
+[1] http://metadata.ftp-master.debian.org/changelogs/main/libk/libkaz/unstable_copyright
+
+ -- Balint Reczey <rbalint@chaos.sz13.dyndns.org>, Sat, 28 Mar 2015 12:19:10 +0100

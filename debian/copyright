@@ -238,7 +238,7 @@ License: public-domain
 
 Files: lib/cpluff/kazlib/*
 Copyright: 1997, Kaz Kylheku <kaz@ashi.footprints.net>
-License: UNKNOWN
+License: BSD-3-clause
 
 Files: lib/cximage-6.0/CxImage/*
 Copyright: 1995-2008, Davide Pizzolato

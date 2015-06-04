@@ -156,7 +156,7 @@ Architecture: any
 Depends: ${shlibs:Depends},
          ${dlopenlibs:Depends},
          ${misc:Depends}
-Recommends: ${shlibs:Recommends}
+Recommends: ${shlibs:Recommends}, udisks
 Provides: xbmc-bin, xbmc-common
 Replaces: xbmc-bin, xbmc-common
 Conflicts: xbmc-bin, xbmc-common, libgl1-mesa-swx11

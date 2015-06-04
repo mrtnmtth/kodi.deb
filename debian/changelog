@@ -1,6 +1,6 @@
-kodi (14.2+dfsg1-2) UNRELEASED; urgency=medium
+kodi (14.2+dfsg1-2) unstable; urgency=medium
 
-  *
+  * Recommend udisks (Closes: #787293)
 
  -- Balint Reczey <balint@balintreczey.hu>  Thu, 04 Jun 2015 09:39:30 +0200
 

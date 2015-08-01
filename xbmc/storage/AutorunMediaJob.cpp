@@ -21,14 +21,14 @@
 #include "Application.h"
 #include "interfaces/Builtins.h"
 #include "guilib/GUIWindowManager.h"
+#include "guilib/LocalizeStrings.h"
 #include "dialogs/GUIDialogSelect.h"
-#include "guilib/Key.h"
 #include "utils/StringUtils.h"
 
-CAutorunMediaJob::CAutorunMediaJob(const std::string &label, const std::string &path)
+CAutorunMediaJob::CAutorunMediaJob(const std::string &label, const std::string &path):
+  m_path(path),
+  m_label(label)
 {
-  m_label = label;
-  m_path  = path;
 }
 
 bool CAutorunMediaJob::DoWork()
@@ -42,12 +42,12 @@ bool CAutorunMediaJob::DoWork()
   if (m_label.size() > 0)
     pDialog->SetHeading(m_label);
   else
-    pDialog->SetHeading("New media detected");
+    pDialog->SetHeading(g_localizeStrings.Get(21331));
 
-  pDialog->Add("Browse videos");
-  pDialog->Add("Browse music");
-  pDialog->Add("Browse pictures");
-  pDialog->Add("Browse files");
+  pDialog->Add(g_localizeStrings.Get(21332));
+  pDialog->Add(g_localizeStrings.Get(21333));
+  pDialog->Add(g_localizeStrings.Get(21334));
+  pDialog->Add(g_localizeStrings.Get(21335));
 
   pDialog->DoModal();
 

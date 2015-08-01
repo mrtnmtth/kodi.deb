@@ -25,7 +25,6 @@
 #include "guilib/Texture.h"
 #include "guilib/LocalizeStrings.h"
 #include "dialogs/GUIDialogKaiToast.h"
-#include "cores/IPlayer.h"
 #include "settings/Settings.h"
 
 using namespace std;
@@ -35,8 +34,8 @@ static int teletextFadeAmount = 0;
 CGUIDialogTeletext::CGUIDialogTeletext()
     : CGUIDialog(WINDOW_DIALOG_OSD_TELETEXT, "")
 {
-  m_isDialog    = false;
   m_pTxtTexture = NULL;
+  m_renderOrder = INT_MAX - 3;
 }
 
 CGUIDialogTeletext::~CGUIDialogTeletext()
@@ -46,7 +45,10 @@ CGUIDialogTeletext::~CGUIDialogTeletext()
 bool CGUIDialogTeletext::OnAction(const CAction& action)
 {
   if (m_TextDecoder.HandleAction(action))
+  {
+    MarkDirtyRegion();
     return true;
+  }
 
   return CGUIDialog::OnAction(action);
 }
@@ -54,6 +56,7 @@ bool CGUIDialogTeletext::OnAction(const CAction& action)
 bool CGUIDialogTeletext::OnBack(int actionID)
 {
   m_bClose = true;
+  MarkDirtyRegion();
   return true;
 }
 
@@ -79,6 +82,12 @@ bool CGUIDialogTeletext::OnMessage(CGUIMessage& message)
   return CGUIDialog::OnMessage(message);
 }
 
+void CGUIDialogTeletext::Process(unsigned int currentTime, CDirtyRegionList &dirtyregions)
+{
+  CGUIDialog::Process(currentTime, dirtyregions);
+  m_renderRegion = m_vertCoords;
+}
+
 void CGUIDialogTeletext::Render()
 {
   // Do not render if we have no texture
@@ -93,12 +102,18 @@ void CGUIDialogTeletext::Render()
   if (!m_bClose)
   {
     if (teletextFadeAmount < 100)
+    {
       teletextFadeAmount = std::min(100, teletextFadeAmount + 5);
+      MarkDirtyRegion();
+    }
   }
   else
   {
     if (teletextFadeAmount > 0)
+    {
       teletextFadeAmount = std::max(0, teletextFadeAmount - 10);
+      MarkDirtyRegion();
+    }
 
     if (teletextFadeAmount == 0)
       Close();
@@ -109,6 +124,7 @@ void CGUIDialogTeletext::Render()
   {
     m_pTxtTexture->Update(m_TextDecoder.GetWidth(), m_TextDecoder.GetHeight(), m_TextDecoder.GetWidth()*4, XB_FMT_A8R8G8B8, textureBuffer, false);
     m_TextDecoder.RenderingDone();
+    MarkDirtyRegion();
   }
 
   color_t color = ((color_t)(teletextFadeAmount * 2.55f) & 0xff) << 24 | 0xFFFFFF;
@@ -184,4 +200,6 @@ void CGUIDialogTeletext::SetCoordinates()
     top,
     right,
     bottom);
+
+  MarkDirtyRegion();
 }

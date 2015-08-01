@@ -30,6 +30,9 @@
 #include "utils/StringUtils.h"
 #include "interfaces/AnnouncementManager.h"
 
+#include <cassert>
+#include <algorithm>
+
 //using namespace std;
 using namespace MUSIC_INFO;
 using namespace XFILE;
@@ -362,7 +365,7 @@ int CPlayList::RemoveDVDItems()
     {
       vecFilenames.push_back( item->GetPath() );
     }
-    it++;
+    ++it;
   }
 
   // Delete them from playlist
@@ -375,7 +378,7 @@ int CPlayList::RemoveDVDItems()
     {
       std::string& strFilename = *it;
       Remove( strFilename );
-      it++;
+      ++it;
     }
     vecFilenames.erase( vecFilenames.begin(), vecFilenames.end() );
   }
@@ -458,7 +461,7 @@ bool CPlayList::LoadData(const std::string& strData)
 bool CPlayList::Expand(int position)
 {
   CFileItemPtr item = m_vecItems[position];
-  std::auto_ptr<CPlayList> playlist (CPlayListFactory::Create(*item.get()));
+  std::unique_ptr<CPlayList> playlist (CPlayListFactory::Create(*item.get()));
   if ( NULL == playlist.get())
     return false;
 

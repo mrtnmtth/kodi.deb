@@ -22,16 +22,20 @@
 
 #include "guilib/GUIWindow.h"
 #include "guilib/GUIWindowManager.h"
+#include "WindowInterceptor.h"
 
 namespace XBMCAddon
 {
   namespace xbmcgui
   {
-    WindowDialog::WindowDialog() throw(WindowException) :
+    WindowDialog::WindowDialog() :
       Window(true), WindowDialogMixin(this)
     {
       CSingleLock lock(g_graphicsContext);
-      setWindow(new Interceptor<CGUIWindow>("CGUIWindow",this,getNextAvailalbeWindowId()));
+      InterceptorBase* interceptor = new Interceptor<CGUIWindow>("CGUIWindow", this, getNextAvailalbeWindowId());
+      // set the render order to the dialog's default because this dialog is mapped to CGUIWindow instead of CGUIDialog
+      interceptor->SetRenderOrder(RenderOrder::DIALOG);
+      setWindow(interceptor);
     }
 
     WindowDialog::~WindowDialog() { deallocating(); }

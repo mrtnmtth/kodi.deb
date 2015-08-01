@@ -28,8 +28,6 @@
 #include "FileItem.h"
 #include "music/Album.h"
 #include "music/Artist.h"
-#include "settings/Settings.h"
-#include "utils/log.h"
 
 #include <vector>
 
@@ -37,7 +35,7 @@ using namespace std;
 using namespace XFILE;
 using namespace ADDON;
 
-CNfoFile::NFOResult CNfoFile::Create(const CStdString& strPath, const ScraperPtr& info, int episode)
+CNfoFile::NFOResult CNfoFile::Create(const std::string& strPath, const ScraperPtr& info, int episode)
 {
   m_info = info; // assume we can use these settings
   m_type = ScraperTypeFromContent(info->Content());
@@ -50,7 +48,7 @@ CNfoFile::NFOResult CNfoFile::Create(const CStdString& strPath, const ScraperPtr
   AddonPtr addon;
   ScraperPtr defaultScraper;
   if (CAddonMgr::Get().GetDefault(m_type, addon))
-    defaultScraper = boost::dynamic_pointer_cast<CScraper>(addon);
+    defaultScraper = std::dynamic_pointer_cast<CScraper>(addon);
 
   if (m_type == ADDON_SCRAPER_ALBUMS)
   {
@@ -102,7 +100,7 @@ CNfoFile::NFOResult CNfoFile::Create(const CStdString& strPath, const ScraperPtr
 
   for (unsigned i = 0; i < addons.size(); ++i)
   {
-    ScraperPtr scraper = boost::dynamic_pointer_cast<CScraper>(addons[i]);
+    ScraperPtr scraper = std::dynamic_pointer_cast<CScraper>(addons[i]);
 
     // skip if scraper requires settings and there's nothing set yet
     if (scraper->RequiresSettings() && !scraper->HasUserSettings())
@@ -158,7 +156,7 @@ int CNfoFile::Scrape(ScraperPtr& scraper)
   return m_scurl.m_url.empty() ? 1 : 0;
 }
 
-int CNfoFile::Load(const CStdString& strFile)
+int CNfoFile::Load(const std::string& strFile)
 {
   Close();
   XFILE::CFile file;

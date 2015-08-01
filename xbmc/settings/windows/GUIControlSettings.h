@@ -19,8 +19,9 @@
  *
  */
 
-#include "utils/StdString.h"
 #include "guilib/ISliderCallback.h"
+#include <stdlib.h>
+#include <string>
 
 class CGUIControl;
 class CGUIImage;
@@ -29,6 +30,7 @@ class CGUIEditControl;
 class CGUIButtonControl;
 class CGUIRadioButtonControl;
 class CGUISettingsSliderControl;
+class CGUILabelControl;
 
 class CSetting;
 class CSettingControlSlider;
@@ -222,4 +224,18 @@ public:
   virtual void Clear() { m_pImage = NULL; }
 private:
   CGUIImage *m_pImage;
+};
+
+class CGUIControlGroupTitleSetting : public CGUIControlBaseSetting
+{
+public:
+  CGUIControlGroupTitleSetting(CGUILabelControl* pLabel, int id);
+  virtual ~CGUIControlGroupTitleSetting();
+
+  virtual CGUIControl* GetControl() { return (CGUIControl*)m_pLabel; }
+  virtual bool OnClick() { return false; }
+  virtual void Update() {}
+  virtual void Clear() { m_pLabel = NULL; }
+private:
+  CGUILabelControl *m_pLabel;
 };

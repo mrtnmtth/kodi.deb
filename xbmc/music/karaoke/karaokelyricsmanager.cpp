@@ -33,7 +33,6 @@
 #include "GUIWindowKaraokeLyrics.h"
 #include "threads/SingleLock.h"
 #include "utils/log.h"
-#include "utils/TimeUtils.h"
 
 CKaraokeLyricsManager::CKaraokeLyricsManager()
 {
@@ -52,7 +51,7 @@ CKaraokeLyricsManager::~ CKaraokeLyricsManager()
   }
 }
 
-bool CKaraokeLyricsManager::Start(const CStdString & strSongPath)
+bool CKaraokeLyricsManager::Start(const std::string & strSongPath)
 {
   CSingleLock lock (m_CritSection);
 

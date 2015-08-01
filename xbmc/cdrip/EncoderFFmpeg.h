@@ -26,7 +26,6 @@
 extern "C" {
 #include "libavformat/avformat.h"
 #include "libavcodec/avcodec.h"
-#include "libavutil/avutil.h"
 #include "libswresample/swresample.h"
 }
 
@@ -58,7 +57,6 @@ private:
   static int        avio_write_callback(void *opaque, uint8_t *buf, int buf_size);
   static int64_t    avio_seek_callback(void *opaque, int64_t offset, int whence);
   void              SetTag(const std::string &tag, const std::string &value);
-
 
   unsigned int      m_NeededFrames;
   unsigned int      m_NeededBytes;

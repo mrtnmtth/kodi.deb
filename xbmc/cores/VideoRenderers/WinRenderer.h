@@ -22,8 +22,6 @@
 
 #if !defined(TARGET_POSIX) && !defined(HAS_GL)
 
-#include "guilib/GraphicContext.h"
-#include "RenderFlags.h"
 #include "RenderFormats.h"
 #include "BaseRenderer.h"
 #include "guilib/D3DResource.h"
@@ -31,8 +29,6 @@
 #include "settings/VideoSettings.h"
 #include "DXVA.h"
 #include "DXVAHD.h"
-#include "cores/VideoRenderers/RenderFlags.h"
-#include "cores/VideoRenderers/RenderFormats.h"
 
 #define ALIGN(value, alignment) (((value)+((alignment)-1))&~((alignment)-1))
 #define CLAMP(a, min, max) ((a) > (max) ? (max) : ( (a) < (min) ? (min) : a ))
@@ -161,7 +157,7 @@ public:
   virtual bool         IsConfigured() { return m_bConfigured; }
   virtual void         Flush();
 
-  virtual std::vector<ERenderFormat> SupportedFormats() { return m_formats; }
+  virtual CRenderInfo GetRenderInfo();
 
   virtual bool         Supports(ERENDERFEATURE feature);
   virtual bool         Supports(EDEINTERLACEMODE mode);
@@ -172,9 +168,7 @@ public:
 
   void                 RenderUpdate(bool clear, DWORD flags = 0, DWORD alpha = 255);
 
-  virtual unsigned int GetOptimalBufferSize();
   virtual void         SetBufferSize(int numBuffers) { m_neededBuffers = numBuffers; }
-  virtual unsigned int GetMaxBufferSize() { return NUM_BUFFERS; }
   virtual void         ReleaseBuffer(int idx);
   virtual bool         NeedBufferForRef(int idx);
 

@@ -21,7 +21,6 @@
 
 #include <map>
 
-#include "XBDateTime.h"
 #include "settings/dialogs/GUIDialogSettingsManualBase.h"
 
 class CFileItem;
@@ -52,7 +51,7 @@ namespace PVR
 
     // specialization of CGUIDialogSettingsManualBase
     virtual void InitializeSettings();
-    
+
     virtual CSetting* AddChannelNames(CSettingGroup *group, bool bRadio);
     virtual void SetWeekdaySettingFromTimer(const CPVRTimerInfoTag &timer);
     virtual void SetTimerFromWeekdaySetting(CPVRTimerInfoTag &timer);

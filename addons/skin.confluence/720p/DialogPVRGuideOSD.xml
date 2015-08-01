@@ -61,7 +61,7 @@
 				<top>60</top>
 				<width>430</width>
 				<height>30</height>
-				<font>font11</font>
+				<font>font13</font>
 				<textcolor>grey2</textcolor>
 				<label>$INFO[Container(11).ListItem.StartDate]</label>
 				<align>center</align>
@@ -263,7 +263,7 @@
 				<align>right</align>
 				<aligny>center</aligny>
 				<label>([COLOR=blue]$INFO[Container(11).NumItems][/COLOR]) $LOCALIZE[31025] - $LOCALIZE[31024] ([COLOR=blue]$INFO[Container(11).CurrentPage]/$INFO[Container(11).NumPages][/COLOR])</label>
-				<include>Window_OpenClose_Animation</include>		
+				<include>Window_OpenClose_Animation</include>
 			</control>
 		</control>
 	</controls>

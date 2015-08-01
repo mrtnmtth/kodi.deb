@@ -24,7 +24,6 @@
 #include "DllLibNfs.h"
 
 #ifdef TARGET_WINDOWS
-#include <fcntl.h>
 #include <sys\stat.h>
 #endif
 
@@ -37,7 +36,6 @@
 using namespace XFILE;
 using namespace std;
 #include <limits.h>
-#include <nfsc/libnfs-raw-mount.h>
 #include <nfsc/libnfs-raw-nfs.h>
 
 CNFSDirectory::CNFSDirectory(void)
@@ -57,7 +55,7 @@ bool CNFSDirectory::GetDirectoryFromExportList(const std::string& strPath, CFile
   std::list<std::string> exportList=gNfsConnection.GetExportList(url);
   std::list<std::string>::iterator it;
   
-  for(it=exportList.begin();it!=exportList.end();it++)
+  for(it=exportList.begin();it!=exportList.end();++it)
   {
       std::string currentExport(*it);     
       URIUtils::RemoveSlashAtEnd(nonConstStrPath);

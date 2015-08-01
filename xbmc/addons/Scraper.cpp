@@ -42,6 +42,7 @@
 #include "URL.h"
 
 #include <sstream>
+#include <algorithm>
 
 using namespace std;
 using namespace XFILE;
@@ -164,12 +165,12 @@ AddonPtr CScraper::Clone() const
 }
 
 CScraper::CScraper(const CScraper &rhs)
-  : CAddon(rhs), m_fLoaded(false)
+  : CAddon(rhs), m_fLoaded(false),
+    m_language(rhs.m_language),
+    m_requiressettings(rhs.m_requiressettings),
+    m_persistence(rhs.m_persistence),
+    m_pathContent(rhs.m_pathContent)
 {
-  m_pathContent = rhs.m_pathContent;
-  m_persistence = rhs.m_persistence;
-  m_requiressettings = rhs.m_requiressettings;
-  m_language = rhs.m_language;
 }
 
 bool CScraper::Supports(const CONTENT_TYPE &content) const
@@ -383,7 +384,7 @@ bool CScraper::Load()
           break;
         }
       }
-      itr++;
+      ++itr;
     }
   }
 
@@ -575,7 +576,7 @@ std::vector<CScraperUrl> CScraper::FindMovie(XFILE::CCurlFile &fcurl, const std:
   vector<string> vcsIn(1);
   g_charsetConverter.utf8To(SearchStringEncoding(), sTitle, vcsIn[0]);
   vcsIn[0] = CURL::Encode(vcsIn[0]);
-  if (!sYear.empty())
+  if (fFirst && !sYear.empty())
     vcsIn.push_back(sYear);
 
   // request a search URL from the title/filename/etc.
@@ -1024,6 +1025,35 @@ bool CScraper::GetArtistDetails(CCurlFile &fcurl, const CScraperUrl &scurl,
     }
 
     fRet = artist.Load(doc.RootElement(), i != vcsOut.begin());
+  }
+  return fRet;
+}
+
+bool CScraper::GetArtwork(XFILE::CCurlFile &fcurl, CVideoInfoTag &details)
+{
+  if (details.m_strIMDBNumber.empty())
+    return false;
+
+  CLog::Log(LOGDEBUG, "%s: Reading artwork for '%s' using %s scraper "
+    "(file: '%s', content: '%s', version: '%s')", __FUNCTION__, details.m_strIMDBNumber.c_str(),
+    Name().c_str(), Path().c_str(), ADDON::TranslateContent(Content()).c_str(), Version().asString().c_str());
+
+  std::vector<std::string> vcsIn;
+  CScraperUrl scurl;
+  vcsIn.push_back(details.m_strIMDBNumber);
+  std::vector<std::string> vcsOut = RunNoThrow("GetArt", scurl, fcurl, &vcsIn);
+
+  bool fRet(false);
+  for (std::vector<std::string>::const_iterator it = vcsOut.begin(); it != vcsOut.end(); ++it)
+  {
+    CXBMCTinyXML doc;
+    doc.Parse(*it, TIXML_ENCODING_UTF8);
+    if (!doc.RootElement())
+    {
+      CLog::Log(LOGERROR, "%s: Unable to parse XML", __FUNCTION__);
+      return false;
+    }
+    fRet = details.Load(doc.RootElement(), it != vcsOut.begin());
   }
   return fRet;
 }

@@ -23,19 +23,16 @@
 #include <map>
 #include <vector>
 
-#include "cores/playercorefactory/PlayerCoreFactory.h"
-
 #include "AddonClass.h"
 #include "Tuple.h"
 #include "Dictionary.h"
 #include "Alternative.h"
-#include "CallbackHandler.h"
 #include "ListItem.h"
-#include "music/tags/MusicInfoTag.h"
 #include "FileItem.h"
 #include "AddonString.h"
-#include "Tuple.h"
 #include "commons/Exception.h"
+#include "InfoTagVideo.h"
+#include "InfoTagMusic.h"
 
 
 namespace XBMCAddon
@@ -211,7 +208,7 @@ namespace XBMCAddon
        *     - title         : string (Big Fan)
        *     - originaltitle : string (Big Fan)
        *     - sorttitle     : string (Big Fan)
-       *     - duration      : string (3:18)
+       *     - duration      : integer (245) - duration in seconds
        *     - studio        : string (Warner Bros.)
        *     - tagline       : string (An awesome movie) - short description of movie
        *     - writer        : string (Robert D. Siegel)
@@ -248,7 +245,7 @@ namespace XBMCAddon
        * example:\n
        *   - self.list.getSelectedItem().setInfo('video', { 'Genre': 'Comedy' })n\n
        */
-      void setInfo(const char* type, const InfoLabelDict& infoLabels) throw (WrongTypeException);
+      void setInfo(const char* type, const InfoLabelDict& infoLabels);
 
       /**
        * addStreamInfo(type, values) -- Add a stream with details.\n
@@ -290,7 +287,7 @@ namespace XBMCAddon
        * example:
        *   - listitem.addContextMenuItems([('Theater Showtimes', 'RunScript(special://home/scripts/showtimes/default.py,Iron Man)',)])n
        */
-      void addContextMenuItems(const std::vector<Tuple<String,String> >& items, bool replaceItems = false) throw (ListItemException);
+      void addContextMenuItems(const std::vector<Tuple<String,String> >& items, bool replaceItems = false);
 
       /**
        * setProperty(key, value) -- Sets a listitem property, similar to an infolabel.\n
@@ -369,6 +366,16 @@ namespace XBMCAddon
        * getfilename() -- Returns the filename of this PlayListItem.\n
        */
       String getfilename();
+
+      /**
+       * getVideoInfoTag() -- returns the VideoInfoTag for this item.
+       */
+      xbmc::InfoTagVideo* getVideoInfoTag();
+
+      /**
+       * getMusicInfoTag() -- returns the MusicInfoTag for this item.
+       */
+      xbmc::InfoTagMusic* getMusicInfoTag();
     };
 
     typedef std::vector<ListItem*> ListItemList;

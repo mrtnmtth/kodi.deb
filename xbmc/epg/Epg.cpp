@@ -18,21 +18,17 @@
  *
  */
 
+#include "addons/include/xbmc_epg_types.h"
 #include "guilib/LocalizeStrings.h"
+#include "pvr/PVRManager.h"
+#include "pvr/addons/PVRClients.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/Settings.h"
 #include "threads/SingleLock.h"
 #include "utils/log.h"
-#include "utils/TimeUtils.h"
 
 #include "EpgDatabase.h"
 #include "EpgContainer.h"
-#include "pvr/PVRManager.h"
-#include "pvr/addons/PVRClients.h"
-#include "pvr/channels/PVRChannelGroupsContainer.h"
-#include "utils/StringUtils.h"
-
-#include "../addons/include/xbmc_epg_types.h"
 
 using namespace PVR;
 using namespace EPG;
@@ -48,11 +44,9 @@ CEpg::CEpg(int iEpgID, const std::string &strName /* = "" */, const std::string 
     m_strScraperName(strScraperName),
     m_bUpdateLastScanTime(false)
 {
-  CPVRChannelPtr empty;
-  m_pvrChannel = empty;
 }
 
-CEpg::CEpg(CPVRChannelPtr channel, bool bLoadedFromDb /* = false */) :
+CEpg::CEpg(const CPVRChannelPtr &channel, bool bLoadedFromDb /* = false */) :
     m_bChanged(!bLoadedFromDb),
     m_bTagsChanged(false),
     m_bLoaded(false),
@@ -73,8 +67,6 @@ CEpg::CEpg(void) :
     m_iEpgID(0),
     m_bUpdateLastScanTime(false)
 {
-  CPVRChannelPtr empty;
-  m_pvrChannel = empty;
 }
 
 CEpg::~CEpg(void)
@@ -95,11 +87,8 @@ CEpg &CEpg::operator =(const CEpg &right)
   m_lastScanTime      = right.m_lastScanTime;
   m_pvrChannel        = right.m_pvrChannel;
 
-  for (map<CDateTime, CEpgInfoTagPtr>::const_iterator it = right.m_tags.begin(); it != right.m_tags.end(); it++)
-  {
-    CEpgInfoTagPtr EITPtr (new CEpgInfoTag(*it->second));
-    m_tags.insert(make_pair(it->first, EITPtr));
-  }
+  for (map<CDateTime, CEpgInfoTagPtr>::const_iterator it = right.m_tags.begin(); it != right.m_tags.end(); ++it)
+    m_tags.insert(make_pair(it->first, it->second));
 
   return *this;
 }
@@ -170,7 +159,7 @@ void CEpg::Cleanup(void)
 void CEpg::Cleanup(const CDateTime &Time)
 {
   CSingleLock lock(m_critSection);
-  for (map<CDateTime, CEpgInfoTagPtr>::iterator it = m_tags.begin(); it != m_tags.end(); it != m_tags.end() ? it++ : it)
+  for (map<CDateTime, CEpgInfoTagPtr>::iterator it = m_tags.begin(); it != m_tags.end();)
   {
     if (it->second->EndAsUTC() < Time)
     {
@@ -178,22 +167,23 @@ void CEpg::Cleanup(const CDateTime &Time)
         m_nowActiveStart.SetValid(false);
 
       it->second->ClearTimer();
-      m_tags.erase(it++);
+      it = m_tags.erase(it);
+    }
+    else
+    {
+      ++it;
     }
   }
 }
 
-bool CEpg::InfoTagNow(CEpgInfoTag &tag, bool bUpdateIfNeeded /* = true */)
+CEpgInfoTagPtr CEpg::GetTagNow(bool bUpdateIfNeeded /* = true */) const
 {
   CSingleLock lock(m_critSection);
   if (m_nowActiveStart.IsValid())
   {
     map<CDateTime, CEpgInfoTagPtr>::const_iterator it = m_tags.find(m_nowActiveStart);
     if (it != m_tags.end() && it->second->IsActive())
-    {
-      tag = *it->second;
-      return true;
-    }
+      return it->second;
   }
 
   if (bUpdateIfNeeded)
@@ -201,13 +191,12 @@ bool CEpg::InfoTagNow(CEpgInfoTag &tag, bool bUpdateIfNeeded /* = true */)
     CEpgInfoTagPtr lastActiveTag;
 
     /* one of the first items will always match if the list is sorted */
-    for (map<CDateTime, CEpgInfoTagPtr>::const_iterator it = m_tags.begin(); it != m_tags.end(); it++)
+    for (map<CDateTime, CEpgInfoTagPtr>::const_iterator it = m_tags.begin(); it != m_tags.end(); ++it)
     {
       if (it->second->IsActive())
       {
         m_nowActiveStart = it->first;
-        tag = *it->second;
-        return true;
+        return it->second;
       }
       else if (it->second->WasActive())
         lastActiveTag = it->second;
@@ -216,60 +205,48 @@ bool CEpg::InfoTagNow(CEpgInfoTag &tag, bool bUpdateIfNeeded /* = true */)
     /* there might be a gap between the last and next event. return the last if found and it ended not more than 5 minutes ago */
     if (lastActiveTag &&
         lastActiveTag->EndAsUTC() + CDateTimeSpan(0, 0, 5, 0) >= CDateTime::GetUTCDateTime())
-    {
-      tag = *lastActiveTag;
-      return true;
-    }
+      return lastActiveTag;
   }
 
-  return false;
+  return CEpgInfoTagPtr();
 }
 
-bool CEpg::InfoTagNext(CEpgInfoTag &tag)
+CEpgInfoTagPtr CEpg::GetTagNext() const
 {
-  CEpgInfoTag nowTag;
-  if (InfoTagNow(nowTag))
+  CEpgInfoTagPtr nowTag(GetTagNow());
+  if (nowTag)
   {
     CSingleLock lock(m_critSection);
-    map<CDateTime, CEpgInfoTagPtr>::const_iterator it = m_tags.find(nowTag.StartAsUTC());
+    map<CDateTime, CEpgInfoTagPtr>::const_iterator it = m_tags.find(nowTag->StartAsUTC());
     if (it != m_tags.end() && ++it != m_tags.end())
-    {
-      tag = *it->second;
-      return true;
-    }
+      return it->second;
   }
   else if (Size() > 0)
   {
     /* return the first event that is in the future */
-    for (map<CDateTime, CEpgInfoTagPtr>::const_iterator it = m_tags.begin(); it != m_tags.end(); it++)
+    for (map<CDateTime, CEpgInfoTagPtr>::const_iterator it = m_tags.begin(); it != m_tags.end(); ++it)
     {
-      if (it->second->InTheFuture())
-      {
-        tag = *it->second;
-        return true;
-      }
+      if (it->second->IsUpcoming())
+        return it->second;
     }
   }
 
-  return false;
+  return CEpgInfoTagPtr();
 }
 
 bool CEpg::CheckPlayingEvent(void)
 {
-  bool bReturn(false);
-  CEpgInfoTag previousTag, newTag;
-  bool bGotPreviousTag = InfoTagNow(previousTag, false);
-  bool bGotCurrentTag = InfoTagNow(newTag);
+  CEpgInfoTagPtr previousTag(GetTagNow(false));
+  CEpgInfoTagPtr newTag(GetTagNow(true));
 
-  bool bTagChanged = bGotCurrentTag && (!bGotPreviousTag || previousTag != newTag);
-  bool bTagRemoved = !bGotCurrentTag && bGotPreviousTag;
+  bool bTagChanged = newTag && (!previousTag || *previousTag != *newTag);
+  bool bTagRemoved = !newTag && previousTag;
   if (bTagChanged || bTagRemoved)
   {
     NotifyObservers(ObservableMessageEpgActiveItem);
-    bReturn = true;
+    return true;
   }
-
-  return bReturn;
+  return false;
 }
 
 CEpgInfoTagPtr CEpg::GetTag(const CDateTime &StartTime) const
@@ -281,34 +258,42 @@ CEpgInfoTagPtr CEpg::GetTag(const CDateTime &StartTime) const
     return it->second;
   }
 
-  CEpgInfoTagPtr empty;
-  return empty;
+  return CEpgInfoTagPtr();
+}
+
+CEpgInfoTagPtr CEpg::GetTag(int uniqueID) const
+{
+  CEpgInfoTagPtr retval;
+  CSingleLock lock(m_critSection);
+  for (map<CDateTime, CEpgInfoTagPtr>::const_iterator it = m_tags.begin(); !retval && it != m_tags.end(); ++it)
+    if (it->second->UniqueBroadcastID() == uniqueID)
+      retval = it->second;
+
+  return retval;
 }
 
 CEpgInfoTagPtr CEpg::GetTagBetween(const CDateTime &beginTime, const CDateTime &endTime) const
 {
   CSingleLock lock(m_critSection);
-  for (map<CDateTime, CEpgInfoTagPtr>::const_iterator it = m_tags.begin(); it != m_tags.end(); it++)
+  for (map<CDateTime, CEpgInfoTagPtr>::const_iterator it = m_tags.begin(); it != m_tags.end(); ++it)
   {
     if (it->second->StartAsUTC() >= beginTime && it->second->EndAsUTC() <= endTime)
       return it->second;
   }
 
-  CEpgInfoTagPtr retVal;
-  return retVal;
+  return CEpgInfoTagPtr();
 }
 
 CEpgInfoTagPtr CEpg::GetTagAround(const CDateTime &time) const
 {
   CSingleLock lock(m_critSection);
-  for (map<CDateTime, CEpgInfoTagPtr>::const_iterator it = m_tags.begin(); it != m_tags.end(); it++)
+  for (map<CDateTime, CEpgInfoTagPtr>::const_iterator it = m_tags.begin(); it != m_tags.end(); ++it)
   {
     if ((it->second->StartAsUTC() < time) && (it->second->EndAsUTC() > time))
       return it->second;
   }
 
-  CEpgInfoTagPtr retVal;
-  return retVal;
+  return CEpgInfoTagPtr();
 }
 
 void CEpg::AddEntry(const CEpgInfoTag &tag)
@@ -320,7 +305,7 @@ void CEpg::AddEntry(const CEpgInfoTag &tag)
     newTag = itr->second;
   else
   {
-    newTag = CEpgInfoTagPtr(new CEpgInfoTag(this, m_pvrChannel, m_strName, m_pvrChannel ? m_pvrChannel->IconPath() : ""));
+    newTag.reset(new CEpgInfoTag(this, m_pvrChannel, m_strName, m_pvrChannel ? m_pvrChannel->IconPath() : ""));
     m_tags.insert(make_pair(tag.StartAsUTC(), newTag));
   }
 
@@ -328,9 +313,7 @@ void CEpg::AddEntry(const CEpgInfoTag &tag)
   {
     newTag->Update(tag);
     newTag->SetPVRChannel(m_pvrChannel);
-    newTag->m_epg          = this;
-    UpdateRecording(newTag);
-    newTag->m_bChanged     = false;
+    newTag->SetEpg(this);
   }
 }
 
@@ -347,39 +330,20 @@ bool CEpg::UpdateEntry(const CEpgInfoTag &tag, bool bUpdateDatabase /* = false *
   else
   {
     /* create a new tag if no tag with this ID exists */
-    infoTag = CEpgInfoTagPtr(new CEpgInfoTag(this, m_pvrChannel, m_strName, m_pvrChannel ? m_pvrChannel->IconPath() : ""));
+    infoTag.reset(new CEpgInfoTag(this, m_pvrChannel, m_strName, m_pvrChannel ? m_pvrChannel->IconPath() : ""));
     infoTag->SetUniqueBroadcastID(tag.UniqueBroadcastID());
     m_tags.insert(make_pair(tag.StartAsUTC(), infoTag));
     bNewTag = true;
   }
 
   infoTag->Update(tag, bNewTag);
-  infoTag->m_epg          = this;
-  infoTag->m_pvrChannel   = m_pvrChannel;
-  UpdateRecording(infoTag);
+  infoTag->SetEpg(this);
+  infoTag->SetPVRChannel(m_pvrChannel);
 
   if (bUpdateDatabase)
     m_changedTags.insert(make_pair(infoTag->UniqueBroadcastID(), infoTag));
 
   return true;
-}
-
-void CEpg::UpdateRecording(CEpgInfoTagPtr tag)
-{
-  if (!tag)
-    return;
-
-  if (tag->HasPVRChannel() && tag->HasRecordingId())
-  {
-    CPVRRecordingPtr recording = g_PVRRecordings->GetById(tag->ChannelTag()->ClientID(), tag->RecordingId());
-    if (recording)
-    {
-      tag->SetRecording(recording);
-      return;
-    }
-  }
-
-  tag->ClearRecording();
 }
 
 bool CEpg::Load(void)
@@ -420,7 +384,7 @@ bool CEpg::UpdateEntries(const CEpg &epg, bool bStoreInDb /* = true */)
   CLog::Log(LOGDEBUG, "EPG - %s - %zu entries in memory before merging", __FUNCTION__, m_tags.size());
 #endif
   /* copy over tags */
-  for (map<CDateTime, CEpgInfoTagPtr>::const_iterator it = epg.m_tags.begin(); it != epg.m_tags.end(); it++)
+  for (map<CDateTime, CEpgInfoTagPtr>::const_iterator it = epg.m_tags.begin(); it != epg.m_tags.end(); ++it)
     UpdateEntry(*it->second, bStoreInDb, false);
 
 #if EPG_DEBUGGING
@@ -506,8 +470,8 @@ bool CEpg::Update(const time_t start, const time_t end, int iUpdateTime, bool bF
 
   if (bGrabSuccess)
   {
-    CPVRChannelPtr channel;
-    if (g_PVRManager.GetCurrentChannel(channel) &&
+    CPVRChannelPtr channel(g_PVRManager.GetCurrentChannel());
+    if (channel &&
         channel->EpgID() == m_iEpgID)
       g_PVRManager.ResetPlayingTag();
     m_bLoaded = true;
@@ -527,8 +491,8 @@ int CEpg::Get(CFileItemList &results) const
 
   CSingleLock lock(m_critSection);
 
-  for (map<CDateTime, CEpgInfoTagPtr>::const_iterator it = m_tags.begin(); it != m_tags.end(); it++)
-    results.Add(CFileItemPtr(new CFileItem(*it->second)));
+  for (map<CDateTime, CEpgInfoTagPtr>::const_iterator it = m_tags.begin(); it != m_tags.end(); ++it)
+    results.Add(CFileItemPtr(new CFileItem(it->second)));
 
   return results.Size() - iInitialSize;
 }
@@ -542,10 +506,10 @@ int CEpg::Get(CFileItemList &results, const EpgSearchFilter &filter) const
 
   CSingleLock lock(m_critSection);
 
-  for (map<CDateTime, CEpgInfoTagPtr>::const_iterator it = m_tags.begin(); it != m_tags.end(); it++)
+  for (map<CDateTime, CEpgInfoTagPtr>::const_iterator it = m_tags.begin(); it != m_tags.end(); ++it)
   {
     if (filter.FilterEntry(*it->second))
-      results.Add(CFileItemPtr(new CFileItem(*it->second)));
+      results.Add(CFileItemPtr(new CFileItem(it->second)));
   }
 
   return results.Size() - iInitialSize;
@@ -576,10 +540,10 @@ bool CEpg::Persist(void)
         m_iEpgID = iId;
     }
 
-    for (std::map<int, CEpgInfoTagPtr>::iterator it = m_deletedTags.begin(); it != m_deletedTags.end(); it++)
+    for (std::map<int, CEpgInfoTagPtr>::iterator it = m_deletedTags.begin(); it != m_deletedTags.end(); ++it)
       database->Delete(*it->second);
 
-    for (std::map<int, CEpgInfoTagPtr>::iterator it = m_changedTags.begin(); it != m_changedTags.end(); it++)
+    for (std::map<int, CEpgInfoTagPtr>::iterator it = m_changedTags.begin(); it != m_changedTags.end(); ++it)
       it->second->Persist(false);
 
     if (m_bUpdateLastScanTime)
@@ -696,7 +660,7 @@ bool CEpg::UpdateFromScraper(time_t start, time_t end)
     else
     {
       CLog::Log(LOGDEBUG, "EPG - %s - updating EPG for channel '%s' from client '%i'", __FUNCTION__, channel->ChannelName().c_str(), channel->ClientID());
-      bGrabSuccess = (g_PVRClients->GetEPGForChannel(*channel, this, start, end) == PVR_ERROR_NO_ERROR);
+      bGrabSuccess = (g_PVRClients->GetEPGForChannel(channel, this, start, end) == PVR_ERROR_NO_ERROR);
     }
   }
   else if (m_strScraperName.empty()) /* no grabber defined */
@@ -766,14 +730,14 @@ bool CEpg::UpdateEntry(const EPG_TAG *data, bool bUpdateDatabase /* = false */)
   if (!data)
     return false;
 
-  CEpgInfoTag tag(*data);
-  return UpdateEntry(tag, bUpdateDatabase);
+  CEpgInfoTagPtr tag(new CEpgInfoTag(*data));
+  return UpdateEntry(*tag, bUpdateDatabase);
 }
 
 bool CEpg::IsRadio(void) const
 {
-  CPVRChannelPtr channel = Channel();
-  return channel ? channel->IsRadio() : false;
+  CSingleLock lock(m_critSection);
+  return m_pvrChannel ? m_pvrChannel->IsRadio() : false;
 }
 
 bool CEpg::IsRemovableTag(const CEpgInfoTag &tag) const
@@ -818,7 +782,7 @@ CEpgInfoTagPtr CEpg::GetPreviousEvent(const CEpgInfoTag& tag) const
   map<CDateTime, CEpgInfoTagPtr>::const_iterator it = m_tags.find(tag.StartAsUTC());
   if (it != m_tags.end() && it != m_tags.begin())
   {
-    it--;
+    --it;
     return it->second;
   }
 
@@ -850,7 +814,7 @@ int CEpg::SubChannelNumber(void) const
   return m_pvrChannel ? m_pvrChannel->SubChannelNumber() : -1;
 }
 
-void CEpg::SetChannel(PVR::CPVRChannelPtr channel)
+void CEpg::SetChannel(const PVR::CPVRChannelPtr &channel)
 {
   CSingleLock lock(m_critSection);
   if (m_pvrChannel != channel)
@@ -861,7 +825,7 @@ void CEpg::SetChannel(PVR::CPVRChannelPtr channel)
       channel->SetEpgID(m_iEpgID);
     }
     m_pvrChannel = channel;
-    for (map<CDateTime, CEpgInfoTagPtr>::iterator it = m_tags.begin(); it != m_tags.end(); it++)
+    for (map<CDateTime, CEpgInfoTagPtr>::iterator it = m_tags.begin(); it != m_tags.end(); ++it)
       it->second->SetPVRChannel(m_pvrChannel);
   }
 }
@@ -894,6 +858,6 @@ bool CEpg::IsValid(void) const
 {
   CSingleLock lock(m_critSection);
   if (ScraperName() == "client")
-    return Channel().get() != NULL;
+    return m_pvrChannel != NULL;
   return true;
 }

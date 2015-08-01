@@ -18,6 +18,8 @@
  *
  */
 
+#include <cstdlib>
+
 #include "system.h"
 #include <EGL/egl.h>
 
@@ -25,9 +27,13 @@
 #include <math.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
+#ifdef HAS_IMXVPU
+#include <linux/mxcfb.h>
+#endif
 #include "utils/log.h"
 #include "utils/RegExp.h"
 #include "utils/StringUtils.h"
+#include "utils/SysfsUtils.h"
 #include "utils/Environment.h"
 #include "guilib/gui3d.h"
 #include "windowing/WindowingFactory.h"
@@ -35,7 +41,8 @@
 #include <fstream>
 
 CEGLNativeTypeIMX::CEGLNativeTypeIMX()
-  : m_display(NULL)
+  : m_sar(0.0f)
+  , m_display(NULL)
   , m_window(NULL)
 {
 }
@@ -47,12 +54,46 @@ CEGLNativeTypeIMX::~CEGLNativeTypeIMX()
 bool CEGLNativeTypeIMX::CheckCompatibility()
 {
   std::ifstream file("/sys/class/graphics/fb0/fsl_disp_dev_property");
-  return file;
+  return file.is_open();
 }
 
 void CEGLNativeTypeIMX::Initialize()
 {
   int fd;
+
+  // Check if we can change the framebuffer resolution
+  fd = open("/sys/class/graphics/fb0/mode", O_RDWR);
+  if (fd >= 0)
+  {
+    CLog::Log(LOGNOTICE, "%s - graphics sysfs is writable\n", __FUNCTION__);
+    m_readonly = false;
+  }
+  else
+  {
+    CLog::Log(LOGNOTICE, "%s - graphics sysfs is read-only\n", __FUNCTION__);
+    m_readonly = true;
+  }
+  close(fd);
+
+  bool alphaBlending = false;
+  std::string bpp;
+  if (SysfsUtils::GetString("/sys/class/graphics/fb0/bits_per_pixel", bpp))
+  {
+    CLog::Log(LOGWARNING, "%s - determining current bits per pixel failed, assuming 16bpp\n", __FUNCTION__);
+  }
+  else
+  {
+    StringUtils::Trim(bpp);
+    if (bpp == "32")
+    {
+      CLog::Log(LOGNOTICE, "%s - 32bpp: configure alpha blending\n", __FUNCTION__);
+      alphaBlending = true;
+    }
+    else
+    {
+      CLog::Log(LOGNOTICE, "%s - %sbpp: configure color keying\n", __FUNCTION__, bpp.c_str());
+    }
+  }
 
   fd = open("/dev/fb0",O_RDWR);
   if (fd < 0)
@@ -60,7 +101,28 @@ void CEGLNativeTypeIMX::Initialize()
     CLog::Log(LOGERROR, "%s - Error while opening /dev/fb0.\n", __FUNCTION__);
     return;
   }
+#ifdef HAS_IMXVPU
+  struct mxcfb_color_key colorKey;
+  struct mxcfb_gbl_alpha gbl_alpha;
+  struct mxcfb_loc_alpha lalpha;
+  memset(&lalpha, 0, sizeof(lalpha));
 
+  // Configure local alpha
+  lalpha.enable = alphaBlending?1:0;
+  lalpha.alpha_in_pixel = 1;
+  if (ioctl(fd, MXCFB_SET_LOC_ALPHA, &lalpha) < 0)
+    CLog::Log(LOGERROR, "%s - Failed to setup alpha blending\n", __FUNCTION__);
+
+  gbl_alpha.alpha = 255;
+  gbl_alpha.enable = alphaBlending?0:1;
+  if (ioctl(fd, MXCFB_SET_GBL_ALPHA, &gbl_alpha) < 0)
+    CLog::Log(LOGERROR, "%s - Failed to setup global alpha\n", __FUNCTION__);
+
+  colorKey.enable = alphaBlending?0:1;
+  colorKey.color_key = (16 << 16)|(8 << 8)|16;
+  if (ioctl(fd, MXCFB_SET_CLR_KEY, &colorKey) < 0)
+    CLog::Log(LOGERROR, "%s - Failed to setup color keying\n", __FUNCTION__);
+#endif
   // Unblank the fb
   if (ioctl(fd, FBIOBLANK, 0) < 0)
   {
@@ -69,20 +131,7 @@ void CEGLNativeTypeIMX::Initialize()
 
   close(fd);
 
-  // Check if we can change the framebuffer resolution
-  fd = open("/sys/class/graphics/fb0/mode", O_RDWR);
-  if (fd >= 0)
-  {
-    CLog::Log(LOGNOTICE, "%s - graphics sysfs is writable", __FUNCTION__);
-    m_readonly = false;
-  }
-  else
-  {
-    CLog::Log(LOGNOTICE, "%s - graphics sysfs is read-only", __FUNCTION__);
-    m_readonly = true;
-  }
-  close(fd);
-
+  m_sar = GetMonitorSAR();
   return;
 }
 
@@ -190,7 +239,7 @@ bool CEGLNativeTypeIMX::DestroyNativeWindow()
 bool CEGLNativeTypeIMX::GetNativeResolution(RESOLUTION_INFO *res) const
 {
   std::string mode;
-  get_sysfs_str("/sys/class/graphics/fb0/mode", mode);
+  SysfsUtils::GetString("/sys/class/graphics/fb0/mode", mode);
   return ModeToResolution(mode, res);
 }
 
@@ -200,14 +249,14 @@ bool CEGLNativeTypeIMX::SetNativeResolution(const RESOLUTION_INFO &res)
     return false;
 
   std::string mode;
-  get_sysfs_str("/sys/class/graphics/fb0/mode", mode);
+  SysfsUtils::GetString("/sys/class/graphics/fb0/mode", mode);
   if (res.strId == mode)
     return false;
 
   DestroyNativeWindow();
   DestroyNativeDisplay();
 
-  set_sysfs_str("/sys/class/graphics/fb0/mode", res.strId);
+  SysfsUtils::SetString("/sys/class/graphics/fb0/mode", res.strId + "\n");
 
   CreateNativeDisplay();
 
@@ -219,24 +268,47 @@ bool CEGLNativeTypeIMX::SetNativeResolution(const RESOLUTION_INFO &res)
   return true;
 }
 
+bool CEGLNativeTypeIMX::FindMatchingResolution(const RESOLUTION_INFO &res, const std::vector<RESOLUTION_INFO> &resolutions)
+{
+  for (int i = 0; i < (int)resolutions.size(); i++)
+  {
+    if(resolutions[i].iScreenWidth == res.iScreenWidth &&
+       resolutions[i].iScreenHeight == res.iScreenHeight &&
+       resolutions[i].fRefreshRate == res.fRefreshRate &&
+      (resolutions[i].dwFlags & D3DPRESENTFLAG_MODEMASK) == (res.dwFlags & D3DPRESENTFLAG_MODEMASK))
+    {
+       return true;
+    }
+  }
+  return false;
+}
+
 bool CEGLNativeTypeIMX::ProbeResolutions(std::vector<RESOLUTION_INFO> &resolutions)
 {
   if (m_readonly)
     return false;
 
   std::string valstr;
-  get_sysfs_str("/sys/class/graphics/fb0/modes", valstr);
-  std::vector<std::string> probe_str;
-  probe_str = StringUtils::Split(valstr, "\n");
+  SysfsUtils::GetString("/sys/class/graphics/fb0/modes", valstr);
+  std::vector<std::string> probe_str = StringUtils::Split(valstr, "\n");
+
+  // lexical order puts the modes list into our preferred
+  // order and by later filtering through FindMatchingResolution()
+  // we make sure we read _all_ S modes, following U and V modes
+  // while list will hold unique resolutions only
+  std::sort(probe_str.begin(), probe_str.end());
 
   resolutions.clear();
   RESOLUTION_INFO res;
   for (size_t i = 0; i < probe_str.size(); i++)
   {
-    if(!StringUtils::StartsWith(probe_str[i], "S:"))
+    if(!StringUtils::StartsWith(probe_str[i], "S:") && !StringUtils::StartsWith(probe_str[i], "U:") &&
+       !StringUtils::StartsWith(probe_str[i], "V:"))
       continue;
+
     if(ModeToResolution(probe_str[i], &res))
-      resolutions.push_back(res);
+      if(!FindMatchingResolution(res, resolutions))
+        resolutions.push_back(res);
   }
   return resolutions.size() > 0;
 }
@@ -257,39 +329,66 @@ bool CEGLNativeTypeIMX::ShowWindow(bool show)
   return false;
 }
 
-int CEGLNativeTypeIMX::get_sysfs_str(std::string path, std::string& valstr) const
+float CEGLNativeTypeIMX::GetMonitorSAR()
 {
-  int len;
-  char buf[256] = {0};
+  FILE *f_edid;
+  char *str = NULL;
+  unsigned char p;
+  size_t n;
+  int done = 0;
 
-  int fd = open(path.c_str(), O_RDONLY);
-  if (fd >= 0)
-  {
-    while ((len = read(fd, buf, 255)) > 0)
-      valstr.append(buf, len);
-    close(fd);
-  }
-  else
-  {
-    CLog::Log(LOGERROR, "%s: error reading %s",__FUNCTION__, path.c_str());
-    valstr = "fail";
-    return -1;
-  }
-  return 0;
-}
+  // kernels <= 3.18 use ./soc0/soc.1 in official imx kernel
+  // kernels  > 3.18 use ./soc0/soc
+  f_edid = fopen("/sys/devices/soc0/soc/20e0000.hdmi_video/edid", "r");
+  if(!f_edid)
+    f_edid = fopen("/sys/devices/soc0/soc.1/20e0000.hdmi_video/edid", "r");
 
-int CEGLNativeTypeIMX::set_sysfs_str(std::string path, std::string val) const
-{
-  int fd = open(path.c_str(), O_WRONLY);
-  if (fd >= 0)
-  {
-    val += '\n';
-    write(fd, val.c_str(), val.size());
-    close(fd);
+  if(!f_edid)
     return 0;
+
+  // we need to convert mxc_hdmi output format to binary array
+  // mxc_hdmi provides the EDID as space delimited 1bytes blocks
+  // exported as text with format specifier %x eg:
+  // 0x00 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0x00 0x4C 0x2D 0x7A 0x0A 0x00 0x00 0x00 0x00
+  //
+  // this translates into the inner cycle where we move pointer first
+  // with +2 to skip '0x',
+  // we sscanf actual data (eg FF) into a byte,
+  // we move over the FF and delimiting space with +3
+  //
+  // this parses whole 512 byte long info into internal binary array for future
+  // reference and use. current use is only to grab screen's physical params
+  // at EGL init.
+  while(getline(&str, &n, f_edid) > 0)
+  {
+    char *c = str;
+    while(*c != '\n' && done < 512)
+    {
+      c += 2;
+      sscanf(c, "%hhx", &p);
+      m_edid[done++] = p;
+      c += 3;
+    }
+    if (str)
+      free(str);
+    str = NULL;
   }
-  CLog::Log(LOGERROR, "%s: error writing %s",__FUNCTION__, path.c_str());
-  return -1;
+  fclose(f_edid);
+
+  // info related to 'Basic display parameters.' is at offset 0x14-0x18.
+  // where W is 2nd byte, H 3rd.
+  int cmWidth  = (int)*(m_edid +EDID_STRUCT_DISPLAY +1);
+  int cmHeight = (int)*(m_edid +EDID_STRUCT_DISPLAY +2);
+  if (cmHeight > 0)
+  {
+    float t_sar = (float) cmWidth / cmHeight;
+    if (t_sar >= 0.33 && t_sar <= 3.0)
+      return t_sar;
+  }
+
+  // if we end up here, H/W values or final SAR are useless
+  // return 0 and use 1.0f as PR for all resolutions
+  return 0;
 }
 
 bool CEGLNativeTypeIMX::ModeToResolution(std::string mode, RESOLUTION_INFO *res) const
@@ -326,7 +425,8 @@ bool CEGLNativeTypeIMX::ModeToResolution(std::string mode, RESOLUTION_INFO *res)
   res->iScreen       = 0;
   res->bFullScreen   = true;
   res->iSubtitles    = (int)(0.965 * res->iHeight);
-  res->fPixelRatio   = 1.0f;
+
+  res->fPixelRatio   = !m_sar ? 1.0f : (float)m_sar / res->iScreenWidth * res->iScreenHeight;
   res->strMode       = StringUtils::Format("%dx%d @ %.2f%s - Full Screen", res->iScreenWidth, res->iScreenHeight, res->fRefreshRate,
                                            res->dwFlags & D3DPRESENTFLAG_INTERLACED ? "i" : "");
   res->strId         = mode;

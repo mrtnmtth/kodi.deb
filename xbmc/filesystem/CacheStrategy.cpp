@@ -23,8 +23,6 @@
 #include "IFile.h"
 #include "Util.h"
 #include "utils/log.h"
-#include "threads/SingleLock.h"
-#include "utils/TimeUtils.h"
 #include "SpecialProtocol.h"
 #include "PlatformDefs.h" //for PRIdS, PRId64
 #include "URL.h"
@@ -35,6 +33,9 @@
 #include "win32/Win32File.h"
 #define CacheLocalFile CWin32File
 #endif // TARGET_WINDOWS
+
+#include <cassert>
+#include <algorithm>
 
 using namespace XFILE;
 
@@ -120,7 +121,7 @@ void CSimpleFileCache::Close()
   m_cacheFileWrite->Close();
   m_cacheFileRead->Close();
 
-  if (!m_cacheFileRead->Delete(CURL(m_filename)))
+  if (!m_filename.empty() && !m_cacheFileRead->Delete(CURL(m_filename)))
     CLog::LogF(LOGWARNING, "failed to delete temporary file \"%s\"", m_filename.c_str());
 
   m_filename.clear();

@@ -19,12 +19,12 @@
  */
 
 #include "IDirectory.h"
-#include "Util.h"
 #include "dialogs/GUIDialogOK.h"
 #include "guilib/GUIKeyboardFactory.h"
 #include "URL.h"
 #include "PasswordManager.h"
 #include "utils/URIUtils.h"
+#include "utils/StringUtils.h"
 
 using namespace XFILE;
 

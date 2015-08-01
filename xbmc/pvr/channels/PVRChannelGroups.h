@@ -107,7 +107,7 @@ namespace PVR
      * @return The last group in this container.
      */
     CPVRChannelGroupPtr GetLastGroup(void) const;
-    
+
     /*!
      * @brief The group that was played last and optionally contains the given channel.
      * @param iChannelID The channel ID
@@ -125,9 +125,10 @@ namespace PVR
     /*!
      * @brief Get the list of groups.
      * @param results The file list to store the results in.
+     * @param bExcludeHidden Decides whether to filter hidden groups
      * @return The amount of items that were added.
      */
-    int GetGroupList(CFileItemList* results) const;
+    int GetGroupList(CFileItemList* results, bool bExcludeHidden = false) const;
 
     /*!
      * @brief Get the previous group in this container.
@@ -179,7 +180,7 @@ namespace PVR
      * @brief Remove a channel from all non-system groups.
      * @param channel The channel to remove.
      */
-    void RemoveFromAllGroups(const CPVRChannel &channel);
+    void RemoveFromAllGroups(const CPVRChannelPtr &channel);
 
     /*!
      * @brief Persist all changes in channel groups.
@@ -193,13 +194,6 @@ namespace PVR
     bool IsRadio(void) const { return m_bRadio; }
 
     /*!
-     * @brief Call by a guiwindow/dialog to add the groups to a control
-     * @param iWindowId The window to add the groups to.
-     * @param iControlId The control to add the groups to
-     */
-    void FillGroupsGUI(int iWindowId, int iControlId) const;
-
-    /*!
      * @brief Update the contents of the groups in this container.
      * @param bChannelsOnly Set to true to only update channels, not the groups themselves.
      * @return True if the update was successful, false otherwise.
@@ -210,6 +204,7 @@ namespace PVR
     bool UpdateGroupsEntries(const CPVRChannelGroups &groups);
     bool LoadUserDefinedChannelGroups(void);
     bool GetGroupsFromClients(void);
+    void SortGroups(void);
 
     bool                             m_bRadio;         /*!< true if this is a container for radio channels, false if it is for tv channels */
     CPVRChannelGroupPtr              m_selectedGroup;  /*!< the group that's currently selected in the UI */

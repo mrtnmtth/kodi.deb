@@ -22,7 +22,7 @@
 #include <set>
 #include <string>
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "dbwrappers/DatabaseQuery.h"
 #include "utils/SortUtils.h"
@@ -76,6 +76,7 @@ protected:
 
 private:
   std::string GetVideoResolutionQuery(const std::string &parameter) const;
+  static std::string FormatLinkQuery(const char *field, const char *table, const MediaType& mediaType, const std::string& mediaField, const std::string& parameter);
 };
 
 class CSmartPlaylistRuleCombination : public CDatabaseQueryRuleCombination

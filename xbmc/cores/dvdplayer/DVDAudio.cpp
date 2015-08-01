@@ -22,7 +22,6 @@
 #include "utils/log.h"
 #include "DVDAudio.h"
 #include "DVDClock.h"
-#include "DVDCodecs/DVDCodecs.h"
 #include "DVDCodecs/Audio/DVDAudioCodec.h"
 #include "cores/AudioEngine/AEFactory.h"
 #include "cores/AudioEngine/Interfaces/AEStream.h"
@@ -30,66 +29,6 @@
 
 using namespace std;
 
-
-CPTSOutputQueue::CPTSOutputQueue()
-{
-  Flush();
-}
-
-void CPTSOutputQueue::Add(double pts, double delay, double duration, double timestamp)
-{
-  CSingleLock lock(m_sync);
-
-  // don't accept a re-add, since that would cause time moving back
-  double last = m_queue.empty() ? m_current.pts : m_queue.back().pts;
-  if(last == pts)
-    return;
-
-  TPTSItem item;
-  item.pts = pts;
-  item.timestamp = timestamp + delay;
-  item.duration = duration;
-
-  // first one is applied directly
-  if(m_queue.empty() && m_current.pts == DVD_NOPTS_VALUE)
-    m_current = item;
-  else
-    m_queue.push(item);
-
-  // call function to make sure the queue
-  // doesn't grow should nobody call it
-  Current(timestamp);
-}
-void CPTSOutputQueue::Flush()
-{
-  CSingleLock lock(m_sync);
-
-  while( !m_queue.empty() ) m_queue.pop();
-  m_current.pts = DVD_NOPTS_VALUE;
-  m_current.timestamp = 0.0;
-  m_current.duration = 0.0;
-}
-
-double CPTSOutputQueue::Current(double timestamp)
-{
-  CSingleLock lock(m_sync);
-
-  if(!m_queue.empty() && m_current.pts == DVD_NOPTS_VALUE)
-  {
-    m_current = m_queue.front();
-    m_queue.pop();
-  }
-
-  while( !m_queue.empty() && timestamp >= m_queue.front().timestamp )
-  {
-    m_current = m_queue.front();
-    m_queue.pop();
-  }
-
-  if( m_current.timestamp == 0 ) return m_current.pts;
-
-  return m_current.pts + min(m_current.duration, (timestamp - m_current.timestamp));
-}
 
 CDVDAudio::CDVDAudio(volatile bool &bStop)
   : m_bStop(bStop)
@@ -100,6 +39,8 @@ CDVDAudio::CDVDAudio(volatile bool &bStop)
   m_iBitrate = 0;
   m_SecondsPerByte = 0.0;
   m_bPaused = true;
+  m_playingPts = DVD_NOPTS_VALUE; //silence coverity uninitialized warning, is set elsewhere
+  m_timeOfPts = 0.0; //silence coverity uninitialized warning, is set elsewhere
 }
 
 CDVDAudio::~CDVDAudio()
@@ -160,12 +101,15 @@ void CDVDAudio::Destroy()
   m_iBitsPerSample = 0;
   m_bPassthrough = false;
   m_bPaused = true;
-  m_time.Flush();
+  m_playingPts = DVD_NOPTS_VALUE;
 }
 
 unsigned int CDVDAudio::AddPackets(const DVDAudioFrame &audioframe)
 {
   CSingleLock lock (m_critSection);
+
+  m_playingPts = audioframe.pts - GetDelay();
+  m_timeOfPts = CDVDClock::GetAbsoluteClock();
 
   if(!m_pAudioStream)
     return 0;
@@ -197,11 +141,6 @@ unsigned int CDVDAudio::AddPackets(const DVDAudioFrame &audioframe)
     Sleep(1);
     lock.Enter();
   } while (!m_bStop);
-
-  double time_added = DVD_SEC_TO_TIME(m_SecondsPerByte * audioframe.nb_frames * audioframe.framesize);
-  double delay = GetDelay();
-  double timestamp = CDVDClock::GetAbsoluteClock();
-  m_time.Add(audioframe.pts, delay - time_added, audioframe.duration, timestamp);
 
   return total - frames;
 }
@@ -246,8 +185,9 @@ float CDVDAudio::GetCurrentAttenuation()
 void CDVDAudio::Pause()
 {
   CSingleLock lock (m_critSection);
-  if (m_pAudioStream) m_pAudioStream->Pause();
-  m_time.Flush();
+  if (m_pAudioStream)
+    m_pAudioStream->Pause();
+  m_playingPts = DVD_NOPTS_VALUE;
 }
 
 void CDVDAudio::Resume()
@@ -260,7 +200,7 @@ double CDVDAudio::GetDelay()
 {
   CSingleLock lock (m_critSection);
 
-  double delay = 0.0;
+  double delay = 0.3;
   if(m_pAudioStream)
     delay = m_pAudioStream->GetDelay();
 
@@ -275,7 +215,7 @@ void CDVDAudio::Flush()
   {
     m_pAudioStream->Flush();
   }
-  m_time.Flush();
+  m_playingPts = DVD_NOPTS_VALUE;
 }
 
 bool CDVDAudio::IsValidFormat(const DVDAudioFrame &audioframe)
@@ -325,14 +265,27 @@ double CDVDAudio::GetCacheTotal()
 
 void CDVDAudio::SetPlayingPts(double pts)
 {
-  CSingleLock lock (m_critSection);
-  m_time.Flush();
-  double delay     = GetDelay();
-  double timestamp = CDVDClock::GetAbsoluteClock();
-  m_time.Add(pts, delay, 0, timestamp);
+  CSingleLock lock(m_critSection);
+  m_playingPts = pts - GetDelay();
+  m_timeOfPts = CDVDClock::GetAbsoluteClock();
 }
 
 double CDVDAudio::GetPlayingPts()
 {
-  return m_time.Current(CDVDClock::GetAbsoluteClock());
+  if (m_playingPts == DVD_NOPTS_VALUE)
+    return 0.0;
+
+  double now = CDVDClock::GetAbsoluteClock();
+  double diff = now - m_timeOfPts;
+  double cache = GetCacheTime();
+  double played = 0.0;
+
+  if (diff < cache)
+    played = diff;
+  else
+    played = cache;
+
+  m_timeOfPts = now;
+  m_playingPts += played;
+  return m_playingPts;
 }

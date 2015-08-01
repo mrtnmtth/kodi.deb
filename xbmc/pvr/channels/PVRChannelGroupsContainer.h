@@ -21,7 +21,6 @@
  */
 
 #include "PVRChannelGroups.h"
-#include "threads/Thread.h"
 #include "threads/CriticalSection.h"
 
 namespace PVR
@@ -124,7 +123,7 @@ namespace PVR
      * @param bRadio Get radio channels or tv channels.
      * @return True if the list was filled succesfully.
      */
-    bool GetGroupsDirectory(CFileItemList *results, bool bRadio);
+    bool GetGroupsDirectory(CFileItemList *results, bool bRadio) const;
 
     /*!
      * @brief Get a channel given it's path.
@@ -139,13 +138,13 @@ namespace PVR
      * @param results The file list to store the results in.
      * @return True if the directory was found, false if not.
      */
-    bool GetDirectory(const std::string& strPath, CFileItemList &results);
+    bool GetDirectory(const std::string& strPath, CFileItemList &results) const;
 
     /*!
      * @brief The total amount of unique channels in all containers.
      * @return The total amount of unique channels in all containers.
      */
-    int GetNumChannelsFromAll(void);
+    int GetNumChannelsFromAll(void) const;
 
     /*!
      * @brief Get the group that is currently selected in the UI.
@@ -160,19 +159,12 @@ namespace PVR
      * @param iClientID The ID of the client.
      * @return The channel or NULL if it wasn't found.
      */
-    CPVRChannelPtr GetByUniqueID(int iUniqueChannelId, int iClientID);
-
-    /*!
-     * @brief Get a channel given it's channel ID from all containers.
-     * @param iChannelID The channel ID.
-     * @return The channel or NULL if it wasn't found.
-     */
-    CFileItemPtr GetByChannelIDFromAll(int iChannelID);
+    CPVRChannelPtr GetByUniqueID(int iUniqueChannelId, int iClientID) const;
 
     /*!
      * @brief Try to find missing channel icons automatically
      */
-    void SearchMissingChannelIcons(void);
+    void SearchMissingChannelIcons(void) const;
 
     /*!
      * @brief The channel that was played last that has a valid client or NULL if there was none.
@@ -186,8 +178,6 @@ namespace PVR
      * @return The last watched group.
      */
     CPVRChannelGroupPtr GetLastPlayedGroup(int iChannelID = -1) const;
-
-    bool CreateChannel(const CPVRChannel &channel);
 
     /*!
      * @brief Create EPG tags for channels in all internal channel groups.
@@ -221,5 +211,9 @@ namespace PVR
     bool               m_bUpdateChannelsOnly;
     bool               m_bIsUpdating;
     CPVRChannelGroupPtr m_lastPlayedGroups[2]; /*!< used to store the last played groups */
+
+  private :
+    CPVRChannelGroupsContainer& operator=(const CPVRChannelGroupsContainer&);
+    CPVRChannelGroupsContainer(const CPVRChannelGroupsContainer&);
   };
 }

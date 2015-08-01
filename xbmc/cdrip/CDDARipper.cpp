@@ -18,7 +18,6 @@
  *
  */
 
-#include "threads/SystemClock.h"
 #include "system.h"
 
 #ifdef HAS_CDDA_RIPPER
@@ -38,11 +37,8 @@
 #include "settings/Settings.h"
 #include "settings/windows/GUIControlSettings.h"
 #include "FileItem.h"
-#include "filesystem/SpecialProtocol.h"
 #include "storage/MediaManager.h"
-#include "guilib/LocalizeStrings.h"
 #include "utils/log.h"
-#include "utils/TimeUtils.h"
 #include "utils/URIUtils.h"
 #include "settings/MediaSourceSettings.h"
 #include "Application.h"
@@ -116,7 +112,7 @@ bool CCDDARipper::RipCD()
   {
     CFileItemPtr pItem = vecItems[i];
     CMusicInfoTagLoaderFactory factory;
-    auto_ptr<IMusicInfoTagLoader> pLoader (factory.CreateLoader(pItem->GetPath()));
+    unique_ptr<IMusicInfoTagLoader> pLoader (factory.CreateLoader(*pItem));
     if (NULL != pLoader.get())
     {
       pLoader->Load(pItem->GetPath(), *pItem->GetMusicInfoTag()); // get tag from file
@@ -172,7 +168,7 @@ bool CCDDARipper::CreateAlbumDir(const MUSIC_INFO::CMusicInfoTag& infoTag, std::
     // no rip path has been set, show error
     CLog::Log(LOGERROR, "Error: CDDARipPath has not been set");
     g_graphicsContext.Lock();
-    CGUIDialogOK::ShowAndGetInput(257, 608, 609, 0);
+    CGUIDialogOK::ShowAndGetInput(257, 608);
     g_graphicsContext.Unlock();
     return false;
   }
@@ -297,7 +293,7 @@ std::string CCDDARipper::GetTrackName(CFileItem *item)
   CAddonMgr::Get().GetAddon(CSettings::Get().GetString("audiocds.encoder"), addon);
   if (addon)
   {
-    boost::shared_ptr<CAudioEncoder> enc = boost::static_pointer_cast<CAudioEncoder>(addon);
+    std::shared_ptr<CAudioEncoder> enc = std::static_pointer_cast<CAudioEncoder>(addon);
     track += enc->extension;
   }
 

@@ -18,6 +18,7 @@
  *
  */
 
+#include <iterator>
 #include "Repository.h"
 #include "addons/AddonDatabase.h"
 #include "addons/AddonInstaller.h"
@@ -25,7 +26,7 @@
 #include "dialogs/GUIDialogYesNo.h"
 #include "dialogs/GUIDialogKaiToast.h"
 #include "filesystem/File.h"
-#include "filesystem/PluginDirectory.h"
+#include "filesystem/Directory.h"
 #include "settings/Settings.h"
 #include "utils/log.h"
 #include "utils/JobManager.h"
@@ -96,27 +97,12 @@ CRepository::CRepository(const cp_extension_t *ext)
 }
 
 CRepository::CRepository(const CRepository &rhs)
-  : CAddon(rhs)
+  : CAddon(rhs), m_dirs(rhs.m_dirs)
 {
-  m_dirs = rhs.m_dirs;
 }
 
 CRepository::~CRepository()
 {
-}
-
-string CRepository::Checksum() const
-{
-  /* This code is duplicated in CRepositoryUpdateJob::GrabAddons().
-   * If you make changes here, they may be applicable there, too.
-   */
-  string result;
-  for (DirList::const_iterator it  = m_dirs.begin(); it != m_dirs.end(); ++it)
-  {
-    if (!it->checksum.empty())
-      result += FetchChecksum(it->checksum);
-  }
-  return result;
 }
 
 string CRepository::FetchChecksum(const string& url)
@@ -208,12 +194,10 @@ bool CRepository::Parse(const DirInfo& dir, VECADDONS &result)
   return false;
 }
 
-void CRepository::OnPostInstall(bool restart, bool update)
+void CRepository::OnPostInstall(bool update, bool modal)
 {
-  VECADDONS addons;
-  AddonPtr repo(new CRepository(*this));
-  addons.push_back(repo);
-  CJobManager::GetInstance().AddJob(new CRepositoryUpdateJob(addons), &CAddonInstaller::Get());
+  // force refresh of addon repositories
+  CAddonInstaller::Get().UpdateRepos(true, false, true);
 }
 
 void CRepository::OnPostUnInstall()
@@ -221,6 +205,9 @@ void CRepository::OnPostUnInstall()
   CAddonDatabase database;
   database.Open();
   database.DeleteRepository(ID());
+
+  // force refresh of addon repositories
+  CAddonInstaller::Get().UpdateRepos(true, false, true);
 }
 
 CRepositoryUpdateJob::CRepositoryUpdateJob(const VECADDONS &repos)
@@ -248,9 +235,7 @@ bool CRepositoryUpdateJob::DoWork()
   map<string, AddonPtr> addons;
   for (VECADDONS::const_iterator i = m_repos.begin(); i != m_repos.end(); ++i)
   {
-    if (ShouldCancel(0, 0))
-      return false;
-    const RepositoryPtr repo = boost::dynamic_pointer_cast<CRepository>(*i);
+    const RepositoryPtr repo = std::dynamic_pointer_cast<CRepository>(*i);
     VECADDONS newAddons;
     if (GrabAddons(repo, newAddons))
       MergeAddons(addons, newAddons);
@@ -316,10 +301,7 @@ bool CRepositoryUpdateJob::DoWork()
           std::string line = g_localizeStrings.Get(24096);
           if (newAddon->Props().broken == "DEPSNOTMET")
             line = g_localizeStrings.Get(24104);
-          if (addon && CGUIDialogYesNo::ShowAndGetInput(newAddon->Name(),
-                                               line,
-                                               g_localizeStrings.Get(24097),
-                                               ""))
+          if (addon && CGUIDialogYesNo::ShowAndGetInput(newAddon->Name(), line, 24097, ""))
             CAddonMgr::Get().DisableAddon(newAddon->ID());
         }
       }
@@ -328,6 +310,7 @@ bool CRepositoryUpdateJob::DoWork()
   }
   database.CommitMultipleExecute();
   textureDB.CommitMultipleExecute();
+  MarkFinished();
   if (!notifications.empty() && CSettings::Get().GetBool("general.addonnotifications"))
   {
     if (notifications.size() == 1)
@@ -345,6 +328,12 @@ bool CRepositoryUpdateJob::DoWork()
 
 bool CRepositoryUpdateJob::GrabAddons(const RepositoryPtr& repo, VECADDONS& addons)
 {
+  SetText(StringUtils::Format(g_localizeStrings.Get(24093).c_str(), repo->Name().c_str()));
+  const unsigned int total = repo->m_dirs.size() * 2;
+
+  if (ShouldCancel(0, total))
+    return false;
+
   CAddonDatabase database;
   database.Open();
   string oldReposum;
@@ -354,7 +343,7 @@ bool CRepositoryUpdateJob::GrabAddons(const RepositoryPtr& repo, VECADDONS& addo
   string reposum;
   for (CRepository::DirList::const_iterator it  = repo->m_dirs.begin(); it != repo->m_dirs.end(); ++it)
   {
-    if (ShouldCancel(0, 0))
+    if (ShouldCancel(std::distance(repo->m_dirs.cbegin(), it), total))
       return false;
     if (!it->checksum.empty())
     {
@@ -373,7 +362,7 @@ bool CRepositoryUpdateJob::GrabAddons(const RepositoryPtr& repo, VECADDONS& addo
     map<string, AddonPtr> uniqueAddons;
     for (CRepository::DirList::const_iterator it = repo->m_dirs.begin(); it != repo->m_dirs.end(); ++it)
     {
-      if (ShouldCancel(0, 0))
+      if (ShouldCancel(repo->m_dirs.size() + std::distance(repo->m_dirs.cbegin(), it), total))
         return false;
       VECADDONS addons;
       if (!CRepository::Parse(*it, addons))
@@ -396,15 +385,16 @@ bool CRepositoryUpdateJob::GrabAddons(const RepositoryPtr& repo, VECADDONS& addo
     {
       for (map<string, AddonPtr>::const_iterator i = uniqueAddons.begin(); i != uniqueAddons.end(); ++i)
         addons.push_back(i->second);
-      database.AddRepository(repo->ID(),addons,reposum);
+      database.AddRepository(repo->ID(), addons, reposum, repo->Version());
     }
   }
   else
   {
     CLog::Log(LOGDEBUG, "Checksum for repository %s not changed.", repo->ID().c_str());
     database.GetRepository(repo->ID(), addons);
-    database.SetRepoTimestamp(repo->ID(), CDateTime::GetCurrentDateTime().GetAsDBDateTime());
+    database.SetRepoTimestamp(repo->ID(), CDateTime::GetCurrentDateTime().GetAsDBDateTime(), repo->Version());
   }
+  SetProgress(total, total);
   return true;
 }
 

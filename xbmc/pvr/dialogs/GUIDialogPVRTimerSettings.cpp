@@ -35,7 +35,7 @@
 using namespace PVR;
 
 #define SETTING_TMR_ACTIVE              "timer.active"
-#define SETTING_TMR_CHNAME_TV           "timer.tvchannelname"
+#define SETTING_TMR_CHNAME              "timer.channelname"
 #define SETTING_TMR_DAY                 "timer.day"
 #define SETTING_TMR_BEGIN               "timer.begin"
 #define SETTING_TMR_END                 "timer.end"
@@ -44,14 +44,13 @@ using namespace PVR;
 #define SETTING_TMR_FIRST_DAY           "timer.firstday"
 #define SETTING_TMR_NAME                "timer.name"
 #define SETTING_TMR_DIR                 "timer.directory"
-#define SETTING_TMR_RADIO               "timer.radio"
-#define SETTING_TMR_CHNAME_RADIO        "timer.radiochannelname"
 
 CGUIDialogPVRTimerSettings::CGUIDialogPVRTimerSettings(void)
   : CGUIDialogSettingsManualBase(WINDOW_DIALOG_PVR_TIMER_SETTING, "DialogPVRTimerSettings.xml"),
     m_tmp_iFirstDay(0),
     m_tmp_day(11),
     m_bTimerActive(false),
+    m_selectedChannelEntry(0),
     m_timerItem(NULL)
 {
   m_loadType = LOAD_EVERY_TIME;
@@ -77,44 +76,15 @@ void CGUIDialogPVRTimerSettings::OnSettingChanged(const CSetting *setting)
 
   CGUIDialogSettingsManualBase::OnSettingChanged(setting);
 
-  CPVRTimerInfoTag* tag = m_timerItem->GetPVRTimerInfoTag();
+  CPVRTimerInfoTagPtr tag = m_timerItem->GetPVRTimerInfoTag();
   if (tag == NULL)
     return;
 
   const std::string &settingId = setting->GetId();
   if (settingId == SETTING_TMR_ACTIVE)
     m_bTimerActive = static_cast<const CSettingBool*>(setting)->GetValue();
-  if (settingId == SETTING_TMR_RADIO || settingId == SETTING_TMR_CHNAME_TV || settingId == SETTING_TMR_CHNAME_RADIO)
-  {
-    if (settingId == SETTING_TMR_RADIO)
-    {
-      tag->m_bIsRadio = static_cast<const CSettingBool*>(setting)->GetValue();
-      m_selectedChannelEntry = 0;
-    }
-    else
-      m_selectedChannelEntry = static_cast<const CSettingInt*>(setting)->GetValue();
-
-    std::map<std::pair<bool, int>, int>::iterator itc = m_channelEntries.find(std::make_pair(tag->m_bIsRadio, m_selectedChannelEntry));
-    if (itc != m_channelEntries.end())
-    {
-      CPVRChannelPtr channel =  g_PVRChannelGroups->GetChannelById(itc->second);
-      if (channel)
-      {
-        tag->m_iClientChannelUid = channel->UniqueID();
-        tag->m_iClientId         = channel->ClientID();
-        tag->m_bIsRadio          = channel->IsRadio();
-        tag->m_iChannelNumber    = channel->ChannelNumber();
-      }
-      else
-      {
-        tag->m_iClientChannelUid = PVR_VIRTUAL_CHANNEL_UID;
-        tag->m_iClientId         = PVR_VIRTUAL_CLIENT_ID;
-        tag->m_iChannelNumber    = 0;
-      }
-      // Update channel pointer from above values
-      tag->UpdateChannel();
-    }
-  }
+  if (settingId == SETTING_TMR_CHNAME)
+    m_selectedChannelEntry = static_cast<const CSettingInt*>(setting)->GetValue();
   else if (settingId == SETTING_TMR_DAY)
   {
     m_tmp_day = static_cast<const CSettingInt*>(setting)->GetValue();
@@ -180,7 +150,7 @@ void CGUIDialogPVRTimerSettings::OnSettingAction(const CSetting *setting)
 
   CGUIDialogSettingsManualBase::OnSettingAction(setting);
 
-  CPVRTimerInfoTag* tag = m_timerItem->GetPVRTimerInfoTag();
+  CPVRTimerInfoTagPtr tag = m_timerItem->GetPVRTimerInfoTag();
   if (tag == NULL)
     return;
 
@@ -214,7 +184,7 @@ void CGUIDialogPVRTimerSettings::OnSettingAction(const CSetting *setting)
       int start_hour      = timestop.GetHour();
       int start_minute    = timestop.GetMinute();
       CDateTime newEnd(start_year, start_month, start_day, start_hour, start_minute, 0);
-      
+
       // add a day to end time if end time is before start time
       // TODO: this should be removed after separate end date control was added
       if (newEnd < tag->StartAsLocalTime())
@@ -232,7 +202,24 @@ void CGUIDialogPVRTimerSettings::OnSettingAction(const CSetting *setting)
 
 void CGUIDialogPVRTimerSettings::Save()
 {
-  CPVRTimerInfoTag* tag = m_timerItem->GetPVRTimerInfoTag();
+  CPVRTimerInfoTagPtr tag = m_timerItem->GetPVRTimerInfoTag();
+
+  // Set the timer's channel
+  std::map<std::pair<bool, int>, int>::iterator itc = m_channelEntries.find(std::make_pair(tag->m_bIsRadio, m_selectedChannelEntry));
+  if (itc != m_channelEntries.end())
+  {
+    CPVRChannelPtr channel =  g_PVRChannelGroups->GetChannelById(itc->second);
+    if (channel)
+    {
+      tag->m_iClientChannelUid = channel->UniqueID();
+      tag->m_iClientId         = channel->ClientID();
+      tag->m_bIsRadio          = channel->IsRadio();
+      tag->m_iChannelNumber    = channel->ChannelNumber();
+
+      // Update channel pointer from above values
+      tag->UpdateChannel();
+    }
+  }
 
   // Set the timer's title to the channel name if it's 'New Timer' or empty
   if (tag->m_strTitle == g_localizeStrings.Get(19056) || tag->m_strTitle.empty())
@@ -276,7 +263,7 @@ void CGUIDialogPVRTimerSettings::InitializeSettings()
   // add a condition
   m_settingsManager->AddCondition("IsTimerDayRepeating", IsTimerDayRepeating);
 
-  CPVRTimerInfoTag* tag = m_timerItem->GetPVRTimerInfoTag();
+  CPVRTimerInfoTagPtr tag = m_timerItem->GetPVRTimerInfoTag();
 
   m_selectedChannelEntry = 0;
   m_channelEntries.clear();
@@ -288,15 +275,9 @@ void CGUIDialogPVRTimerSettings::InitializeSettings()
   if (tag->SupportsFolders())
     AddEdit(group, SETTING_TMR_DIR, 19076, 0, tag->m_strDirectory, true, false, 19104);
 
-  AddToggle(group, SETTING_TMR_RADIO, 19077, 0, tag->m_bIsRadio);
-
   /// Channel names
   {
-    // For TV
-    AddChannelNames(group, false);
-
-    // For Radio
-    AddChannelNames(group, true);
+    AddChannelNames(group, tag->m_bIsRadio);
   }
 
   /// Day
@@ -351,12 +332,11 @@ CSetting* CGUIDialogPVRTimerSettings::AddChannelNames(CSettingGroup *group, bool
 {
   std::vector< std::pair<std::string, int> > options;
   getChannelNames(bRadio, options, m_selectedChannelEntry, true);
-  
-  int timerChannelID;
+
+  // select the correct channel
+  int timerChannelID = 0;
   if (m_timerItem->GetPVRTimerInfoTag()->ChannelTag())
     timerChannelID = m_timerItem->GetPVRTimerInfoTag()->ChannelTag()->ChannelID();
-  else
-    timerChannelID = PVR_VIRTUAL_CHANNEL_UID;
 
   for (std::vector< std::pair<std::string, int> >::const_iterator option = options.begin(); option != options.end(); ++option)
   {
@@ -368,17 +348,9 @@ CSetting* CGUIDialogPVRTimerSettings::AddChannelNames(CSettingGroup *group, bool
     }
   }
 
-  CSettingInt *setting = AddSpinner(group, bRadio ? SETTING_TMR_CHNAME_RADIO : SETTING_TMR_CHNAME_TV, 19078, 0, m_selectedChannelEntry, ChannelNamesOptionsFiller);
+  CSettingInt *setting = AddSpinner(group, SETTING_TMR_CHNAME, 19078, 0, m_selectedChannelEntry, ChannelNamesOptionsFiller);
   if (setting == NULL)
     return NULL;
-
-  // define an enable dependency with tag->m_bIsRadio
-  CSettingDependency depdendencyIsRadio(SettingDependencyTypeEnable, m_settingsManager);
-  depdendencyIsRadio.And()
-    ->Add(CSettingDependencyConditionPtr(new CSettingDependencyCondition(SETTING_TMR_RADIO, "true", SettingDependencyOperatorEquals, !bRadio, m_settingsManager)));
-  SettingDependencies deps;
-  deps.push_back(depdendencyIsRadio);
-  setting->SetDependencies(deps);
 
   return setting;
 }
@@ -446,16 +418,12 @@ void CGUIDialogPVRTimerSettings::getChannelNames(bool bRadio, std::vector< std::
 {
   CFileItemList channelsList;
   g_PVRChannelGroups->GetGroupAll(bRadio)->GetMembers(channelsList);
-  
+
   int entry = 0;
-  list.push_back(std::make_pair("0 dummy", entry));
-  if (updateChannelEntries)
-    m_channelEntries.insert(std::make_pair(std::make_pair(bRadio, entry), PVR_VIRTUAL_CHANNEL_UID));
-  ++entry;
 
   for (int i = 0; i < channelsList.Size(); i++)
   {
-    const CPVRChannel *channel = channelsList[i]->GetPVRChannelInfoTag();
+    const CPVRChannelPtr channel(channelsList[i]->GetPVRChannelInfoTag());
 
     list.push_back(std::make_pair(StringUtils::Format("%i %s", channel->ChannelNumber(), channel->ChannelName().c_str()), entry));
     if (updateChannelEntries)
@@ -495,7 +463,11 @@ void CGUIDialogPVRTimerSettings::ChannelNamesOptionsFiller(const CSetting *setti
   if (dialog == NULL)
     return;
 
-  dialog->getChannelNames(setting->GetId() == SETTING_TMR_CHNAME_RADIO, list, current, false);
+  const CPVRTimerInfoTagPtr tag = dialog->m_timerItem->GetPVRTimerInfoTag();
+  if (tag == NULL)
+    return;
+
+  dialog->getChannelNames(tag->m_bIsRadio, list, current, false);
 }
 
 void CGUIDialogPVRTimerSettings::DaysOptionsFiller(const CSetting *setting, std::vector< std::pair<std::string, int> > &list, int &current, void *data)
@@ -507,7 +479,7 @@ void CGUIDialogPVRTimerSettings::DaysOptionsFiller(const CSetting *setting, std:
   if (dialog == NULL)
     return;
 
-  const CPVRTimerInfoTag *tag = dialog->m_timerItem->GetPVRTimerInfoTag();
+  const CPVRTimerInfoTagPtr tag = dialog->m_timerItem->GetPVRTimerInfoTag();
   if (tag == NULL)
     return;
 
@@ -518,7 +490,7 @@ void CGUIDialogPVRTimerSettings::DaysOptionsFiller(const CSetting *setting, std:
   }
   else if (setting->GetId() == SETTING_TMR_FIRST_DAY)
     list.push_back(std::make_pair(g_localizeStrings.Get(19030), 0));
-  
+
   CDateTime time = CDateTime::GetCurrentDateTime();
   for (int i = 1; i < 365; ++i)
   {

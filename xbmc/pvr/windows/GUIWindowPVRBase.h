@@ -27,7 +27,10 @@
 #define CONTROL_BTNSORTBY                 3
 #define CONTROL_BTNSORTASC                4
 #define CONTROL_BTNGROUPITEMS             5
+#define CONTROL_BTNSHOWHIDDEN             6
+#define CONTROL_BTNSHOWDELETED            7
 #define CONTROL_BTNCHANNELGROUPS          28
+#define CONTROL_BTNFILTERCHANNELS         31
 
 #define CONTROL_LABEL_HEADER1             29
 #define CONTROL_LABEL_HEADER2             30
@@ -44,10 +47,11 @@ namespace PVR
 
   enum EPGSelectAction
   {
-    EPG_SELECT_ACTION_CONTEXT_MENU = 0,
-    EPG_SELECT_ACTION_SWITCH       = 1,
-    EPG_SELECT_ACTION_INFO         = 2,
-    EPG_SELECT_ACTION_RECORD       = 3
+    EPG_SELECT_ACTION_CONTEXT_MENU   = 0,
+    EPG_SELECT_ACTION_SWITCH         = 1,
+    EPG_SELECT_ACTION_INFO           = 2,
+    EPG_SELECT_ACTION_RECORD         = 3,
+    EPG_SELECT_ACTION_PLAY_RECORDING = 4,
   };
 
   class CGUIWindowPVRBase : public CGUIMediaWindow, public Observer
@@ -66,9 +70,9 @@ namespace PVR
     virtual void ResetObservers(void) {};
     virtual void Notify(const Observable &obs, const ObservableMessage msg);
     virtual void SetInvalid();
-    
+
     static std::string GetSelectedItemPath(bool bRadio);
-    static void SetSelectedItemPath(bool bRadio, const std::string path);
+    static void SetSelectedItemPath(bool bRadio, const std::string &path);
 
   protected:
     CGUIWindowPVRBase(bool bRadio, int id, const std::string &xmlFile);
@@ -79,18 +83,19 @@ namespace PVR
 
     virtual bool ActionRecord(CFileItem *item);
     virtual bool ActionPlayChannel(CFileItem *item);
-    virtual bool ActionPlayEpg(CFileItem *item);
+    virtual bool ActionPlayEpg(CFileItem *item, bool bPlayRecording);
     virtual bool ActionDeleteChannel(CFileItem *item);
     virtual bool ActionInputChannelNumber(int input);
 
-    virtual bool PlayRecording(CFileItem *item, bool bPlayMinimized = false);
-    virtual bool PlayFile(CFileItem *item, bool bPlayMinimized = false);
+    virtual bool PlayRecording(CFileItem *item, bool bPlayMinimized = false, bool bCheckResume = true);
+    virtual bool PlayFile(CFileItem *item, bool bPlayMinimized = false, bool bCheckResume = true);
     virtual bool StartRecordFile(const CFileItem &item);
     virtual bool StopRecordFile(const CFileItem &item);
     virtual void ShowEPGInfo(CFileItem *item);
     virtual void ShowRecordingInfo(CFileItem *item);
     virtual bool UpdateEpgForChannel(CFileItem *item);
     virtual void UpdateSelectedItemPath();
+    void CheckResumeRecording(CFileItem *item);
 
     static std::map<bool, std::string> m_selectedItemPaths;
 

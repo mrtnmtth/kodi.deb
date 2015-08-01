@@ -26,7 +26,6 @@
 #include "utils/AutoPtrHandle.h"
 #include "utils/log.h"
 #include "utils/SortUtils.h"
-#include "utils/URIUtils.h"
 #include "utils/StringUtils.h"
 #include "sqlitedataset.h"
 #include "DatabaseManager.h"
@@ -143,7 +142,7 @@ std::string CDatabase::PrepareSQL(std::string strStmt, ...) const
   return strResult;
 }
 
-std::string CDatabase::GetSingleValue(const std::string &query, std::auto_ptr<Dataset> &ds)
+std::string CDatabase::GetSingleValue(const std::string &query, std::unique_ptr<Dataset> &ds)
 {
   std::string ret;
   try
@@ -329,7 +328,7 @@ void CDatabase::InitSettings(DatabaseSettings &dbSettings)
   m_sqlite = true;
 
 #ifdef HAS_MYSQL
-  if ( dbSettings.type.Equals("mysql") )
+  if (dbSettings.type == "mysql")
   {
     // check we have all information before we cancel the fallback
     if ( ! (dbSettings.host.empty() ||
@@ -340,7 +339,7 @@ void CDatabase::InitSettings(DatabaseSettings &dbSettings)
   }
   else
 #else
-  if ( dbSettings.type.Equals("mysql") )
+  if (dbSettings.type == "mysql")
     CLog::Log(LOGERROR, "MySQL library requested but MySQL support is not compiled in. Falling back to sqlite3.");
 #endif
   {
@@ -424,12 +423,12 @@ bool CDatabase::Update(const DatabaseSettings &settings)
 bool CDatabase::Connect(const std::string &dbName, const DatabaseSettings &dbSettings, bool create)
 {
   // create the appropriate database structure
-  if (dbSettings.type.Equals("sqlite3"))
+  if (dbSettings.type == "sqlite3")
   {
     m_pDB.reset( new SqliteDatabase() ) ;
   }
 #ifdef HAS_MYSQL
-  else if (dbSettings.type.Equals("mysql"))
+  else if (dbSettings.type == "mysql")
   {
     m_pDB.reset( new MysqlDatabase() ) ;
   }
@@ -455,8 +454,13 @@ bool CDatabase::Connect(const std::string &dbName, const DatabaseSettings &dbSet
   // database name is always required
   m_pDB->setDatabase(dbName.c_str());
 
-  // set SSL configuration regardless if any are empty (all empty means no SSL).
-  m_pDB->setSSLConfig(dbSettings.key.c_str(), dbSettings.cert.c_str(), dbSettings.ca.c_str(), dbSettings.capath.c_str(), dbSettings.ciphers.c_str());
+  // set configuration regardless if any are empty
+  m_pDB->setConfig(dbSettings.key.c_str(),
+                   dbSettings.cert.c_str(),
+                   dbSettings.ca.c_str(),
+                   dbSettings.capath.c_str(),
+                   dbSettings.ciphers.c_str(),
+                   dbSettings.compression);
 
   // create the datasets
   m_pDS.reset(m_pDB->CreateDataset());
@@ -470,7 +474,7 @@ bool CDatabase::Connect(const std::string &dbName, const DatabaseSettings &dbSet
     // test if db already exists, if not we need to create the tables
     if (!m_pDB->exists() && create)
     {
-      if (dbSettings.type.Equals("sqlite3"))
+      if (dbSettings.type == "sqlite3")
       {
         //  Modern file systems have a cluster/block size of 4k.
         //  To gain better performance when performing write
@@ -486,7 +490,7 @@ bool CDatabase::Connect(const std::string &dbName, const DatabaseSettings &dbSet
     }
 
     // sqlite3 post connection operations
-    if (dbSettings.type.Equals("sqlite3"))
+    if (dbSettings.type == "sqlite3")
     {
       m_pDS->exec("PRAGMA cache_size=4096\n");
       m_pDS->exec("PRAGMA synchronous='NORMAL'\n");

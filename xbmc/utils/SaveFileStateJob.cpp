@@ -20,7 +20,6 @@
 
 #include "SaveFileStateJob.h"
 #include "pvr/PVRManager.h"
-#include "pvr/recordings/PVRRecordings.h"
 #include "settings/MediaSettings.h"
 #include "network/upnp/UPnP.h"
 #include "StringUtils.h"
@@ -105,7 +104,7 @@ bool CSaveFileStateJob::DoWork()
             // PVR: Set/clear recording's resume bookmark on the backend (if supported)
             if (m_item.HasPVRRecordingInfoTag())
             {
-              PVR::CPVRRecording *recording = m_item.GetPVRRecordingInfoTag();
+              PVR::CPVRRecordingPtr recording = m_item.GetPVRRecordingInfoTag();
               recording->SetLastPlayedPosition(m_bookmark.timeInSeconds <= 0.0f ? 0 : (int)m_bookmark.timeInSeconds);
               recording->m_resumePoint = m_bookmark;
             }

@@ -35,14 +35,13 @@
 
 #include <queue>
 #include <semaphore.h>
-#include <boost/shared_ptr.hpp>
-#include "utils/StdString.h"
+#include <memory>
+#include <string>
 #include "guilib/Geometry.h"
 #include "rendering/RenderSystem.h"
 #include "cores/VideoRenderers/BaseRenderer.h"
 
 class CMMALVideo;
-typedef boost::shared_ptr<CMMALVideo> MMALVideoPtr;
 
 // a mmal video frame
 class CMMALVideoBuffer
@@ -55,9 +54,6 @@ public:
   int width;
   int height;
   float m_aspect_ratio;
-  int index;
-  double dts;
-  uint32_t m_changed_count;
   // reference counting
   CMMALVideoBuffer* Acquire();
   long              Release();
@@ -66,7 +62,7 @@ public:
 private:
 };
 
-class CMMALVideo
+class CMMALVideo : public CDVDVideoCodec
 {
   typedef struct mmal_demux_packet {
     uint8_t *buff;
@@ -80,55 +76,49 @@ public:
   virtual ~CMMALVideo();
 
   // Required overrides
-  virtual bool Open(CDVDStreamInfo &hints, CDVDCodecOptions &options, MMALVideoPtr myself);
+  virtual bool Open(CDVDStreamInfo &hints, CDVDCodecOptions &options);
   virtual void Dispose(void);
   virtual int  Decode(uint8_t *pData, int iSize, double dts, double pts);
   virtual void Reset(void);
   virtual bool GetPicture(DVDVideoPicture *pDvdVideoPicture);
   virtual bool ClearPicture(DVDVideoPicture* pDvdVideoPicture);
-  virtual unsigned GetAllowedReferences() { return NUM_BUFFERS; }
+  virtual unsigned GetAllowedReferences() { return 3; }
   virtual void SetDropState(bool bDrop);
-  virtual const char* GetName(void) { return (const char*)m_pFormatName; }
+  virtual const char* GetName(void) { return m_pFormatName ? m_pFormatName:"mmal-xxx"; }
   virtual bool GetCodecStats(double &pts, int &droppedPics);
+  virtual void SetSpeed(int iSpeed);
 
   // MMAL decoder callback routines.
-  void ReleaseBuffer(CMMALVideoBuffer *buffer);
   void Recycle(MMAL_BUFFER_HEADER_T *buffer);
 
   // MMAL decoder callback routines.
   void dec_output_port_cb(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer);
   void dec_control_port_cb(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer);
-  uint32_t          m_changed_count;
-  uint32_t          m_changed_count_dec;
+  void dec_input_port_cb(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer);
 
 protected:
   void QueryCodec(void);
-  void ReturnBuffer(CMMALVideoBuffer *buffer);
   bool CreateDeinterlace(EINTERLACEMETHOD interlace_method);
   bool DestroyDeinterlace();
+  void Prime();
 
   // Video format
-  bool              m_drop_state;
   int               m_decoded_width;
   int               m_decoded_height;
   unsigned int      m_egl_buffer_count;
   bool              m_finished;
   float             m_aspect_ratio;
   const char        *m_pFormatName;
-  MMALVideoPtr      m_myself;
 
-  std::queue<double> m_dts_queue;
   std::queue<mmal_demux_packet> m_demux_queue;
   unsigned           m_demux_queue_length;
 
   // mmal output buffers (video frames)
   pthread_mutex_t   m_output_mutex;
-  int m_output_busy;
   std::queue<CMMALVideoBuffer*> m_output_ready;
-  std::vector<CMMALVideoBuffer*> m_output_buffers;
 
   // initialize mmal and get decoder component
-  bool Initialize( const CStdString &decoder_name);
+  bool Initialize( const std::string &decoder_name);
   void PortSettingsChanged(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer);
   bool SendCodecConfigData();
 
@@ -137,15 +127,16 @@ protected:
   MMAL_INTERLACETYPE_T m_interlace_mode;
   EINTERLACEMETHOD  m_interlace_method;
   bool              m_startframe;
-  unsigned int      m_decode_frame_number;
   double            m_decoderPts;
-  unsigned int      m_droppedPics;
+  int               m_speed;
+  bool              m_preroll;
 
+  CCriticalSection m_sharedSection;
   MMAL_COMPONENT_T *m_dec;
   MMAL_PORT_T *m_dec_input;
   MMAL_PORT_T *m_dec_output;
   MMAL_POOL_T *m_dec_input_pool;
-  MMAL_POOL_T *m_dec_output_pool;
+  MMAL_POOL_T *m_vout_input_pool;
 
   MMAL_ES_FORMAT_T *m_es_format;
   MMAL_COMPONENT_T *m_deint;

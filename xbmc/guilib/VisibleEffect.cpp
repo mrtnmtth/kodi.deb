@@ -49,7 +49,7 @@ CAnimEffect::CAnimEffect(unsigned int delay, unsigned int length, EFFECT_TYPE ef
   m_delay = delay;
   m_length = length;
   m_effect = effect;
-  m_pTweener = boost::shared_ptr<Tweener>(new LinearTweener());
+  m_pTweener = std::shared_ptr<Tweener>(new LinearTweener());
 }
 
 CAnimEffect::~CAnimEffect()
@@ -96,28 +96,28 @@ void CAnimEffect::ApplyState(ANIMATION_STATE state, const CPoint &center)
   ApplyEffect(offset, center);
 }
 
-boost::shared_ptr<Tweener> CAnimEffect::GetTweener(const TiXmlElement *pAnimationNode)
+std::shared_ptr<Tweener> CAnimEffect::GetTweener(const TiXmlElement *pAnimationNode)
 {
-  boost::shared_ptr<Tweener> m_pTweener;
+  std::shared_ptr<Tweener> m_pTweener;
   const char *tween = pAnimationNode->Attribute("tween");
   if (tween)
   {
     if (strcmpi(tween, "linear")==0)
-      m_pTweener = boost::shared_ptr<Tweener>(new LinearTweener());
+      m_pTweener = std::shared_ptr<Tweener>(new LinearTweener());
     else if (strcmpi(tween, "quadratic")==0)
-      m_pTweener = boost::shared_ptr<Tweener>(new QuadTweener());
+      m_pTweener = std::shared_ptr<Tweener>(new QuadTweener());
     else if (strcmpi(tween, "cubic")==0)
-      m_pTweener = boost::shared_ptr<Tweener>(new CubicTweener());
+      m_pTweener = std::shared_ptr<Tweener>(new CubicTweener());
     else if (strcmpi(tween, "sine")==0)
-      m_pTweener = boost::shared_ptr<Tweener>(new SineTweener());
+      m_pTweener = std::shared_ptr<Tweener>(new SineTweener());
     else if (strcmpi(tween, "back")==0)
-      m_pTweener = boost::shared_ptr<Tweener>(new BackTweener());
+      m_pTweener = std::shared_ptr<Tweener>(new BackTweener());
     else if (strcmpi(tween, "circle")==0)
-      m_pTweener = boost::shared_ptr<Tweener>(new CircleTweener());
+      m_pTweener = std::shared_ptr<Tweener>(new CircleTweener());
     else if (strcmpi(tween, "bounce")==0)
-      m_pTweener = boost::shared_ptr<Tweener>(new BounceTweener());
+      m_pTweener = std::shared_ptr<Tweener>(new BounceTweener());
     else if (strcmpi(tween, "elastic")==0)
-      m_pTweener = boost::shared_ptr<Tweener>(new ElasticTweener());
+      m_pTweener = std::shared_ptr<Tweener>(new ElasticTweener());
 
     const char *easing = pAnimationNode->Attribute("easing");
     if (m_pTweener && easing)
@@ -139,11 +139,11 @@ boost::shared_ptr<Tweener> CAnimEffect::GetTweener(const TiXmlElement *pAnimatio
     // or quadratic if we have acceleration
     if (accel)
     {
-      m_pTweener = boost::shared_ptr<Tweener>(new QuadTweener(accel));
+      m_pTweener = std::shared_ptr<Tweener>(new QuadTweener(accel));
       m_pTweener->SetEasing(EASE_IN);
     }
     else
-      m_pTweener = boost::shared_ptr<Tweener>(new LinearTweener());
+      m_pTweener = std::shared_ptr<Tweener>(new LinearTweener());
   }
 
   return m_pTweener;
@@ -625,17 +625,17 @@ void CAnimation::Create(const TiXmlElement *node, const CRect &rect, int context
 
   const TiXmlElement *effect = node->FirstChildElement("effect");
 
-  CStdString type = node->FirstChild()->Value();
+  std::string type = node->FirstChild()->Value();
   m_type = ANIM_TYPE_CONDITIONAL;
   if (effect) // new layout
     type = XMLUtils::GetAttribute(node, "type");
 
   if (StringUtils::StartsWithNoCase(type, "visible")) m_type = ANIM_TYPE_VISIBLE;
-  else if (type.Equals("hidden")) m_type = ANIM_TYPE_HIDDEN;
-  else if (type.Equals("focus"))  m_type = ANIM_TYPE_FOCUS;
-  else if (type.Equals("unfocus"))  m_type = ANIM_TYPE_UNFOCUS;
-  else if (type.Equals("windowopen"))  m_type = ANIM_TYPE_WINDOW_OPEN;
-  else if (type.Equals("windowclose"))  m_type = ANIM_TYPE_WINDOW_CLOSE;
+  else if (StringUtils::EqualsNoCase(type, "hidden")) m_type = ANIM_TYPE_HIDDEN;
+  else if (StringUtils::EqualsNoCase(type, "focus"))  m_type = ANIM_TYPE_FOCUS;
+  else if (StringUtils::EqualsNoCase(type, "unfocus"))  m_type = ANIM_TYPE_UNFOCUS;
+  else if (StringUtils::EqualsNoCase(type, "windowopen"))  m_type = ANIM_TYPE_WINDOW_OPEN;
+  else if (StringUtils::EqualsNoCase(type, "windowclose"))  m_type = ANIM_TYPE_WINDOW_CLOSE;
   // sanity check
   if (m_type == ANIM_TYPE_CONDITIONAL)
   {
@@ -657,7 +657,7 @@ void CAnimation::Create(const TiXmlElement *node, const CRect &rect, int context
   if (!effect)
   { // old layout:
     // <animation effect="fade" start="0" end="100" delay="10" time="2000" condition="blahdiblah" reversible="false">focus</animation>
-    CStdString type = XMLUtils::GetAttribute(node, "effect");
+    std::string type = XMLUtils::GetAttribute(node, "effect");
     AddEffect(type, node, rect);
   }
   while (effect)
@@ -666,7 +666,7 @@ void CAnimation::Create(const TiXmlElement *node, const CRect &rect, int context
     //   <effect type="fade" start="0" end="100" delay="10" time="2000" />
     //   ...
     // </animation>
-    CStdString type = XMLUtils::GetAttribute(effect, "type");
+    std::string type = XMLUtils::GetAttribute(effect, "type");
     AddEffect(type, effect, rect);
     effect = effect->NextSiblingElement("effect");
   }
@@ -681,27 +681,27 @@ void CAnimation::Create(const TiXmlElement *node, const CRect &rect, int context
   m_length = total - m_delay;
 }
 
-void CAnimation::AddEffect(const CStdString &type, const TiXmlElement *node, const CRect &rect)
+void CAnimation::AddEffect(const std::string &type, const TiXmlElement *node, const CRect &rect)
 {
   CAnimEffect *effect = NULL;
-  if (type.Equals("fade"))
+  if (StringUtils::EqualsNoCase(type, "fade"))
     effect = new CFadeEffect(node, m_type < 0);
-  else if (type.Equals("slide"))
+  else if (StringUtils::EqualsNoCase(type, "slide"))
     effect = new CSlideEffect(node);
-  else if (type.Equals("rotate"))
+  else if (StringUtils::EqualsNoCase(type, "rotate"))
     effect = new CRotateEffect(node, CAnimEffect::EFFECT_TYPE_ROTATE_Z);
-  else if (type.Equals("rotatey"))
+  else if (StringUtils::EqualsNoCase(type, "rotatey"))
     effect = new CRotateEffect(node, CAnimEffect::EFFECT_TYPE_ROTATE_Y);
-  else if (type.Equals("rotatex"))
+  else if (StringUtils::EqualsNoCase(type, "rotatex"))
     effect = new CRotateEffect(node, CAnimEffect::EFFECT_TYPE_ROTATE_X);
-  else if (type.Equals("zoom"))
+  else if (StringUtils::EqualsNoCase(type, "zoom"))
     effect = new CZoomEffect(node, rect);
 
   if (effect)
     m_effects.push_back(effect);
 }
 
-CScroller::CScroller(unsigned int duration /* = 200 */, boost::shared_ptr<Tweener> tweener /* = NULL */)
+CScroller::CScroller(unsigned int duration /* = 200 */, std::shared_ptr<Tweener> tweener /* = NULL */)
 {
   m_scrollValue = 0;
   m_delta = 0;

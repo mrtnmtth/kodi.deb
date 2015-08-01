@@ -50,9 +50,8 @@ protected:
 
   XbmcThreads::EndTime m_endtime;
   CGUIDialogProgress* m_pDlg;
+  std::string m_strHeader;
   std::string m_strLinePrev;
   std::string m_strLinePrev2;
-  std::string m_strHeader;
   bool bSentCancel;
-  bool m_bOpenTried;
 };

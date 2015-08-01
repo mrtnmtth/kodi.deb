@@ -21,7 +21,6 @@
 #pragma once
 
 #include "Window.h"
-#include "WindowInterceptor.h"
 #include "WindowDialogMixin.h"
 
 namespace XBMCAddon
@@ -35,7 +34,7 @@ namespace XBMCAddon
     {
 
     public:
-      WindowDialog() throw(WindowException);
+      WindowDialog();
       virtual ~WindowDialog();
 
 #ifndef SWIG

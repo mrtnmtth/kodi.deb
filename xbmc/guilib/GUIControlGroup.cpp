@@ -19,7 +19,8 @@
  */
 
 #include "GUIControlGroup.h"
-#include "GUIControlProfiler.h"
+
+#include <cassert>
 
 using namespace std;
 
@@ -133,9 +134,16 @@ void CGUIControlGroup::Render()
   g_graphicsContext.RestoreOrigin();
 }
 
+void CGUIControlGroup::RenderEx()
+{
+  for (iControls it = m_children.begin(); it != m_children.end(); ++it)
+    (*it)->RenderEx();
+  CGUIControl::RenderEx();
+}
+
 bool CGUIControlGroup::OnAction(const CAction &action)
 {
-  ASSERT(false);  // unimplemented
+  assert(false);  // unimplemented
   return false;
 }
 

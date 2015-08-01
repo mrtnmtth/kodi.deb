@@ -21,9 +21,7 @@
 #include "RenderCapture.h"
 #include "utils/log.h"
 #include "windowing/WindowingFactory.h"
-#include "utils/fastmemcpy.h"
 #include "settings/AdvancedSettings.h"
-#include "settings/Settings.h"
 
 CRenderCaptureBase::CRenderCaptureBase()
 {
@@ -54,7 +52,48 @@ bool CRenderCaptureBase::UseOcclusionQuery()
     return true;
 }
 
-#if defined(TARGET_RASPBERRY_PI)
+
+#if defined(HAS_IMXVPU)
+CRenderCaptureIMX::CRenderCaptureIMX()
+{
+}
+
+CRenderCaptureIMX::~CRenderCaptureIMX()
+{
+}
+
+int CRenderCaptureIMX::GetCaptureFormat()
+{
+    return CAPTUREFORMAT_BGRA;
+}
+
+void CRenderCaptureIMX::BeginRender()
+{
+  m_asyncChecked = true;
+  m_asyncSupported = true;
+}
+
+void CRenderCaptureIMX::EndRender()
+{
+  if (m_flags & CAPTUREFLAG_IMMEDIATELY)
+    ReadOut();
+  else
+    SetState(CAPTURESTATE_NEEDSREADOUT);
+}
+
+void* CRenderCaptureIMX::GetRenderBuffer()
+{
+    return m_pixels;
+}
+
+void CRenderCaptureIMX::ReadOut()
+{
+  g_IMXContext.WaitCapture();
+  m_pixels = reinterpret_cast<uint8_t*>(g_IMXContext.GetCaptureBuffer());
+  SetState(CAPTURESTATE_DONE);
+}
+
+#elif defined(TARGET_RASPBERRY_PI)
 
 CRenderCaptureDispmanX::CRenderCaptureDispmanX()
 {
@@ -130,8 +169,7 @@ void CRenderCaptureGL::BeginRender()
   if (!m_asyncChecked)
   {
 #ifndef HAS_GLES
-    bool usePbo = CSettings::Get().GetBool("videoplayer.usepbo");
-    m_asyncSupported = g_Windowing.IsExtSupported("GL_ARB_pixel_buffer_object") && usePbo;
+    m_asyncSupported = g_Windowing.IsExtSupported("GL_ARB_pixel_buffer_object");
     m_occlusionQuerySupported = g_Windowing.IsExtSupported("GL_ARB_occlusion_query");
 
     if (m_flags & CAPTUREFLAG_CONTINUOUS)
@@ -140,8 +178,6 @@ void CRenderCaptureGL::BeginRender()
         CLog::Log(LOGWARNING, "CRenderCaptureGL: GL_ARB_occlusion_query not supported, performance might suffer");
       if (!g_Windowing.IsExtSupported("GL_ARB_pixel_buffer_object"))
         CLog::Log(LOGWARNING, "CRenderCaptureGL: GL_ARB_pixel_buffer_object not supported, performance might suffer");
-      if (!usePbo)
-        CLog::Log(LOGWARNING, "CRenderCaptureGL: GL_ARB_pixel_buffer_object disabled, performance might suffer");
       if (UseOcclusionQuery())
         CLog::Log(LOGWARNING, "CRenderCaptureGL: GL_ARB_occlusion_query disabled, performance might suffer");
     }
@@ -260,7 +296,7 @@ void CRenderCaptureGL::PboToBuffer()
 
   if (pboPtr)
   {
-    fast_memcpy(m_pixels, pboPtr, m_bufferSize);
+    memcpy(m_pixels, pboPtr, m_bufferSize);
     SetState(CAPTURESTATE_DONE);
   }
   else
@@ -454,12 +490,12 @@ void CRenderCaptureDX::SurfaceToBuffer()
     //if pitch is same, do a direct copy, otherwise copy one line at a time
     if (lockedRect.Pitch == m_width * 4)
     {
-      fast_memcpy(m_pixels, lockedRect.pBits, m_width * m_height * 4);
+      memcpy(m_pixels, lockedRect.pBits, m_width * m_height * 4);
     }
     else
     {
       for (unsigned int y = 0; y < m_height; y++)
-        fast_memcpy(m_pixels + y * m_width * 4, (uint8_t*)lockedRect.pBits + y * lockedRect.Pitch, m_width * 4);
+        memcpy(m_pixels + y * m_width * 4, (uint8_t*)lockedRect.pBits + y * lockedRect.Pitch, m_width * 4);
     }
     m_copySurface->UnlockRect();
     SetState(CAPTURESTATE_DONE);

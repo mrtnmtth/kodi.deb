@@ -28,10 +28,8 @@
 #include "music/Artist.h"
 #include "music/Album.h"
 #include "music/Song.h"
-#include "music/Artist.h"
 #include "ApplicationMessenger.h"
 #include "filesystem/Directory.h"
-#include "filesystem/File.h"
 #include "settings/Settings.h"
 
 using namespace MUSIC_INFO;
@@ -130,6 +128,10 @@ JSONRPC_STATUS CAudioLibrary::GetAlbums(const std::string &method, ITransportLay
 
   CMusicDbUrl musicUrl;
   musicUrl.FromString("musicdb://albums/");
+
+  if (parameterObject["includesingles"].asBoolean())
+    musicUrl.AddOption("show_singles", true);
+
   int artistID = -1, genreID = -1;
   const CVariant &filter = parameterObject["filter"];
   if (filter.isMember("artistid"))
@@ -208,6 +210,10 @@ JSONRPC_STATUS CAudioLibrary::GetSongs(const std::string &method, ITransportLaye
 
   CMusicDbUrl musicUrl;
   musicUrl.FromString("musicdb://songs/");
+
+  if (!parameterObject["includesingles"].asBoolean())
+    musicUrl.AddOption("singles", false);
+
   int genreID = -1, albumID = -1, artistID = -1;
   const CVariant &filter = parameterObject["filter"];
   if (filter.isMember("artistid"))
@@ -508,6 +514,10 @@ JSONRPC_STATUS CAudioLibrary::SetSongDetails(const std::string &method, ITranspo
     song.strComment = parameterObject["comment"].asString();
   if (ParameterNotNull(parameterObject, "musicbrainztrackid"))
     song.strMusicBrainzTrackID = parameterObject["musicbrainztrackid"].asString();
+  if (ParameterNotNull(parameterObject, "playcount"))
+    song.iTimesPlayed = parameterObject["playcount"].asInteger();
+  if (ParameterNotNull(parameterObject, "lastplayed"))
+    song.lastPlayed.SetFromDBDateTime(parameterObject["lastplayed"].asString());
 
   if (musicdatabase.UpdateSong(id, song) <= 0)
     return InternalError;
@@ -632,11 +642,11 @@ bool CAudioLibrary::FillFileItemList(const CVariant &parameterObject, CFileItemL
     // If we retrieved the list of songs by "artistid"
     // we sort by album (and implicitly by track number)
     if (artistID != -1)
-      list.Sort(SortByAlbum, SortOrderAscending, SortAttributeIgnoreArticle);
+      list.Sort(SortByAlbum, SortOrderAscending, CSettings::Get().GetBool("filelists.ignorethewhensorting") ? SortAttributeIgnoreArticle : SortAttributeNone);
     // If we retrieve the list of songs by "genreid"
     // we sort by artist (and implicitly by album and track number)
     else if (genreID != -1)
-      list.Sort(SortByArtist, SortOrderAscending, SortAttributeIgnoreArticle);
+      list.Sort(SortByArtist, SortOrderAscending, CSettings::Get().GetBool("filelists.ignorethewhensorting") ? SortAttributeIgnoreArticle : SortAttributeNone);
     // otherwise we sort by track number
     else
       list.Sort(SortByTrackNumber, SortOrderAscending);

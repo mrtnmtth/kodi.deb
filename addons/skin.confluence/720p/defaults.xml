@@ -48,9 +48,9 @@
 	</default>
 	<default type="textbox">
 		<left>220</left>
-		<top>220</top>
+		<top>222</top>
 		<width>410</width>
-		<height>215</height>
+		<height>213</height>
 		<align>left</align>
 		<textcolor>white</textcolor>
 		<font>font13</font>
@@ -139,7 +139,6 @@
 		<textureleftfocus>scroll-left-focus.png</textureleftfocus>
 		<textureright>scroll-right.png</textureright>
 		<texturerightfocus>scroll-right-focus.png</texturerightfocus>
-		<font>font13</font>
 		<textcolor>white</textcolor>
 		<disabledcolor>grey3</disabledcolor>
 		<aligny>center</aligny>

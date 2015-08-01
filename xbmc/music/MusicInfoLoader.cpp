@@ -20,10 +20,7 @@
 
 #include "MusicInfoLoader.h"
 #include "MusicDatabase.h"
-#include "music/infoscanner/MusicInfoScanner.h"
 #include "music/tags/MusicInfoTagLoaderFactory.h"
-#include "filesystem/DirectoryCache.h"
-#include "filesystem/MusicDatabaseDirectory.h"
 #include "filesystem/MusicDatabaseDirectory/DirectoryNode.h"
 #include "filesystem/MusicDatabaseDirectory/QueryParams.h"
 #include "utils/URIUtils.h"
@@ -89,7 +86,7 @@ bool CMusicInfoLoader::LoadAdditionalTagInfo(CFileItem* pItem)
   if (pItem->GetProperty("hasfullmusictag") == "true")
     return false; // already have the information
 
-  CStdString path(pItem->GetPath());
+  std::string path(pItem->GetPath());
   if (pItem->IsMusicDb())
   {
     // set the artist / album properties
@@ -111,7 +108,7 @@ bool CMusicInfoLoader::LoadAdditionalTagInfo(CFileItem* pItem)
   CLog::Log(LOGDEBUG, "Loading additional tag info for file %s", path.c_str());
 
   // we load up the actual tag for this file
-  auto_ptr<IMusicInfoTagLoader> pLoader (CMusicInfoTagLoaderFactory::CreateLoader(path));
+  unique_ptr<IMusicInfoTagLoader> pLoader (CMusicInfoTagLoaderFactory::CreateLoader(*pItem));
   if (NULL != pLoader.get())
   {
     CMusicInfoTag tag;
@@ -163,7 +160,7 @@ bool CMusicInfoLoader::LoadItemLookup(CFileItem* pItem)
     }
     else
     {
-      CStdString strPath = URIUtils::GetDirectory(pItem->GetPath());
+      std::string strPath = URIUtils::GetDirectory(pItem->GetPath());
       URIUtils::AddSlashAtEnd(strPath);
       if (strPath!=m_strPrevPath)
       {
@@ -177,6 +174,7 @@ bool CMusicInfoLoader::LoadItemLookup(CFileItem* pItem)
       if (it != m_songsMap.end())
       {  // Have we loaded this item from database before
         pItem->GetMusicInfoTag()->SetSong(it->second);
+        pItem->GetMusicInfoTag()->SetCueSheet(m_musicDatabase.LoadCuesheet(it->second.strFileName));
         if (!it->second.strThumb.empty())
           pItem->SetArt("thumb", it->second.strThumb);
       }
@@ -196,7 +194,7 @@ bool CMusicInfoLoader::LoadItemLookup(CFileItem* pItem)
       { // Nothing found, load tag from file,
         // always try to load cddb info
         // get correct tag parser
-        auto_ptr<IMusicInfoTagLoader> pLoader (CMusicInfoTagLoaderFactory::CreateLoader(pItem->GetPath()));
+        unique_ptr<IMusicInfoTagLoader> pLoader (CMusicInfoTagLoaderFactory::CreateLoader(*pItem));
         if (NULL != pLoader.get())
           // get tag
           pLoader->Load(pItem->GetPath(), *pItem->GetMusicInfoTag());
@@ -230,12 +228,12 @@ void CMusicInfoLoader::OnLoaderFinish()
     m_thumbLoader->OnLoaderFinish();
 }
 
-void CMusicInfoLoader::UseCacheOnHD(const CStdString& strFileName)
+void CMusicInfoLoader::UseCacheOnHD(const std::string& strFileName)
 {
   m_strCacheFileName = strFileName;
 }
 
-void CMusicInfoLoader::LoadCache(const CStdString& strFileName, CFileItemList& items)
+void CMusicInfoLoader::LoadCache(const std::string& strFileName, CFileItemList& items)
 {
   CFile file;
 
@@ -256,7 +254,7 @@ void CMusicInfoLoader::LoadCache(const CStdString& strFileName, CFileItemList& i
   }
 }
 
-void CMusicInfoLoader::SaveCache(const CStdString& strFileName, CFileItemList& items)
+void CMusicInfoLoader::SaveCache(const std::string& strFileName, CFileItemList& items)
 {
   int iSize = items.Size();
 

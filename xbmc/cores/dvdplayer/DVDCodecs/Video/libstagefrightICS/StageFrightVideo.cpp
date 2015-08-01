@@ -30,7 +30,6 @@
 #include "guilib/GraphicContext.h"
 #include "DVDClock.h"
 #include "utils/log.h"
-#include "utils/fastmemcpy.h"
 #include "threads/Thread.h"
 #include "threads/Event.h"
 #include "Application.h"
@@ -415,6 +414,11 @@ bool CStageFrightVideo::Open(CDVDStreamInfo &hints)
   const char* mimetype;
   switch (hints.codec)
   {
+  case AV_CODEC_ID_HEVC:
+    if (p->m_g_advancedSettings->m_stagefrightConfig.useHEVCcodec == 0)
+      return false;
+    mimetype = "video/hevc";
+    break;
   case CODEC_ID_H264:
     if (p->m_g_advancedSettings->m_stagefrightConfig.useAVCcodec == 0)
       return false;
@@ -615,7 +619,7 @@ int  CStageFrightVideo::Decode(uint8_t *pData, int iSize, double dts, double pts
       return VC_ERROR;
     }
 
-    fast_memcpy(frame->medbuf->data(), demuxer_content, demuxer_bytes);
+    memcpy(frame->medbuf->data(), demuxer_content, demuxer_bytes);
     frame->medbuf->set_range(0, demuxer_bytes);
     frame->medbuf->meta_data()->clear();
     frame->medbuf->meta_data()->setInt64(kKeyTime, frame->pts);

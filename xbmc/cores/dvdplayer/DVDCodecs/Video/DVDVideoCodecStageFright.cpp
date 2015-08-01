@@ -73,12 +73,31 @@ bool CDVDVideoCodecStageFright::Open(CDVDStreamInfo &hints, CDVDCodecOptions &op
 
     switch (hints.codec)
     {
-      case CODEC_ID_H264:
+      case AV_CODEC_ID_H264:
+        switch(hints.profile)
+        {
+          case FF_PROFILE_H264_HIGH_10:
+          case FF_PROFILE_H264_HIGH_10_INTRA:
+            // No known h/w decoder supporting Hi10P
+            return false;
+        }
         m_pFormatName = "stf-h264";
         if (hints.extrasize < 7 || hints.extradata == NULL)
         {
           CLog::Log(LOGNOTICE,
               "%s::%s - avcC data too small or missing", CLASSNAME, __func__);
+          return false;
+        }
+        m_converter     = new CBitstreamConverter();
+        m_convert_bitstream = m_converter->Open(hints.codec, (uint8_t *)hints.extradata, hints.extrasize, true);
+
+        break;
+      case AV_CODEC_ID_HEVC:
+        m_pFormatName = "stf-h265";
+        if (hints.extrasize < 22 || hints.extradata == NULL)
+        {
+          CLog::Log(LOGNOTICE,
+              "%s::%s - hvcC data too small or missing", CLASSNAME, __func__);
           return false;
         }
         m_converter     = new CBitstreamConverter();

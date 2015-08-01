@@ -1,5 +1,4 @@
 #pragma once
-
 /*
  *      Copyright (C) 2012-2013 Team XBMC
  *      http://xbmc.org
@@ -25,12 +24,12 @@
 #include "guilib/GUIControl.h"
 #include "guilib/GUIListItemLayout.h"
 #include "guilib/IGUIContainer.h"
-#include "pvr/channels/PVRChannel.h"
+#include "threads/SystemClock.h"
 
 namespace EPG
 {
   #define MAXCHANNELS 20
-  #define MAXBLOCKS   (16 * 24 * 60 / 5) //! 16 days of 5 minute blocks (14 days for upcoming data + 1 day for past data + 1 day for fillers)
+  #define MAXBLOCKS   (33 * 24 * 60 / 5) //! 33 days of 5 minute blocks (31 days for upcoming data + 1 day for past data + 1 day for fillers)
 
   struct GridItemsPtr
   {
@@ -47,8 +46,10 @@ namespace EPG
     CGUIEPGGridContainer(int parentID, int controlID, float posX, float posY, float width, float height,
                          int scrollTime, int preloadItems, int minutesPerPage,
                          int rulerUnit, const CTextureInfo& progressIndicatorTexture);
+    CGUIEPGGridContainer(const CGUIEPGGridContainer &other);
+
     virtual ~CGUIEPGGridContainer(void);
-    virtual CGUIEPGGridContainer *Clone() const { return new CGUIEPGGridContainer(*this); };
+    virtual CGUIEPGGridContainer *Clone() const { return new CGUIEPGGridContainer(*this); }
 
     virtual bool OnAction(const CAction &action);
     virtual void OnDown();
@@ -65,9 +66,10 @@ namespace EPG
     virtual std::string GetDescription() const;
     const int GetNumChannels()   { return m_channels; };
     virtual int GetSelectedItem() const;
-    const int GetSelectedChannel() { return m_channelCursor + m_channelOffset; }
+    const int GetSelectedChannel() const;
     void SetSelectedChannel(int channelIndex);
-    PVR::CPVRChannel* GetChannel(int iIndex);
+    PVR::CPVRChannelPtr GetChannel(int iIndex);
+    void SetSelectedBlock(int blockIndex);
     virtual EVENT_RESULT OnMouseEvent(const CPoint &point, const CMouseEvent &event);
 
     virtual void Process(unsigned int currentTime, CDirtyRegionList &dirtyregions);
@@ -90,14 +92,12 @@ namespace EPG
     void GoToEnd();
     void GoToNow();
     void SetStartEnd(CDateTime start, CDateTime end);
-    void SetChannel(const PVR::CPVRChannel &channel);
+    void SetChannel(const PVR::CPVRChannelPtr &channel);
     void SetChannel(const std::string &channel);
 
   protected:
     bool OnClick(int actionID);
     bool SelectItemFromPoint(const CPoint &point, bool justGrid = true);
-
-    void UpdateItems();
 
     void SetChannel(int channel);
     void SetBlock(int block);
@@ -173,6 +173,12 @@ namespace EPG
     void GetProgrammeCacheOffsets(int &cacheBefore, int &cacheAfter);
 
   private:
+    void UpdateItems();
+
+    EPG::CEpgInfoTagPtr GetSelectedEpgInfoTag() const;
+    int GetBlock(const EPG::CEpgInfoTagPtr &tag, int channel) const;
+    int GetChannel(const EPG::CEpgInfoTagPtr &tag) const;
+
     int m_rulerUnit; //! number of blocks that makes up one element of the ruler
     int m_channels;
     int m_channelsPerPage;
@@ -221,5 +227,9 @@ namespace EPG
     int m_channelScrollLastTime;
     float m_channelScrollSpeed;
     float m_channelScrollOffset;
+
+    CCriticalSection m_critSection;
+
+    XbmcThreads::EndTime m_nextUpdateTimeout;
   };
 }

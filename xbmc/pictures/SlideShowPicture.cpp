@@ -25,7 +25,6 @@
 #include "settings/AdvancedSettings.h"
 #include "settings/Settings.h"
 #include "windowing/WindowingFactory.h"
-#include "utils/log.h"
 #include "threads/SingleLock.h"
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
@@ -764,10 +763,16 @@ void CSlideShowPic::Render(float *x, float *y, CBaseTexture* pTexture, color_t c
     vertex[i].col = color;
   }
 
-  vertex[1].tu = 1.0f;
-  vertex[2].tu = 1.0f;
-  vertex[2].tv = 1.0f;
-  vertex[3].tv = 1.0f;
+  if (pTexture)
+  {
+    vertex[1].tu = vertex[2].tu = (float)pTexture->GetWidth() / pTexture->GetTextureWidth();
+    vertex[2].tv = vertex[3].tv = (float)pTexture->GetHeight() / pTexture->GetTextureHeight();
+  }
+  else
+  {
+    vertex[1].tu = vertex[2].tu = 1.0f;
+    vertex[2].tv = vertex[3].tv = 1.0f;
+  }
   
   vertex[4] = vertex[0]; // Not used when pTexture != NULL
 

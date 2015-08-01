@@ -26,7 +26,6 @@
 #include "settings/AdvancedSettings.h"
 #include "utils/MathUtils.h"
 #include "utils/log.h"
-#include "utils/URIUtils.h"
 
 #include "karaokelyricstextlrc.h"
 
@@ -40,15 +39,15 @@ enum ParserState
 // Used in multi-time lyric loader
 typedef struct
 {
-  CStdString    text;
+  std::string    text;
   unsigned int   timing;
   unsigned int   flags;
 } MtLyric;
  
-CKaraokeLyricsTextLRC::CKaraokeLyricsTextLRC( const CStdString & lyricsFile )
+CKaraokeLyricsTextLRC::CKaraokeLyricsTextLRC( const std::string & lyricsFile )
   : CKaraokeLyricsText()
+  , m_lyricsFile(lyricsFile)
 {
-  m_lyricsFile = lyricsFile;
 }
 
 
@@ -77,7 +76,7 @@ bool CKaraokeLyricsTextLRC::Load()
 
   unsigned int offset = 0;
 
-  CStdString songfilename = getSongFile();
+  std::string songfilename = getSongFile();
 
   // Skip windoze UTF8 file prefix, if any, and reject UTF16 files
   if (buf.size() > 3)
@@ -173,7 +172,7 @@ bool CKaraokeLyricsTextLRC::ParserNormal(char *lyricData, unsigned int lyricSize
 
         // Add existing lyrics
         char current = *p;
-        CStdString text;
+        std::string text;
 
         if ( offset > state_offset )
         {
@@ -239,7 +238,7 @@ bool CKaraokeLyricsTextLRC::ParserNormal(char *lyricData, unsigned int lyricSize
             m_artist += fieldptr;
           else if ( !strcmp( timestr, "sr" ) )
           {
-            // m_artist += "[CR]" + CStdString( fieldptr ); // Add source to the artist name as a separate line
+            // m_artist += "[CR]" + std::string( fieldptr ); // Add source to the artist name as a separate line
           }
           else if ( !strcmp( timestr, "ti" ) )
             m_songName = fieldptr;
@@ -348,7 +347,7 @@ bool CKaraokeLyricsTextLRC::ParserMultiTime(char *lyricData, unsigned int lyricS
 
         // Add existing lyrics
         char current = *p;
-        CStdString text;
+        std::string text;
 
         if ( offset > state_offset )
         {
@@ -428,7 +427,7 @@ bool CKaraokeLyricsTextLRC::ParserMultiTime(char *lyricData, unsigned int lyricS
             m_artist += fieldptr;
           else if ( !strcmp( timestr, "sr" ) )
           {
-            // m_artist += "[CR]" + CStdString( fieldptr ); // Add source to the artist name as a separate line
+            // m_artist += "[CR]" + std::string( fieldptr ); // Add source to the artist name as a separate line
           }
           else if ( !strcmp( timestr, "ti" ) )
             m_songName = fieldptr;

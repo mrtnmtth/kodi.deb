@@ -24,6 +24,7 @@
 
 #include <stdint.h>
 #include <limits.h>
+#include <cassert>
 
 #include "AESinkPi.h"
 #include "cores/AudioEngine/Utils/AEUtil.h"
@@ -44,7 +45,8 @@ CAESinkPi::CAESinkPi() :
     m_sinkbuffer_sec_per_byte(0),
     m_Initialized(false),
     m_submitted(0),
-    m_omx_output(NULL)
+    m_omx_output(NULL),
+    m_output(AESINKPI_UNKNOWN)
 {
 }
 
@@ -59,7 +61,7 @@ void CAESinkPi::SetAudioDest()
   OMX_INIT_STRUCTURE(audioDest);
   if ( m_omx_render.IsInitialized() )
   {
-    if (CSettings::Get().GetString("audiooutput.audiodevice") == "PI:Analogue")
+    if (m_output == AESINKPI_ANALOGUE)
       strncpy((char *)audioDest.sName, "local", strlen("local"));
     else
       strncpy((char *)audioDest.sName, "hdmi", strlen("hdmi"));
@@ -69,7 +71,7 @@ void CAESinkPi::SetAudioDest()
   }
   if ( m_omx_render_slave.IsInitialized() )
   {
-    if (CSettings::Get().GetString("audiooutput.audiodevice") != "PI:Analogue")
+    if (m_output != AESINKPI_ANALOGUE)
       strncpy((char *)audioDest.sName, "local", strlen("local"));
     else
       strncpy((char *)audioDest.sName, "hdmi", strlen("hdmi"));
@@ -92,9 +94,9 @@ static void SetAudioProps(bool stream_channels, uint32_t channel_map)
   CLog::Log(LOGDEBUG, "%s:%s hdmi_stream_channels %d hdmi_channel_map %08x", CLASSNAME, __func__, stream_channels, channel_map);
 }
 
-static uint32_t GetChannelMap(AEAudioFormat &format, bool passthrough)
+static uint32_t GetChannelMap(const CAEChannelInfo &channelLayout, bool passthrough)
 {
-  unsigned int channels = format.m_channelLayout.Count();
+  unsigned int channels = channelLayout.Count();
   uint32_t channel_map = 0;
   if (passthrough)
     return 0;
@@ -133,12 +135,12 @@ static uint32_t GetChannelMap(AEAudioFormat &format, bool passthrough)
   // According to CEA-861-D only RL and RR are known. In case of a format having SL and SR channels
   // but no BR BL channels, we use the wide map in order to open only the num of channels really
   // needed.
-  if (format.m_channelLayout.HasChannel(AE_CH_BL) && !format.m_channelLayout.HasChannel(AE_CH_SL))
+  if (channelLayout.HasChannel(AE_CH_BL) && !channelLayout.HasChannel(AE_CH_SL))
     map = map_back;
 
   for (unsigned int i = 0; i < channels; ++i)
   {
-    AEChannel c = format.m_channelLayout[i];
+    AEChannel c = channelLayout[i];
     unsigned int chan = 0;
     if ((unsigned int)c < sizeof map_normal / sizeof *map_normal)
       chan = map[(unsigned int)c];
@@ -169,9 +171,9 @@ static uint32_t GetChannelMap(AEAudioFormat &format, bool passthrough)
     0xff, // 7
     0x13, // 7.1
   };
-  uint8_t cea = format.m_channelLayout.HasChannel(AE_CH_LFE) ? cea_map_lfe[channels] : cea_map[channels];
+  uint8_t cea = channelLayout.HasChannel(AE_CH_LFE) ? cea_map_lfe[channels] : cea_map[channels];
   if (cea == 0xff)
-    CLog::Log(LOGERROR, "%s::%s - Unexpected CEA mapping %d,%d", CLASSNAME, __func__, format.m_channelLayout.HasChannel(AE_CH_LFE), channels);
+    CLog::Log(LOGERROR, "%s::%s - Unexpected CEA mapping %d,%d", CLASSNAME, __func__, channelLayout.HasChannel(AE_CH_LFE), channels);
 
   channel_map |= cea << 24;
 
@@ -189,12 +191,17 @@ bool CAESinkPi::Initialize(AEAudioFormat &format, std::string &device)
   m_initDevice = device;
   m_initFormat = format;
 
+  if (m_passthrough || CSettings::Get().GetString("audiooutput.audiodevice") == "PI:HDMI")
+    m_output = AESINKPI_HDMI;
+  else if (CSettings::Get().GetString("audiooutput.audiodevice") == "PI:Analogue")
+    m_output = AESINKPI_ANALOGUE;
+  else if (CSettings::Get().GetString("audiooutput.audiodevice") == "PI:Both")
+    m_output = AESINKPI_BOTH;
+  else assert(0);
+
   // analogue only supports stereo
-  if (CSettings::Get().GetString("audiooutput.audiodevice") == "PI:Analogue" || CSettings::Get().GetString("audiooutput.audiodevice") == "PI:Both")
-  {
+  if (m_output == AESINKPI_ANALOGUE || m_output == AESINKPI_BOTH)
     format.m_channelLayout = AE_CH_LAYOUT_2_0;
-    m_passthrough = false;
-  }
 
   // setup for a 50ms sink feed from SoftAE
   if (format.m_dataFormat != AE_FMT_FLOATP && format.m_dataFormat != AE_FMT_FLOAT &&
@@ -208,7 +215,7 @@ bool CAESinkPi::Initialize(AEAudioFormat &format, std::string &device)
   format.m_frames        = format.m_sampleRate * AUDIO_PLAYBUFFER / NUM_OMX_BUFFERS;
   format.m_frameSamples  = format.m_frames * channels;
 
-  SetAudioProps(m_passthrough, GetChannelMap(format, m_passthrough));
+  SetAudioProps(m_passthrough, GetChannelMap(format.m_channelLayout, m_passthrough));
 
   m_format = format;
   m_sinkbuffer_sec_per_byte = 1.0 / (double)(m_format.m_frameSize * m_format.m_sampleRate);
@@ -222,7 +229,7 @@ bool CAESinkPi::Initialize(AEAudioFormat &format, std::string &device)
   if (!m_omx_render.Initialize("OMX.broadcom.audio_render", OMX_IndexParamAudioInit))
     CLog::Log(LOGERROR, "%s::%s - m_omx_render.Initialize omx_err(0x%08x)", CLASSNAME, __func__, omx_err);
 
-  if (CSettings::Get().GetString("audiooutput.audiodevice") == "PI:Both")
+  if (m_output == AESINKPI_BOTH)
   {
     if (!m_omx_splitter.Initialize("OMX.broadcom.audio_splitter", OMX_IndexParamAudioInit))
       CLog::Log(LOGERROR, "%s::%s - m_omx_splitter.Initialize omx_err(0x%08x)", CLASSNAME, __func__, omx_err);
@@ -464,7 +471,10 @@ unsigned int CAESinkPi::AddPackets(uint8_t **data, unsigned int frames, unsigned
   }
   omx_err = m_omx_output->EmptyThisBuffer(omx_buffer);
   if (omx_err != OMX_ErrorNone)
+  {
     CLog::Log(LOGERROR, "%s:%s frames=%d err=%x", CLASSNAME, __func__, frames, omx_err);
+    m_omx_output->DecoderEmptyBufferDone(m_omx_output->GetComponent(), omx_buffer);
+  }
   m_submitted++;
   GetDelay(status);
   delay = status.GetDelay();

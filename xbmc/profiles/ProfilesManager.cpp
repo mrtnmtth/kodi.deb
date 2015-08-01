@@ -24,9 +24,9 @@
 #include "DatabaseManager.h"
 #include "FileItem.h"
 #include "GUIInfoManager.h"
-#include "LangInfo.h"
 #include "PasswordManager.h"
 #include "Util.h"
+#include "dialogs/GUIDialogOK.h"
 #include "dialogs/GUIDialogYesNo.h"
 #include "filesystem/Directory.h"
 #include "filesystem/DirectoryCache.h"
@@ -35,13 +35,12 @@
 #include "guilib/GUIWindowManager.h"
 #include "guilib/LocalizeStrings.h"
 #include "input/ButtonTranslator.h"
-#include "input/MouseStat.h"
+#include "input/InputManager.h"
 #include "settings/Settings.h"
 #if !defined(TARGET_WINDOWS) && defined(HAS_DVD_DRIVE)
 #include "storage/DetectDVDType.h"
 #endif
 #include "threads/SingleLock.h"
-#include "utils/CharsetConverter.h"
 #include "utils/FileUtils.h"
 #include "utils/log.h"
 #include "utils/StringUtils.h"
@@ -133,7 +132,7 @@ bool CProfilesManager::Load(const std::string &file)
         XMLUtils::GetInt(rootElement, XML_AUTO_LOGIN, m_autoLoginProfile);
         XMLUtils::GetInt(rootElement, XML_NEXTID, m_nextProfileId);
         
-        CStdString defaultDir("special://home/userdata");
+        std::string defaultDir("special://home/userdata");
         if (!CDirectory::Exists(defaultDir))
           defaultDir = "special://xbmc/userdata";
         
@@ -206,7 +205,7 @@ bool CProfilesManager::Save(const std::string &file) const
   XMLUtils::SetInt(pRoot, XML_AUTO_LOGIN, m_autoLoginProfile);
   XMLUtils::SetInt(pRoot, XML_NEXTID, m_nextProfileId);      
 
-  for (vector<CProfile>::const_iterator profile = m_profiles.begin(); profile != m_profiles.end(); profile++)
+  for (vector<CProfile>::const_iterator profile = m_profiles.begin(); profile != m_profiles.end(); ++profile)
     profile->Save(pRoot);
 
   // save the file
@@ -249,26 +248,13 @@ bool CProfilesManager::LoadProfile(size_t index)
 
   CreateProfileFolders();
 
-  // Load the langinfo to have user charset <-> utf-8 conversion
-  string strLanguage = CSettings::Get().GetString("locale.language");
-  strLanguage[0] = toupper(strLanguage[0]);
-
-  string strLangInfoPath = StringUtils::Format("special://xbmc/language/%s/langinfo.xml", strLanguage.c_str());
-  CLog::Log(LOGINFO, "CProfilesManager: load language info file: %s", strLangInfoPath.c_str());
-  g_langInfo.Load(strLangInfoPath);
-
-  CButtonTranslator::GetInstance().Load(true);
-  g_localizeStrings.Load("special://xbmc/language/", strLanguage);
-
   CDatabaseManager::Get().Initialize();
+  CButtonTranslator::GetInstance().Load(true);
 
-  g_Mouse.SetEnabled(CSettings::Get().GetBool("input.enablemouse"));
+  CInputManager::Get().SetMouseEnabled(CSettings::Get().GetBool("input.enablemouse"));
 
   g_infoManager.ResetCache();
   g_infoManager.ResetLibraryBools();
-
-  // always reload the skin - we need it for the new language strings
-  g_application.ReloadSkin();
 
   if (m_currentProfile != 0)
   {
@@ -502,7 +488,7 @@ std::string CProfilesManager::GetLibraryFolder() const
 
 std::string CProfilesManager::GetSettingsFile() const
 {
-  CStdString settings;
+  std::string settings;
   if (m_currentProfile == 0)
     return "special://masterprofile/guisettings.xml";
 

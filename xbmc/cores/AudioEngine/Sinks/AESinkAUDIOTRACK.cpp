@@ -62,15 +62,21 @@ static void pa_sconv_s16le_from_f32ne_neon(unsigned n, const float32_t *a, int16
 #endif
 
 /*
- * ADT-1 on L preview as of 2014-07 downmixes all non-5.1 content
- * to stereo, so use 5.1 for all multichannel content for now to
+ * ADT-1 on L preview as of 2014-10 downmixes all non-5.1/7.1 content
+ * to stereo, so use 7.1 or 5.1 for all multichannel content for now to
  * avoid that (except passthrough).
  * If other devices surface that support other multichannel layouts,
  * this should be disabled or adapted accordingly.
  */
-#define LIMIT_TO_STEREO_AND_5POINT1 1
+#define LIMIT_TO_STEREO_AND_5POINT1_AND_7POINT1 1
 
-static const AEChannel KnownChannels[] = { AE_CH_FL, AE_CH_FR, AE_CH_FC, AE_CH_LFE, AE_CH_BL, AE_CH_BR, AE_CH_BC, AE_CH_BLOC, AE_CH_BROC, AE_CH_NULL };
+static const AEChannel KnownChannels[] = { AE_CH_FL, AE_CH_FR, AE_CH_FC, AE_CH_LFE, AE_CH_SL, AE_CH_SR, AE_CH_BL, AE_CH_BR, AE_CH_BC, AE_CH_BLOC, AE_CH_BROC, AE_CH_NULL };
+
+static bool Has71Support()
+{
+  /* Android 5.0 introduced side channels */
+  return CJNIAudioManager::GetSDKVersion() >= 21;
+}
 
 static AEChannel AUDIOTRACKChannelToAEChannel(int atChannel)
 {
@@ -84,6 +90,8 @@ static AEChannel AUDIOTRACKChannelToAEChannel(int atChannel)
   else if (atChannel == CJNIAudioFormat::CHANNEL_OUT_LOW_FREQUENCY)         aeChannel = AE_CH_LFE;
   else if (atChannel == CJNIAudioFormat::CHANNEL_OUT_BACK_LEFT)             aeChannel = AE_CH_BL;
   else if (atChannel == CJNIAudioFormat::CHANNEL_OUT_BACK_RIGHT)            aeChannel = AE_CH_BR;
+  else if (atChannel == CJNIAudioFormat::CHANNEL_OUT_SIDE_LEFT)             aeChannel = AE_CH_SL;
+  else if (atChannel == CJNIAudioFormat::CHANNEL_OUT_SIDE_RIGHT)            aeChannel = AE_CH_SR;
   else if (atChannel == CJNIAudioFormat::CHANNEL_OUT_FRONT_LEFT_OF_CENTER)  aeChannel = AE_CH_FLOC;
   else if (atChannel == CJNIAudioFormat::CHANNEL_OUT_FRONT_RIGHT_OF_CENTER) aeChannel = AE_CH_FROC;
   else if (atChannel == CJNIAudioFormat::CHANNEL_OUT_BACK_CENTER)           aeChannel = AE_CH_BC;
@@ -103,6 +111,8 @@ static int AEChannelToAUDIOTRACKChannel(AEChannel aeChannel)
     case AE_CH_LFE:   atChannel = CJNIAudioFormat::CHANNEL_OUT_LOW_FREQUENCY; break;
     case AE_CH_BL:    atChannel = CJNIAudioFormat::CHANNEL_OUT_BACK_LEFT; break;
     case AE_CH_BR:    atChannel = CJNIAudioFormat::CHANNEL_OUT_BACK_RIGHT; break;
+    case AE_CH_SL:    atChannel = CJNIAudioFormat::CHANNEL_OUT_SIDE_LEFT; break;
+    case AE_CH_SR:    atChannel = CJNIAudioFormat::CHANNEL_OUT_SIDE_RIGHT; break;
     case AE_CH_BC:    atChannel = CJNIAudioFormat::CHANNEL_OUT_BACK_CENTER; break;
     case AE_CH_FLOC:  atChannel = CJNIAudioFormat::CHANNEL_OUT_FRONT_LEFT_OF_CENTER; break;
     case AE_CH_FROC:  atChannel = CJNIAudioFormat::CHANNEL_OUT_FRONT_RIGHT_OF_CENTER; break;
@@ -128,8 +138,14 @@ static CAEChannelInfo AUDIOTRACKChannelMaskToAEChannelMap(int atMask)
 
 static int AEChannelMapToAUDIOTRACKChannelMask(CAEChannelInfo info)
 {
-#ifdef LIMIT_TO_STEREO_AND_5POINT1
-  if (info.Count() > 2 && info[0] != AE_CH_RAW)
+  if (info[0] == AE_CH_RAW)
+    return CJNIAudioFormat::CHANNEL_OUT_STEREO;
+#ifdef LIMIT_TO_STEREO_AND_5POINT1_AND_7POINT1
+  if (info.Count() > 6 && Has71Support())
+    return CJNIAudioFormat::CHANNEL_OUT_5POINT1
+         | CJNIAudioFormat::CHANNEL_OUT_SIDE_LEFT
+         | CJNIAudioFormat::CHANNEL_OUT_SIDE_RIGHT;
+  else if (info.Count() > 2)
     return CJNIAudioFormat::CHANNEL_OUT_5POINT1;
   else
     return CJNIAudioFormat::CHANNEL_OUT_STEREO;
@@ -175,7 +191,6 @@ CAESinkAUDIOTRACK::CAESinkAUDIOTRACK()
   m_min_frames = 0;
   m_sink_frameSize = 0;
   m_audiotrackbuffer_sec = 0.0;
-  m_volume = 1.0;
   m_at_jni = NULL;
   m_frames_written = 0;
 }
@@ -185,10 +200,17 @@ CAESinkAUDIOTRACK::~CAESinkAUDIOTRACK()
   Deinitialize();
 }
 
+bool CAESinkAUDIOTRACK::IsSupported(int sampleRateInHz, int channelConfig, int encoding)
+{
+  int ret = CJNIAudioTrack::getMinBufferSize( sampleRateInHz, channelConfig, encoding);
+  return (ret > 0);
+}
+
 bool CAESinkAUDIOTRACK::Initialize(AEAudioFormat &format, std::string &device)
 {
   m_lastFormat  = format;
   m_format      = format;
+  m_volume      = -1;
 
   if (AE_IS_RAW(m_format.m_dataFormat))
     m_passthrough = true;
@@ -248,18 +270,22 @@ bool CAESinkAUDIOTRACK::Initialize(AEAudioFormat &format, std::string &device)
   m_format.m_frameSamples   = m_format.m_frames * m_format.m_channelLayout.Count();
   format                    = m_format;
 
-  JNIEnv* jenv = xbmc_jnienv();
-  // Set the initial volume
-  float volume = 1.0;
-  if (!m_passthrough)
-    volume = m_volume;
-  CXBMCApp::SetSystemVolume(jenv, volume);
+  // Force volume to 100% for passthrough
+  if (m_passthrough)
+  {
+    m_volume = CXBMCApp::GetSystemVolume();
+    CXBMCApp::SetSystemVolume(1.0);
+  }
 
   return true;
 }
 
 void CAESinkAUDIOTRACK::Deinitialize()
 {
+  // Restore volume
+  if (m_volume != -1)
+    CXBMCApp::SetSystemVolume(m_volume);
+
   if (!m_at_jni)
     return;
 
@@ -293,10 +319,6 @@ void CAESinkAUDIOTRACK::GetDelay(AEDelayStatus& status)
 
 double CAESinkAUDIOTRACK::GetLatency()
 {
-#if defined(HAS_LIBAMCODEC)
-  if (aml_present())
-    return 0.250;
-#endif
   return 0.0;
 }
 
@@ -350,14 +372,14 @@ bool CAESinkAUDIOTRACK::HasVolume()
 
 void  CAESinkAUDIOTRACK::SetVolume(float scale)
 {
+  // Ignore in passthrough
+  if (m_passthrough)
+    return;
+
   if (!m_at_jni)
     return;
 
-  m_volume = scale;
-  if (!m_passthrough)
-  {
-    CXBMCApp::SetSystemVolume(xbmc_jnienv(), m_volume);
-  }
+  CXBMCApp::SetSystemVolume(scale);
 }
 
 void CAESinkAUDIOTRACK::EnumerateDevicesEx(AEDeviceInfoList &list, bool force)
@@ -370,12 +392,24 @@ void CAESinkAUDIOTRACK::EnumerateDevicesEx(AEDeviceInfoList &list, bool force)
   m_info.m_deviceName = "AudioTrack";
   m_info.m_displayName = "android";
   m_info.m_displayNameExtra = "audiotrack";
-#ifdef LIMIT_TO_STEREO_AND_5POINT1
-  m_info.m_channels = AE_CH_LAYOUT_5_1;
+#ifdef LIMIT_TO_STEREO_AND_5POINT1_AND_7POINT1
+  if (Has71Support())
+    m_info.m_channels = AE_CH_LAYOUT_7_1;
+  else
+    m_info.m_channels = AE_CH_LAYOUT_5_1;
 #else
   m_info.m_channels = KnownChannels;
 #endif
-  m_info.m_sampleRates.push_back(CJNIAudioTrack::getNativeOutputSampleRate(CJNIAudioManager::STREAM_MUSIC));
+  int test_sample[] = { 44100, 48000, 96000, 192000 };
+  int test_sample_sz = sizeof(test_sample) / sizeof(int);
+  for (int i=0; i<test_sample_sz; ++i)
+  {
+    if (IsSupported(test_sample[i], CJNIAudioFormat::CHANNEL_OUT_STEREO, CJNIAudioFormat::ENCODING_PCM_16BIT))
+    {
+      m_info.m_sampleRates.push_back(test_sample[i]);
+      CLog::Log(LOGDEBUG, "AESinkAUDIOTRACK - %d supported", test_sample[i]);
+    }
+  }
   m_info.m_dataFormats.push_back(AE_FMT_S16LE);
   m_info.m_dataFormats.push_back(AE_FMT_AC3);
   m_info.m_dataFormats.push_back(AE_FMT_DTS);

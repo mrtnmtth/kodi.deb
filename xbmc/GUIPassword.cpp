@@ -34,7 +34,6 @@
 #include "guilib/GUIWindowManager.h"
 #include "FileItem.h"
 #include "guilib/LocalizeStrings.h"
-#include "utils/log.h"
 #include "utils/StringUtils.h"
 #include "view/ViewStateSettings.h"
 
@@ -46,7 +45,7 @@ CGUIPassword::CGUIPassword(void)
 CGUIPassword::~CGUIPassword(void)
 {}
 
-bool CGUIPassword::IsItemUnlocked(CFileItem* pItem, const CStdString &strType)
+bool CGUIPassword::IsItemUnlocked(CFileItem* pItem, const std::string &strType)
 {
   // \brief Tests if the user is allowed to access the share folder
   // \param pItem The share folder item to access
@@ -57,8 +56,8 @@ bool CGUIPassword::IsItemUnlocked(CFileItem* pItem, const CStdString &strType)
 
   while (pItem->m_iHasLock > 1)
   {
-    CStdString strLockCode = pItem->m_strLockCode;
-    CStdString strLabel = pItem->GetLabel();
+    std::string strLockCode = pItem->m_strLockCode;
+    std::string strLabel = pItem->GetLabel();
     int iResult = 0;  // init to user succeeded state, doing this to optimize switch statement below
     char buffer[33]; // holds 32 places plus sign character
     if(g_passwordManager.bMasterUser)// Check if we are the MasterUser!
@@ -69,11 +68,11 @@ bool CGUIPassword::IsItemUnlocked(CFileItem* pItem, const CStdString &strType)
     {
       if (0 != CSettings::Get().GetInt("masterlock.maxretries") && pItem->m_iBadPwdCount >= CSettings::Get().GetInt("masterlock.maxretries"))
       { // user previously exhausted all retries, show access denied error
-        CGUIDialogOK::ShowAndGetInput(12345, 12346, 0, 0);
+        CGUIDialogOK::ShowAndGetInput(12345, 12346);
         return false;
       }
       // show the appropriate lock dialog
-      CStdString strHeading = "";
+      std::string strHeading = "";
       if (pItem->m_bIsFolder)
         strHeading = g_localizeStrings.Get(12325);
       else
@@ -124,11 +123,11 @@ bool CGUIPassword::CheckStartUpLock()
 {
   // prompt user for mastercode if the mastercode was set b4 or by xml
   int iVerifyPasswordResult = -1;
-  CStdString strHeader = g_localizeStrings.Get(20075);
+  std::string strHeader = g_localizeStrings.Get(20075);
   if (iMasterLockRetriesLeft == -1)
     iMasterLockRetriesLeft = CSettings::Get().GetInt("masterlock.maxretries");
   if (g_passwordManager.iMasterLockRetriesLeft == 0) g_passwordManager.iMasterLockRetriesLeft = 1;
-  CStdString strPassword = CProfilesManager::Get().GetMasterProfile().getLockCode();
+  std::string strPassword = CProfilesManager::Get().GetMasterProfile().getLockCode();
   if (CProfilesManager::Get().GetMasterProfile().getLockMode() == 0)
     iVerifyPasswordResult = 0;
   else
@@ -138,13 +137,13 @@ bool CGUIPassword::CheckStartUpLock()
       iVerifyPasswordResult = VerifyPassword(CProfilesManager::Get().GetMasterProfile().getLockMode(), strPassword, strHeader);
       if (iVerifyPasswordResult != 0 )
       {
-        CStdString strLabel1;
+        std::string strLabel1;
         strLabel1 = g_localizeStrings.Get(12343);
         int iLeft = g_passwordManager.iMasterLockRetriesLeft-i;
-        CStdString strLabel = StringUtils::Format("%i %s", iLeft, strLabel1.c_str());
+        std::string strLabel = StringUtils::Format("%i %s", iLeft, strLabel1.c_str());
 
         // PopUp OK and Display: MasterLock mode has changed but no new Mastercode has been set!
-        CGUIDialogOK::ShowAndGetInput(12360, 12367, 12368, strLabel);
+        CGUIDialogOK::ShowAndGetInput(12360, 12367, strLabel, "");
       }
       else
         i=g_passwordManager.iMasterLockRetriesLeft;
@@ -245,8 +244,8 @@ bool CGUIPassword::IsMasterLockUnlocked(bool bPromptUser, bool& bCanceled)
 
   // no, unlock since we are allowed to prompt
   int iVerifyPasswordResult = -1;
-  CStdString strHeading = g_localizeStrings.Get(20075);
-  CStdString strPassword = CProfilesManager::Get().GetMasterProfile().getLockCode();
+  std::string strHeading = g_localizeStrings.Get(20075);
+  std::string strPassword = CProfilesManager::Get().GetMasterProfile().getLockCode();
   iVerifyPasswordResult = VerifyPassword(CProfilesManager::Get().GetMasterProfile().getLockMode(), strPassword, strHeading);
   if (1 == iVerifyPasswordResult)
     UpdateMasterLockRetryCount(false);
@@ -282,11 +281,11 @@ void CGUIPassword::UpdateMasterLockRetryCount(bool bResetCount)
         // user has run out of retry attempts
         g_passwordManager.iMasterLockRetriesLeft = 0;
         // Tell the user they ran out of retry attempts
-        CGUIDialogOK::ShowAndGetInput(12345, 12346, 0, 0);
+        CGUIDialogOK::ShowAndGetInput(12345, 12346);
         return ;
       }
     }
-    CStdString dlgLine1 = "";
+    std::string dlgLine1 = "";
     if (0 < g_passwordManager.iMasterLockRetriesLeft)
       dlgLine1 = StringUtils::Format("%d %s",
                                      g_passwordManager.iMasterLockRetriesLeft,
@@ -297,21 +296,21 @@ void CGUIPassword::UpdateMasterLockRetryCount(bool bResetCount)
     g_passwordManager.iMasterLockRetriesLeft = CSettings::Get().GetInt("masterlock.maxretries"); // user entered correct mastercode, reset retries to max allowed
 }
 
-bool CGUIPassword::CheckLock(LockType btnType, const CStdString& strPassword, int iHeading)
+bool CGUIPassword::CheckLock(LockType btnType, const std::string& strPassword, int iHeading)
 {
   bool bDummy;
   return CheckLock(btnType,strPassword,iHeading,bDummy);
 }
 
-bool CGUIPassword::CheckLock(LockType btnType, const CStdString& strPassword, int iHeading, bool& bCanceled)
+bool CGUIPassword::CheckLock(LockType btnType, const std::string& strPassword, int iHeading, bool& bCanceled)
 {
   bCanceled = false;
-  if (btnType == LOCK_MODE_EVERYONE || strPassword.Equals("-")        ||
+  if (btnType == LOCK_MODE_EVERYONE || strPassword == "-"        ||
       CProfilesManager::Get().GetMasterProfile().getLockMode() == LOCK_MODE_EVERYONE || g_passwordManager.bMasterUser)
     return true;
 
   int iVerifyPasswordResult = -1;
-  CStdString strHeading = g_localizeStrings.Get(iHeading);
+  std::string strHeading = g_localizeStrings.Get(iHeading);
   iVerifyPasswordResult = VerifyPassword(btnType, strPassword, strHeading);
 
   if (iVerifyPasswordResult == -1)
@@ -423,7 +422,7 @@ bool CGUIPassword::CheckMenuLock(int iWindowID)
     return true;
 }
 
-bool CGUIPassword::LockSource(const CStdString& strType, const CStdString& strName, bool bState)
+bool CGUIPassword::LockSource(const std::string& strType, const std::string& strName, bool bState)
 {
   VECSOURCES* pShares = CMediaSourceSettings::Get().GetSources(strType);
   bool bResult = false;
@@ -480,7 +479,7 @@ void CGUIPassword::RemoveSourceLocks()
   g_windowManager.SendThreadMessage(msg);
 }
 
-bool CGUIPassword::IsDatabasePathUnlocked(const CStdString& strPath, VECSOURCES& vecSources)
+bool CGUIPassword::IsDatabasePathUnlocked(const std::string& strPath, VECSOURCES& vecSources)
 {
   if (g_passwordManager.bMasterUser || CProfilesManager::Get().GetMasterProfile().getLockMode() == LOCK_MODE_EVERYONE)
     return true;
@@ -506,19 +505,19 @@ void CGUIPassword::OnSettingAction(const CSetting *setting)
     SetMasterLockMode();
 }
 
-int CGUIPassword::VerifyPassword(LockType btnType, const CStdString& strPassword, const CStdString& strHeading)
+int CGUIPassword::VerifyPassword(LockType btnType, const std::string& strPassword, const std::string& strHeading)
 {
   int iVerifyPasswordResult;
   switch (btnType)
   {
   case LOCK_MODE_NUMERIC:
-    iVerifyPasswordResult = CGUIDialogNumeric::ShowAndVerifyPassword(const_cast<CStdString&>(strPassword), strHeading, 0);
+    iVerifyPasswordResult = CGUIDialogNumeric::ShowAndVerifyPassword(const_cast<std::string&>(strPassword), strHeading, 0);
     break;
   case LOCK_MODE_GAMEPAD:
-    iVerifyPasswordResult = CGUIDialogGamepad::ShowAndVerifyPassword(const_cast<CStdString&>(strPassword), strHeading, 0);
+    iVerifyPasswordResult = CGUIDialogGamepad::ShowAndVerifyPassword(const_cast<std::string&>(strPassword), strHeading, 0);
     break;
   case LOCK_MODE_QWERTY:
-    iVerifyPasswordResult = CGUIKeyboardFactory::ShowAndVerifyPassword(const_cast<CStdString&>(strPassword), strHeading, 0);
+    iVerifyPasswordResult = CGUIKeyboardFactory::ShowAndVerifyPassword(const_cast<std::string&>(strPassword), strHeading, 0);
     break;
   default:   // must not be supported, treat as unlocked
     iVerifyPasswordResult = 0;

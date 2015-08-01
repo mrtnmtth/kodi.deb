@@ -29,7 +29,6 @@
 #include "URL.h"
 #include "network/upnp/UPnP.h"
 #include "network/upnp/UPnPInternal.h"
-#include "video/VideoInfoTag.h"
 #include "FileItem.h"
 #include "utils/log.h"
 #include "utils/URIUtils.h"
@@ -320,7 +319,7 @@ CUPnPDirectory::GetDirectory(const CURL& url, CFileItemList &items)
 
             // keep count of classes
             classes[(*entry)->m_ObjectClass.type]++;
-            CFileItemPtr pItem = BuildObject(*entry);
+            CFileItemPtr pItem = BuildObject(*entry, UPnPClient);
             if(!pItem) {
                 ++entry;
                 continue;
@@ -343,7 +342,7 @@ CUPnPDirectory::GetDirectory(const CURL& url, CFileItemList &items)
 
         NPT_String max_string = "";
         int        max_count  = 0;
-        for(std::map<NPT_String, int>::iterator it = classes.begin(); it != classes.end(); it++)
+        for(std::map<NPT_String, int>::iterator it = classes.begin(); it != classes.end(); ++it)
         {
           if(it->second > max_count)
           {

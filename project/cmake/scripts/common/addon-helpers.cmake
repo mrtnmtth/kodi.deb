@@ -53,17 +53,46 @@ macro (build_addon target prefix libs)
     # Pack files together to create an archive
     INSTALL(DIRECTORY ${target} DESTINATION ./ COMPONENT ${target}-${${prefix}_VERSION})
     IF(WIN32)
-      INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/${target}.dll
-              DESTINATION ${target}
+      # get the installation location for the addon's target
+      get_property(dll_location TARGET ${target} PROPERTY LOCATION)
+      # in case of a VC++ project the installation location contains a $(Configuration) VS variable
+      # we replace it with ${CMAKE_BUILD_TYPE} (which doesn't cover the case when the build configuration
+      # is changed within Visual Studio)
+      string(REPLACE "$(Configuration)" "${CMAKE_BUILD_TYPE}" dll_location "${dll_location}")
+
+      # install the generated DLL file
+      INSTALL(PROGRAMS ${dll_location} DESTINATION ${target}
               COMPONENT ${target}-${${prefix}_VERSION})
+
+      IF(CMAKE_BUILD_TYPE MATCHES Debug)
+        # for debug builds also install the PDB file
+        get_filename_component(dll_directory ${dll_location} DIRECTORY)
+        INSTALL(FILES ${dll_directory}/${target}.pdb DESTINATION ${target}
+                COMPONENT ${target}-${${prefix}_VERSION})
+      ENDIF()
     ELSE(WIN32)
       INSTALL(TARGETS ${target} DESTINATION ${target}
               COMPONENT ${target}-${${prefix}_VERSION})
     ENDIF(WIN32)
     add_cpack_workaround(${target} ${${prefix}_VERSION} ${ext})
   ELSE(PACKAGE_ZIP OR PACKAGE_TGZ)
-    INSTALL(TARGETS ${target} DESTINATION lib/kodi/addons/${target})
-    INSTALL(DIRECTORY ${target} DESTINATION share/kodi/addons)
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+      if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT OR NOT CMAKE_INSTALL_PREFIX)
+        message(STATUS "setting install paths to match ${APP_NAME}: CMAKE_INSTALL_PREFIX: ${${APP_NAME_UC}_PREFIX}")
+        set(CMAKE_INSTALL_PREFIX "${${APP_NAME_UC}_PREFIX}" CACHE PATH "${APP_NAME} install prefix" FORCE)
+        set(CMAKE_INSTALL_LIBDIR "${${APP_NAME_UC}_LIB_DIR}" CACHE PATH "${APP_NAME} install libdir" FORCE)
+      elseif(NOT CMAKE_INSTALL_PREFIX STREQUAL "${${APP_NAME_UC}_PREFIX}" AND NOT OVERRIDE_PATHS)
+        message(FATAL_ERROR "CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} differs from ${APP_NAME} prefix ${${APP_NAME_UC}_PREFIX}. Please pass -DOVERRIDE_PATHS=1 to skip this check")
+      else()
+        if(NOT CMAKE_INSTALL_LIBDIR)
+          set(CMAKE_INSTALL_LIBDIR "${CMAKE_INSTALL_PREFIX}/lib/${APP_NAME_LC}")
+        endif()
+      endif()
+    else()
+      set(CMAKE_INSTALL_LIBDIR "lib/${APP_NAME_LC}")
+    endif()
+    INSTALL(TARGETS ${target} DESTINATION ${CMAKE_INSTALL_LIBDIR}/addons/${target})
+    INSTALL(DIRECTORY ${target} DESTINATION share/${APP_NAME_LC}/addons)
   ENDIF(PACKAGE_ZIP OR PACKAGE_TGZ)
 endmacro()
 

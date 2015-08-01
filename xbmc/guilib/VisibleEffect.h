@@ -31,9 +31,11 @@ class CGUIListItem;
 
 #include "TransformMatrix.h"  // needed for the TransformMatrix member
 #include "Geometry.h"         // for CPoint, CRect
-#include "utils/StdString.h"
-#include "boost/shared_ptr.hpp"
+#include <memory>
 #include "interfaces/info/InfoBool.h"
+
+#include <string>
+#include <vector>
 
 enum ANIMATION_TYPE
 {
@@ -67,7 +69,7 @@ public:
   const TransformMatrix &GetTransform() const { return m_matrix; };
   EFFECT_TYPE GetType() const { return m_effect; };
 
-  static boost::shared_ptr<Tweener> GetTweener(const TiXmlElement *pAnimationNode);
+  static std::shared_ptr<Tweener> GetTweener(const TiXmlElement *pAnimationNode);
 protected:
   TransformMatrix m_matrix;
   EFFECT_TYPE m_effect;
@@ -79,7 +81,7 @@ private:
   unsigned int m_length;
   unsigned int m_delay;
 
-  boost::shared_ptr<Tweener> m_pTweener;
+  std::shared_ptr<Tweener> m_pTweener;
 };
 
 class CFadeEffect : public CAnimEffect
@@ -177,7 +179,7 @@ public:
 
 private:
   void Calculate(const CPoint &point);
-  void AddEffect(const CStdString &type, const TiXmlElement *node, const CRect &rect);
+  void AddEffect(const std::string &type, const TiXmlElement *node, const CRect &rect);
 
   enum ANIM_REPEAT { ANIM_REPEAT_NONE = 0, ANIM_REPEAT_PULSE, ANIM_REPEAT_LOOP };
 
@@ -214,7 +216,7 @@ private:
 class CScroller
 {
 public:
-  CScroller(unsigned int duration = 200, boost::shared_ptr<Tweener> tweener = boost::shared_ptr<Tweener>());
+  CScroller(unsigned int duration = 200, std::shared_ptr<Tweener> tweener = std::shared_ptr<Tweener>());
   CScroller(const CScroller& right);
   CScroller& operator=(const CScroller &src);
   ~CScroller();
@@ -258,5 +260,5 @@ private:
   unsigned int m_lastTime;                //!< Brief last remember time (updated each time Scroll() method is called)
 
   unsigned int m_duration;                //!< Brief duration of scroll
-  boost::shared_ptr<Tweener> m_pTweener;
+  std::shared_ptr<Tweener> m_pTweener;
 };

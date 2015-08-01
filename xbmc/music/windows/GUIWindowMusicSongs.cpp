@@ -23,25 +23,21 @@
 #include "Util.h"
 #include "GUIInfoManager.h"
 #include "Application.h"
-#include "CueDocument.h"
 #include "GUIPassword.h"
 #include "dialogs/GUIDialogYesNo.h"
 #include "GUIUserMessages.h"
-#include "guilib/GUIWindowManager.h"
 #include "FileItem.h"
 #include "profiles/ProfilesManager.h"
 #include "storage/MediaManager.h"
 #include "settings/MediaSourceSettings.h"
 #include "settings/Settings.h"
-#include "guilib/Key.h"
+#include "input/Key.h"
 #include "guilib/LocalizeStrings.h"
-#include "utils/log.h"
 #include "utils/URIUtils.h"
 #include "utils/StringUtils.h"
 #include "Autorun.h"
 #include "cdrip/CDDARipper.h"
-#include "cores/IPlayer.h"
-#include "utils/StringUtils.h"
+#include "ContextMenuManager.h"
 
 #define CONTROL_BTNVIEWASICONS     2
 #define CONTROL_BTNSORTBY          3
@@ -100,7 +96,7 @@ bool CGUIWindowMusicSongs::OnMessage(CGUIMessage& message)
       // Only update thumb on a local drive
       if (directory.IsHD())
       {
-        CStdString strParent;
+        std::string strParent;
         URIUtils::GetParentPath(directory.GetPath(), strParent);
         if (directory.GetPath() == m_vecItems->GetPath() || strParent == m_vecItems->GetPath())
           Refresh();
@@ -167,7 +163,7 @@ bool CGUIWindowMusicSongs::OnAction(const CAction& action)
 
 void CGUIWindowMusicSongs::OnScan(int iItem)
 {
-  CStdString strPath;
+  std::string strPath;
   if (iItem < 0 || iItem >= m_vecItems->Size())
     strPath = m_vecItems->GetPath();
   else if (m_vecItems->Get(iItem)->m_bIsFolder)
@@ -180,7 +176,7 @@ void CGUIWindowMusicSongs::OnScan(int iItem)
   DoScan(strPath);
 }
 
-void CGUIWindowMusicSongs::DoScan(const CStdString &strPath)
+void CGUIWindowMusicSongs::DoScan(const std::string &strPath)
 {
   if (g_application.IsMusicScanning())
   {
@@ -205,7 +201,7 @@ bool CGUIWindowMusicSongs::GetDirectory(const std::string &strDirectory, CFileIt
   // check for .CUE files here.
   items.FilterCueItems();
 
-  CStdString label;
+  std::string label;
   if (items.GetLabel().empty() && m_rootDir.IsSource(items.GetPath(), CMediaSourceSettings::Get().GetSources("music"), &label)) 
     items.SetLabel(label);
 
@@ -283,7 +279,7 @@ void CGUIWindowMusicSongs::UpdateButtons()
   }
 
   // Update object count label
-  CStdString items = StringUtils::Format("%i %s", m_vecItems->GetObjectCount(), g_localizeStrings.Get(127).c_str());
+  std::string items = StringUtils::Format("%i %s", m_vecItems->GetObjectCount(), g_localizeStrings.Get(127).c_str());
   SET_CONTROL_LABEL(CONTROL_LABELFILES, items);
 }
 
@@ -383,6 +379,8 @@ void CGUIWindowMusicSongs::GetContextButtons(int itemNumber, CContextButtons &bu
   if (!m_vecItems->IsVirtualDirectoryRoot() && !m_vecItems->IsPlugin())
     buttons.Add(CONTEXT_BUTTON_SWITCH_MEDIA, 523);
   CGUIWindowMusicBase::GetNonContextButtons(buttons);
+
+  CContextMenuManager::Get().AddVisibleItems(item, buttons);
 }
 
 bool CGUIWindowMusicSongs::OnContextButton(int itemNumber, CONTEXT_BUTTON button)
@@ -482,7 +480,7 @@ bool CGUIWindowMusicSongs::Update(const std::string &strDirectory, bool updateFi
 void CGUIWindowMusicSongs::OnRemoveSource(int iItem)
 {
   bool bCanceled;
-  if (CGUIDialogYesNo::ShowAndGetInput(522,20340,20341,20022,bCanceled))
+  if (CGUIDialogYesNo::ShowAndGetInput(522, 20340, bCanceled))
   {
     MAPSONGS songs;
     CMusicDatabase database;

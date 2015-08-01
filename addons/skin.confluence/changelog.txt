@@ -1,18 +1,22 @@
-[B]2.5.12[/B]
+[B]2.7.3[/B]
 
 - Updated language files from Transifex
 
-[B]2.5.11[/B]
+[B]2.7.2[/B]
 
 - Updated language files from Transifex
 
-[B]2.5.10[/B]
+[B]2.7.1[/B]
 
 - Updated language files from Transifex
 
-[B]2.5.9[/B]
+[B]2.7.0[/B]
 
-- Updated language files from Transifex
+- Removed new/edit/delete buttons from the channel manager dialog
+
+[B]2.6.0[/B]
+
+- Moved some context menu functionality for PVR channels to the sideblade
 
 [B]2.5.8[/B]
 

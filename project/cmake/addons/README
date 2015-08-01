@@ -3,24 +3,35 @@ KODI ADDONS
 This directory contains the cmake-based buildsystem for addons. It looks into
 the "addons" sub-directory and parses all *.txt files recursively. Each addon
 must have its own <addon-id>.txt file in a separate sub-directory which must
-follow the defined format:
+follow one of the defined format:
   <addon-id> <git-url> <git-revision>
+  <addon-id> <tarball-url>
+  <addon-id> <file://path>
 where
   * <addon-id> must be identical to the addon's ID as defined in the addon's
     addon.xml
-  * <git-url> must be the URL of the git repository containing the addon.
+  * <git-url> must be the URL of the git repository containing the addon
   * <git-revision> must be a valid git tag/branch/commit in the addon's git
     repository which will be used for the build.
+  * <tarball-url> must be the URL to a .tar.gz tarball containing the addon
+  * <file://path> must be a file:// based path to the directory containing the
+    addon
 
 Reserved filenames (for additional information on how to build an addon)
 are:
-  * platforms.txt: list of platforms to build an addon for (or "all")
+  * platforms.txt: List of platforms to build an addon for (or "all"). It is
+    also supported to specify negated platforms with a leading exclamation mark
+    (i), e.g. "!windows".
+    Available platforms are: linux, windows, darwin, ios, android, rbpi
 
 The buildsystem uses the following variables (which can be passed into it when
 executing cmake with the -D<variable-name>=<value> option) to e.g. access
 specific paths:
   * ADDONS_TO_BUILD is a quoted, space delimited list of <addon-id>s that
     you want to build (default is "all").
+  * ADDON_SRC_PREFIX can be used to override the addon repository location.
+    It must point to the locally available parent directory of the addon(s) to build
+    <addon-id> will be appended to this path automatically
   * CMAKE_BUILD_TYPE specifies the type of the build. This can be either "Debug"
     or "Release" (default is "Release").
   * CMAKE_INSTALL_PREFIX points to the directory where the built addons and their
@@ -32,6 +43,8 @@ specific paths:
     directories of the addons' dependencies.
   * APP_ROOT points to the root directory of the project (default is the
     absolute representation of ../../.. starting from this directory).
+  * BUILD_DIR points to the directory where the addons and their dependencies
+    will be downloaded and built.
   * PACKAGE_ZIP=1 will mean the add-ons will be 'packaged' into a common folder,
     rather than being placed in <CMAKE_INSTALL_PREFIX>/lib/kodi/addons and
     <CMAKE_INSTALL_PREFIX>/share/kodi/addons.

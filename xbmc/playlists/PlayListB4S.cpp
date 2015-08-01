@@ -21,10 +21,10 @@
 #include "PlayListB4S.h"
 #include "Util.h"
 #include "utils/XBMCTinyXML.h"
-#include "settings/AdvancedSettings.h"
 #include "music/tags/MusicInfoTag.h"
 #include "filesystem/File.h"
 #include "utils/log.h"
+#include "utils/StringUtils.h"
 #include "utils/URIUtils.h"
 #include "utils/XMLUtils.h"
 

@@ -21,6 +21,7 @@
 #include <iostream>
 #include <string>
 #include <set>
+#include <algorithm>
 
 #include "utils/log.h"
 #include "system.h" // for GetLastError()
@@ -133,7 +134,13 @@ int MysqlDatabase::connect(bool create_new) {
       return DB_CONNECTION_NONE;
 
     // establish connection with just user credentials
-    if (mysql_real_connect(conn, host.c_str(),login.c_str(),passwd.c_str(), NULL, atoi(port.c_str()),NULL,0) != NULL)
+    if (mysql_real_connect(conn, host.c_str(),
+                                 login.c_str(),
+                                 passwd.c_str(),
+                                 NULL,
+                                 atoi(port.c_str()),
+                                 NULL,
+                                 compression ? CLIENT_COMPRESS : 0) != NULL)
     {
       // disable mysql autocommit since we handle it
       //mysql_autocommit(conn, false);
@@ -1323,7 +1330,7 @@ void MysqlDataset::make_query(StringList &_sql) {
   {
     if (autocommit) db->start_transaction();
 
-    for (list<string>::iterator i =_sql.begin(); i!=_sql.end(); i++)
+    for (list<string>::iterator i =_sql.begin(); i!=_sql.end(); ++i)
     {
       query = *i;
       Dataset::parse_sql(query);
@@ -1449,7 +1456,15 @@ int MysqlDataset::exec(const string &sql) {
   if ( ci_find(qry, "CREATE TABLE") != string::npos 
     || ci_find(qry, "CREATE TEMPORARY TABLE") != string::npos )
   {
-    qry += " CHARACTER SET utf8 COLLATE utf8_general_ci";
+    // If CREATE TABLE ... SELECT Syntax is used we need to add the encoding after the table before the select
+    // e.g. CREATE TABLE x CHARACTER SET utf8 COLLATE utf8_general_ci [AS] SELECT * FROM y
+    if ((loc = qry.find(" AS SELECT ")) != string::npos ||
+        (loc = qry.find(" SELECT ")) != string::npos)
+    {
+      qry = qry.insert(loc, " CHARACTER SET utf8 COLLATE utf8_general_ci");
+    }
+    else
+      qry += " CHARACTER SET utf8 COLLATE utf8_general_ci";
   }
 
   CLog::Log(LOGDEBUG,"Mysql execute: %s", qry.c_str());
@@ -1474,7 +1489,7 @@ const void* MysqlDataset::getExecRes() {
 }
 
 
-bool MysqlDataset::query(const char *query) {
+bool MysqlDataset::query(const std::string &query) {
   if(!handle()) throw DbErrors("No Database Connection");
   std::string qry = query;
   int fs = qry.find("select");
@@ -1569,10 +1584,6 @@ bool MysqlDataset::query(const char *query) {
   ds_state = dsSelect;
   this->first();
   return true;
-}
-
-bool MysqlDataset::query(const string &q) {
-  return query(q.c_str());
 }
 
 void MysqlDataset::open(const string &sql) {

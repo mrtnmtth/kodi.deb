@@ -38,7 +38,7 @@ class CVideoDatabase;
 class CThumbExtractor : public CJob
 {
 public:
-  CThumbExtractor(const CFileItem& item, const CStdString& listpath, bool thumb, const CStdString& strTarget="");
+  CThumbExtractor(const CFileItem& item, const std::string& listpath, bool thumb, const std::string& strTarget="", int64_t pos = -1, bool fillStreamDetails = true);
   virtual ~CThumbExtractor();
 
   /*!
@@ -53,10 +53,12 @@ public:
 
   virtual bool operator==(const CJob* job) const;
 
-  CStdString m_target; ///< thumbpath
-  CStdString m_listpath; ///< path used in fileitem list
+  std::string m_target; ///< thumbpath
+  std::string m_listpath; ///< path used in fileitem list
   CFileItem  m_item;
   bool       m_thumb; ///< extract thumb?
+  int64_t    m_pos; ///< position to extract thumb from
+  bool m_fillStreamDetails; ///< fill in stream details? 
 };
 
 class CVideoThumbLoader : public CThumbLoader, public CJobQueue
@@ -99,7 +101,7 @@ public:
    \param item a video CFileItem.
    \return a URL for the embedded thumb.
    */
-  static CStdString GetEmbeddedThumbURL(const CFileItem &item);
+  static std::string GetEmbeddedThumbURL(const CFileItem &item);
 
   /*! \brief helper function to fill the art for a video library item
    \param item a video CFileItem

@@ -20,16 +20,15 @@
 
 #include "GUIWindowPVRSearch.h"
 
+#include "ContextMenuManager.h"
 #include "dialogs/GUIDialogOK.h"
 #include "dialogs/GUIDialogProgress.h"
 #include "guilib/GUIWindowManager.h"
-#include "guilib/Key.h"
+#include "input/Key.h"
 #include "pvr/PVRManager.h"
 #include "pvr/channels/PVRChannelGroupsContainer.h"
 #include "pvr/dialogs/GUIDialogPVRGuideSearch.h"
 #include "epg/EpgContainer.h"
-#include "pvr/recordings/PVRRecordings.h"
-#include "utils/log.h"
 #include "pvr/addons/PVRClients.h"
 
 using namespace PVR;
@@ -76,6 +75,7 @@ void CGUIWindowPVRSearch::GetContextButtons(int itemNumber, CContextButtons &but
   buttons.Add(CONTEXT_BUTTON_CLEAR, 19232);             /* Clear search results */
 
   CGUIWindowPVRBase::GetContextButtons(itemNumber, buttons);
+  CContextMenuManager::Get().AddVisibleItems(pItem, buttons);
 }
 
 void CGUIWindowPVRSearch::OnWindowLoaded()
@@ -106,14 +106,17 @@ bool CGUIWindowPVRSearch::OnContextButton(const CFileItem &item, CONTEXT_BUTTON 
     case CONTEXT_BUTTON_FIND:
     {
       m_searchfilter.Reset();
-      CEpgInfoTag tag;
 
       // construct the search term
       if (item.IsEPG())
         m_searchfilter.m_strSearchTerm = "\"" + item.GetEPGInfoTag()->Title() + "\"";
-      else if (item.IsPVRChannel() && item.GetPVRChannelInfoTag()->GetEPGNow(tag))
-        m_searchfilter.m_strSearchTerm = "\"" + tag.Title() + "\"";
-      else if (item.IsPVRRecording())
+      else if (item.IsPVRChannel())
+      {
+        CEpgInfoTagPtr tag(item.GetPVRChannelInfoTag()->GetEPGNow());
+        if (tag)
+          m_searchfilter.m_strSearchTerm = "\"" + tag->Title() + "\"";
+      }
+      else if (item.IsUsablePVRRecording())
         m_searchfilter.m_strSearchTerm = "\"" + item.GetPVRRecordingInfoTag()->m_strTitle + "\"";
       else if (item.IsPVRTimer())
         m_searchfilter.m_strSearchTerm = "\"" + item.GetPVRTimerInfoTag()->m_strTitle + "\"";
@@ -159,7 +162,7 @@ void CGUIWindowPVRSearch::OnPrepareFileItems(CFileItemList &items)
 
     if (items.IsEmpty())
     {
-      CGUIDialogOK::ShowAndGetInput(194, 284, 0, 0);
+      CGUIDialogOK::ShowAndGetInput(194, 284);
       m_bSearchConfirmed = false;
     }
   }

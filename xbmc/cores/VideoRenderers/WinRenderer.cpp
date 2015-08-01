@@ -24,19 +24,15 @@
 #include "WinRenderer.h"
 #include "cores/dvdplayer/DVDCodecs/Video/DVDVideoCodec.h"
 #include "dialogs/GUIDialogKaiToast.h"
-#include "filesystem/File.h"
 #include "guilib/LocalizeStrings.h"
-#include "guilib/Texture.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/DisplaySettings.h"
 #include "settings/MediaSettings.h"
 #include "settings/Settings.h"
 #include "threads/SingleLock.h"
 #include "utils/log.h"
-#include "utils/MathUtils.h"
 #include "utils/SystemInfo.h"
 #include "VideoShaders/WinVideoFilter.h"
-#include "win32/WIN32Util.h"
 #include "windowing/WindowingFactory.h"
 #include "cores/FFmpeg.h"
 
@@ -1042,7 +1038,8 @@ void CWinRenderer::RenderProcessor(DWORD flags)
   IDirect3DSurface9* target;
   if ( m_bUseHQScaler 
     || g_graphicsContext.GetStereoMode() == RENDER_STEREO_MODE_ANAGLYPH_RED_CYAN
-    || g_graphicsContext.GetStereoMode() == RENDER_STEREO_MODE_ANAGLYPH_GREEN_MAGENTA)
+    || g_graphicsContext.GetStereoMode() == RENDER_STEREO_MODE_ANAGLYPH_GREEN_MAGENTA
+    || g_graphicsContext.GetStereoMode() == RENDER_STEREO_MODE_ANAGLYPH_YELLOW_BLUE)
   {
     m_IntermediateTarget.GetSurfaceLevel(0, &target);
   }
@@ -1107,7 +1104,8 @@ void CWinRenderer::RenderProcessor(DWORD flags)
     Stage2();
   }
   else if ( g_graphicsContext.GetStereoMode() == RENDER_STEREO_MODE_ANAGLYPH_RED_CYAN
-         || g_graphicsContext.GetStereoMode() == RENDER_STEREO_MODE_ANAGLYPH_GREEN_MAGENTA)
+         || g_graphicsContext.GetStereoMode() == RENDER_STEREO_MODE_ANAGLYPH_GREEN_MAGENTA
+         || g_graphicsContext.GetStereoMode() == RENDER_STEREO_MODE_ANAGLYPH_YELLOW_BLUE)
   {
     IDirect3DDevice9 *pD3DDev = g_Windowing.Get3DDevice();
 
@@ -1210,6 +1208,7 @@ bool CWinRenderer::CreateYV12Texture(int index)
     if (!buf->Create(m_format, m_sourceWidth, m_sourceHeight))
     {
       CLog::Log(LOGERROR, __FUNCTION__" - Unable to create YV12 video texture %i", index);
+      delete buf;
       return false;
     }
     m_VideoBuffers[index] = buf;
@@ -1265,7 +1264,6 @@ bool CWinRenderer::Supports(ERENDERFEATURE feature)
 
   if (feature == RENDERFEATURE_STRETCH         ||
       feature == RENDERFEATURE_NONLINSTRETCH   ||
-      feature == RENDERFEATURE_CROP            ||
       feature == RENDERFEATURE_ZOOM            ||
       feature == RENDERFEATURE_VERTICAL_SHIFT  ||
       feature == RENDERFEATURE_PIXEL_RATIO     ||
@@ -1334,12 +1332,16 @@ EINTERLACEMETHOD CWinRenderer::AutoInterlaceMethod()
     return VS_INTERLACEMETHOD_DEINTERLACE_HALF;
 }
 
-unsigned int CWinRenderer::GetOptimalBufferSize()
+CRenderInfo CWinRenderer::GetRenderInfo()
 {
+  CRenderInfo info;
+  info.formats = m_formats;
+  info.max_buffer_size = NUM_BUFFERS;
   if (m_format == RENDER_FMT_DXVA && m_processor)
-    return m_processor->Size();
+    info.optimal_buffer_size = m_processor->Size();
   else
-    return 3;
+    info.optimal_buffer_size = 3;
+  return info;
 }
 
 void CWinRenderer::ReleaseBuffer(int idx)

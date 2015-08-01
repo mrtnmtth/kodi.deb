@@ -22,6 +22,7 @@
 #include "URL.h"
 #include "utils/URIUtils.h"
 #include "utils/auto_buffer.h"
+#include "utils/log.h"
 
 #include <sys/stat.h>
 
@@ -305,7 +306,7 @@ ssize_t CZipFile::Read(void* lpBuf, size_t uiBufSize)
   {
     uLong iDecompressed = 0;
     uLong prevOut = m_ZStream.total_out;
-    while (((int)iDecompressed < uiBufSize) && ((m_iZipFilePos < mZipItem.csize) || (m_bFlush)))
+    while ((static_cast<size_t>(iDecompressed) < uiBufSize) && ((m_iZipFilePos < mZipItem.csize) || (m_bFlush)))
     {
       m_ZStream.next_out = (Bytef*)(lpBuf)+iDecompressed;
       m_ZStream.avail_out = static_cast<uInt>(uiBufSize-iDecompressed);
@@ -347,10 +348,10 @@ ssize_t CZipFile::Read(void* lpBuf, size_t uiBufSize)
   {
     if (uiBufSize+m_iFilePos > mZipItem.csize)
       uiBufSize = mZipItem.csize-m_iFilePos;
-    if (uiBufSize < 0)
-    {
+
+    if (uiBufSize == 0)
       return 0; // we are past eof, this shouldn't happen but test anyway
-    }
+
     ssize_t iResult = mFile.Read(lpBuf,uiBufSize);
     if (iResult < 0)
       return -1;

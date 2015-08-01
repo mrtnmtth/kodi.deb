@@ -26,17 +26,14 @@
 #include "Autorun.h"
 #include "dialogs/GUIDialogFileBrowser.h"
 #include "filesystem/PlaylistFileDirectory.h"
-#include "filesystem/File.h"
-#include "filesystem/SpecialProtocol.h"
-#include "filesystem/Directory.h"
 #include "playlists/PlayListM3U.h"
-#include "guilib/GUIWindowManager.h"
 #include "guilib/GUIKeyboardFactory.h"
 #include "FileItem.h"
 #include "settings/Settings.h"
 #include "GUIUserMessages.h"
-#include "guilib/Key.h"
+#include "input/Key.h"
 #include "guilib/LocalizeStrings.h"
+#include "ContextMenuManager.h"
 
 #define CONTROL_LABELFILES        12
 
@@ -148,12 +145,21 @@ bool CGUIWindowMusicPlaylistEditor::GetDirectory(const std::string &strDirectory
     files->SetLabelPreformated(true);
     files->m_bIsShareOrDrive = true;
     items.Add(files);
-    CFileItemPtr db(new CFileItem("musicdb://", true));
-    db->SetLabel(g_localizeStrings.Get(14022));
-    db->SetLabelPreformated(true);
-    db->m_bIsShareOrDrive = true;
+
+    CFileItemPtr mdb(new CFileItem("musicdb://", true));
+    mdb->SetLabel(g_localizeStrings.Get(14022));
+    mdb->SetLabelPreformated(true);
+    mdb->m_bIsShareOrDrive = true;
     items.SetPath("");
-    items.Add(db);
+    items.Add(mdb);
+
+    CFileItemPtr vdb(new CFileItem("videodb://musicvideos/", true));
+    vdb->SetLabel(g_localizeStrings.Get(20389));
+    vdb->SetLabelPreformated(true);
+    vdb->m_bIsShareOrDrive = true;
+    items.SetPath("");
+    items.Add(vdb);
+
     return true;
   }
 
@@ -178,7 +184,7 @@ void CGUIWindowMusicPlaylistEditor::UpdateButtons()
   CGUIWindowMusicBase::UpdateButtons();
 
   // Update object count label
-  CStdString items = StringUtils::Format("%i %s", m_vecItems->GetObjectCount(), g_localizeStrings.Get(127).c_str()); // " 14 Objects"
+  std::string items = StringUtils::Format("%i %s", m_vecItems->GetObjectCount(), g_localizeStrings.Get(127).c_str()); // " 14 Objects"
   SET_CONTROL_LABEL(CONTROL_LABELFILES, items);
 }
 
@@ -256,7 +262,7 @@ void CGUIWindowMusicPlaylistEditor::UpdatePlaylist()
   OnMessage(msg);
 
   // indicate how many songs we have
-  CStdString items = StringUtils::Format("%i %s", m_playlist->Size(), g_localizeStrings.Get(134).c_str()); // "123 Songs"
+  std::string items = StringUtils::Format("%i %s", m_playlist->Size(), g_localizeStrings.Get(134).c_str()); // "123 Songs"
   SET_CONTROL_LABEL(CONTROL_LABEL_PLAYLIST, items);
 
   m_playlistThumbLoader.Load(*m_playlist);
@@ -318,6 +324,8 @@ void CGUIWindowMusicPlaylistEditor::GetContextButtons(int itemNumber, CContextBu
     buttons.Add(CONTEXT_BUTTON_CLEAR, 192);
   }
   buttons.Add(CONTEXT_BUTTON_LOAD, 21385);
+
+  CContextMenuManager::Get().AddVisibleItems(item, buttons);
 }
 
 bool CGUIWindowMusicPlaylistEditor::OnContextButton(int itemNumber, CONTEXT_BUTTON button)
@@ -355,7 +363,7 @@ bool CGUIWindowMusicPlaylistEditor::OnContextButton(int itemNumber, CONTEXT_BUTT
 void CGUIWindowMusicPlaylistEditor::OnLoadPlaylist()
 {
   // prompt user for file to load
-  CStdString playlist;
+  std::string playlist;
   VECSOURCES shares;
   m_rootDir.GetSources(shares);
   // add the playlist share
@@ -391,15 +399,15 @@ void CGUIWindowMusicPlaylistEditor::LoadPlaylist(const std::string &playlist)
 void CGUIWindowMusicPlaylistEditor::OnSavePlaylist()
 {
   // saves playlist to the playlist folder
-  CStdString name = URIUtils::GetFileName(m_strLoadedPlaylist);
+  std::string name = URIUtils::GetFileName(m_strLoadedPlaylist);
   URIUtils::RemoveExtension(name);
 
   if (CGUIKeyboardFactory::ShowAndGetInput(name, g_localizeStrings.Get(16012), false))
   { // save playlist as an .m3u
     PLAYLIST::CPlayListM3U playlist;
     playlist.Add(*m_playlist);
-    CStdString strBase = URIUtils::AddFileToFolder(CSettings::Get().GetString("system.playlistspath"), "music");
-    CStdString path = URIUtils::AddFileToFolder(strBase, name + ".m3u");
+    std::string strBase = URIUtils::AddFileToFolder(CSettings::Get().GetString("system.playlistspath"), "music");
+    std::string path = URIUtils::AddFileToFolder(strBase, name + ".m3u");
     playlist.Save(path);
     m_strLoadedPlaylist = name;
   }

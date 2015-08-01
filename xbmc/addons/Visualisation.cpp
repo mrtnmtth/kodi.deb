@@ -19,19 +19,15 @@
  */
 #include "system.h"
 #include "Visualisation.h"
-#include "utils/fft.h"
 #include "GUIInfoManager.h"
 #include "Application.h"
 #include "guilib/GraphicContext.h"
 #include "guilib/WindowIDs.h"
 #include "music/tags/MusicInfoTag.h"
-#include "settings/Settings.h"
 #include "settings/AdvancedSettings.h"
-#include "settings/DisplaySettings.h"
 #include "windowing/WindowingFactory.h"
 #include "utils/URIUtils.h"
 #include "utils/StringUtils.h"
-#include "cores/IPlayer.h"
 #include "cores/AudioEngine/AEFactory.h"
 #ifdef TARGET_POSIX
 #include <dlfcn.h>
@@ -266,33 +262,26 @@ void CVisualisation::OnAudioData(const float* pAudioData, int iAudioDataLength)
     return;
 
   // Save our audio data in the buffers
-  auto_ptr<CAudioBuffer> pBuffer ( new CAudioBuffer(AUDIO_BUFFER_SIZE) );
+  unique_ptr<CAudioBuffer> pBuffer ( new CAudioBuffer(AUDIO_BUFFER_SIZE) );
   pBuffer->Set(pAudioData, iAudioDataLength);
   m_vecBuffers.push_back( pBuffer.release() );
 
   if ( (int)m_vecBuffers.size() < m_iNumBuffers) return ;
 
-  auto_ptr<CAudioBuffer> ptrAudioBuffer ( m_vecBuffers.front() );
+  unique_ptr<CAudioBuffer> ptrAudioBuffer ( m_vecBuffers.front() );
   m_vecBuffers.pop_front();
   // Fourier transform the data if the vis wants it...
   if (m_bWantsFreq)
   {
     const float *psAudioData = ptrAudioBuffer->Get();
-    memcpy(m_fFreq, psAudioData, AUDIO_BUFFER_SIZE * sizeof(float));
 
-    // FFT the data
-    twochanwithwindow(m_fFreq, AUDIO_BUFFER_SIZE);
+    if (!m_transform)
+      m_transform.reset(new RFFT(AUDIO_BUFFER_SIZE/2, false)); // half due to stereo
 
-    // Normalize the data
-    float fMinData = (float)AUDIO_BUFFER_SIZE * AUDIO_BUFFER_SIZE * 3 / 8 * 0.5 * 0.5; // 3/8 for the Hann window, 0.5 as minimum amplitude
-    float fInvMinData = 1.0f/fMinData;
-    for (int i = 0; i < AUDIO_BUFFER_SIZE + 2; i++)
-    {
-      m_fFreq[i] *= fInvMinData;
-    }
+    m_transform->calc(psAudioData, m_fFreq);
 
     // Transfer data to our visualisation
-    AudioData(psAudioData, AUDIO_BUFFER_SIZE, m_fFreq, AUDIO_BUFFER_SIZE);
+    AudioData(psAudioData, AUDIO_BUFFER_SIZE, m_fFreq, AUDIO_BUFFER_SIZE/2); // half due to complex-conjugate
   }
   else
   { // Transfer data to our visualisation
@@ -321,13 +310,13 @@ void CVisualisation::ClearBuffers()
   m_bWantsFreq = false;
   m_iNumBuffers = 0;
 
-  while (m_vecBuffers.size() > 0)
+  while (!m_vecBuffers.empty())
   {
     CAudioBuffer* pAudioBuffer = m_vecBuffers.front();
     delete pAudioBuffer;
     m_vecBuffers.pop_front();
   }
-  for (int j = 0; j < AUDIO_BUFFER_SIZE*2; j++)
+  for (int j = 0; j < AUDIO_BUFFER_SIZE; j++)
   {
     m_fFreq[j] = 0.0f;
   }

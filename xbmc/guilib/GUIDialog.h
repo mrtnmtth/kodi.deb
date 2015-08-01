@@ -28,6 +28,13 @@
 #include "GUIWindow.h"
 #include "WindowIDs.h"
 
+enum class DialogModalityType
+{
+  MODELESS,
+  MODAL,
+  SYSTEM_MODAL
+};
+
 /*!
  \ingroup winmsg
  \brief
@@ -36,7 +43,7 @@ class CGUIDialog :
       public CGUIWindow
 {
 public:
-  CGUIDialog(int id, const CStdString &xmlFile);
+  CGUIDialog(int id, const std::string &xmlFile);
   virtual ~CGUIDialog(void);
 
   virtual bool OnAction(const CAction &action);
@@ -44,14 +51,15 @@ public:
   virtual void DoProcess(unsigned int currentTime, CDirtyRegionList &dirtyregions);
   virtual void Render();
 
-  void DoModal(int iWindowID = WINDOW_INVALID, const CStdString &param = ""); // modal
+  void DoModal(int iWindowID = WINDOW_INVALID, const std::string &param = ""); // modal
   void Show(); // modeless
   
   virtual bool OnBack(int actionID);
 
   virtual bool IsDialogRunning() const { return m_active; };
   virtual bool IsDialog() const { return true;};
-  virtual bool IsModalDialog() const { return m_bModal; };
+  virtual bool IsModalDialog() const { return m_modalityType == DialogModalityType::MODAL || m_modalityType == DialogModalityType::SYSTEM_MODAL; };
+  virtual DialogModalityType GetModalityType() const { return m_modalityType; };
 
   void SetAutoClose(unsigned int timeoutMs);
   void ResetAutoClose(void);
@@ -64,15 +72,15 @@ protected:
   virtual void OnWindowLoaded();
   virtual void UpdateVisibility();
 
-  virtual void DoModal_Internal(int iWindowID = WINDOW_INVALID, const CStdString &param = ""); // modal
+  virtual void DoModal_Internal(int iWindowID = WINDOW_INVALID, const std::string &param = ""); // modal
   virtual void Show_Internal(); // modeless
   virtual void OnDeinitWindow(int nextWindowID);
 
   bool m_wasRunning; ///< \brief true if we were running during the last DoProcess()
-  bool m_bModal;
   bool m_autoClosing;
   bool m_enableSound;
   unsigned int m_showStartTime;
   unsigned int m_showDuration;
   bool m_bAutoClosed;
+  DialogModalityType m_modalityType;
 };

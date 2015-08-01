@@ -22,6 +22,7 @@
 #include "XBTFReader.h"
 #include "utils/EndianSwap.h"
 #include "utils/CharsetConverter.h"
+#include <stdio.h>
 #ifdef TARGET_WINDOWS
 #include "FileSystem/SpecialProtocol.h"
 #endif
@@ -30,16 +31,16 @@
 #include "PlatformDefs.h"
 
 #define READ_STR(str, size, file) \
-  if (!fread(str, size, 1, file)) \
+  if (1 != fread(str, size, 1, file)) \
     return false;
 
 #define READ_U32(i, file) \
-  if (!fread(&i, 4, 1, file)) \
+  if (1 != fread(&i, 4, 1, file)) \
     return false; \
   i = Endian_SwapLE32(i);
 
 #define READ_U64(i, file) \
-  if (!fread(&i, 8, 1, file)) \
+  if (1 != fread(&i, 8, 1, file)) \
     return false; \
   i = Endian_SwapLE64(i);
 
@@ -53,12 +54,12 @@ bool CXBTFReader::IsOpen() const
   return m_file != NULL;
 }
 
-bool CXBTFReader::Open(const CStdString& fileName)
+bool CXBTFReader::Open(const std::string& fileName)
 {
   m_fileName = fileName;
 
 #ifdef TARGET_WINDOWS
-  CStdStringW strPathW;
+  std::wstring strPathW;
   g_charsetConverter.utf8ToW(CSpecialProtocol::TranslatePath(m_fileName), strPathW, false);
   m_file = _wfopen(strPathW.c_str(), L"rb");
 #else
@@ -166,14 +167,14 @@ time_t CXBTFReader::GetLastModificationTimestamp()
   return fileStat.st_mtime;
 }
 
-bool CXBTFReader::Exists(const CStdString& name)
+bool CXBTFReader::Exists(const std::string& name)
 {
   return Find(name) != NULL;
 }
 
-CXBTFFile* CXBTFReader::Find(const CStdString& name)
+CXBTFFile* CXBTFReader::Find(const std::string& name)
 {
-  std::map<CStdString, CXBTFFile>::iterator iter = m_filesMap.find(name);
+  std::map<std::string, CXBTFFile>::iterator iter = m_filesMap.find(name);
   if (iter == m_filesMap.end())
   {
     return NULL;

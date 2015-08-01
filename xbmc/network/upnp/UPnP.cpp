@@ -46,7 +46,7 @@
 #include "GUIInfoManager.h"
 #include "utils/TimeUtils.h"
 #include "video/VideoInfoTag.h"
-#include "guilib/Key.h"
+#include "input/Key.h"
 #include "Util.h"
 
 using namespace std;
@@ -208,7 +208,7 @@ public:
     {
         NPT_String path = "upnp://"+device->GetUUID()+"/";
         if (!NPT_StringsEqual(item_id, "0")) {
-            CStdString id(CURL::Encode(item_id));
+            std::string id(CURL::Encode(item_id));
             URIUtils::AddSlashAtEnd(id);
             path += id.c_str();
         }
@@ -448,6 +448,7 @@ CUPnP::~CUPnP()
 {
     m_UPnP->Stop();
     StopClient();
+    StopController();
     StopServer();
 
     delete m_UPnP;
@@ -492,7 +493,7 @@ CUPnP::ReleaseInstance(bool bWait)
 }
 
 /*----------------------------------------------------------------------
-|   CUPnP::StartServer
+|   CUPnP::GetServer
 +---------------------------------------------------------------------*/
 CUPnPServer* CUPnP::GetServer()
 {
@@ -530,27 +531,47 @@ CUPnP::SaveFileState(const CFileItem& item, const CBookmark& bookmark, const boo
 }
 
 /*----------------------------------------------------------------------
-|   CUPnP::StartClient
+|   CUPnP::CreateControlPoint
 +---------------------------------------------------------------------*/
 void
-CUPnP::StartClient()
+CUPnP::CreateControlPoint()
 {
-    if (!m_CtrlPointHolder->m_CtrlPoint.IsNull()) return;
+    if (!m_CtrlPointHolder->m_CtrlPoint.IsNull())
+        return;
 
     // create controlpoint
     m_CtrlPointHolder->m_CtrlPoint = new PLT_CtrlPoint();
 
     // start it
     m_UPnP->AddCtrlPoint(m_CtrlPointHolder->m_CtrlPoint);
+}
+
+/*----------------------------------------------------------------------
+|   CUPnP::DestroyControlPoint
++---------------------------------------------------------------------*/
+void
+CUPnP::DestroyControlPoint()
+{
+    if (m_CtrlPointHolder->m_CtrlPoint.IsNull())
+        return;
+
+    m_UPnP->RemoveCtrlPoint(m_CtrlPointHolder->m_CtrlPoint);
+    m_CtrlPointHolder->m_CtrlPoint = NULL;
+}
+
+/*----------------------------------------------------------------------
+|   CUPnP::StartClient
++---------------------------------------------------------------------*/
+void
+CUPnP::StartClient()
+{
+    if (m_MediaBrowser != NULL)
+        return;
+
+    CreateControlPoint();
 
     // start browser
     m_MediaBrowser = new CMediaBrowser(m_CtrlPointHolder->m_CtrlPoint);
-
-    // start controller
-    if (CSettings::Get().GetBool("services.upnpcontroller") &&
-        CSettings::Get().GetBool("services.upnpserver")) {
-        m_MediaController = new CMediaController(m_CtrlPointHolder->m_CtrlPoint);
-    }
 }
 
 /*----------------------------------------------------------------------
@@ -559,15 +580,44 @@ CUPnP::StartClient()
 void
 CUPnP::StopClient()
 {
-    if (m_CtrlPointHolder->m_CtrlPoint.IsNull()) return;
-
-    m_UPnP->RemoveCtrlPoint(m_CtrlPointHolder->m_CtrlPoint);
-    m_CtrlPointHolder->m_CtrlPoint = NULL;
+    if (m_MediaBrowser == NULL)
+        return;
 
     delete m_MediaBrowser;
     m_MediaBrowser = NULL;
-    delete m_MediaController;
-    m_MediaController = NULL;
+
+    if (!IsControllerStarted())
+        DestroyControlPoint();
+}
+
+/*----------------------------------------------------------------------
+|   CUPnP::StartController
++---------------------------------------------------------------------*/
+void
+CUPnP::StartController()
+{
+    if (m_MediaController != NULL)
+        return;
+
+    CreateControlPoint();
+
+    m_MediaController = new CMediaController(m_CtrlPointHolder->m_CtrlPoint);
+}
+
+/*----------------------------------------------------------------------
+|   CUPnP::StopController
++---------------------------------------------------------------------*/
+void
+CUPnP::StopController()
+{
+  if (m_MediaController == NULL)
+      return;
+
+  delete m_MediaController;
+  m_MediaController = NULL;
+
+  if (!IsClientStarted())
+      DestroyControlPoint();
 }
 
 /*----------------------------------------------------------------------
@@ -577,14 +627,14 @@ CUPnPServer*
 CUPnP::CreateServer(int port /* = 0 */)
 {
     CUPnPServer* device =
-        new CUPnPServer(g_infoManager.GetLabel(SYSTEM_FRIENDLY_NAME),
+        new CUPnPServer(g_infoManager.GetLabel(SYSTEM_FRIENDLY_NAME).c_str(),
                         CUPnPSettings::Get().GetServerUUID().length() ? CUPnPSettings::Get().GetServerUUID().c_str() : NULL,
                         port);
 
     // trying to set optional upnp values for XP UPnP UI Icons to detect us
     // but it doesn't work anyways as it requires multicast for XP to detect us
     device->m_PresentationURL =
-        NPT_HttpUrl(m_IP,
+        NPT_HttpUrl(m_IP.c_str(),
                     CSettings::Get().GetInt("services.webserverport"),
                     "/").ToString();
 
@@ -608,7 +658,7 @@ CUPnP::StartServer()
     if (!m_ServerHolder->m_Device.IsNull()) return false;
 
     // load upnpserver.xml
-    CStdString filename = URIUtils::AddFileToFolder(CProfilesManager::Get().GetUserDataFolder(), "upnpserver.xml");
+    std::string filename = URIUtils::AddFileToFolder(CProfilesManager::Get().GetUserDataFolder(), "upnpserver.xml");
     CUPnPSettings::Get().Load(filename);
 
     // create the server with a XBox compatible friendlyname and UUID from upnpserver.xml if found
@@ -661,13 +711,13 @@ CUPnPRenderer*
 CUPnP::CreateRenderer(int port /* = 0 */)
 {
     CUPnPRenderer* device =
-        new CUPnPRenderer(g_infoManager.GetLabel(SYSTEM_FRIENDLY_NAME),
+        new CUPnPRenderer(g_infoManager.GetLabel(SYSTEM_FRIENDLY_NAME).c_str(),
                           false,
                           (CUPnPSettings::Get().GetRendererUUID().length() ? CUPnPSettings::Get().GetRendererUUID().c_str() : NULL),
                           port);
 
     device->m_PresentationURL =
-        NPT_HttpUrl(m_IP,
+        NPT_HttpUrl(m_IP.c_str(),
                     CSettings::Get().GetInt("services.webserverport"),
                     "/").ToString();
     device->m_ModelName        = "Kodi";
@@ -687,7 +737,7 @@ bool CUPnP::StartRenderer()
 {
     if (!m_RendererHolder->m_Device.IsNull()) return false;
 
-    CStdString filename = URIUtils::AddFileToFolder(CProfilesManager::Get().GetUserDataFolder(), "upnpserver.xml");
+    std::string filename = URIUtils::AddFileToFolder(CProfilesManager::Get().GetUserDataFolder(), "upnpserver.xml");
     CUPnPSettings::Get().Load(filename);
 
     m_RendererHolder->m_Device = CreateRenderer(CUPnPSettings::Get().GetRendererPort());

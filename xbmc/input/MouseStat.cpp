@@ -19,8 +19,7 @@
  */
 
 #include "MouseStat.h"
-#include "guilib/Key.h"
-#include "settings/lib/Setting.h"
+#include "input/Key.h"
 #include "utils/TimeUtils.h"
 #include "windowing/WindowingFactory.h"
 
@@ -36,16 +35,6 @@ CMouseStat::CMouseStat()
 
 CMouseStat::~CMouseStat()
 {
-}
-
-void CMouseStat::OnSettingChanged(const CSetting *setting)
-{
-  if (setting == NULL)
-    return;
-
-  const std::string &settingId = setting->GetId();
-  if (settingId == "input.enablemouse")
-    SetEnabled(((CSettingBool*)setting)->GetValue());
 }
 
 void CMouseStat::Initialize()
@@ -85,6 +74,8 @@ void CMouseStat::HandleEvent(XBMC_Event& newEvent)
     if (newEvent.button.button == XBMC_BUTTON_MIDDLE) m_mouseState.button[MOUSE_MIDDLE_BUTTON] = true;
     if (newEvent.button.button == XBMC_BUTTON_X1) m_mouseState.button[MOUSE_EXTRA_BUTTON1] = true;
     if (newEvent.button.button == XBMC_BUTTON_X2) m_mouseState.button[MOUSE_EXTRA_BUTTON2] = true;
+    if (newEvent.button.button == XBMC_BUTTON_X3) m_mouseState.button[MOUSE_EXTRA_BUTTON3] = true;
+    if (newEvent.button.button == XBMC_BUTTON_X4) m_mouseState.button[MOUSE_EXTRA_BUTTON4] = true;
     if (newEvent.button.button == XBMC_BUTTON_WHEELUP) m_mouseState.dz = 1;
     if (newEvent.button.button == XBMC_BUTTON_WHEELDOWN) m_mouseState.dz = -1;
   }
@@ -95,6 +86,8 @@ void CMouseStat::HandleEvent(XBMC_Event& newEvent)
     if (newEvent.button.button == XBMC_BUTTON_MIDDLE) m_mouseState.button[MOUSE_MIDDLE_BUTTON] = false;
     if (newEvent.button.button == XBMC_BUTTON_X1) m_mouseState.button[MOUSE_EXTRA_BUTTON1] = false;
     if (newEvent.button.button == XBMC_BUTTON_X2) m_mouseState.button[MOUSE_EXTRA_BUTTON2] = false;
+    if (newEvent.button.button == XBMC_BUTTON_X3) m_mouseState.button[MOUSE_EXTRA_BUTTON3] = false;
+    if (newEvent.button.button == XBMC_BUTTON_X4) m_mouseState.button[MOUSE_EXTRA_BUTTON4] = false;
     if (newEvent.button.button == XBMC_BUTTON_WHEELUP) m_mouseState.dz = 0;
     if (newEvent.button.button == XBMC_BUTTON_WHEELDOWN) m_mouseState.dz = 0;
   }
@@ -129,9 +122,15 @@ void CMouseStat::HandleEvent(XBMC_Event& newEvent)
       bNothingDown = false;
       break;
     case CButtonState::MB_DRAG_START:
+      bHold[i] = CButtonState::MB_DRAG_START;
+      bNothingDown = false;
+      break;
     case CButtonState::MB_DRAG:
+      bHold[i] = CButtonState::MB_DRAG;
+      bNothingDown = false;
+      break;
     case CButtonState::MB_DRAG_END:
-      bHold[i] = action - CButtonState::MB_DRAG_START + 1;
+      bHold[i] = CButtonState::MB_DRAG_END;
       bNothingDown = false;
       break;
     default:
@@ -163,9 +162,37 @@ void CMouseStat::HandleEvent(XBMC_Event& newEvent)
 
   if (m_Key == KEY_MOUSE_NOOP)
   {
-    // The bHold array is set true if CButtonState::Update spots a mouse drag
-    if (bHold[MOUSE_LEFT_BUTTON])
-      m_Key = KEY_MOUSE_DRAG;
+    // The bHold array is set to the drag action
+    if (bHold[MOUSE_LEFT_BUTTON] != 0)
+    {
+      switch (bHold[MOUSE_LEFT_BUTTON])
+      {
+        case CButtonState::MB_DRAG:
+          m_Key = KEY_MOUSE_DRAG;
+          break;
+        case CButtonState::MB_DRAG_START:
+          m_Key = KEY_MOUSE_DRAG_START;
+          break;
+        case CButtonState::MB_DRAG_END:
+          m_Key = KEY_MOUSE_DRAG_END;
+          break;
+      }
+    }
+    else if (bHold[MOUSE_RIGHT_BUTTON] != 0)
+    {
+      switch (bHold[MOUSE_RIGHT_BUTTON])
+      {
+      case CButtonState::MB_DRAG:
+        m_Key = KEY_MOUSE_RDRAG;
+        break;
+      case CButtonState::MB_DRAG_START:
+        m_Key = KEY_MOUSE_RDRAG_START;
+        break;
+      case CButtonState::MB_DRAG_END:
+        m_Key = KEY_MOUSE_RDRAG_END;
+        break;
+      }
+    }
 
     // dz is +1 on wheel up and -1 on wheel down
     else if (m_mouseState.dz > 0)

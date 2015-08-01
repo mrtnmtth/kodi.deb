@@ -24,6 +24,7 @@
 #include "DVDClock.h"
 #include "DVDStreamInfo.h"
 #include "AMLCodec.h"
+#include "utils/AMLUtils.h"
 #include "utils/BitstreamConverter.h"
 #include "utils/log.h"
 
@@ -59,6 +60,12 @@ CDVDVideoCodecAmlogic::~CDVDVideoCodecAmlogic()
 
 bool CDVDVideoCodecAmlogic::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options)
 {
+  if (!aml_permissions())
+  {
+    CLog::Log(LOGERROR, "AML: no proper permission, please contact the device vendor. Skipping codec...");
+    return false;
+  }
+
   m_hints = hints;
 
   switch(m_hints.codec)
@@ -83,6 +90,11 @@ bool CDVDVideoCodecAmlogic::Open(CDVDStreamInfo &hints, CDVDCodecOptions &option
       m_pFormatName = "am-mpeg2";
       break;
     case AV_CODEC_ID_H264:
+      if ((aml_get_device_type() != AML_DEVICE_TYPE_M8 && aml_get_device_type() != AML_DEVICE_TYPE_M8M2) && ((m_hints.width > 1920) || (m_hints.height > 1088)))
+      {
+        // 4K is supported only on Amlogic S802/S812 chip
+        return false;
+      }
       m_pFormatName = "am-h264";
       // convert h264-avcC to h264-annex-b as h264-avcC
       // under streamers can have issues when seeking.
@@ -130,6 +142,26 @@ bool CDVDVideoCodecAmlogic::Open(CDVDStreamInfo &hints, CDVDCodecOptions &option
     case AV_CODEC_ID_AVS:
     case AV_CODEC_ID_CAVS:
       m_pFormatName = "am-avs";
+      break;
+    case AV_CODEC_ID_HEVC:
+      if ((aml_get_device_type() == AML_DEVICE_TYPE_M8B) || (aml_get_device_type() == AML_DEVICE_TYPE_M8M2)) {
+        if ((aml_get_device_type() == AML_DEVICE_TYPE_M8B) && ((m_hints.width > 1920) || (m_hints.height > 1088)))
+        {
+          // 4K HEVC is supported only on Amlogic S812 chip
+          return false;
+        }
+      } else {
+        // HEVC supported only on S805 and S812.
+        return false;
+      }
+      m_pFormatName = "am-h265";
+      m_bitstream = new CBitstreamConverter();
+      m_bitstream->Open(m_hints.codec, (uint8_t*)m_hints.extradata, m_hints.extrasize, true);
+      // make sure we do not leak the existing m_hints.extradata
+      free(m_hints.extradata);
+      m_hints.extrasize = m_bitstream->GetExtraSize();
+      m_hints.extradata = malloc(m_hints.extrasize);
+      memcpy(m_hints.extradata, m_bitstream->GetExtraData(), m_hints.extrasize);
       break;
     default:
       CLog::Log(LOGDEBUG, "%s: Unknown hints.codec(%d", __MODULE_NAME__, m_hints.codec);

@@ -124,7 +124,7 @@
       <button id="14">ChapterOrStepForward</button>
       <button id="15">BigStepBack</button>
       <button id="16">StepBack</button>
-      <button id="17">SmallStepBack</button>
+      <button id="17">Seek(-7)</button><!-- Replaces smallstepback -->
       <axis limit="0" id="3">AnalogRewind</axis>
       <axis limit="0" id="6">AnalogFastForward</axis>
     </joystick>
@@ -135,9 +135,9 @@
       <altname>Logitech Xbox Cordless Controller</altname>
       <altname>Microsoft X-Box pad (Japan)</altname> 
       <button id="13">ChannelUp</button>
-      <button id="14">NextChannelGroup</button>
+      <button id="14">StepForward</button>
       <button id="15">ChannelDown</button>
-      <button id="16">PreviousChannelGroup</button>
+      <button id="16">StepBack</button>
     </joystick>
   </FullscreenLiveTV>
   <FullscreenRadio>
@@ -146,9 +146,9 @@
       <altname>Logitech Xbox Cordless Controller</altname>
       <altname>Microsoft X-Box pad (Japan)</altname> 
       <button id="13">ChannelUp</button>
-      <button id="14">NextChannelGroup</button>
+      <button id="14">StepForward</button>
       <button id="15">ChannelDown</button>
-      <button id="16">PreviousChannelGroup</button>
+      <button id="16">StepBack</button>
     </joystick>
   </FullscreenRadio>
   <FullscreenInfo>

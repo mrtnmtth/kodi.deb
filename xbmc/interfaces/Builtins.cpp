@@ -22,17 +22,20 @@
 #include "system.h"
 #include "utils/AlarmClock.h"
 #include "utils/Screenshot.h"
+#include "utils/SeekHandler.h"
 #include "Application.h"
 #include "ApplicationMessenger.h"
 #include "Autorun.h"
 #include "Builtins.h"
 #include "input/ButtonTranslator.h"
+#include "input/InputManager.h"
 #include "FileItem.h"
 #include "addons/GUIDialogAddonSettings.h"
 #include "dialogs/GUIDialogFileBrowser.h"
 #include "guilib/GUIKeyboardFactory.h"
-#include "guilib/Key.h"
+#include "input/Key.h"
 #include "guilib/StereoscopicsManager.h"
+#include "guilib/GUIAudioManager.h"
 #include "dialogs/GUIDialogKaiToast.h"
 #include "dialogs/GUIDialogNumeric.h"
 #include "dialogs/GUIDialogProgress.h"
@@ -61,10 +64,13 @@
 #include "settings/SkinSettings.h"
 #include "utils/StringUtils.h"
 #include "utils/URIUtils.h"
+#include "video/VideoLibraryQueue.h"
 #include "Util.h"
 #include "URL.h"
 #include "music/MusicDatabase.h"
 #include "cores/IPlayer.h"
+#include "pvr/channels/PVRChannel.h"
+#include "pvr/recordings/PVRRecording.h"
 
 #include "filesystem/PluginDirectory.h"
 #ifdef HAS_FILESYSTEM_RAR
@@ -96,6 +102,8 @@
 #include <vector>
 #include "settings/AdvancedSettings.h"
 #include "settings/DisplaySettings.h"
+#include "powermanagement/PowerManager.h"
+#include "filesystem/Directory.h"
 
 using namespace std;
 using namespace XFILE;
@@ -144,6 +152,7 @@ const BUILT_IN commands[] = {
   { "NotifyAll",                  true,   "Notify all connected clients" },
   { "Extract",                    true,   "Extracts the specified archive" },
   { "PlayMedia",                  true,   "Play the specified media file (or playlist)" },
+  { "Seek",                       true,   "Performs a seek in seconds on the current playing media file" },
   { "ShowPicture",                true,   "Display a picture by file path" },
   { "SlideShow",                  true,   "Run a slideshow from the specified directory" },
   { "RecursiveSlideShow",         true,   "Run a slideshow from the specified directory, including all subdirs" },
@@ -228,7 +237,7 @@ const BUILT_IN commands[] = {
 #if defined(TARGET_ANDROID)
   { "StartAndroidActivity",       true,   "Launch an Android native app with the given package name.  Optional parms (in order): intent, dataType, dataURI." },
 #endif
-  { "SetStereoMode",              true,   "Changes the stereo mode of the GUI. Params can be: toggle, next, previous, select, tomono or any of the supported stereomodes (off, split_vertical, split_horizontal, row_interleaved, hardware_based, anaglyph_cyan_red, anaglyph_green_magenta, monoscopic)" }
+  { "SetStereoMode",              true,   "Changes the stereo mode of the GUI. Params can be: toggle, next, previous, select, tomono or any of the supported stereomodes (off, split_vertical, split_horizontal, row_interleaved, hardware_based, anaglyph_cyan_red, anaglyph_green_magenta, anaglyph_yellow_blue, monoscopic)" }
 };
 
 bool CBuiltins::HasCommand(const std::string& execString)
@@ -244,6 +253,39 @@ bool CBuiltins::HasCommand(const std::string& execString)
   return false;
 }
 
+bool CBuiltins::IsSystemPowerdownCommand(const std::string& execString)
+{
+  std::string execute;
+  vector<string> params;
+  CUtil::SplitExecFunction(execString, execute, params);
+  StringUtils::ToLower(execute);
+
+  // Check if action is resulting in system powerdown.
+  if (execute == "reboot"    ||
+      execute == "restart"   ||
+      execute == "reset"     ||
+      execute == "powerdown" ||
+      execute == "hibernate" ||
+      execute == "suspend" )
+  {
+    return true;
+  }
+  else if (execute == "shutdown")
+  {
+    switch (CSettings::Get().GetInt("powermanagement.shutdownstate"))
+    {
+      case POWERSTATE_SHUTDOWN:
+      case POWERSTATE_SUSPEND:
+      case POWERSTATE_HIBERNATE:
+        return true;
+
+      default:
+        return false;
+    }
+  }
+  return false;
+}
+
 void CBuiltins::GetHelp(std::string &help)
 {
   help.clear();
@@ -254,6 +296,14 @@ void CBuiltins::GetHelp(std::string &help)
     help += commands[i].description;
     help += "\n";
   }
+}
+
+bool CBuiltins::ActivateWindow(int iWindowID, const std::vector<std::string>& params /* = {} */, bool swappingWindows /* = false */)
+{
+  // disable the screensaver
+  g_application.WakeUpScreenSaverAndDPMS();
+  g_windowManager.ActivateWindow(iWindowID, params, swappingWindows);
+  return true;
 }
 
 int CBuiltins::Execute(const std::string& execString)
@@ -404,9 +454,7 @@ int CBuiltins::Execute(const std::string& execString)
       // activate window only if window and path differ from the current active window
       if (iWindow != g_windowManager.GetActiveWindow() || !bIsSameStartFolder)
       {
-        // disable the screensaver
-        g_application.WakeUpScreenSaverAndDPMS();
-        g_windowManager.ActivateWindow(iWindow, params, execute != "activatewindow");
+        return ActivateWindow(iWindow, params, execute != "activatewindow");
       }
     }
     else
@@ -432,10 +480,8 @@ int CBuiltins::Execute(const std::string& execString)
     {
       if (iWindow != g_windowManager.GetActiveWindow())
       {
-        // disable the screensaver
-        g_application.WakeUpScreenSaverAndDPMS();
-        vector<string> dummy;
-        g_windowManager.ActivateWindow(iWindow, dummy, execute != "activatewindowandfocus");
+        if (!ActivateWindow(iWindow, {}, execute != "activatewindowandfocus"))
+          return false;
 
         unsigned int iPtr = 1;
         while (params.size() > iPtr + 1)
@@ -495,7 +541,7 @@ int CBuiltins::Execute(const std::string& execString)
       if (!filename.empty())
         argv[0] = filename;
 
-      CScriptInvocationManager::Get().Execute(scriptpath, addon, argv);
+      CScriptInvocationManager::Get().ExecuteAsync(scriptpath, addon, argv);
     }
   }
 #if defined(TARGET_DARWIN_OSX)
@@ -590,7 +636,7 @@ int CBuiltins::Execute(const std::string& execString)
       AddonPtr addon;
       if (CAddonMgr::Get().GetAddon(params[0], addon, ADDON_PLUGIN))
       {
-        PluginPtr plugin = boost::dynamic_pointer_cast<CPluginSource>(addon);
+        PluginPtr plugin = std::dynamic_pointer_cast<CPluginSource>(addon);
         std::string addonid = params[0];
         std::string urlParameters;
         vector<string> parameters;
@@ -713,7 +759,7 @@ int CBuiltins::Execute(const std::string& execString)
     if (item.m_bIsFolder)
     {
       CFileItemList items;
-      std::string extensions = g_advancedSettings.m_videoExtensions + "|" + g_advancedSettings.m_musicExtensions;
+      std::string extensions = g_advancedSettings.m_videoExtensions + "|" + g_advancedSettings.GetMusicExtensions();
       CDirectory::GetDirectory(item.GetPath(),items,extensions);
 
       bool containsMusic = false, containsVideo = false;
@@ -727,7 +773,7 @@ int CBuiltins::Execute(const std::string& execString)
           break;
       }
 
-      auto_ptr<CGUIViewState> state(CGUIViewState::GetViewState(containsVideo ? WINDOW_VIDEO_NAV : WINDOW_MUSIC, items));
+      unique_ptr<CGUIViewState> state(CGUIViewState::GetViewState(containsVideo ? WINDOW_VIDEO_NAV : WINDOW_MUSIC, items));
       if (state.get())
         items.Sort(state->GetSortMethod());
       else
@@ -761,6 +807,16 @@ int CBuiltins::Execute(const std::string& execString)
         return false;
       }
     }
+  }
+  else if (execute == "seek")
+  {
+    if (!params.size())
+    {
+      CLog::Log(LOGERROR, "Seek called with empty parameter");
+      return -3;
+    }
+    if (g_application.m_pPlayer->IsPlaying())
+      CSeekHandler::Get().SeekSeconds(atoi(params[0].c_str()));
   }
   else if (execute == "showpicture")
   {
@@ -1027,6 +1083,21 @@ int CBuiltins::Execute(const std::string& execString)
       CGUIMessage msg(GUI_MSG_PLAYLISTPLAYER_REPEAT, 0, 0, iPlaylist, (int)state);
       g_windowManager.SendThreadMessage(msg);
     }
+    else if (StringUtils::StartsWithNoCase(parameter, "resumelivetv"))
+    {
+      CFileItem& fileItem(g_application.CurrentFileItem());
+      PVR::CPVRChannelPtr channel = fileItem.HasPVRRecordingInfoTag() ? fileItem.GetPVRRecordingInfoTag()->Channel() : PVR::CPVRChannelPtr();
+
+      if (channel)
+      {
+        CFileItem playItem(channel);
+        if (!g_application.PlayMedia(playItem, channel->IsRadio() ? PLAYLIST_MUSIC : PLAYLIST_VIDEO))
+        {
+          CLog::Log(LOGERROR, "ResumeLiveTv could not play channel: %s", channel->ChannelName().c_str());
+          return false;
+        }
+      }
+    }
   }
   else if (execute == "playwith")
   {
@@ -1285,6 +1356,19 @@ int CBuiltins::Execute(const std::string& execString)
     }
     else if (execute == "skin.setimage")
     {
+      if (params.size() > 2)
+      {
+        value = params[2];
+        URIUtils::AddSlashAtEnd(value);
+        bool bIsSource;
+        if (CUtil::GetMatchingSource(value,localShares,bIsSource) < 0) // path is outside shares - add it as a separate one
+        {
+          CMediaSource share;
+          share.strName = g_localizeStrings.Get(13278);
+          share.strPath = value;
+          localShares.push_back(share);
+        }
+      }
       if (CGUIDialogFileBrowser::ShowAndGetImage(localShares, g_localizeStrings.Get(1030), value))
         CSkinSettings::Get().SetString(string, value);
     }
@@ -1411,15 +1495,18 @@ int CBuiltins::Execute(const std::string& execString)
     if (g_application.IsMusicScanning())
       g_application.StopMusicScan();
 
-    if (g_application.IsVideoScanning())
-      g_application.StopVideoScan();
+    if (CVideoLibraryQueue::Get().IsRunning())
+      CVideoLibraryQueue::Get().CancelAllJobs();
 
     ADDON::CAddonMgr::Get().StopServices(true);
 
     g_application.getNetwork().NetworkMessage(CNetwork::SERVICES_DOWN,1);
     CProfilesManager::Get().LoadMasterProfileForLogin();
     g_passwordManager.bMasterUser = false;
-    g_windowManager.ActivateWindow(WINDOW_LOGIN_SCREEN);
+
+    if (!ActivateWindow(WINDOW_LOGIN_SCREEN))
+      return false;
+
     if (!CNetworkServices::Get().StartEventServer()) // event server could be needed in some situations
       CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Warning, g_localizeStrings.Get(33102), g_localizeStrings.Get(33100));
   }
@@ -1494,7 +1581,7 @@ int CBuiltins::Execute(const std::string& execString)
     if (params.size() > 1)
       singleFile = StringUtils::EqualsNoCase(params[1], "true");
     else
-      singleFile = CGUIDialogYesNo::ShowAndGetInput(iHeading,20426,20427,-1,20428,20429,cancelled);
+      singleFile = CGUIDialogYesNo::ShowAndGetInput(iHeading, 20426, cancelled, 20428, 20429);
 
     if (cancelled)
         return -1;
@@ -1504,7 +1591,7 @@ int CBuiltins::Execute(const std::string& execString)
       if (params.size() > 2)
         thumbs = StringUtils::EqualsNoCase(params[2], "true");
       else
-        thumbs = CGUIDialogYesNo::ShowAndGetInput(iHeading,20430,-1,-1,cancelled);
+        thumbs = CGUIDialogYesNo::ShowAndGetInput(iHeading, 20430, cancelled);
     }
 
     if (cancelled)
@@ -1515,7 +1602,7 @@ int CBuiltins::Execute(const std::string& execString)
       if (params.size() > 4)
         actorThumbs = StringUtils::EqualsNoCase(params[4], "true");
       else
-        actorThumbs = CGUIDialogYesNo::ShowAndGetInput(iHeading,20436,-1,-1,cancelled);
+        actorThumbs = CGUIDialogYesNo::ShowAndGetInput(iHeading, 20436, cancelled);
     }
 
     if (cancelled)
@@ -1526,7 +1613,7 @@ int CBuiltins::Execute(const std::string& execString)
       if (params.size() > 3)
         overwrite = StringUtils::EqualsNoCase(params[3], "true");
       else
-        overwrite = CGUIDialogYesNo::ShowAndGetInput(iHeading,20431,-1,-1,cancelled);
+        overwrite = CGUIDialogYesNo::ShowAndGetInput(iHeading, 20431, cancelled);
     }
 
     if (cancelled)
@@ -1673,8 +1760,8 @@ int CBuiltins::Execute(const std::string& execString)
     ADDON::TYPE type = TranslateType(params[0]);
     if (CAddonMgr::Get().GetDefault(type, addon))
     {
-      CGUIDialogAddonSettings::ShowAndGetInput(addon);
-      if (type == ADDON_VIZ)
+      bool changed = CGUIDialogAddonSettings::ShowAndGetInput(addon);
+      if (type == ADDON_VIZ && changed)
         g_windowManager.SendMessage(GUI_MSG_VISUALISATION_RELOAD, 0, 0);
     }
   }
@@ -1724,29 +1811,6 @@ int CBuiltins::Execute(const std::string& execString)
   {
     CApplicationMessenger::Get().CECStandby();
   }
-#if defined(HAS_LIRC) || defined(HAS_IRSERVERSUITE)
-  else if (execute == "lirc.stop")
-  {
-    g_RemoteControl.Disconnect();
-    g_RemoteControl.setUsed(false);
-  }
-  else if (execute == "lirc.start")
-  {
-    g_RemoteControl.setUsed(true);
-    g_RemoteControl.Initialize();
-  }
-  else if (execute == "lirc.send")
-  {
-    std::string command;
-    for (int i = 0; i < (int)params.size(); i++)
-    {
-      command += params[i];
-      if (i < (int)params.size() - 1)
-        command += ' ';
-    }
-    g_RemoteControl.AddSendCommand(command);
-  }
-#endif
   else if (execute == "weather.locationset" && !params.empty())
   {
     int loc = atoi(params[0].c_str());
@@ -1803,6 +1867,6 @@ int CBuiltins::Execute(const std::string& execString)
     }
   }
   else
-    return -1;
+    return CInputManager::Get().ExecuteBuiltin(execute, params);
   return 0;
 }

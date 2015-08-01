@@ -60,6 +60,10 @@ CSMB::CSMB()
 {
   m_IdleTimeout = 0;
   m_context = NULL;
+#ifdef TARGET_POSIX
+  m_OpenConnections = 0;
+  m_IdleTimeout = 0;
+#endif
 }
 
 CSMB::~CSMB()
@@ -204,7 +208,7 @@ std::string CSMB::URLEncode(const CURL &url)
   std::vector<std::string> parts;
   std::vector<std::string>::iterator it;
   StringUtils::Tokenize(url.GetFileName(), parts, "/");
-  for( it = parts.begin(); it != parts.end(); it++ )
+  for( it = parts.begin(); it != parts.end(); ++it )
   {
     flat += "/";
     flat += URLEncode((*it));
@@ -485,12 +489,12 @@ ssize_t CSMBFile::Read(void *lpBuf, size_t uiBufSize)
 
   if ( bytesRead < 0 && errno == EINVAL )
   {
-    CLog::Log(LOGERROR, "%s - Error( %"PRIdS", %d, %s ) - Retrying", __FUNCTION__, bytesRead, errno, strerror(errno));
+    CLog::Log(LOGERROR, "%s - Error( %" PRIdS ", %d, %s ) - Retrying", __FUNCTION__, bytesRead, errno, strerror(errno));
     bytesRead = smbc_read(m_fd, lpBuf, (int)uiBufSize);
   }
 
   if ( bytesRead < 0 )
-    CLog::Log(LOGERROR, "%s - Error( %"PRIdS", %d, %s )", __FUNCTION__, bytesRead, errno, strerror(errno));
+    CLog::Log(LOGERROR, "%s - Error( %" PRIdS ", %d, %s )", __FUNCTION__, bytesRead, errno, strerror(errno));
 
   return bytesRead;
 }

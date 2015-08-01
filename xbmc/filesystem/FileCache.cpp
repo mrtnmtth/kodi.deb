@@ -28,8 +28,10 @@
 #include "CircularCache.h"
 #include "threads/SingleLock.h"
 #include "utils/log.h"
-#include "utils/TimeUtils.h"
 #include "settings/AdvancedSettings.h"
+
+#include <cassert>
+#include <algorithm>
 
 using namespace AUTOPTR;
 using namespace XFILE;
@@ -95,7 +97,14 @@ private:
 };
 
 
-CFileCache::CFileCache(bool useDoubleCache) : CThread("FileCache")
+CFileCache::CFileCache(bool useDoubleCache)
+  : CThread("FileCache")
+  , m_seekPossible(0)
+  , m_chunkSize(0)
+  , m_writeRate(0)
+  , m_writeRateActual(0)
+  , m_cacheFull(false)
+  , m_fileSize(0)
 {
    m_bDeleteCache = true;
    m_nSeekResult = 0;
@@ -119,11 +128,15 @@ CFileCache::CFileCache(bool useDoubleCache) : CThread("FileCache")
    {
      m_pCache = new CDoubleCache(m_pCache);
    }
-   m_seekPossible = 0;
-   m_cacheFull = false;
 }
 
-CFileCache::CFileCache(CCacheStrategy *pCache, bool bDeleteCache) : CThread("FileCacheStrategy")
+CFileCache::CFileCache(CCacheStrategy *pCache, bool bDeleteCache)
+  : CThread("FileCacheStrategy")
+  , m_seekPossible(0)
+  , m_chunkSize(0)
+  , m_writeRate(0)
+  , m_writeRateActual(0)
+  , m_cacheFull(false)
 {
   m_pCache = pCache;
   m_bDeleteCache = bDeleteCache;
@@ -131,7 +144,6 @@ CFileCache::CFileCache(CCacheStrategy *pCache, bool bDeleteCache) : CThread("Fil
   m_readPos = 0;
   m_writePos = 0;
   m_nSeekResult = 0;
-  m_chunkSize = 0;
 }
 
 CFileCache::~CFileCache()
@@ -195,6 +207,7 @@ bool CFileCache::Open(const CURL& url)
   // check if source can seek
   m_seekPossible = m_source.IoControl(IOCTRL_SEEK_POSSIBLE, NULL);
   m_chunkSize = CFile::GetChunkSize(m_source.GetChunkSize(), READ_CACHE_CHUNK_SIZE);
+  m_fileSize = m_source.GetLength();
 
   m_readPos = 0;
   m_writePos = 0;
@@ -231,12 +244,15 @@ void CFileCache::Process()
 
   while (!m_bStop)
   {
+    // Update filesize
+    m_fileSize = m_source.GetLength();
+
     // check for seek events
     if (m_seekEvent.WaitMSec(0))
     {
       m_seekEvent.Reset();
       int64_t cacheMaxPos = m_pCache->CachedDataEndPosIfSeekTo(m_seekPos);
-      cacheReachEOF = (cacheMaxPos == m_source.GetLength());
+      cacheReachEOF = (cacheMaxPos == m_fileSize);
       bool sourceSeekFailed = false;
       if (!cacheReachEOF)
       {
@@ -265,13 +281,13 @@ void CFileCache::Process()
 
     while (m_writeRate)
     {
-      if (m_writePos - m_readPos < m_writeRate)
+      if (m_writePos - m_readPos < m_writeRate * g_advancedSettings.m_readBufferFactor)
       {
         limiter.Reset(m_writePos);
         break;
       }
 
-      if (limiter.Rate(m_writePos) < m_writeRate)
+      if (limiter.Rate(m_writePos) < m_writeRate * g_advancedSettings.m_readBufferFactor)
         break;
 
       if (m_seekEvent.WaitMSec(100))
@@ -433,7 +449,7 @@ int64_t CFileCache::Seek(int64_t iFilePosition, int iWhence)
   int64_t iCurPos = m_readPos;
   int64_t iTarget = iFilePosition;
   if (iWhence == SEEK_END)
-    iTarget = GetLength() + iTarget;
+    iTarget = m_fileSize + iTarget;
   else if (iWhence == SEEK_CUR)
     iTarget = iCurPos + iTarget;
   else if (iWhence != SEEK_SET)
@@ -448,7 +464,7 @@ int64_t CFileCache::Seek(int64_t iFilePosition, int iWhence)
       return m_nSeekResult;
 
     /* never request closer to end than 2k, speeds up tag reading */
-    m_seekPos = std::min(iTarget, std::max((int64_t)0, m_source.GetLength() - m_chunkSize));
+    m_seekPos = std::min(iTarget, std::max((int64_t)0, m_fileSize - m_chunkSize));
 
     m_seekEvent.Set();
     if (!m_seekEnded.Wait())
@@ -495,7 +511,7 @@ int64_t CFileCache::GetPosition()
 
 int64_t CFileCache::GetLength()
 {
-  return m_source.GetLength();
+  return m_fileSize;
 }
 
 void CFileCache::StopThread(bool bWait /*= true*/)

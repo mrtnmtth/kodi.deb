@@ -25,9 +25,9 @@
 
 #include "guilib/IMsgTargetCallback.h"
 #include "utils/GlobalsHandling.h"
-#include "utils/StdString.h"
 
 #include <map>
+#include <string>
 
 class CAction;
 class CFileItem;
@@ -37,7 +37,7 @@ namespace ADDON
 {
   class CSkinInfo;
   class IAddon;
-  typedef boost::shared_ptr<IAddon> AddonPtr;
+  typedef std::shared_ptr<IAddon> AddonPtr;
 }
 
 namespace MEDIA_DETECT
@@ -66,6 +66,7 @@ class CPlayerController;
 #include "threads/Thread.h"
 
 #include "ApplicationPlayer.h"
+#include "interfaces/IActionListener.h"
 
 class CSeekHandler;
 class CKaraokeLyricsManager;
@@ -174,11 +175,11 @@ public:
   virtual void OnPlayBackSpeedChanged(int iSpeed);
   bool PlayMedia(const CFileItem& item, int iPlaylist = PLAYLIST_MUSIC);
   bool PlayMediaSync(const CFileItem& item, int iPlaylist = PLAYLIST_MUSIC);
-  bool ProcessAndStartPlaylist(const CStdString& strPlayList, PLAYLIST::CPlayList& playlist, int iPlaylist, int track=0);
+  bool ProcessAndStartPlaylist(const std::string& strPlayList, PLAYLIST::CPlayList& playlist, int iPlaylist, int track=0);
   PlayBackRet PlayFile(const CFileItem& item, bool bRestart = false);
   void SaveFileState(bool bForeground = false);
   void UpdateFileState();
-  void LoadVideoSettings(const std::string &path);
+  void LoadVideoSettings(const CFileItem& item);
   void StopPlaying();
   void Restart(bool bSamePosition = true);
   void DelayedPlayerRestart();
@@ -186,7 +187,6 @@ public:
   bool IsPlayingFullScreenVideo() const;
   bool IsStartingPlayback() const { return m_bPlaybackStarting; }
   bool IsFullScreen();
-  bool OnKey(const CKey& key);
   bool OnAppCommand(const CAction &action);
   bool OnAction(const CAction &action);
   void CheckShutdown();
@@ -196,6 +196,7 @@ public:
   void CheckScreenSaverAndDPMS();
   void CheckPlayingProgress();
   void ActivateScreenSaver(bool forceType = false);
+  bool SetupNetwork();
   void CloseNetworkShares();
 
   void ShowAppMigrationMessage();
@@ -257,7 +258,7 @@ public:
    \param userInitiated Whether the action was initiated by the user (either via GUI or any other method) or not.  It is meant to hide or show dialogs.
    \param scanAll Whether to scan everything not already scanned (regardless of whether the user normally doesn't want a folder scanned).
    */
-  void StartVideoScan(const CStdString &path, bool userInitiated = true, bool scanAll = false);
+  void StartVideoScan(const std::string &path, bool userInitiated = true, bool scanAll = false);
 
   /*!
   \brief Starts a music library cleanup.
@@ -271,9 +272,9 @@ public:
    \param userInitiated Whether the action was initiated by the user (either via GUI or any other method) or not.  It is meant to hide or show dialogs.
    \param flags Flags for controlling the scanning process.  See xbmc/music/infoscanner/MusicInfoScanner.h for possible values.
    */
-  void StartMusicScan(const CStdString &path, bool userInitiated = true, int flags = 0);
-  void StartMusicAlbumScan(const CStdString& strDirectory, bool refresh=false);
-  void StartMusicArtistScan(const CStdString& strDirectory, bool refresh=false);
+  void StartMusicScan(const std::string &path, bool userInitiated = true, int flags = 0);
+  void StartMusicAlbumScan(const std::string& strDirectory, bool refresh = false);
+  void StartMusicArtistScan(const std::string& strDirectory, bool refresh = false);
 
   void UpdateLibraries();
   void CheckMusicPlaylist();
@@ -316,7 +317,7 @@ public:
   CKaraokeLyricsManager* m_pKaraokeMgr;
 
   PLAYERCOREID m_eForcedNextPlayer;
-  CStdString m_strPlayListFile;
+  std::string m_strPlayListFile;
 
   int GlobalIdleTime();
 
@@ -357,28 +358,36 @@ public:
     return m_bTestMode;
   }
 
+  bool IsAppFocused() const { return m_AppFocused; }
+
   void Minimize();
   bool ToggleDPMS(bool manual);
 
   float GetDimScreenSaverLevel() const;
 
-  /*! \brief Retrieve the applications seek handler.
-   \return a constant pointer to the seek handler.
-   \sa CSeekHandler
-   */
-  const CSeekHandler *GetSeekHandler() const { return m_seekHandler; };
-
-  bool SwitchToFullScreen();
+  bool SwitchToFullScreen(bool force = false);
 
   CSplash* GetSplash() { return m_splash; }
   void SetRenderGUI(bool renderGUI);
   bool GetRenderGUI() const { return m_renderGUI; };
 
-  bool SetLanguage(const CStdString &strLanguage);
+  bool SetLanguage(const std::string &strLanguage);
+  bool LoadLanguage(bool reload);
 
   ReplayGainSettings& GetReplayGainSettings() { return m_replayGainSettings; }
 
   void SetLoggingIn(bool loggingIn) { m_loggingIn = loggingIn; }
+  
+  /*!
+   \brief Register an action listener.
+   \param listener The listener to register
+   */
+  void RegisterActionListener(IActionListener *listener);
+  /*!
+   \brief Unregister an action listener.
+   \param listener The listener to unregister
+   */
+  void UnregisterActionListener(IActionListener *listener);
 
 protected:
   virtual bool OnSettingsSaving() const;
@@ -390,8 +399,15 @@ protected:
   virtual void OnSettingAction(const CSetting *setting);
   virtual bool OnSettingUpdate(CSetting* &setting, const char *oldSettingId, const TiXmlNode *oldSettingNode);
 
-  bool LoadSkin(const CStdString& skinID);
-  bool LoadSkin(const boost::shared_ptr<ADDON::CSkinInfo>& skin);
+  bool LoadSkin(const std::string& skinID);
+  bool LoadSkin(const std::shared_ptr<ADDON::CSkinInfo>& skin);
+  
+  /*!
+   \brief Delegates the action to all registered action handlers.
+   \param action The action
+   \return true, if the action was taken by one of the action listener.
+   */
+  bool NotifyActionListeners(const CAction &action) const;
 
   bool m_skinReverting;
 
@@ -431,7 +447,7 @@ protected:
   CFileItemList* m_currentStack;
   CFileItemPtr m_stackFileItemToUpdate;
 
-  CStdString m_prevMedia;
+  std::string m_prevMedia;
   CSplash* m_splash;
   ThreadIdentifier m_threadID;       // application thread ID.  Used in applicationMessanger to know where we are firing a thread with delay from.
   bool m_bInitializing;
@@ -447,13 +463,13 @@ protected:
   bool m_bPresentFrame;
   unsigned int m_lastFrameTime;
   unsigned int m_lastRenderTime;
+  bool m_skipGuiRender;
 
   bool m_bStandalone;
   bool m_bEnableLegacyRes;
   bool m_bTestMode;
   bool m_bSystemScreenSaverEnable;
 
-  VIDEO::CVideoInfoScanner *m_videoInfoScanner;
   MUSIC_INFO::CMusicInfoScanner *m_musicInfoScanner;
 
   bool m_muted;
@@ -467,24 +483,15 @@ protected:
   void VolumeChanged() const;
 
   PlayBackRet PlayStack(const CFileItem& item, bool bRestart);
-  bool ProcessMouse();
-  bool ProcessRemote(float frameTime);
-  bool ProcessGamepad(float frameTime);
-  bool ProcessEventServer(float frameTime);
-  bool ProcessPeripherals(float frameTime);
-  bool ProcessJoystickEvent(const std::string& joystickName, int button, short inputType, float fAmount, unsigned int holdTime = 0);
-  bool ExecuteInputAction(const CAction &action);
   int  GetActiveWindowID(void);
 
   float NavigationIdleTime();
-  static bool AlwaysProcess(const CAction& action);
 
   bool InitDirectoriesLinux();
   bool InitDirectoriesOSX();
   bool InitDirectoriesWin32();
   void CreateUserDirs();
 
-  CSeekHandler *m_seekHandler;
   CPlayerController *m_playerController;
   CInertialScrollingHandler *m_pInertialScrollingHandler;
   CNetwork    *m_network;
@@ -492,11 +499,14 @@ protected:
   CPerformanceStats m_perfStats;
 #endif
 
-#ifdef HAS_EVENT_SERVER
-  std::map<std::string, std::map<int, float> > m_lastAxisMap;
-#endif
-
   ReplayGainSettings m_replayGainSettings;
+  
+  std::vector<IActionListener *> m_actionListeners;
+
+  bool m_fallbackLanguageLoaded;
+  
+private:
+  CCriticalSection                m_critSection;                 /*!< critical section for all changes to this class, except for changes to triggers */
 };
 
 XBMC_GLOBAL_REF(CApplication,g_application);

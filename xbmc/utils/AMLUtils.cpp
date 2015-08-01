@@ -28,77 +28,22 @@
 #include "AMLUtils.h"
 #include "utils/CPUInfo.h"
 #include "utils/log.h"
+#include "utils/SysfsUtils.h"
 #include "utils/StringUtils.h"
 #include "utils/AMLUtils.h"
 #include "guilib/gui3d.h"
-
-int aml_set_sysfs_str(const char *path, const char *val)
-{
-  int fd = open(path, O_CREAT | O_RDWR | O_TRUNC, 0644);
-  if (fd >= 0)
-  {
-    write(fd, val, strlen(val));
-    close(fd);
-    return 0;
-  }
-  return -1;
-}
-
-int aml_get_sysfs_str(const char *path, char *valstr, const int size)
-{
-  int fd = open(path, O_RDONLY);
-  if (fd >= 0)
-  {
-    read(fd, valstr, size - 1);
-    valstr[strlen(valstr)] = '\0';
-    close(fd);
-    return 0;
-  }
-
-  sprintf(valstr, "%s", "fail");
-  return -1;
-}
-
-int aml_set_sysfs_int(const char *path, const int val)
-{
-  int fd = open(path, O_CREAT | O_RDWR | O_TRUNC, 0644);
-  if (fd >= 0)
-  {
-    char bcmd[16];
-    sprintf(bcmd, "%d", val);
-    write(fd, bcmd, strlen(bcmd));
-    close(fd);
-    return 0;
-  }
-  return -1;
-}
-
-int aml_get_sysfs_int(const char *path)
-{
-  int val = -1;
-  int fd = open(path, O_RDONLY);
-  if (fd >= 0)
-  {
-    char bcmd[16];
-    read(fd, bcmd, sizeof(bcmd));
-    val = strtol(bcmd, NULL, 16);
-    close(fd);
-  }
-  return val;
-}
 
 bool aml_present()
 {
   static int has_aml = -1;
   if (has_aml == -1)
   {
-    int rtn = aml_get_sysfs_int("/sys/class/audiodsp/digital_raw");
-    if (rtn != -1)
+    if (SysfsUtils::Has("/sys/class/audiodsp/digital_raw"))
       has_aml = 1;
     else
       has_aml = 0;
     if (has_aml)
-      CLog::Log(LOGNOTICE, "aml_present, rtn(%d)", rtn);
+      CLog::Log(LOGNOTICE, "AML device detected");
   }
   return has_aml == 1;
 }
@@ -108,10 +53,12 @@ bool aml_hw3d_present()
   static int has_hw3d = -1;
   if (has_hw3d == -1)
   {
-    if (aml_get_sysfs_int("/sys/class/ppmgr/ppmgr_3d_mode") != -1)
+    if (SysfsUtils::Has("/sys/class/ppmgr/ppmgr_3d_mode"))
       has_hw3d = 1;
     else
       has_hw3d = 0;
+    if (has_hw3d)
+      CLog::Log(LOGNOTICE, "AML 3D support detected");
   }
   return has_hw3d == 1;
 }
@@ -121,8 +68,8 @@ bool aml_wired_present()
   static int has_wired = -1;
   if (has_wired == -1)
   {
-    char test[64] = {0};
-    if (aml_get_sysfs_str("/sys/class/net/eth0/operstate", test, 63) != -1)
+    std::string test;
+    if (SysfsUtils::GetString("/sys/class/net/eth0/operstate", test) != -1)
       has_wired = 1;
     else
       has_wired = 0;
@@ -130,33 +77,81 @@ bool aml_wired_present()
   return has_wired == 1;
 }
 
-void aml_permissions()
-{
+bool aml_permissions()
+{  
   if (!aml_present())
-    return;
-  
-  // most all aml devices are already rooted.
-  int ret = system("ls /system/xbin/su");
-  if (ret != 0)
+    return false;
+
+  static int permissions_ok = -1;
+  if (permissions_ok == -1)
   {
-    CLog::Log(LOGWARNING, "aml_permissions: missing su, playback might fail");
+    permissions_ok = 1;
+
+    if (!SysfsUtils::HasRW("/dev/amvideo"))
+    {
+      CLog::Log(LOGERROR, "AML: no rw on /dev/amvideo");
+      permissions_ok = 0;
+    }
+    if (!SysfsUtils::HasRW("/dev/amstream_mpts"))
+    {
+      CLog::Log(LOGERROR, "AML: no rw on /dev/amstream*");
+      permissions_ok = 0;
+    }
+    if (!SysfsUtils::HasRW("/sys/class/video/axis"))
+    {
+      CLog::Log(LOGERROR, "AML: no rw on /sys/class/video/axis");
+      permissions_ok = 0;
+    }
+    if (!SysfsUtils::HasRW("/sys/class/video/screen_mode"))
+    {
+      CLog::Log(LOGERROR, "AML: no rw on /sys/class/video/screen_mode");
+      permissions_ok = 0;
+    }
+    if (!SysfsUtils::HasRW("/sys/class/video/disable_video"))
+    {
+      CLog::Log(LOGERROR, "AML: no rw on /sys/class/video/disable_video");
+      permissions_ok = 0;
+    }
+    if (!SysfsUtils::HasRW("/sys/class/tsync/pts_pcrscr"))
+    {
+      CLog::Log(LOGERROR, "AML: no rw on /sys/class/tsync/pts_pcrscr");
+      permissions_ok = 0;
+    }
+    if (!SysfsUtils::HasRW("/sys/class/audiodsp/digital_raw"))
+    {
+      CLog::Log(LOGERROR, "AML: no rw on /sys/class/audiodsp/digital_raw");
+    }
+    if (!SysfsUtils::HasRW("/sys/class/ppmgr/ppmgr_3d_mode"))
+    {
+      CLog::Log(LOGERROR, "AML: no rw on /sys/class/ppmgr/ppmgr_3d_mode");
+    }
+#ifndef TARGET_ANDROID
+    if (!SysfsUtils::HasRW("/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq"))
+    {
+      CLog::Log(LOGERROR, "AML: no rw on /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq");
+    }
+    if (!SysfsUtils::HasRW("/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq"))
+    {
+      CLog::Log(LOGERROR, "AML: no rw on /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq");
+    }
+    if (!SysfsUtils::HasRW("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"))
+    {
+      CLog::Log(LOGERROR, "AML: no rw on /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor");
+    }
+#endif
   }
-  else
+
+  return permissions_ok == 1;
+}
+
+bool aml_support_hevc()
+{
+  std::string valstr;
+  if(SysfsUtils::GetString("/sys/class/amstream/vcodec_profile", valstr) != 0)
   {
-    // certain aml devices have 664 permission, we need 666.
-    system("su -c chmod 666 /dev/amvideo");
-    system("su -c chmod 666 /dev/amstream*");
-    system("su -c chmod 666 /sys/class/video/axis");
-    system("su -c chmod 666 /sys/class/video/screen_mode");
-    system("su -c chmod 666 /sys/class/video/disable_video");
-    system("su -c chmod 666 /sys/class/tsync/pts_pcrscr");
-    system("su -c chmod 666 /sys/class/audiodsp/digital_raw");
-    system("su -c chmod 666 /sys/class/ppmgr/ppmgr_3d_mode");
-    system("su -c chmod 666 /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq");
-    system("su -c chmod 666 /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq");
-    system("su -c chmod 666 /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor");
-    CLog::Log(LOGINFO, "aml_permissions: permissions changed");
+    return false;
   }
+  return (valstr.find("hevc:") != std::string::npos);
 }
 
 enum AML_DEVICE_TYPE aml_get_device_type()
@@ -173,8 +168,14 @@ enum AML_DEVICE_TYPE aml_get_device_type()
       aml_device_type = AML_DEVICE_TYPE_M3;
     else if (cpu_hardware.find("Meson6") != std::string::npos)
       aml_device_type = AML_DEVICE_TYPE_M6;
-    else if (cpu_hardware.find("Meson8") != std::string::npos)
-      aml_device_type = AML_DEVICE_TYPE_M8;
+    else if ((cpu_hardware.find("Meson8") != std::string::npos) && (cpu_hardware.find("Meson8B") == std::string::npos))
+    {
+      if (aml_support_hevc())
+        aml_device_type = AML_DEVICE_TYPE_M8M2;
+      else
+        aml_device_type = AML_DEVICE_TYPE_M8;
+    } else if (cpu_hardware.find("Meson8B") != std::string::npos)
+      aml_device_type = AML_DEVICE_TYPE_M8B;
     else
       aml_device_type = AML_DEVICE_TYPE_UNKNOWN;
   }
@@ -194,7 +195,7 @@ void aml_cpufreq_min(bool limit)
     if (limit)
       cpufreq = 600000;
 
-    aml_set_sysfs_int("/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq", cpufreq);
+    SysfsUtils::SetInt("/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq", cpufreq);
   }
 #endif
 }
@@ -209,8 +210,8 @@ void aml_cpufreq_max(bool limit)
     if (limit)
       cpufreq = 800000;
 
-    aml_set_sysfs_int("/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq", cpufreq);
-    aml_set_sysfs_str("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor", "ondemand");
+    SysfsUtils::SetInt("/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq", cpufreq);
+    SysfsUtils::SetString("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor", "ondemand");
   }
 }
 
@@ -222,7 +223,7 @@ void aml_set_audio_passthrough(bool passthrough)
   {
     // m1 uses 1, m3 and above uses 2
     int raw = aml_get_device_type() == AML_DEVICE_TYPE_M1 ? 1:2;
-    aml_set_sysfs_int("/sys/class/audiodsp/digital_raw", passthrough ? raw:0);
+    SysfsUtils::SetInt("/sys/class/audiodsp/digital_raw", passthrough ? raw:0);
   }
 }
 
@@ -292,11 +293,11 @@ void aml_probe_hdmi_audio()
 
 int aml_axis_value(AML_DISPLAY_AXIS_PARAM param)
 {
-  char axis[20] = {0};
+  std::string axis;
   int value[8];
 
-  aml_get_sysfs_str("/sys/class/display/axis", axis, 19);
-  sscanf(axis, "%d %d %d %d %d %d %d %d", &value[0], &value[1], &value[2], &value[3], &value[4], &value[5], &value[6], &value[7]);
+  SysfsUtils::GetString("/sys/class/display/axis", axis);
+  sscanf(axis.c_str(), "%d %d %d %d %d %d %d %d", &value[0], &value[1], &value[2], &value[3], &value[4], &value[5], &value[6], &value[7]);
 
   return value[param];
 }
@@ -312,14 +313,14 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res)
   if(!mode)
     return false;
 
-  CStdString fromMode = mode;
+  std::string fromMode = mode;
   StringUtils::Trim(fromMode);
   // strips, for example, 720p* to 720p
   // the * indicate the 'native' mode of the display
   if (StringUtils::EndsWith(fromMode, "*"))
     fromMode.erase(fromMode.size() - 1);
 
-  if (fromMode.Equals("panel"))
+  if (StringUtils::EqualsNoCase(fromMode, "panel"))
   {
     res->iWidth = aml_axis_value(AML_DISPLAY_AXIS_PARAM_WIDTH);
     res->iHeight= aml_axis_value(AML_DISPLAY_AXIS_PARAM_HEIGHT);
@@ -328,7 +329,7 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res)
     res->fRefreshRate = 60;
     res->dwFlags = D3DPRESENTFLAG_PROGRESSIVE;
   }
-  else if (fromMode.Equals("720p"))
+  else if (StringUtils::EqualsNoCase(fromMode, "720p"))
   {
     res->iWidth = 1280;
     res->iHeight= 720;
@@ -337,7 +338,7 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res)
     res->fRefreshRate = 60;
     res->dwFlags = D3DPRESENTFLAG_PROGRESSIVE;
   }
-  else if (fromMode.Equals("720p50hz"))
+  else if (StringUtils::EqualsNoCase(fromMode, "720p50hz"))
   {
     res->iWidth = 1280;
     res->iHeight= 720;
@@ -346,7 +347,7 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res)
     res->fRefreshRate = 50;
     res->dwFlags = D3DPRESENTFLAG_PROGRESSIVE;
   }
-  else if (fromMode.Equals("1080p"))
+  else if (StringUtils::EqualsNoCase(fromMode, "1080p"))
   {
     res->iWidth = 1920;
     res->iHeight= 1080;
@@ -355,7 +356,7 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res)
     res->fRefreshRate = 60;
     res->dwFlags = D3DPRESENTFLAG_PROGRESSIVE;
   }
-  else if (fromMode.Equals("1080p24hz"))
+  else if (StringUtils::EqualsNoCase(fromMode, "1080p24hz"))
   {
     res->iWidth = 1920;
     res->iHeight= 1080;
@@ -364,7 +365,7 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res)
     res->fRefreshRate = 24;
     res->dwFlags = D3DPRESENTFLAG_PROGRESSIVE;
   }
-  else if (fromMode.Equals("1080p30hz"))
+  else if (StringUtils::EqualsNoCase(fromMode, "1080p30hz"))
   {
     res->iWidth = 1920;
     res->iHeight= 1080;
@@ -373,7 +374,7 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res)
     res->fRefreshRate = 30;
     res->dwFlags = D3DPRESENTFLAG_PROGRESSIVE;
   }
-  else if (fromMode.Equals("1080p50hz"))
+  else if (StringUtils::EqualsNoCase(fromMode, "1080p50hz"))
   {
     res->iWidth = 1920;
     res->iHeight= 1080;
@@ -382,7 +383,7 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res)
     res->fRefreshRate = 50;
     res->dwFlags = D3DPRESENTFLAG_PROGRESSIVE;
   }
-  else if (fromMode.Equals("1080i"))
+  else if (StringUtils::EqualsNoCase(fromMode, "1080i"))
   {
     res->iWidth = 1920;
     res->iHeight= 1080;
@@ -391,7 +392,7 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res)
     res->fRefreshRate = 60;
     res->dwFlags = D3DPRESENTFLAG_INTERLACED;
   }
-  else if (fromMode.Equals("1080i50hz"))
+  else if (StringUtils::EqualsNoCase(fromMode, "1080i50hz"))
   {
     res->iWidth = 1920;
     res->iHeight= 1080;
@@ -400,7 +401,7 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res)
     res->fRefreshRate = 50;
     res->dwFlags = D3DPRESENTFLAG_INTERLACED;
   }
-  else if (fromMode.Equals("4k2ksmpte"))
+  else if (StringUtils::EqualsNoCase(fromMode, "4k2ksmpte"))
   {
     res->iWidth = 1920;
     res->iHeight= 1080;
@@ -409,7 +410,7 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res)
     res->fRefreshRate = 24;
     res->dwFlags = D3DPRESENTFLAG_PROGRESSIVE;
   }
-  else if (fromMode.Equals("4k2k24hz"))
+  else if (StringUtils::EqualsNoCase(fromMode, "4k2k24hz"))
   {
     res->iWidth = 1920;
     res->iHeight= 1080;
@@ -418,7 +419,7 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res)
     res->fRefreshRate = 24;
     res->dwFlags = D3DPRESENTFLAG_PROGRESSIVE;
   }
-  else if (fromMode.Equals("4k2k25hz"))
+  else if (StringUtils::EqualsNoCase(fromMode, "4k2k25hz"))
   {
     res->iWidth = 1920;
     res->iHeight= 1080;
@@ -427,7 +428,7 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res)
     res->fRefreshRate = 25;
     res->dwFlags = D3DPRESENTFLAG_PROGRESSIVE;
   }
-  else if (fromMode.Equals("4k2k30hz"))
+  else if (StringUtils::EqualsNoCase(fromMode, "4k2k30hz"))
   {
     res->iWidth = 1920;
     res->iHeight= 1080;

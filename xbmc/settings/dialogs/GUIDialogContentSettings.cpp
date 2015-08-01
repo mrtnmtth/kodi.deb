@@ -27,12 +27,11 @@
 #include "filesystem/AddonsDirectory.h"
 #include "dialogs/GUIDialogKaiToast.h"
 #include "guilib/GUIWindowManager.h"
-#include "guilib/Key.h"
+#include "input/Key.h"
 #include "interfaces/Builtins.h"
 #include "settings/lib/Setting.h"
 #include "settings/lib/SettingDependency.h"
 #include "settings/lib/SettingsManager.h"
-#include "settings/windows/GUIControlSettings.h"
 #include "utils/log.h"
 #include "video/VideoInfoScanner.h"
 
@@ -115,7 +114,7 @@ bool CGUIDialogContentSettings::OnMessage(CGUIMessage &message)
         }
 
         AddonPtr last = m_scraper;
-        m_scraper = boost::dynamic_pointer_cast<CScraper>(m_scrapers[m_content][iSelected]);
+        m_scraper = std::dynamic_pointer_cast<CScraper>(m_scrapers[m_content][iSelected]);
         m_lastSelected[m_content] = m_scraper;
 
         if (m_scraper != last)
@@ -498,12 +497,12 @@ void CGUIDialogContentSettings::FillScraperList()
   int selectedIndex = 0;
 
   if (m_lastSelected.find(m_content) != m_lastSelected.end())
-    m_scraper = boost::dynamic_pointer_cast<CScraper>(m_lastSelected[m_content]);
+    m_scraper = std::dynamic_pointer_cast<CScraper>(m_lastSelected[m_content]);
   else
   {
     AddonPtr scraperAddon;
     CAddonMgr::Get().GetDefault(ADDON::ScraperTypeFromContent(m_content), scraperAddon);
-    m_scraper = boost::dynamic_pointer_cast<CScraper>(scraperAddon);
+    m_scraper = std::dynamic_pointer_cast<CScraper>(scraperAddon);
   }
 
   for (IVECADDONS iter = m_scrapers.find(m_content)->second.begin(); iter != m_scrapers.find(m_content)->second.end(); ++iter)

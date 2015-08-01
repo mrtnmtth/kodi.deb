@@ -30,7 +30,7 @@
 #include "settings/Settings.h"
 #include "guilib/GUIWindowManager.h"
 #include "dialogs/GUIDialogYesNo.h"
-#include "guilib/Key.h"
+#include "input/Key.h"
 #include "guilib/LocalizeStrings.h"
 #include "utils/log.h"
 #include "utils/StringUtils.h"
@@ -75,7 +75,7 @@ bool CGUIWindowSettingsScreenCalibration::OnAction(const CAction &action)
     {
       CGUIDialogYesNo* pDialog = (CGUIDialogYesNo*)g_windowManager.GetWindow(WINDOW_DIALOG_YES_NO);
       pDialog->SetHeading(20325);
-      CStdString strText = StringUtils::Format(g_localizeStrings.Get(20326).c_str(), g_graphicsContext.GetResInfo(m_Res[m_iCurRes]).strMode.c_str());
+      std::string strText = StringUtils::Format(g_localizeStrings.Get(20326).c_str(), g_graphicsContext.GetResInfo(m_Res[m_iCurRes]).strMode.c_str());
       pDialog->SetLine(0, strText);
       pDialog->SetLine(1, 20327);
       pDialog->SetChoice(0, 222);
@@ -99,7 +99,24 @@ bool CGUIWindowSettingsScreenCalibration::OnAction(const CAction &action)
       return true;
     }
     break;
+  // ignore all gesture meta actions
+  case ACTION_GESTURE_BEGIN:
+  case ACTION_GESTURE_END:
+  case ACTION_GESTURE_NOTIFY:
+  case ACTION_GESTURE_PAN:
+  case ACTION_GESTURE_ROTATE:
+  case ACTION_GESTURE_ZOOM:
+    return true;
   }
+
+  // if we see a mouse move event without dx and dy (amount2 and amount3) these
+  // are the focus actions which are generated on touch events and those should
+  // be eaten/ignored here. Else we will switch to the screencalibration controls
+  // which are at that x/y value on each touch/tap/swipe which makes the whole window
+  // unusable for touch screens
+  if (action.GetID() == ACTION_MOUSE_MOVE && action.GetAmount(2) == 0 && action.GetAmount(3) == 0)
+    return true;
+
   return CGUIWindow::OnAction(action); // base class to handle basic movement etc.
 }
 
@@ -190,6 +207,13 @@ bool CGUIWindowSettingsScreenCalibration::OnMessage(CGUIMessage& message)
         m_iCurRes = FindCurrentResolution();
       }
     }
+    break;
+  // send before touch for requesting gesture features - we don't want this
+  // it would result in unfocus in the onmessage below ...
+  case GUI_MSG_GESTURE_NOTIFY:
+  // send after touch for unfocussing - we don't want this in this window!
+  case GUI_MSG_UNFOCUS_ALL:
+    return true;
     break;
   }
   return CGUIWindow::OnMessage(message);
@@ -301,7 +325,7 @@ void CGUIWindowSettingsScreenCalibration::ResetControls()
 
 void CGUIWindowSettingsScreenCalibration::UpdateFromControl(int iControl)
 {
-  CStdString strStatus;
+  std::string strStatus;
   RESOLUTION_INFO info = g_graphicsContext.GetResInfo(m_Res[m_iCurRes]);
 
   if (iControl == CONTROL_PIXEL_RATIO)
@@ -360,7 +384,7 @@ void CGUIWindowSettingsScreenCalibration::UpdateFromControl(int iControl)
   g_graphicsContext.SetResInfo(m_Res[m_iCurRes], info);
 
   // set the label control correctly
-  CStdString strText;
+  std::string strText;
   if (g_Windowing.IsFullScreen())
     strText = StringUtils::Format("%ix%i@%.2f - %s | %s",
                                   info.iScreenWidth,

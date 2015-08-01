@@ -27,6 +27,7 @@
 #include "settings/AdvancedSettings.h"
 #include "settings/Settings.h"
 #include "Util.h"
+#include "Application.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -34,14 +35,15 @@
 
 void TestBasicEnvironment::SetUp()
 {
-  char *tmp;
-  CStdString xbmcTempPath;
   XFILE::CFile *f;
 
   /* NOTE: The below is done to fix memleak warning about unitialized variable
    * in xbmcutil::GlobalsSingleton<CAdvancedSettings>::getInstance().
    */
   g_advancedSettings.Initialize();
+
+  // Need to configure the network as some tests access the network member
+  g_application.SetupNetwork();
 
   if (!CXBMCTestUtils::Instance().SetReferenceFileBasePath())
     SetUpError();
@@ -52,7 +54,7 @@ void TestBasicEnvironment::SetUp()
 //for darwin set framework path - else we get assert
 //in guisettings init below
 #ifdef TARGET_DARWIN
-  CStdString frameworksPath = CUtil::GetFrameworksPath();
+  std::string frameworksPath = CUtil::GetFrameworksPath();
   CSpecialProtocol::SetXBMCFrameworksPath(frameworksPath);    
 #endif
   /* TODO: Something should be done about all the asserts in GUISettings so
@@ -65,6 +67,7 @@ void TestBasicEnvironment::SetUp()
    * test suite run.
    */
 #ifdef TARGET_WINDOWS
+  std::string xbmcTempPath;
   TCHAR lpTempPathBuffer[MAX_PATH];
   if (!GetTempPath(MAX_PATH, lpTempPathBuffer))
     SetUpError();
@@ -77,7 +80,7 @@ void TestBasicEnvironment::SetUp()
   CSpecialProtocol::SetTempPath(lpTempPathBuffer);
 #else
   char buf[MAX_PATH];
-  (void)xbmcTempPath;
+  char *tmp;
   strcpy(buf, "/tmp/xbmctempdirXXXXXX");
   if ((tmp = mkdtemp(buf)) == NULL)
     SetUpError();
@@ -101,7 +104,7 @@ void TestBasicEnvironment::SetUp()
 
 void TestBasicEnvironment::TearDown()
 {
-  CStdString xbmcTempPath = CSpecialProtocol::TranslatePath("special://temp/");
+  std::string xbmcTempPath = CSpecialProtocol::TranslatePath("special://temp/");
   XFILE::CDirectory::Remove(xbmcTempPath);
 }
 

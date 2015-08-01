@@ -23,10 +23,8 @@
 #include "guilib/LocalizeStrings.h"
 #include "utils/StringUtils.h"
 #include "GUIInfoManager.h"
-#include "Util.h"
 #include "threads/SingleLock.h"
 #include "PVRManager.h"
-#include "pvr/addons/PVRClients.h"
 #include "pvr/timers/PVRTimers.h"
 #include "pvr/recordings/PVRRecordings.h"
 #include "pvr/channels/PVRChannel.h"
@@ -39,8 +37,7 @@ using namespace PVR;
 using namespace EPG;
 
 CPVRGUIInfo::CPVRGUIInfo(void) :
-    CThread("PVRGUIInfo"),
-    m_playingEpgTag(NULL)
+    CThread("PVRGUIInfo")
 {
   ResetProperties();
 }
@@ -65,18 +62,12 @@ void CPVRGUIInfo::ResetProperties(void)
   m_iTimerAmount                = 0;
   m_bHasRecordings              = false;
   m_iRecordingTimerAmount       = 0;
-  m_iActiveClients              = 0;
+  m_iCurrentActiveClient        = 0;
   m_strPlayingClientName        .clear();
-  m_strBackendName              .clear();
-  m_strBackendVersion           .clear();
-  m_strBackendHost              .clear();
   m_strBackendTimers            .clear();
   m_strBackendRecordings        .clear();
+  m_strBackendDeletedRecordings .clear();
   m_strBackendChannels          .clear();
-  m_iBackendUsedDiskspace       = 0;
-  m_iBackendTotalDiskspace      = 0;
-  m_iAddonInfoToggleStart       = 0;
-  m_iAddonInfoToggleCurrent     = 0;
   m_iTimerInfoToggleStart       = 0;
   m_iTimerInfoToggleCurrent     = 0;
   m_ToggleShowInfo.SetInfinite();
@@ -141,28 +132,6 @@ void CPVRGUIInfo::ToggleShowInfo(void)
   }
 }
 
-bool CPVRGUIInfo::AddonInfoToggle(void)
-{
-  CSingleLock lock(m_critSection);
-  if (m_iAddonInfoToggleStart == 0)
-  {
-    m_iAddonInfoToggleStart = XbmcThreads::SystemClockMillis();
-    m_iAddonInfoToggleCurrent = 0;
-    return true;
-  }
-
-  if ((int) (XbmcThreads::SystemClockMillis() - m_iAddonInfoToggleStart) > g_advancedSettings.m_iPVRInfoToggleInterval)
-  {
-    unsigned int iPrevious = m_iAddonInfoToggleCurrent;
-    if (((int) ++m_iAddonInfoToggleCurrent) > m_iActiveClients - 1)
-      m_iAddonInfoToggleCurrent = 0;
-
-    return m_iAddonInfoToggleCurrent != iPrevious;
-  }
-
-  return false;
-}
-
 bool CPVRGUIInfo::TimerInfoToggle(void)
 {
   CSingleLock lock(m_critSection);
@@ -189,6 +158,7 @@ bool CPVRGUIInfo::TimerInfoToggle(void)
 void CPVRGUIInfo::Process(void)
 {
   unsigned int mLoop(0);
+  int toggleInterval = g_advancedSettings.m_iPVRInfoToggleInterval / 1000;
 
   /* updated on request */
   g_PVRTimers->RegisterObserver(this);
@@ -220,8 +190,9 @@ void CPVRGUIInfo::Process(void)
       UpdateNextTimer();
     Sleep(0);
 
-    if (!m_bStop && mLoop % 10 == 0)
-      UpdateBackendCache();    /* updated every 10 iterations */
+    // Update the backend cache every toggleInterval seconds
+    if (!m_bStop && mLoop % toggleInterval == 0)
+      UpdateBackendCache();
 
     if (++mLoop == 1000)
       mLoop = 0;
@@ -261,7 +232,7 @@ void CPVRGUIInfo::UpdateMisc(void)
   bool       bHasTVChannels            = bStarted && g_PVRChannelGroups->GetGroupAllTV()->HasChannels();
   bool       bHasRadioChannels         = bStarted && g_PVRChannelGroups->GetGroupAllRadio()->HasChannels();
   std::string strPlayingTVGroup        = (bStarted && bIsPlayingTV) ? g_PVRManager.GetPlayingGroup(false)->GroupName() : "";
-  
+
   /* safe to fetch these unlocked, since they're updated from the same thread as this one */
   bool       bHasNonRecordingTimers    = bStarted && m_iTimerAmount - m_iRecordingTimerAmount > 0;
 
@@ -381,6 +352,9 @@ bool CPVRGUIInfo::TranslateCharInfo(DWORD dwInfo, std::string &strValue) const
   case PVR_BACKEND_RECORDINGS:
     CharInfoBackendRecordings(strValue);
     break;
+  case PVR_BACKEND_DELETED_RECORDINGS:
+    CharInfoBackendDeletedRecordings(strValue);
+    break;
   case PVR_BACKEND_NUMBER:
     CharInfoBackendNumber(strValue);
     break;
@@ -450,8 +424,10 @@ int CPVRGUIInfo::TranslateIntInfo(DWORD dwInfo) const
     iReturn = (int) ((float) m_qualityInfo.iSNR / 0xFFFF * 100);
   else if (dwInfo == PVR_BACKEND_DISKSPACE_PROGR)
   {
-    if (m_iBackendTotalDiskspace > 0)
-      iReturn = (int) (100 * m_iBackendUsedDiskspace / m_iBackendTotalDiskspace);
+    const auto &backend = GetCurrentActiveBackend();
+
+    if (backend.diskTotal > 0)
+      iReturn = static_cast<int>(100 * backend.diskUsed / backend.diskTotal);
     else
       iReturn = 0xFF;
   }
@@ -516,15 +492,17 @@ void CPVRGUIInfo::CharInfoNextTimer(std::string &strValue) const
 
 void CPVRGUIInfo::CharInfoBackendNumber(std::string &strValue) const
 {
-  if (m_iActiveClients > 0)
-    strValue = StringUtils::Format("%u %s %u", m_iAddonInfoToggleCurrent+1, g_localizeStrings.Get(20163).c_str(), m_iActiveClients);
+  size_t numBackends = m_backendProperties.size();
+
+  if (numBackends > 0)
+    strValue = StringUtils::Format("%u %s %u", m_iCurrentActiveClient + 1, g_localizeStrings.Get(20163).c_str(), numBackends);
   else
     strValue = g_localizeStrings.Get(14023);
 }
 
 void CPVRGUIInfo::CharInfoTotalDiskSpace(std::string &strValue) const
 {
-  strValue = StringUtils::SizeToString(m_iBackendTotalDiskspace).c_str();
+  strValue = StringUtils::SizeToString(GetCurrentActiveBackend().diskTotal).c_str();
 }
 
 void CPVRGUIInfo::CharInfoVideoBR(std::string &strValue) const
@@ -580,35 +558,45 @@ void CPVRGUIInfo::CharInfoFrontendStatus(std::string &strValue) const
 
 void CPVRGUIInfo::CharInfoBackendName(std::string &strValue) const
 {
-  if (m_strBackendName.empty())
+  const std::string &backendName = GetCurrentActiveBackend().name;
+
+  if (backendName.empty())
     strValue = g_localizeStrings.Get(13205);
   else
-    strValue = m_strBackendName;
+    strValue = backendName;
 }
 
 void CPVRGUIInfo::CharInfoBackendVersion(std::string &strValue) const
 {
-  if (m_strBackendVersion.empty())
+  const std::string &backendVersion = GetCurrentActiveBackend().version;
+
+  if (backendVersion.empty())
     strValue = g_localizeStrings.Get(13205);
   else
-    strValue = m_strBackendVersion;
+    strValue = backendVersion;
 }
 
 void CPVRGUIInfo::CharInfoBackendHost(std::string &strValue) const
 {
-  if (m_strBackendHost.empty())
+  const std::string &backendHost = GetCurrentActiveBackend().host;
+
+  if (backendHost.empty())
     strValue = g_localizeStrings.Get(13205);
   else
-    strValue = m_strBackendHost;
+    strValue = backendHost;
 }
 
 void CPVRGUIInfo::CharInfoBackendDiskspace(std::string &strValue) const
 {
-  if (m_iBackendTotalDiskspace > 0)
+  const auto &backend = GetCurrentActiveBackend();
+  auto diskTotal = backend.diskTotal;
+  auto diskUsed = backend.diskUsed;
+
+  if (diskTotal > 0)
   {
     strValue = StringUtils::Format(g_localizeStrings.Get(802).c_str(),
-        StringUtils::SizeToString(m_iBackendTotalDiskspace-m_iBackendUsedDiskspace).c_str(),
-        StringUtils::SizeToString(m_iBackendTotalDiskspace).c_str());
+        StringUtils::SizeToString(diskTotal - diskUsed).c_str(),
+        StringUtils::SizeToString(diskTotal).c_str());
   }
   else
     strValue = g_localizeStrings.Get(13205);
@@ -638,6 +626,14 @@ void CPVRGUIInfo::CharInfoBackendRecordings(std::string &strValue) const
     strValue = m_strBackendRecordings;
 }
 
+void CPVRGUIInfo::CharInfoBackendDeletedRecordings(std::string &strValue) const
+{
+  if (m_strBackendDeletedRecordings.empty())
+    strValue = g_localizeStrings.Get(13205); /* Unknown */
+  else
+    strValue = m_strBackendDeletedRecordings;
+}
+
 void CPVRGUIInfo::CharInfoPlayingClientName(std::string &strValue) const
 {
   if (m_strPlayingClientName.empty())
@@ -648,8 +644,8 @@ void CPVRGUIInfo::CharInfoPlayingClientName(std::string &strValue) const
 
 void CPVRGUIInfo::CharInfoEncryption(std::string &strValue) const
 {
-  CPVRChannelPtr channel;
-  if (g_PVRClients->GetPlayingChannel(channel))
+  CPVRChannelPtr channel(g_PVRClients->GetPlayingChannel());
+  if (channel)
     strValue = channel->EncryptionName();
   else
     strValue.clear();
@@ -681,75 +677,43 @@ void CPVRGUIInfo::CharInfoProvider(std::string &strValue) const
 
 void CPVRGUIInfo::UpdateBackendCache(void)
 {
-  std::string strBackendName;
-  std::string strBackendVersion;
-  std::string strBackendHost;
-  std::string strBackendDiskspace;
-  std::string strBackendTimers;
-  std::string strBackendRecordings;
-  std::string strBackendChannels;
-  long long   iBackendkBUsed(0);
-  long long   iBackendkBTotal(0);
-  int         iActiveClients(0);
-
-  CPVRClients *clients = g_PVRClients;
-  PVR_CLIENTMAP activeClients;
-  iActiveClients = clients->GetConnectedClients(activeClients);
-
-  if (iActiveClients > 1 && !AddonInfoToggle())
-    return;
-
-  if (iActiveClients > 0)
-  {
-    PVR_CLIENTMAP_CITR activeClient = activeClients.begin();
-    /* safe to read unlocked */
-    for (unsigned int i = 0; i < m_iAddonInfoToggleCurrent; i++)
-      activeClient++;
-
-    if (activeClient->second->GetDriveSpace(&iBackendkBTotal, &iBackendkBUsed) == PVR_ERROR_NO_ERROR)
-    {
-      iBackendkBUsed *= 1024;  // Convert to Bytes
-      iBackendkBTotal *= 1024; // Convert to Bytes
-    }
-    else
-    {
-      iBackendkBUsed = 0;
-      iBackendkBTotal = 0;
-    }
-
-    int NumChannels = activeClient->second->GetChannelsAmount();
-    if (NumChannels >= 0)
-      strBackendChannels = StringUtils::Format("%i", NumChannels);
-    else
-      strBackendChannels = g_localizeStrings.Get(161);
-
-    int NumTimers = activeClient->second->GetTimersAmount();
-    if (NumTimers >= 0)
-      strBackendTimers = StringUtils::Format("%i", NumTimers);
-    else
-      strBackendTimers = g_localizeStrings.Get(161);
-
-    int NumRecordings = activeClient->second->GetRecordingsAmount();
-    if (NumRecordings >= 0)
-      strBackendRecordings = StringUtils::Format("%i", NumRecordings);
-    else
-      strBackendRecordings = g_localizeStrings.Get(161);
-
-    strBackendName    = activeClient->second->GetBackendName();
-    strBackendVersion = activeClient->second->GetBackendVersion();
-    strBackendHost    = activeClient->second->GetConnectionString();
-  }
-
   CSingleLock lock(m_critSection);
-  m_strBackendName         = strBackendName;
-  m_strBackendVersion      = strBackendVersion;
-  m_strBackendHost         = strBackendHost;
-  m_strBackendTimers       = strBackendTimers;
-  m_strBackendRecordings   = strBackendRecordings;
-  m_strBackendChannels     = strBackendChannels;
-  m_iActiveClients         = iActiveClients;
-  m_iBackendUsedDiskspace  = iBackendkBUsed;
-  m_iBackendTotalDiskspace = iBackendkBTotal;
+
+  // Update the backend information for all backends once per iteration
+  if (m_iCurrentActiveClient == 0)
+    m_backendProperties = g_PVRClients->GetBackendProperties();
+
+  // Get the properties for the currently active backend
+  const auto &backend = GetCurrentActiveBackend();
+
+  if (backend.numChannels >= 0)
+    m_strBackendChannels = StringUtils::Format("%i", backend.numChannels);
+  else
+    m_strBackendChannels = g_localizeStrings.Get(161);
+
+  if (backend.numTimers >= 0)
+    m_strBackendTimers = StringUtils::Format("%i", backend.numTimers);
+  else
+    m_strBackendTimers = g_localizeStrings.Get(161);
+
+  if (backend.numRecordings >= 0)
+    m_strBackendRecordings = StringUtils::Format("%i", backend.numRecordings);
+  else
+    m_strBackendRecordings = g_localizeStrings.Get(161);
+
+  if (backend.numDeletedRecordings >= 0)
+    m_strBackendDeletedRecordings = StringUtils::Format("%i", backend.numDeletedRecordings);
+  else
+    m_strBackendDeletedRecordings = g_localizeStrings.Get(161);
+
+  // Update the current active client, eventually wrapping around
+  if (++m_iCurrentActiveClient >= m_backendProperties.size())
+    m_iCurrentActiveClient = 0;
+}
+
+const SBackend& CPVRGUIInfo::GetCurrentActiveBackend() const
+{
+  return m_backendProperties[m_iCurrentActiveClient];
 }
 
 void CPVRGUIInfo::UpdateTimersCache(void)
@@ -778,7 +742,7 @@ void CPVRGUIInfo::UpdateNextTimer(void)
   CFileItemPtr tag = g_PVRTimers->GetNextActiveTimer();
   if (tag && tag->HasPVRTimerInfoTag())
   {
-    CPVRTimerInfoTag *timer = tag->GetPVRTimerInfoTag();
+    CPVRTimerInfoTagPtr timer = tag->GetPVRTimerInfoTag();
     strNextRecordingTitle = StringUtils::Format("%s",       timer->Title().c_str());
     strNextRecordingChannelName = StringUtils::Format("%s", timer->ChannelName().c_str());
     strNextRecordingChannelIcon = StringUtils::Format("%s", timer->ChannelIcon().c_str());
@@ -815,7 +779,7 @@ void CPVRGUIInfo::UpdateTimersToggle(void)
     std::vector<CFileItemPtr> activeTags = g_PVRTimers->GetActiveRecordings();
     if (m_iTimerInfoToggleCurrent < activeTags.size() && activeTags.at(m_iTimerInfoToggleCurrent)->HasPVRTimerInfoTag())
     {
-      CPVRTimerInfoTag *tag = activeTags.at(m_iTimerInfoToggleCurrent)->GetPVRTimerInfoTag();
+      CPVRTimerInfoTagPtr tag = activeTags.at(m_iTimerInfoToggleCurrent)->GetPVRTimerInfoTag();
       strActiveTimerTitle = StringUtils::Format("%s",       tag->Title().c_str());
       strActiveTimerChannelName = StringUtils::Format("%s", tag->ChannelName().c_str());
       strActiveTimerChannelIcon = StringUtils::Format("%s", tag->ChannelIcon().c_str());
@@ -861,56 +825,50 @@ int CPVRGUIInfo::GetStartTime(void) const
 void CPVRGUIInfo::ResetPlayingTag(void)
 {
   CSingleLock lock(m_critSection);
-  SAFE_DELETE(m_playingEpgTag);
+  m_playingEpgTag.reset();
   m_iDuration = 0;
 }
 
-bool CPVRGUIInfo::GetPlayingTag(CEpgInfoTag &tag) const
+CEpgInfoTagPtr CPVRGUIInfo::GetPlayingTag() const
 {
-  bool bReturn(false);
-
   CSingleLock lock(m_critSection);
-  if (m_playingEpgTag)
-  {
-    tag = *m_playingEpgTag;
-    bReturn = true;
-  }
-
-  return bReturn;
+  return m_playingEpgTag;
 }
 
 void CPVRGUIInfo::UpdatePlayingTag(void)
 {
-  CPVRChannelPtr currentChannel;
-  CPVRRecording recording;
-  if (g_PVRManager.GetCurrentChannel(currentChannel))
+  CPVRChannelPtr currentChannel(g_PVRManager.GetCurrentChannel());
+  if (currentChannel)
   {
-    CEpgInfoTag epgTag;
-    bool bHasEpgTag  = GetPlayingTag(epgTag);
+    CEpgInfoTagPtr epgTag(GetPlayingTag());
     CPVRChannelPtr channel;
-    if (bHasEpgTag)
-      channel = epgTag.ChannelTag();
+    if (epgTag)
+      channel = epgTag->ChannelTag();
 
-    if (!bHasEpgTag || !epgTag.IsActive() ||
+    if (!epgTag || !epgTag->IsActive() ||
         !channel || *channel != *currentChannel)
     {
-      CEpgInfoTag newTag;
       {
         CSingleLock lock(m_critSection);
         ResetPlayingTag();
-        if (currentChannel->GetEPGNow(newTag))
+        CEpgInfoTagPtr newTag(currentChannel->GetEPGNow());
+        if (newTag)
         {
-          m_playingEpgTag = new CEpgInfoTag(newTag);
+          m_playingEpgTag = newTag;
           m_iDuration     = m_playingEpgTag->GetDuration() * 1000;
         }
       }
       g_PVRManager.UpdateCurrentFile();
     }
   }
-  else if (g_PVRClients->GetPlayingRecording(recording))
+  else
   {
-    ResetPlayingTag();
-    m_iDuration = recording.GetDuration() * 1000;
+    CPVRRecordingPtr recording(g_PVRClients->GetPlayingRecording());
+    if (recording)
+    {
+      ResetPlayingTag();
+      m_iDuration = recording->GetDuration() * 1000;
+    }
   }
 }
 

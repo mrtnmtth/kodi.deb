@@ -106,7 +106,7 @@ void CGUIDialogPeripheralSettings::OnResetSettings()
   if (peripheral == NULL)
     return;
 
-  if (!CGUIDialogYesNo::ShowAndGetInput(10041, 0, 10042, 0))
+  if (!CGUIDialogYesNo::ShowAndGetInput(10041, 10042))
     return;
 
   // reset the settings in the peripheral
@@ -114,6 +114,13 @@ void CGUIDialogPeripheralSettings::OnResetSettings()
 
   // re-create all settings and their controls
   SetupView();
+}
+
+void CGUIDialogPeripheralSettings::SetupView()
+{
+  CGUIDialogSettingsManualBase::SetupView();
+
+  SetHeading(5);
 }
 
 void CGUIDialogPeripheralSettings::InitializeSettings()

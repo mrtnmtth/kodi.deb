@@ -37,9 +37,6 @@
 #include "qry_dat.h"
 #include <stdarg.h>
 
-
-
-
 namespace dbiplus {
 class Dataset;		// forward declaration of class Dataset
 
@@ -68,6 +65,7 @@ class Dataset;		// forward declaration of class Dataset
 class Database  {
 protected:
   bool active;
+  bool compression;
   std::string error, // Error description
     host, port, db, login, passwd, //Login info
     sequence_table, //Sequence table for nextid
@@ -108,13 +106,14 @@ public:
   const char *getSequenceTable(void) { return sequence_table.c_str(); }
 /* Get the default character set */
   const char *getDefaultCharset(void) { return default_charset.c_str(); }
-/* Sets SSL configuration */
-  virtual void setSSLConfig(const char *newKey, const char *newCert, const char *newCA, const char *newCApath, const char *newCiphers) {
+/* Sets configuration */
+  virtual void setConfig(const char *newKey, const char *newCert, const char *newCA, const char *newCApath, const char *newCiphers, bool newCompression) {
     key = newKey;
     cert = newCert;
     ca = newCA;
     capath = newCApath;
     ciphers = newCiphers;
+    compression = newCompression;
   }
 
 /* virtual methods that must be overloaded in derived classes */
@@ -128,7 +127,7 @@ public:
   virtual int connectFull( const char *newDb, const char *newHost=NULL,
                       const char *newLogin=NULL, const char *newPasswd=NULL,const char *newPort=NULL,
                       const char *newKey=NULL, const char *newCert=NULL, const char *newCA=NULL, 
-                      const char *newCApath=NULL, const char *newCiphers=NULL);
+                      const char *newCApath=NULL, const char *newCiphers=NULL, bool newCompression = false);
   virtual void disconnect(void) { active = false; }
   virtual int reset(void) { return DB_COMMAND_OK; }
   virtual int create(void) { return DB_COMMAND_OK; }
@@ -309,7 +308,7 @@ public:
   virtual int  exec() = 0;
   virtual const void* getExecRes()=0;
 /* as open, but with our query exept Sql */
-  virtual bool query(const char *sql) = 0;
+  virtual bool query(const std::string &sql) = 0;
 /* Close SQL Query*/
   virtual void close();
 /* This function looks for field Field_name with value equal Field_value

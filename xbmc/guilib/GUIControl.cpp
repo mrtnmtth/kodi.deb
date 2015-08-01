@@ -22,11 +22,11 @@
 
 #include "GUIInfoManager.h"
 #include "utils/log.h"
-#include "LocalizeStrings.h"
 #include "GUIWindowManager.h"
 #include "GUIControlProfiler.h"
 #include "input/MouseStat.h"
-#include "Key.h"
+#include "input/InputManager.h"
+#include "input/Key.h"
 
 using namespace std;
 
@@ -393,7 +393,7 @@ void CGUIControl::SetEnabled(bool bEnable)
   }
 }
 
-void CGUIControl::SetEnableCondition(const CStdString &expression)
+void CGUIControl::SetEnableCondition(const std::string &expression)
 {
   if (expression == "true")
     m_enabled = true;
@@ -511,6 +511,8 @@ void CGUIControl::SetVisible(bool bVisible, bool setVisState)
   {
     m_forceHidden = !bVisible;
     SetInvalid();
+    if (m_forceHidden)
+      MarkDirtyRegion();
   }
   if (m_forceHidden)
   { // reset any visible animations that are in process
@@ -545,8 +547,8 @@ EVENT_RESULT CGUIControl::SendMouseEvent(const CPoint &point, const CMouseEvent 
 // override this function to implement custom mouse behaviour
 bool CGUIControl::OnMouseOver(const CPoint &point)
 {
-  if (g_Mouse.GetState() != MOUSE_STATE_DRAG)
-    g_Mouse.SetState(MOUSE_STATE_FOCUS);
+  if (CInputManager::Get().GetMouseState() != MOUSE_STATE_DRAG)
+    CInputManager::Get().SetMouseState(MOUSE_STATE_FOCUS);
   if (!CanFocus()) return false;
   if (!HasFocus())
   {
@@ -629,7 +631,7 @@ void CGUIControl::SetInitialVisibility()
   MarkDirtyRegion();
 }
 
-void CGUIControl::SetVisibleCondition(const CStdString &expression, const CStdString &allowHiddenFocus)
+void CGUIControl::SetVisibleCondition(const std::string &expression, const std::string &allowHiddenFocus)
 {
   if (expression == "true")
     m_visible = VISIBLE;

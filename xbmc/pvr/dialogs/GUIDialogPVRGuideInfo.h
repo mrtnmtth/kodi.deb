@@ -20,10 +20,12 @@
  */
 
 #include "guilib/GUIDialog.h"
+#include <memory>
 
 namespace EPG
 {
   class CEpgInfoTag;
+  typedef std::shared_ptr<EPG::CEpgInfoTag> CEpgInfoTagPtr;
 }
 
 namespace PVR
@@ -44,12 +46,12 @@ namespace PVR
   protected:
     virtual void OnInitWindow();
 
-    bool ActionStartTimer(const EPG::CEpgInfoTag *tag);
+    bool ActionStartTimer(const EPG::CEpgInfoTagPtr &tag);
     bool ActionCancelTimer(CFileItemPtr timer);
 
     bool OnClickButtonOK(CGUIMessage &message);
     bool OnClickButtonRecord(CGUIMessage &message);
-    bool OnClickButtonSwitch(CGUIMessage &message);
+    bool OnClickButtonPlay(CGUIMessage &message);
     bool OnClickButtonFind(CGUIMessage &message);
 
     CFileItemPtr m_progItem;

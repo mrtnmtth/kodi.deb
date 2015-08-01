@@ -19,6 +19,7 @@
  *
  */
 
+#include <string>
 #include <vector>
 #include "XBDateTime.h"
 #include "utils/ScraperUrl.h"
@@ -38,10 +39,10 @@ struct SActorInfo
   {
     return order < right.order;
   }
-  CStdString strName;
-  CStdString strRole;
+  std::string strName;
+  std::string strRole;
   CScraperUrl thumbUrl;
-  CStdString thumb;
+  std::string thumb;
   int        order;
 };
 
@@ -66,15 +67,15 @@ public:
    \sa ParseNative
    */
   bool Load(const TiXmlElement *element, bool append = false, bool prioritise = false);
-  bool Save(TiXmlNode *node, const CStdString &tag, bool savePathInfo = true, const TiXmlElement *additionalNode = NULL);
+  bool Save(TiXmlNode *node, const std::string &tag, bool savePathInfo = true, const TiXmlElement *additionalNode = NULL);
   virtual void Archive(CArchive& ar);
   virtual void Serialize(CVariant& value) const;
   virtual void ToSortable(SortItem& sortable, Field field) const;
-  const CStdString GetCast(bool bIncludeRole = false) const;
+  const std::string GetCast(bool bIncludeRole = false) const;
   bool HasStreamDetails() const;
   bool IsEmpty() const;
 
-  const CStdString& GetPath() const
+  const std::string& GetPath() const
   {
     if (m_strFileNameAndPath.empty())
       return m_strPath;
@@ -92,40 +93,72 @@ public:
    */
   static unsigned int GetDurationFromMinuteString(const std::string &runtime);
 
-  CStdString m_basePath; // the base path of the video, for folder-based lookups
+  void SetBasePath(std::string basePath);
+  void SetDirector(std::vector<std::string> director);
+  void SetWritingCredits(std::vector<std::string> writingCredits);
+  void SetGenre(std::vector<std::string> genre);
+  void SetCountry(std::vector<std::string> country);
+  void SetTagLine(std::string tagLine);
+  void SetPlotOutline(std::string plotOutline);
+  void SetTrailer(std::string trailer);
+  void SetPlot(std::string plot);
+  void SetTitle(std::string title);
+  void SetSortTitle(std::string sortTitle);
+  void SetPictureURL(CScraperUrl &pictureURL);
+  void SetVotes(std::string votes);
+  void SetArtist(std::vector<std::string> artist);
+  void SetSet(std::string set);
+  void SetTags(std::vector<std::string> tags);
+  void SetFile(std::string file);
+  void SetPath(std::string path);
+  void SetIMDBNumber(std::string imdbNumber);
+  void SetMPAARating(std::string mpaaRating);
+  void SetFileNameAndPath(std::string fileNameAndPath);
+  void SetOriginalTitle(std::string originalTitle);
+  void SetEpisodeGuide(std::string episodeGuide);
+  void SetStatus(std::string status);
+  void SetProductionCode(std::string productionCode);
+  void SetShowTitle(std::string showTitle);
+  void SetStudio(std::vector<std::string> studio);
+  void SetAlbum(std::string album);
+  void SetShowLink(std::vector<std::string> showLink);
+  void SetUniqueId(std::string uniqueId);
+
+
+  std::string m_basePath; // the base path of the video, for folder-based lookups
   int m_parentPathID;      // the parent path id where the base path of the video lies
   std::vector<std::string> m_director;
   std::vector<std::string> m_writingCredits;
   std::vector<std::string> m_genre;
   std::vector<std::string> m_country;
-  CStdString m_strTagLine;
-  CStdString m_strPlotOutline;
-  CStdString m_strTrailer;
-  CStdString m_strPlot;
+  std::string m_strTagLine;
+  std::string m_strPlotOutline;
+  std::string m_strTrailer;
+  std::string m_strPlot;
   CScraperUrl m_strPictureURL;
-  CStdString m_strTitle;
-  CStdString m_strSortTitle;
-  CStdString m_strVotes;
+  std::string m_strTitle;
+  std::string m_strSortTitle;
+  std::string m_strVotes;
   std::vector<std::string> m_artist;
   std::vector< SActorInfo > m_cast;
   typedef std::vector< SActorInfo >::const_iterator iCast;
-  CStdString m_strSet;
+  std::string m_strSet;
   int m_iSetId;
   std::vector<std::string> m_tags;
-  CStdString m_strFile;
-  CStdString m_strPath;
-  CStdString m_strIMDBNumber;
-  CStdString m_strMPAARating;
-  CStdString m_strFileNameAndPath;
-  CStdString m_strOriginalTitle;
-  CStdString m_strEpisodeGuide;
+  std::string m_strFile;
+  std::string m_strPath;
+  std::string m_strIMDBNumber;
+  std::string m_strMPAARating;
+  std::string m_strFileNameAndPath;
+  std::string m_strOriginalTitle;
+  std::string m_strEpisodeGuide;
   CDateTime m_premiered;
-  CStdString m_strStatus;
-  CStdString m_strProductionCode;
+  std::string m_strStatus;
+  std::string m_strProductionCode;
   CDateTime m_firstAired;
-  CStdString m_strShowTitle;
+  std::string m_strShowTitle;
   std::vector<std::string> m_studio;
-  CStdString m_strAlbum;
+  std::string m_strAlbum;
   CDateTime m_lastPlayed;
   std::vector<std::string> m_showLink;
   int m_playCount;
@@ -133,7 +166,7 @@ public:
   int m_iYear;
   int m_iSeason;
   int m_iEpisode;
-  CStdString m_strUniqueId;
+  std::string m_strUniqueId;
   int m_iDbId;
   int m_iFileId;
   int m_iSpecialSortSeason;
@@ -160,6 +193,9 @@ private:
    \sa Load
    */
   void ParseNative(const TiXmlElement* element, bool prioritise);
+
+  std::string Trim(std::string &&value);
+  std::vector<std::string> Trim(std::vector<std::string> &&items);
 };
 
 typedef std::vector<CVideoInfoTag> VECMOVIES;

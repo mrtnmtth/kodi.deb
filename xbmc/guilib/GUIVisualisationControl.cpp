@@ -25,8 +25,7 @@
 #include "addons/AddonManager.h"
 #include "addons/Visualisation.h"
 #include "utils/log.h"
-#include "guilib/IRenderingCallback.h"
-#include "Key.h"
+#include "input/Key.h"
 
 using namespace std;
 using namespace ADDON;
@@ -104,7 +103,7 @@ void CGUIVisualisationControl::Process(unsigned int currentTime, CDirtyRegionLis
       AddonPtr addon;
       if (ADDON::CAddonMgr::Get().GetDefault(ADDON_VIZ, addon))
       {
-        m_addon = boost::dynamic_pointer_cast<CVisualisation>(addon);
+        m_addon = std::dynamic_pointer_cast<CVisualisation>(addon);
         if (m_addon)
           if (!InitCallback(m_addon.get()))
             m_addon.reset();

@@ -22,7 +22,7 @@
 #include "GUIInfoManager.h"
 #include "guilib/GUIWindowManager.h"
 #include "FileItem.h"
-#include "guilib/Key.h"
+#include "input/Key.h"
 #include "guilib/LocalizeStrings.h"
 #include "PictureInfoTag.h"
 
@@ -99,7 +99,7 @@ void CGUIDialogPictureInfo::UpdatePictureInfo()
     if (info == SLIDE_EXIF_DATE || info == SLIDE_EXIF_LONG_DATE || info == SLIDE_EXIF_LONG_DATE_TIME )
       continue;
 
-    CStdString picInfo = g_infoManager.GetLabel(info);
+    std::string picInfo = g_infoManager.GetLabel(info);
     if (!picInfo.empty())
     {
       CFileItemPtr item(new CFileItem(g_localizeStrings.Get(SLIDE_STRING_BASE + info)));

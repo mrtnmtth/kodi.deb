@@ -18,6 +18,8 @@
  *
  */
 
+#include <cstdlib>
+
 #include "LabelFormatter.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/Settings.h"
@@ -30,6 +32,8 @@
 #include "StringUtils.h"
 #include "URIUtils.h"
 #include "guilib/LocalizeStrings.h"
+
+#include <cassert>
 
 using namespace MUSIC_INFO;
 
@@ -284,7 +288,7 @@ std::string CLabelFormatter::GetMaskContent(const CMaskString &mask, const CFile
     }
     break;
   case 'O':
-    if (movie && movie->m_strMPAARating)
+    if (movie)
     {// MPAA Rating
       value = movie->m_strMPAARating;
     }

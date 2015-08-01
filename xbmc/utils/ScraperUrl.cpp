@@ -21,7 +21,6 @@
 #include "XMLUtils.h"
 #include "ScraperUrl.h"
 #include "settings/AdvancedSettings.h"
-#include "HTMLUtil.h"
 #include "CharsetConverter.h"
 #include "utils/CharsetDetection.h"
 #include "utils/StringUtils.h"
@@ -30,8 +29,8 @@
 #include "filesystem/ZipFile.h"
 #include "URIUtils.h"
 #include "utils/XBMCTinyXML.h"
-#include "utils/XMLUtils.h"
 #include "utils/Mime.h"
+#include "utils/log.h"
 
 #include <cstring>
 #include <sstream>
@@ -307,7 +306,7 @@ bool CScraperUrl::Get(const SUrlEntry& scrURL, std::string& strHTML, XFILE::CCur
     std::string strCachePath = URIUtils::AddFileToFolder(g_advancedSettings.m_cachePath,
                               "scrapers/" + cacheContext + "/" + scrURL.m_cache);
     XFILE::CFile file;
-    if (!file.OpenForWrite(strCachePath, true) || file.Write(strHTML.data(), strHTML.size()) != strHTML.size())
+    if (!file.OpenForWrite(strCachePath, true) || file.Write(strHTML.data(), strHTML.size()) != static_cast<ssize_t>(strHTML.size()))
       return false;
   }
   return true;

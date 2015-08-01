@@ -40,13 +40,10 @@
 #include "windowing/WindowingFactory.h"
 #include "CompileInfo.h"
 #include <X11/Xatom.h>
-
-#if defined(HAS_XRANDR)
 #include <X11/extensions/Xrandr.h>
-#endif
 
 #include "../WinEventsX11.h"
-#include "input/MouseStat.h"
+#include "input/InputManager.h"
 
 using namespace std;
 
@@ -93,7 +90,6 @@ bool CWinSystemX11::InitWindowSystem()
 
 bool CWinSystemX11::DestroyWindowSystem()
 {
-#if defined(HAS_XRANDR)
   //restore desktop resolution on exit
   if (m_bFullScreen)
   {
@@ -106,7 +102,6 @@ bool CWinSystemX11::DestroyWindowSystem()
     mode.id  = CDisplaySettings::Get().GetResolutionInfo(RES_DESKTOP).strId;
     g_xrandr.SetMode(out, mode);
   }
-#endif
 
 #if defined(HAS_GLX)
   if (m_dpy)
@@ -142,7 +137,7 @@ bool CWinSystemX11::DestroyWindowSystem()
   return true;
 }
 
-bool CWinSystemX11::CreateNewWindow(const CStdString& name, bool fullScreen, RESOLUTION_INFO& res, PHANDLE_EVENT_FUNC userFunction)
+bool CWinSystemX11::CreateNewWindow(const std::string& name, bool fullScreen, RESOLUTION_INFO& res, PHANDLE_EVENT_FUNC userFunction)
 {
   if(!SetFullScreen(fullScreen, res, false))
     return false;
@@ -240,7 +235,6 @@ bool CWinSystemX11::ResizeWindow(int newWidth, int newHeight, int newLeft, int n
 
 bool CWinSystemX11::SetFullScreen(bool fullScreen, RESOLUTION_INFO& res, bool blankOtherDisplays)
 {
-#if defined(HAS_XRANDR)
   XOutput out;
   XMode mode;
 
@@ -308,7 +302,6 @@ bool CWinSystemX11::SetFullScreen(bool fullScreen, RESOLUTION_INFO& res, bool bl
       }
     }
   }
-#endif
 
   if (!SetWindow(res.iWidth, res.iHeight, fullScreen, m_userOutput))
     return false;
@@ -325,7 +318,6 @@ void CWinSystemX11::UpdateResolutions()
 {
   CWinSystemBase::UpdateResolutions();
 
-#if defined(HAS_XRANDR)
   int numScreens = XScreenCount(m_dpy);
   g_xrandr.SetNumScreens(numScreens);
 
@@ -364,7 +356,7 @@ void CWinSystemX11::UpdateResolutions()
       std::vector<XOutput> outputs = g_xrandr.GetModes();
       for (size_t i=0; i<outputs.size(); i++)
       {
-        if (outputs[i].name.Equals(m_userOutput.c_str()))
+        if (StringUtils::EqualsNoCase(outputs[i].name, m_userOutput))
           continue;
         g_xrandr.TurnOffOutput(outputs[i].name);
       }
@@ -382,7 +374,6 @@ void CWinSystemX11::UpdateResolutions()
     CDisplaySettings::Get().GetResolutionInfo(RES_DESKTOP).strOutput = m_userOutput;
   }
   else
-#endif
   {
     m_userOutput = "No Output";
     m_nScreen = DefaultScreen(m_dpy);
@@ -390,8 +381,6 @@ void CWinSystemX11::UpdateResolutions()
     int h = DisplayHeight(m_dpy, m_nScreen);
     UpdateDesktopResolution(CDisplaySettings::Get().GetResolutionInfo(RES_DESKTOP), 0, w, h, 0.0);
   }
-
-#if defined(HAS_XRANDR)
 
   // erase previous stored modes
   CDisplaySettings::Get().ClearCustomResolutions();
@@ -449,7 +438,6 @@ void CWinSystemX11::UpdateResolutions()
     }
   }
   CDisplaySettings::Get().ApplyCalibrations();
-#endif
 }
 
 bool CWinSystemX11::HasCalibration(const RESOLUTION_INFO &resInfo)
@@ -457,7 +445,7 @@ bool CWinSystemX11::HasCalibration(const RESOLUTION_INFO &resInfo)
   XOutput *out = g_xrandr.GetOutput(m_currentOutput);
 
   // keep calibrations done on a not connected output
-  if (!out->name.Equals(resInfo.strOutput))
+  if (!StringUtils::EqualsNoCase(out->name, resInfo.strOutput))
     return true;
 
   // keep calibrations not updated with resolution data
@@ -486,7 +474,7 @@ bool CWinSystemX11::HasCalibration(const RESOLUTION_INFO &resInfo)
   return false;
 }
 
-void CWinSystemX11::GetConnectedOutputs(std::vector<CStdString> *outputs)
+void CWinSystemX11::GetConnectedOutputs(std::vector<std::string> *outputs)
 {
   vector<XOutput> outs;
   g_xrandr.Query(true);
@@ -498,25 +486,44 @@ void CWinSystemX11::GetConnectedOutputs(std::vector<CStdString> *outputs)
   }
 }
 
-bool CWinSystemX11::IsCurrentOutput(CStdString output)
+bool CWinSystemX11::IsCurrentOutput(std::string output)
 {
-  return (output.Equals("Default")) || (m_currentOutput.compare(output) == 0);
+  return (StringUtils::EqualsNoCase(output, "Default")) || (m_currentOutput.compare(output.c_str()) == 0);
 }
 
 #if defined(HAS_EGL)
 EGLConfig getEGLConfig(EGLDisplay eglDisplay, XVisualInfo *vInfo)
 {
-  EGLint attributes[] = {
+  EGLint attributes[] =
+  {
+    EGL_DEPTH_SIZE, 24,
     EGL_NONE
   };
   EGLint numConfigs;
-  // TODO make dynamic
-  EGLConfig eglConfigs[1024];
+
+  if (!eglChooseConfig(eglDisplay, attributes, NULL, 0, &numConfigs))
+  {
+    CLog::Log(LOGERROR, "Failed to query number of egl configs");
+    return EGL_NO_CONFIG;
+  }
+  if (numConfigs == 0)
+  {
+    CLog::Log(LOGERROR, "No suitable egl configs found");
+    return EGL_NO_CONFIG;
+  }
+
+  EGLConfig *eglConfigs;
+  eglConfigs = (EGLConfig*)malloc(numConfigs * sizeof(EGLConfig));
+  if (!eglConfigs)
+  {
+    CLog::Log(LOGERROR, "eglConfigs malloc failed");
+    return EGL_NO_CONFIG;
+  }
   EGLConfig eglConfig = EGL_NO_CONFIG;
-  if (!eglChooseConfig(eglDisplay, attributes, eglConfigs, 1024, &numConfigs))
+  if (!eglChooseConfig(eglDisplay, attributes, eglConfigs, numConfigs, &numConfigs))
   {
     CLog::Log(LOGERROR, "Failed to query egl configs");
-    return EGL_NO_CONFIG;
+    goto Exit;
   }
   for (EGLint i = 0;i < numConfigs;++i)
   {
@@ -532,6 +539,8 @@ EGLConfig getEGLConfig(EGLDisplay eglDisplay, XVisualInfo *vInfo)
     }
   }
 
+Exit:
+  free(eglConfigs);
   return eglConfig;
 }
 
@@ -720,7 +729,8 @@ bool CWinSystemX11::RefreshGlxContext(bool force)
       }
     }
 
-    GLint contextAttributes[] = {
+    EGLint contextAttributes[] =
+    {
       EGL_CONTEXT_CLIENT_VERSION, 2,
       EGL_NONE
     };
@@ -899,7 +909,7 @@ void CWinSystemX11::RecreateWindow()
   for (i = RES_DESKTOP; i < CDisplaySettings::Get().ResolutionInfoSize(); ++i)
   {
     res = CDisplaySettings::Get().GetResolutionInfo(i);
-    if (CDisplaySettings::Get().GetResolutionInfo(i).strId.Equals(mode.id))
+    if (StringUtils::EqualsNoCase(CDisplaySettings::Get().GetResolutionInfo(i).strId, mode.id))
     {
       found = true;
       break;
@@ -926,7 +936,7 @@ void CWinSystemX11::OnLostDevice()
   g_renderManager.Flush();
 
   { CSingleLock lock(m_resourceSection);
-    for (vector<IDispResource *>::iterator i = m_resources.begin(); i != m_resources.end(); i++)
+    for (vector<IDispResource *>::iterator i = m_resources.begin(); i != m_resources.end(); ++i)
       (*i)->OnLostDevice();
   }
 
@@ -971,7 +981,7 @@ bool CWinSystemX11::SetWindow(int width, int height, bool fullscreen, const std:
 
   if (!m_mainWindow)
   {
-    g_Mouse.SetActive(false);
+    CInputManager::Get().SetMouseActive(false);
   }
 
   if (m_mainWindow && ((m_bFullScreen != fullscreen) || m_currentOutput.compare(output) != 0 || m_windowDirty))
@@ -1001,7 +1011,7 @@ bool CWinSystemX11::SetWindow(int width, int height, bool fullscreen, const std:
       }
     }
 
-    g_Mouse.SetActive(false);
+    CInputManager::Get().SetMouseActive(false);
     OnLostDevice();
     DestroyWindow();
     m_windowDirty = true;
@@ -1026,7 +1036,7 @@ bool CWinSystemX11::SetWindow(int width, int height, bool fullscreen, const std:
     };
 #endif
 #if defined(HAS_EGL)
-    GLint att[] =
+    EGLint att[] =
     {
       EGL_RED_SIZE, 8,
       EGL_GREEN_SIZE, 8,
@@ -1080,17 +1090,27 @@ bool CWinSystemX11::SetWindow(int width, int height, bool fullscreen, const std:
       CLog::Log(LOGERROR, "Failed to choose a config %d\n", eglGetError());
     }
 
-    XVisualInfo x11_visual_info_template;
-    if (!eglGetConfigAttrib(m_eglDisplay, eglConfig, EGL_NATIVE_VISUAL_ID, (EGLint*)&x11_visual_info_template.visualid)) {
+    EGLint eglVisualid;
+    if (!eglGetConfigAttrib(m_eglDisplay, eglConfig, EGL_NATIVE_VISUAL_ID, &eglVisualid))
+    {
       CLog::Log(LOGERROR, "Failed to query native visual id\n");
     }
+    XVisualInfo x11_visual_info_template;
+    x11_visual_info_template.visualid = eglVisualid;
     int num_visuals;
     vi = XGetVisualInfo(m_dpy,
                         VisualIDMask,
-			&x11_visual_info_template,
-			&num_visuals);
+                        &x11_visual_info_template,
+                        &num_visuals);
 
 #endif
+
+    if(!vi)
+    {
+      CLog::Log(LOGERROR, "Failed to find matching visual");
+      return false;
+    }
+
     cmap = XCreateColormap(m_dpy, RootWindow(m_dpy, vi->screen), vi->visual, AllocNone);
 
     bool hasWM = HasWindowManager();
@@ -1125,6 +1145,10 @@ bool CWinSystemX11::SetWindow(int width, int height, bool fullscreen, const std:
     {
       Atom fs = XInternAtom(m_dpy, "_NET_WM_STATE_FULLSCREEN", True);
       XChangeProperty(m_dpy, m_mainWindow, XInternAtom(m_dpy, "_NET_WM_STATE", True), XA_ATOM, 32, PropModeReplace, (unsigned char *) &fs, 1);
+      // disable desktop compositing for KDE, when Kodi is in full-screen mode
+      int one = 1;
+      XChangeProperty(m_dpy, m_mainWindow, XInternAtom(m_dpy, "_KDE_NET_WM_BLOCK_COMPOSITING", True), XA_CARDINAL, 32,
+                      PropModeReplace, (unsigned char*) &one,  1);
     }
 
     // define invisible cursor
@@ -1230,7 +1254,7 @@ bool CWinSystemX11::SetWindow(int width, int height, bool fullscreen, const std:
 #if defined(HAS_GLX)
     CSingleLock lock(m_resourceSection);
     // tell any shared resources
-    for (vector<IDispResource *>::iterator i = m_resources.begin(); i != m_resources.end(); i++)
+    for (vector<IDispResource *>::iterator i = m_resources.begin(); i != m_resources.end(); ++i)
       (*i)->OnResetDevice();
 #endif
   }
@@ -1432,12 +1456,14 @@ void CWinSystemX11::UpdateCrtc()
 {
   XWindowAttributes winattr;
   int posx, posy;
+  float fps = 0.0f;
   Window child;
   XGetWindowAttributes(m_dpy, m_mainWindow, &winattr);
   XTranslateCoordinates(m_dpy, m_mainWindow, RootWindow(m_dpy, m_nScreen), winattr.x, winattr.y,
                         &posx, &posy, &child);
 
-  m_crtc = g_xrandr.GetCrtc(posx+winattr.width/2, posy+winattr.height/2);
+  m_crtc = g_xrandr.GetCrtc(posx+winattr.width/2, posy+winattr.height/2, fps);
+  g_graphicsContext.SetFPS(fps);
 }
 
 #endif

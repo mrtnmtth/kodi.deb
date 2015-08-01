@@ -19,7 +19,7 @@
  */
 
 #include "URL.h"
-#include "utils/RegExp.h"
+#include "Application.h"
 #include "utils/log.h"
 #include "utils/URIUtils.h"
 #include "utils/StringUtils.h"
@@ -27,10 +27,8 @@
 #include "filesystem/File.h"
 #include "FileItem.h"
 #include "filesystem/StackDirectory.h"
-#include "addons/Addon.h"
-#include "utils/StringUtils.h"
+#include "network/Network.h"
 #ifndef TARGET_POSIX
-#include <sys\types.h>
 #include <sys\stat.h>
 #endif
 
@@ -331,9 +329,9 @@ void CURL::SetFileName(const std::string& strFileName)
 {
   m_strFileName = strFileName;
 
-  int slash = m_strFileName.find_last_of(GetDirectorySeparator());
-  int period = m_strFileName.find_last_of('.');
-  if(period != -1 && (slash == -1 || period > slash))
+  size_t slash = m_strFileName.find_last_of(GetDirectorySeparator());
+  size_t period = m_strFileName.find_last_of('.');
+  if(period != std::string::npos && (slash == std::string::npos || period > slash))
     m_strFileType = m_strFileName.substr(period+1);
   else
     m_strFileType = "";
@@ -456,9 +454,7 @@ const std::string& CURL::GetProtocol() const
 const std::string CURL::GetTranslatedProtocol() const
 {
   if (IsProtocol("shout")
-   || IsProtocol("daap")
    || IsProtocol("dav")
-   || IsProtocol("tuxbox")
    || IsProtocol("rss"))
     return "http";
 
@@ -501,7 +497,10 @@ const std::string CURL::GetFileNameWithoutPath() const
 char CURL::GetDirectorySeparator() const
 {
 #ifndef TARGET_POSIX
-  if ( IsLocal() )
+  //We don't want to use IsLocal here, it can return true
+  //for network protocols that matches localhost or hostname
+  //we only ever want to use \ for win32 local filesystem
+  if ( m_strProtocol.empty() )
     return '\\';
   else
 #endif
@@ -679,14 +678,12 @@ std::string CURL::GetRedacted(const std::string& path)
 
 bool CURL::IsLocal() const
 {
-  return (IsLocalHost() || m_strProtocol.empty());
+  return (m_strProtocol.empty() || IsLocalHost());
 }
 
 bool CURL::IsLocalHost() const
 {
-  // localhost is case-insensitive
-  return (StringUtils::EqualsNoCase(m_strHostName, "localhost") ||
-          m_strHostName == "127.0.0.1");
+  return g_application.getNetwork().IsLocalHost(m_strHostName);
 }
 
 bool CURL::IsFileOnly(const std::string &url)

@@ -21,7 +21,6 @@
  */
 
 #include "windows/GUIMediaWindow.h"
-#include "GUIWindowSlideShow.h"
 #include "PictureThumbLoader.h"
 #include "DllImageLib.h"
 
@@ -49,10 +48,10 @@ protected:
   void OnRegenerateThumbs();
   virtual bool OnPlayMedia(int iItem);
   bool ShowPicture(int iItem, bool startSlideShow);
-  void OnShowPictureRecursive(const CStdString& strPath);
-  void OnSlideShow(const CStdString& strPicture);
+  void OnShowPictureRecursive(const std::string& strPath);
+  void OnSlideShow(const std::string& strPicture);
   void OnSlideShow();
-  void OnSlideShowRecursive(const CStdString& strPicture);
+  void OnSlideShowRecursive(const std::string& strPicture);
   void OnSlideShowRecursive();
   virtual void OnItemLoaded(CFileItem* pItem);
   virtual void LoadPlayList(const std::string& strPlayList);

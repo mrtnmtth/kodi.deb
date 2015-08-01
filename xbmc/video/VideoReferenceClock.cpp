@@ -19,30 +19,32 @@
  */
 #include "system.h"
 #include <list>
-#include "utils/StdString.h"
 #include "VideoReferenceClock.h"
 #include "utils/MathUtils.h"
 #include "utils/log.h"
 #include "utils/TimeUtils.h"
-#include "utils/StringUtils.h"
 #include "threads/SingleLock.h"
 #include "guilib/GraphicContext.h"
 #include "video/videosync/VideoSync.h"
-#include "windowing/WindowingFactory.h"
+#include "settings/Settings.h"
 
 #if defined(HAS_GLX)
 #include "video/videosync/VideoSyncGLX.h"
 #endif
 #if defined(HAVE_X11)
 #include "video/videosync/VideoSyncDRM.h"
+#include "windowing/WindowingFactory.h"
 #elif defined(TARGET_RASPBERRY_PI)
 #include "video/videosync/VideoSyncPi.h"
 #endif
 #if defined(TARGET_WINDOWS)
 #include "video/videosync/VideoSyncD3D.h"
 #endif
-#if defined(TARGET_DARWIN)
-#include "video/videosync/VideoSyncCocoa.h"
+#if defined(TARGET_DARWIN_OSX)
+#include "video/videosync/VideoSyncOsx.h"
+#endif
+#if defined(TARGET_DARWIN_IOS)
+#include "video/videosync/VideoSyncIos.h"
 #endif
 
 using namespace std;
@@ -68,6 +70,13 @@ CVideoReferenceClock::CVideoReferenceClock() : CThread("RefClock")
 
 CVideoReferenceClock::~CVideoReferenceClock()
 {
+}
+
+void CVideoReferenceClock::Start()
+{
+  CSingleExit lock(g_graphicsContext);
+  if(CSettings::Get().GetBool("videoplayer.usedisplayasclock") && !IsRunning())
+    Create();
 }
 
 void CVideoReferenceClock::Stop()
@@ -107,8 +116,10 @@ void CVideoReferenceClock::Process()
 #endif
 #elif defined(TARGET_WINDOWS)
     m_pVideoSync = new CVideoSyncD3D();
-#elif defined(TARGET_DARWIN)
-    m_pVideoSync = new CVideoSyncCocoa();
+#elif defined(TARGET_DARWIN_OSX)
+    m_pVideoSync = new CVideoSyncOsx();
+#elif defined(TARGET_DARWIN_IOS)
+    m_pVideoSync = new CVideoSyncIos();
 #elif defined(TARGET_RASPBERRY_PI)
     m_pVideoSync = new CVideoSyncPi();
 #endif

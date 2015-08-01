@@ -20,16 +20,15 @@
 
 #include "MusicArtistInfo.h"
 #include "addons/Scraper.h"
-#include "utils/log.h"
 
 using namespace std;
 using namespace XFILE;
 using namespace MUSIC_GRABBER;
 
-CMusicArtistInfo::CMusicArtistInfo(const CStdString& strArtist, const CScraperUrl& strArtistURL)
+CMusicArtistInfo::CMusicArtistInfo(const std::string& strArtist, const CScraperUrl& strArtistURL):
+  m_artistURL(strArtistURL)
 {
   m_artist.strArtist = strArtist;
-  m_artistURL = strArtistURL;
   m_bLoaded = false;
 }
 
@@ -40,7 +39,7 @@ void CMusicArtistInfo::SetArtist(const CArtist& artist)
 }
 
 bool CMusicArtistInfo::Load(CCurlFile& http, const ADDON::ScraperPtr& scraper,
-  const CStdString &strSearch)
+  const std::string &strSearch)
 {
   return m_bLoaded = scraper->GetArtistDetails(http, m_artistURL, strSearch, m_artist);
 }

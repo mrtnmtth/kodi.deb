@@ -21,7 +21,6 @@
  */
 
 #include "guilib/GUIWindow.h"
-#include "threads/CriticalSection.h"
 
 class CGUIWindowFullScreen : public CGUIWindow
 {
@@ -30,19 +29,19 @@ public:
   virtual ~CGUIWindowFullScreen(void);
   virtual bool OnMessage(CGUIMessage& message);
   virtual bool OnAction(const CAction &action);
+  virtual void ClearBackground();
   virtual void FrameMove();
   virtual void Process(unsigned int currentTime, CDirtyRegionList &dirtyregion);
   virtual void Render();
+  virtual void RenderEx();
   virtual void OnWindowLoaded();
   void ChangetheTimeCode(int remote);
-  void ChangetheTVGroup(bool next);
 
 protected:
   virtual EVENT_RESULT OnMouseEvent(const CPoint &point, const CMouseEvent &event);
 
 private:
   void SeekChapter(int iChapter);
-  void FillInTVGroups();
   void ToggleOSD();
   void TriggerOSD();
 
@@ -65,7 +64,6 @@ private:
 
   bool m_bShowCurrentTime;
 
-  bool m_bGroupSelectShow;
   bool m_timeCodeShow;
   unsigned int m_timeCodeTimeout;
   int m_timeCodeStamp[6];

@@ -20,8 +20,6 @@
 #include "limits.h"
 #include "TagLibVFSStream.h"
 #include "filesystem/File.h"
-#include "utils/StdString.h"
-#include "utils/log.h"
 #include <taglib/tiostream.h>
 
 using namespace XFILE;
@@ -219,7 +217,7 @@ void TagLibVFSStream::removeBlock(TagLib::ulong start, TagLib::ulong length)
       clear();
 
     seek(writePosition);
-    if (m_file.Write(buffer.data(), bytesRead) != bytesRead)
+    if (m_file.Write(buffer.data(), bytesRead) != static_cast<ssize_t>(bytesRead))
       return; // error
     writePosition += bytesRead;
   }

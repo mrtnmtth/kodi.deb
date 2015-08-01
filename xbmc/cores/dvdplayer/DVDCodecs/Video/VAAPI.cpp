@@ -150,8 +150,11 @@ bool CVAAPIContext::CreateContext()
     CLog::Log(LOGDEBUG, "VAAPI - driver in use: %s", vaQueryVendorString(m_display));
 
   QueryCaps();
-  if (!m_profileCount || !m_attributeCount)
+  if (!m_profileCount)
     return false;
+
+  if (!m_attributeCount)
+    CLog::Log(LOGWARNING, "VAAPI - driver did not return anything from vlVaQueryDisplayAttributes");
 
   return true;
 }
@@ -240,7 +243,7 @@ bool CVAAPIContext::CheckSuccess(VAStatus status)
 {
   if (status != VA_STATUS_SUCCESS)
   {
-    CLog::Log(LOGERROR, "VAAPI error: %s", vaErrorStr(status));
+    CLog::Log(LOGERROR, "VAAPI::%s error: %s", __FUNCTION__, vaErrorStr(status));
     return false;
   }
   return true;
@@ -468,6 +471,7 @@ CDecoder::CDecoder() : m_vaapiOutput(&m_inMsgEvent)
   m_vaapiConfig.contextId = VA_INVALID_ID;
   m_vaapiConfig.configId = VA_INVALID_ID;
   m_avctx = NULL;
+  m_getBufferError = false;
 }
 
 CDecoder::~CDecoder()
@@ -475,7 +479,7 @@ CDecoder::~CDecoder()
   Close();
 }
 
-bool CDecoder::Open(AVCodecContext* avctx, const enum PixelFormat fmt, unsigned int surfaces)
+bool CDecoder::Open(AVCodecContext* avctx, AVCodecContext* mainctx, const enum PixelFormat fmt, unsigned int surfaces)
 {
   // don't support broken wrappers by default
   // nvidia cards with a vaapi to vdpau wrapper
@@ -606,7 +610,11 @@ bool CDecoder::Open(AVCodecContext* avctx, const enum PixelFormat fmt, unsigned 
   avctx->get_buffer2 = CDecoder::FFGetBuffer;
   avctx->slice_flags = SLICE_FLAG_CODED_ORDER|SLICE_FLAG_ALLOW_FIELD;
 
-  m_avctx = avctx;
+  mainctx->hwaccel_context = &m_hwContext;
+  mainctx->get_buffer2 = CDecoder::FFGetBuffer;
+  mainctx->slice_flags = SLICE_FLAG_CODED_ORDER|SLICE_FLAG_ALLOW_FIELD;
+
+  m_avctx = mainctx;
   return true;
 }
 
@@ -694,9 +702,9 @@ int CDecoder::FFGetBuffer(AVCodecContext *avctx, AVFrame *pic, int flags)
     uint16_t decoded, processed, render;
     bool vpp;
     va->m_bufferStats.Get(decoded, processed, render, vpp);
-    CLog::Log(LOGERROR, "VAAPI::FFGetBuffer - no surface available - dec: %d, render: %d",
+    CLog::Log(LOGWARNING, "VAAPI::FFGetBuffer - no surface available - dec: %d, render: %d",
                          decoded, render);
-    va->m_DisplayState = VAAPI_ERROR;
+    va->m_getBufferError = true;
     return -1;
   }
 
@@ -731,6 +739,8 @@ void CDecoder::FFReleaseBuffer(uint8_t *data)
 
 int CDecoder::Decode(AVCodecContext* avctx, AVFrame* pFrame)
 {
+  m_getBufferError = false;
+
   int result = Check(avctx);
   if (result)
     return result;
@@ -821,7 +831,7 @@ int CDecoder::Decode(AVCodecContext* avctx, AVFrame* pFrame)
       msg->Release();
     }
 
-    if (decoded < 2 && processed < 3 && m_videoSurfaces.HasFree())
+    if (decoded < 2 && processed < 3)
     {
       retval |= VC_BUFFER;
     }
@@ -847,6 +857,7 @@ int CDecoder::Decode(AVCodecContext* avctx, AVFrame* pFrame)
 
 int CDecoder::Check(AVCodecContext* avctx)
 {
+  int ret = 0;
   EDisplayState state;
 
   { CSingleLock lock(m_DecoderSection);
@@ -888,7 +899,19 @@ int CDecoder::Check(AVCodecContext* avctx)
     else
       return VC_ERROR;
   }
-  return 0;
+
+  if (m_getBufferError)
+  {
+    // if there is no other error, sleep for a short while
+    // in order not to drain player's message queue
+    if (!ret)
+      Sleep(20);
+
+    ret |= VC_NOBUFFER;
+  }
+
+  m_getBufferError = false;
+  return ret;
 }
 
 bool CDecoder::GetPicture(AVCodecContext* avctx, AVFrame* frame, DVDVideoPicture* picture)
@@ -942,7 +965,7 @@ bool CDecoder::CheckSuccess(VAStatus status)
 {
   if (status != VA_STATUS_SUCCESS)
   {
-    CLog::Log(LOGERROR, "VAAPI - error: %s", vaErrorStr(status));
+    CLog::Log(LOGERROR, "VAAPI::%s - error: %s", __FUNCTION__, vaErrorStr(status));
     m_ErrorCount++;
 
     if(m_DisplayState == VAAPI_OPEN)
@@ -2308,7 +2331,7 @@ bool COutput::CheckSuccess(VAStatus status)
 {
   if (status != VA_STATUS_SUCCESS)
   {
-    CLog::Log(LOGERROR, "VAAPI - Error: %s(%d)", vaErrorStr(status), status);
+    CLog::Log(LOGERROR, "VAAPI::%s - Error: %s(%d)", __FUNCTION__, vaErrorStr(status), status);
     m_vaError = true;
     return false;
   }
@@ -2479,6 +2502,9 @@ bool CVppPostproc::PreInit(CVaapiConfig &config, SDiMethods *methods)
   // create config
   if (!CheckSuccess(vaCreateConfig(m_config.dpy, VAProfileNone, VAEntrypointVideoProc, NULL, 0, &m_configId)))
   {
+    if (g_advancedSettings.CanLogComponent(LOGVIDEO))
+      CLog::Log(LOGDEBUG, "CVppPostproc::PreInit  - VPP init failed");
+
     return false;
   }
 
@@ -2493,6 +2519,9 @@ bool CVppPostproc::PreInit(CVaapiConfig &config, SDiMethods *methods)
                                      nb_surfaces,
                                      NULL, 0)))
   {
+    if (g_advancedSettings.CanLogComponent(LOGVIDEO))
+      CLog::Log(LOGDEBUG, "CVppPostproc::PreInit  - VPP init failed");
+
     return false;
   }
   for (int i=0; i<nb_surfaces; i++)
@@ -2511,6 +2540,9 @@ bool CVppPostproc::PreInit(CVaapiConfig &config, SDiMethods *methods)
                                     &m_contextId)))
   {
     m_contextId = VA_INVALID_ID;
+    if (g_advancedSettings.CanLogComponent(LOGVIDEO))
+      CLog::Log(LOGDEBUG, "CVppPostproc::PreInit  - VPP init failed");
+
     return false;
   }
 
@@ -2521,6 +2553,9 @@ bool CVppPostproc::PreInit(CVaapiConfig &config, SDiMethods *methods)
 
   if (!CheckSuccess(vaQueryVideoProcFilters(m_config.dpy, m_contextId, filters, &numFilters)))
   {
+    if (g_advancedSettings.CanLogComponent(LOGVIDEO))
+      CLog::Log(LOGDEBUG, "CVppPostproc::PreInit  - VPP init failed");
+
     return false;
   }
 
@@ -2530,6 +2565,9 @@ bool CVppPostproc::PreInit(CVaapiConfig &config, SDiMethods *methods)
                                                deinterlacingCaps,
                                                &numDeinterlacingCaps)))
   {
+    if (g_advancedSettings.CanLogComponent(LOGVIDEO))
+      CLog::Log(LOGDEBUG, "CVppPostproc::PreInit  - VPP init failed");
+
     return false;
   }
 
@@ -2914,7 +2952,7 @@ bool CVppPostproc::CheckSuccess(VAStatus status)
 {
   if (status != VA_STATUS_SUCCESS)
   {
-    CLog::Log(LOGERROR, "VAAPI - Error: %s(%d)", vaErrorStr(status), status);
+    CLog::Log(LOGERROR, "VAAPI::%s - Error: %s(%d)", __FUNCTION__, vaErrorStr(status), status);
     return false;
   }
   return true;

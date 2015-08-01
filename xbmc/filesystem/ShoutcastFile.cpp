@@ -23,7 +23,6 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "threads/SystemClock.h"
 #include "system.h"
 #include "ShoutcastFile.h"
 #include "guilib/GUIWindowManager.h"
@@ -31,9 +30,7 @@
 #include "utils/RegExp.h"
 #include "utils/HTMLUtil.h"
 #include "utils/CharsetConverter.h"
-#include "utils/TimeUtils.h"
 #include "ApplicationMessenger.h"
-#include "utils/log.h"
 #include "FileCache.h"
 #include <climits>
 
@@ -48,6 +45,7 @@ CShoutcastFile::CShoutcastFile() :
   m_buffer = NULL;
   m_cacheReader = NULL;
   m_tagPos = 0;
+  m_metaint = 0;
 }
 
 CShoutcastFile::~CShoutcastFile()

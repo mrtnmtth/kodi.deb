@@ -26,13 +26,11 @@
 #include "dialogs/GUIDialogKaiToast.h"
 #include "filesystem/File.h"
 #include "filesystem/Directory.h"
-#include "utils/URIUtils.h"
 #include "FileItem.h"
 #include "network/Network.h"
 #include "utils/CharsetConverter.h"
 #include "utils/StringUtils.h"
 #include "utils/XMLUtils.h"
-#include "cores/dvdplayer/DVDCodecs/DVDCodecs.h"
 
 using namespace XFILE;
 
@@ -297,7 +295,7 @@ char* CAddonCallbacksAddon::GetDVDMenuLanguage(const void* addonData)
 
 void CAddonCallbacksAddon::FreeString(const void* addonData, char* str)
 {
-  delete[] str;
+  free(str);
 }
 
 void* CAddonCallbacksAddon::OpenFile(const void* addonData, const char* strFileName, unsigned int flags)

@@ -167,6 +167,11 @@
       <star>Queue</star>
     </remote>
   </MyMusicLibrary>
+  <MyPictures>
+    <remote>
+      <clear>Delete</clear>
+    </remote>
+  </MyPictures>
   <FullscreenVideo>
     <remote>
       <zero>Number0</zero>
@@ -226,13 +231,15 @@
   </PlayerControls>
   <Visualisation>
     <remote>
-      <left>PreviousPreset</left>
-      <right>NextPreset</right>
-      <up>IncreaseRating</up>
-      <down>DecreaseRating</down>
+      <left>StepBack</left>
+      <right>StepForward</right>
+      <up>SkipNext</up>
+      <down>SkipPrevious</down>
+      <pageplus>IncreaseRating</pageplus>
+      <pageminus>DecreaseRating</pageminus>
       <back>Back</back>
       <title>CodecInfo</title>
-      <select>ActivateWindow(VisualisationPresetList)</select>
+      <select>OSD</select>
       <menu>OSD</menu>
       <contentsmenu>OSD</contentsmenu>
       <rootmenu>OSD</rootmenu>
@@ -602,22 +609,6 @@
       <guide>Close</guide>
     </remote>
   </PVROSDGuide>
-  <PVROSDDirector>
-    <remote>
-      <back>Close</back>
-      <menu>Close</menu>
-      <contentsmenu>Close</contentsmenu>
-      <rootmenu>Close</rootmenu>
-    </remote>
-  </PVROSDDirector>
-  <PVROSDCutter>
-    <remote>
-      <back>Close</back>
-      <menu>Close</menu>
-      <contentsmenu>Close</contentsmenu>
-      <rootmenu>Close</rootmenu>
-    </remote>
-  </PVROSDCutter>
   <MyTVSettings>
     <remote>
       <back>PreviousMenu</back>

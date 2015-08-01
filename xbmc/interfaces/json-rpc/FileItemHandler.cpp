@@ -22,7 +22,6 @@
 #include <string.h>
 
 #include "FileItemHandler.h"
-#include "PlaylistOperations.h"
 #include "AudioLibrary.h"
 #include "VideoLibrary.h"
 #include "FileOperations.h"
@@ -43,7 +42,6 @@
 #include "pvr/recordings/PVRRecording.h"
 #include "pvr/timers/PVRTimerInfoTag.h"
 #include "epg/Epg.h"
-#include "epg/EpgContainer.h"
 
 using namespace MUSIC_INFO;
 using namespace JSONRPC;
@@ -355,13 +353,13 @@ void CFileItemHandler::HandleFileItem(const char *ID, bool allowFile, const char
     }
 
     if (item->HasPVRChannelInfoTag())
-      FillDetails(item->GetPVRChannelInfoTag(), item, fields, object, thumbLoader);
+      FillDetails(item->GetPVRChannelInfoTag().get(), item, fields, object, thumbLoader);
     if (item->HasEPGInfoTag())
-      FillDetails(item->GetEPGInfoTag(), item, fields, object, thumbLoader);
+      FillDetails(item->GetEPGInfoTag().get(), item, fields, object, thumbLoader);
     if (item->HasPVRRecordingInfoTag())
-      FillDetails(item->GetPVRRecordingInfoTag(), item, fields, object, thumbLoader);
+      FillDetails(item->GetPVRRecordingInfoTag().get(), item, fields, object, thumbLoader);
     if (item->HasPVRTimerInfoTag())
-      FillDetails(item->GetPVRTimerInfoTag(), item, fields, object, thumbLoader);
+      FillDetails(item->GetPVRTimerInfoTag().get(), item, fields, object, thumbLoader);
     if (item->HasVideoInfoTag())
       FillDetails(item->GetVideoInfoTag(), item, fields, object, thumbLoader);
     if (item->HasMusicInfoTag())

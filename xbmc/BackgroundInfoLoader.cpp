@@ -20,7 +20,6 @@
 
 #include "BackgroundInfoLoader.h"
 #include "FileItem.h"
-#include "settings/AdvancedSettings.h"
 #include "threads/SingleLock.h"
 #include "utils/log.h"
 
@@ -117,9 +116,7 @@ void CBackgroundInfoLoader::Load(CFileItemList& items)
 
   m_thread = new CThread(this, "BackgroundLoader");
   m_thread->Create();
-#ifndef TARGET_POSIX
   m_thread->SetPriority(THREAD_PRIORITY_BELOW_NORMAL);
-#endif
 }
 
 void CBackgroundInfoLoader::StopAsync()

@@ -23,7 +23,6 @@
 #include "utils/Variant.h"
 #include "FileItem.h"
 #include "settings/AdvancedSettings.h"
-#include "utils/StringUtils.h"
 
 using namespace std;
 using namespace MUSIC_INFO;
@@ -40,8 +39,8 @@ CSong::CSong(CFileItem& item)
   { // have musicbrainz artist info, so use it
     for (size_t i = 0; i < tag.GetMusicBrainzArtistID().size(); i++)
     {
-      CStdString artistId = tag.GetMusicBrainzArtistID()[i];
-      CStdString artistName;
+      std::string artistId = tag.GetMusicBrainzArtistID()[i];
+      std::string artistName;
       /*
        We try and get the corresponding artist name from the album artist tag.
        We match on the same index, and if that fails just use the first name we have.
@@ -50,7 +49,7 @@ CSong::CSong(CFileItem& item)
         artistName = (i < artist.size()) ? artist[i] : artist[0];
       if (artistName.empty())
         artistName = artistId;
-      CStdString strJoinPhrase = (i == tag.GetMusicBrainzArtistID().size()-1) ? "" : g_advancedSettings.m_musicItemSeparator;
+      std::string strJoinPhrase = (i == tag.GetMusicBrainzArtistID().size()-1) ? "" : g_advancedSettings.m_musicItemSeparator;
       CArtistCredit artistCredit(artistName, artistId, strJoinPhrase);
       artistCredits.push_back(artistCredit);
     }
@@ -59,7 +58,7 @@ CSong::CSong(CFileItem& item)
   { // no musicbrainz info, so fill in directly
     for (vector<string>::const_iterator it = tag.GetArtist().begin(); it != tag.GetArtist().end(); ++it)
     {
-      CStdString strJoinPhrase = (it == --tag.GetArtist().end() ? "" : g_advancedSettings.m_musicItemSeparator);
+      std::string strJoinPhrase = (it == --tag.GetArtist().end() ? "" : g_advancedSettings.m_musicItemSeparator);
       CArtistCredit artistCredit(*it, "", strJoinPhrase);
       artistCredits.push_back(artistCredit);
     }
@@ -68,6 +67,8 @@ CSong::CSong(CFileItem& item)
   albumArtist = tag.GetAlbumArtist();
   strMusicBrainzTrackID = tag.GetMusicBrainzTrackID();
   strComment = tag.GetComment();
+  strCueSheet = tag.GetCueSheet();
+  strMood = tag.GetMood();
   rating = tag.GetRating();
   iYear = stTime.wYear;
   iTrack = tag.GetTrackAndDiscNumber();
@@ -116,6 +117,7 @@ void CSong::Serialize(CVariant& value) const
   value["year"] = iYear;
   value["musicbrainztrackid"] = strMusicBrainzTrackID;
   value["comment"] = strComment;
+  value["mood"] = strMood;
   value["rating"] = rating;
   value["timesplayed"] = iTimesPlayed;
   value["lastplayed"] = lastPlayed.IsValid() ? lastPlayed.GetAsDBDateTime() : "";
@@ -134,6 +136,7 @@ void CSong::Clear()
   strThumb.clear();
   strMusicBrainzTrackID.clear();
   strComment.clear();
+  strMood.clear();
   rating = '0';
   iTrack = 0;
   iDuration = 0;

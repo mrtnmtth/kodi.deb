@@ -24,6 +24,8 @@
 #include "utils/MathUtils.h"
 #include "utils/StringUtils.h"
 
+#include <algorithm>
+
 using namespace std;
 
 CGUITextBox::CGUITextBox(int parentID, int controlID, float posX, float posY, float width, float height,
@@ -212,19 +214,35 @@ void CGUITextBox::Render()
     float posX = m_posX;
     float posY = m_posY + offset * m_itemHeight - m_scrollOffset;
 
+    uint32_t alignment = m_label.align;
+
+    if (alignment & XBFONT_CENTER_Y)
+    {
+      if (m_font)
+      {
+        float textHeight = m_font->GetTextHeight(std::min((unsigned int)m_lines.size(), m_itemsPerPage));
+
+        if (textHeight <= m_renderHeight)
+          posY += (m_renderHeight - textHeight) * 0.5f;
+      }
+
+      alignment &= ~XBFONT_CENTER_Y;
+    }
+
     // alignment correction
-    if (m_label.align & XBFONT_CENTER_X)
+    if (alignment & XBFONT_CENTER_X)
       posX += m_width * 0.5f;
-    if (m_label.align & XBFONT_RIGHT)
+    if (alignment & XBFONT_RIGHT)
       posX += m_width;
 
     if (m_font)
     {
       m_font->Begin();
       int current = offset;
+      m_colors.push_back(m_textColor);
       while (posY < m_posY + m_renderHeight && current < (int)m_lines.size())
       {
-        uint32_t align = m_label.align;
+        uint32_t align = alignment;
         if (m_lines[current].m_text.size() && m_lines[current].m_carriageReturn)
           align &= ~XBFONT_JUSTIFIED; // last line of a paragraph shouldn't be justified
         m_font->DrawText(posX, posY, m_colors, m_label.shadowColor, m_lines[current].m_text, align, m_width);
@@ -351,6 +369,15 @@ void CGUITextBox::SetAutoScrolling(const TiXmlNode *node)
   }
 }
 
+void CGUITextBox::SetAutoScrolling(int delay, int time, int repeatTime, const std::string &condition /* = "" */)
+{
+  m_autoScrollDelay = delay;
+  m_autoScrollTime = time;
+  if (!condition.empty())
+    m_autoScrollCondition = g_infoManager.Register(condition, GetParentID());
+  m_autoScrollRepeatAnim = new CAnimation(CAnimation::CreateFader(100, 0, repeatTime, 1000));
+}
+
 void CGUITextBox::ResetAutoScrolling()
 {
   m_autoScrollDelayTime = 0;
@@ -370,9 +397,9 @@ int CGUITextBox::GetCurrentPage() const
   return m_offset / m_itemsPerPage + 1;
 }
 
-CStdString CGUITextBox::GetLabel(int info) const
+std::string CGUITextBox::GetLabel(int info) const
 {
-  CStdString label;
+  std::string label;
   switch (info)
   {
   case CONTAINER_NUM_PAGES:

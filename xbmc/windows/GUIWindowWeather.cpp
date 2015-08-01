@@ -25,13 +25,9 @@
 #include "utils/Weather.h"
 #include "utils/URIUtils.h"
 #ifdef HAS_PYTHON
-#include "interfaces/python/XBPython.h"
 #endif
 #include "LangInfo.h"
-#include "utils/log.h"
-#include "utils/SystemInfo.h"
 #include "utils/StringUtils.h"
-#include "addons/AddonManager.h"
 
 using namespace ADDON;
 
@@ -192,11 +188,11 @@ void CGUIWindowWeather::UpdateButtons()
   SET_CONTROL_LABEL(CONTROL_LABELUPDATED, g_weatherManager.GetLastUpdateTime());
 
   SET_CONTROL_LABEL(WEATHER_LABEL_CURRENT_COND, g_weatherManager.GetInfo(WEATHER_LABEL_CURRENT_COND));
-  SET_CONTROL_LABEL(WEATHER_LABEL_CURRENT_TEMP, g_weatherManager.GetInfo(WEATHER_LABEL_CURRENT_TEMP) + g_langInfo.GetTempUnitString());
-  SET_CONTROL_LABEL(WEATHER_LABEL_CURRENT_FEEL, g_weatherManager.GetInfo(WEATHER_LABEL_CURRENT_FEEL) + g_langInfo.GetTempUnitString());
+  SET_CONTROL_LABEL(WEATHER_LABEL_CURRENT_TEMP, g_weatherManager.GetInfo(WEATHER_LABEL_CURRENT_TEMP) + g_langInfo.GetTemperatureUnitString());
+  SET_CONTROL_LABEL(WEATHER_LABEL_CURRENT_FEEL, g_weatherManager.GetInfo(WEATHER_LABEL_CURRENT_FEEL) + g_langInfo.GetTemperatureUnitString());
   SET_CONTROL_LABEL(WEATHER_LABEL_CURRENT_UVID, g_weatherManager.GetInfo(WEATHER_LABEL_CURRENT_UVID));
   SET_CONTROL_LABEL(WEATHER_LABEL_CURRENT_WIND, g_weatherManager.GetInfo(WEATHER_LABEL_CURRENT_WIND));
-  SET_CONTROL_LABEL(WEATHER_LABEL_CURRENT_DEWP, g_weatherManager.GetInfo(WEATHER_LABEL_CURRENT_DEWP) + g_langInfo.GetTempUnitString());
+  SET_CONTROL_LABEL(WEATHER_LABEL_CURRENT_DEWP, g_weatherManager.GetInfo(WEATHER_LABEL_CURRENT_DEWP) + g_langInfo.GetTemperatureUnitString());
   SET_CONTROL_LABEL(WEATHER_LABEL_CURRENT_HUMI, g_weatherManager.GetInfo(WEATHER_LABEL_CURRENT_HUMI));
   SET_CONTROL_FILENAME(WEATHER_IMAGE_CURRENT_ICON, g_weatherManager.GetInfo(WEATHER_IMAGE_CURRENT_ICON));
 
@@ -211,8 +207,8 @@ void CGUIWindowWeather::UpdateButtons()
   for (int i = 0; i < NUM_DAYS; i++)
   {
     SET_CONTROL_LABEL(CONTROL_LABELD0DAY + (i*10), g_weatherManager.GetForecast(i).m_day);
-    SET_CONTROL_LABEL(CONTROL_LABELD0HI + (i*10), g_weatherManager.GetForecast(i).m_high + g_langInfo.GetTempUnitString());
-    SET_CONTROL_LABEL(CONTROL_LABELD0LOW + (i*10), g_weatherManager.GetForecast(i).m_low + g_langInfo.GetTempUnitString());
+    SET_CONTROL_LABEL(CONTROL_LABELD0HI + (i*10), g_weatherManager.GetForecast(i).m_high + g_langInfo.GetTemperatureUnitString());
+    SET_CONTROL_LABEL(CONTROL_LABELD0LOW + (i*10), g_weatherManager.GetForecast(i).m_low + g_langInfo.GetTemperatureUnitString());
     SET_CONTROL_LABEL(CONTROL_LABELD0GEN + (i*10), g_weatherManager.GetForecast(i).m_overview);
     SET_CONTROL_FILENAME(CONTROL_IMAGED0IMG + (i*10), g_weatherManager.GetForecast(i).m_icon);
   }
@@ -239,7 +235,7 @@ void CGUIWindowWeather::SetLocation(int loc)
   {
     ClearProperties();
     g_weatherManager.SetArea(loc);
-    CStdString strLabel = g_weatherManager.GetLocation(loc);
+    std::string strLabel = g_weatherManager.GetLocation(loc);
     size_t iPos = strLabel.rfind(", ");
     if (iPos != std::string::npos)
       strLabel = strLabel.substr(0, iPos);
@@ -264,12 +260,12 @@ void CGUIWindowWeather::SetProperties()
   SetProperty("Current.DewPoint", g_weatherManager.GetInfo(WEATHER_LABEL_CURRENT_DEWP));
   SetProperty("Current.Humidity", g_weatherManager.GetInfo(WEATHER_LABEL_CURRENT_HUMI));
   // we use the icons code number for fanart as it's the safest way
-  CStdString fanartcode = URIUtils::GetFileName(g_weatherManager.GetInfo(WEATHER_IMAGE_CURRENT_ICON));
+  std::string fanartcode = URIUtils::GetFileName(g_weatherManager.GetInfo(WEATHER_IMAGE_CURRENT_ICON));
   URIUtils::RemoveExtension(fanartcode);
   SetProperty("Current.FanartCode", fanartcode);
 
   // Future weather
-  CStdString day;
+  std::string day;
   for (int i = 0; i < NUM_DAYS; i++)
   {
     day = StringUtils::Format("Day%i.", i);
@@ -301,7 +297,7 @@ void CGUIWindowWeather::ClearProperties()
   SetProperty("Current.FanartCode", "");
   
   // Future weather
-  CStdString day;
+  std::string day;
   for (int i = 0; i < NUM_DAYS; i++)
   {
     day = StringUtils::Format("Day%i.", i);

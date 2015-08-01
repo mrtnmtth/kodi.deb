@@ -23,7 +23,6 @@
 #include "threads/Thread.h"
 #include "IDVDPlayer.h"
 #include "DVDMessageQueue.h"
-#include "DVDDemuxers/DVDDemuxUtils.h"
 #include "DVDCodecs/Video/DVDVideoCodec.h"
 #include "DVDClock.h"
 #include "DVDOverlayContainer.h"
@@ -31,9 +30,9 @@
 #ifdef HAS_VIDEO_PLAYBACK
 #include "cores/VideoRenderers/RenderManager.h"
 #endif
+#include "utils/BitstreamStats.h"
 
 class CDemuxStreamVideo;
-class CDVDOverlayCodecCC;
 
 #define VIDEO_PICTURE_QUEUE_SIZE 1
 
@@ -78,6 +77,7 @@ public:
   int  GetLevel() const;
   bool IsInited() const                             { return m_messageQueue.IsInited(); }
   void SendMessage(CDVDMsg* pMsg, int priority = 0) { m_messageQueue.Put(pMsg, priority); }
+  void FlushMessages()                              { m_messageQueue.Flush(); }
 
   void EnableSubtitle(bool bEnable)                 { m_bRenderSubs = bEnable; }
   bool IsSubtitleEnabled()                          { return m_bRenderSubs; }
@@ -85,7 +85,7 @@ public:
   void EnableFullscreen(bool bEnable)               { m_bAllowFullscreen = bEnable; }
 
 #ifdef HAS_VIDEO_PLAYBACK
-  void GetVideoRect(CRect& SrcRect, CRect& DestRect) const { g_renderManager.GetVideoRect(SrcRect, DestRect); }
+  void GetVideoRect(CRect& SrcRect, CRect& DestRect, CRect& ViewRect) const { g_renderManager.GetVideoRect(SrcRect, DestRect, ViewRect); }
   float GetAspectRatio()                            { return g_renderManager.GetAspectRatio(); }
 #endif
 
@@ -132,7 +132,6 @@ protected:
 #ifdef HAS_VIDEO_PLAYBACK
   void ProcessOverlays(DVDVideoPicture* pSource, double pts);
 #endif
-  void ProcessVideoUserData(DVDVideoUserData* pVideoUserData, double pts);
   void OpenStream(CDVDStreamInfo &hint, CDVDVideoCodec* codec);
 
   CDVDMessageQueue m_messageQueue;
@@ -196,7 +195,6 @@ protected:
   // classes
   CDVDStreamInfo m_hints;
   CDVDVideoCodec* m_pVideoCodec;
-  CDVDOverlayCodecCC* m_pOverlayCodecCC;
 
   DVDVideoPicture* m_pTempOverlayPicture;
 

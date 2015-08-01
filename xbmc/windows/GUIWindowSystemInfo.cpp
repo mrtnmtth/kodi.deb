@@ -21,7 +21,6 @@
 #include "system.h"
 #include "GUIWindowSystemInfo.h"
 #include "GUIInfoManager.h"
-#include "guilib/GUIWindowManager.h"
 #include "guilib/WindowIDs.h"
 #include "guilib/LocalizeStrings.h"
 #include "pvr/PVRManager.h"
@@ -182,6 +181,7 @@ void CGUIWindowSystemInfo::FrameMove()
     SetControlLabel(i++, "%s: %s", 19116, PVR_BACKEND_DISKSPACE);
     SetControlLabel(i++, "%s: %s", 19019, PVR_BACKEND_CHANNELS);
     SetControlLabel(i++, "%s: %s", 19163, PVR_BACKEND_RECORDINGS);
+    SetControlLabel(i++, "%s: %s", 19168, PVR_BACKEND_DELETED_RECORDINGS); // Deleted and recoverable recordings
     SetControlLabel(i++, "%s: %s", 19025, PVR_BACKEND_TIMERS);
   }
 
@@ -198,6 +198,6 @@ void CGUIWindowSystemInfo::ResetLabels()
 
 void CGUIWindowSystemInfo::SetControlLabel(int id, const char *format, int label, int info)
 {
-  CStdString tmpStr = StringUtils::Format(format, g_localizeStrings.Get(label).c_str(), g_infoManager.GetLabel(info).c_str());
+  std::string tmpStr = StringUtils::Format(format, g_localizeStrings.Get(label).c_str(), g_infoManager.GetLabel(info).c_str());
   SET_CONTROL_LABEL(id, tmpStr);
 }

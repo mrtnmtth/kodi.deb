@@ -21,7 +21,6 @@
 #include "PipeFile.h"
 #include "threads/SingleLock.h"
 #include "PipesManager.h"
-#include "utils/StringUtils.h"
 #include "URL.h"
 
 using namespace XFILE;
@@ -214,7 +213,7 @@ void CPipeFile::RemoveListener(IPipeListener *l)
     if ( (*i) == l)
       i = m_listeners.erase(i);
     else
-      i++;
+      ++i;
   }
 }
 

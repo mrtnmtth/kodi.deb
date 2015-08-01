@@ -29,12 +29,14 @@
 #include "utils/log.h"
 #include "TextureCache.h"
 
+#include <cassert>
+
 using namespace std;
 
 
-CImageLoader::CImageLoader(const CStdString &path, const bool useCache)
+CImageLoader::CImageLoader(const std::string &path, const bool useCache):
+  m_path(path)
 {
-  m_path = path;
   m_texture = NULL;
   m_use_cache = useCache;
 }
@@ -47,40 +49,46 @@ CImageLoader::~CImageLoader()
 bool CImageLoader::DoWork()
 {
   bool needsChecking = false;
-  CStdString loadPath;
+  std::string loadPath;
 
-  CStdString texturePath = g_TextureManager.GetTexturePath(m_path);
+  std::string texturePath = g_TextureManager.GetTexturePath(m_path);
   if (m_use_cache)
     loadPath = CTextureCache::Get().CheckCachedImage(texturePath, true, needsChecking);
   else
     loadPath = texturePath;
 
-  if (m_use_cache && loadPath.empty())
-  {
-    // not in our texture cache, so try and load directly and then cache the result
-    loadPath = CTextureCache::Get().CacheImage(texturePath, &m_texture);
-    if (m_texture)
-      return true; // we're done
-  }
-  if (!m_use_cache || !loadPath.empty())
+  if (!loadPath.empty())
   {
     // direct route - load the image
     unsigned int start = XbmcThreads::SystemClockMillis();
     m_texture = CBaseTexture::LoadFromFile(loadPath, g_graphicsContext.GetWidth(), g_graphicsContext.GetHeight(), CSettings::Get().GetBool("pictures.useexifrotation"));
-    if (!m_texture)
-      return false;
+
     if (XbmcThreads::SystemClockMillis() - start > 100)
       CLog::Log(LOGDEBUG, "%s - took %u ms to load %s", __FUNCTION__, XbmcThreads::SystemClockMillis() - start, loadPath.c_str());
 
-    if (needsChecking)
-      CTextureCache::Get().BackgroundCacheImage(texturePath);
+    if (m_texture)
+    {
+      if (needsChecking)
+        CTextureCache::Get().BackgroundCacheImage(texturePath);
+
+      return true;
+    }
+
+    // Fallthrough on failure:
+    CLog::Log(LOGERROR, "%s - Direct texture file loading failed for %s", __FUNCTION__, loadPath.c_str());
   }
-  return true;
+
+  if (!m_use_cache)
+    return false; // We're done
+
+  // not in our texture cache or it failed to load from it, so try and load directly and then cache the result
+  CTextureCache::Get().CacheImage(texturePath, &m_texture);
+  return (m_texture != NULL);
 }
 
-CGUILargeTextureManager::CLargeTexture::CLargeTexture(const CStdString &path)
+CGUILargeTextureManager::CLargeTexture::CLargeTexture(const std::string &path):
+  m_path(path)
 {
-  m_path = path;
   m_refCount = 1;
   m_timeToDelete = 0;
 }
@@ -153,7 +161,7 @@ void CGUILargeTextureManager::CleanupUnusedImages(bool immediately)
 
 // if available, increment reference count, and return the image.
 // else, add to the queue list if appropriate.
-bool CGUILargeTextureManager::GetImage(const CStdString &path, CTextureArray &texture, bool firstRequest, const bool useCache)
+bool CGUILargeTextureManager::GetImage(const std::string &path, CTextureArray &texture, bool firstRequest, const bool useCache)
 {
   CSingleLock lock(m_listSection);
   for (listIterator it = m_allocated.begin(); it != m_allocated.end(); ++it)
@@ -174,7 +182,7 @@ bool CGUILargeTextureManager::GetImage(const CStdString &path, CTextureArray &te
   return true;
 }
 
-void CGUILargeTextureManager::ReleaseImage(const CStdString &path, bool immediately)
+void CGUILargeTextureManager::ReleaseImage(const std::string &path, bool immediately)
 {
   CSingleLock lock(m_listSection);
   for (listIterator it = m_allocated.begin(); it != m_allocated.end(); ++it)
@@ -202,7 +210,7 @@ void CGUILargeTextureManager::ReleaseImage(const CStdString &path, bool immediat
 }
 
 // queue the image, and start the background loader if necessary
-void CGUILargeTextureManager::QueueImage(const CStdString &path, bool useCache)
+void CGUILargeTextureManager::QueueImage(const std::string &path, bool useCache)
 {
   CSingleLock lock(m_listSection);
   for (queueIterator it = m_queued.begin(); it != m_queued.end(); ++it)
@@ -239,6 +247,3 @@ void CGUILargeTextureManager::OnJobComplete(unsigned int jobID, bool success, CJ
     }
   }
 }
-
-
-

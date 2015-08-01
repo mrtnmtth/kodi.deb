@@ -68,7 +68,7 @@ XBMCHelper::XBMCHelper()
   , m_errorStarting(false)
 {
   // Compute the KODI_HOME path.
-  CStdString homePath;
+  std::string homePath;
   CUtil::GetHomePath(homePath);
   m_homepath = homePath;
 
@@ -114,7 +114,7 @@ bool XBMCHelper::OnSettingChanging(const CSetting *setting)
     if (IsRunning() && GetMode() != remoteMode)
     {
       bool cancelled;
-      if (!CGUIDialogYesNo::ShowAndGetInput(13144, 13145, 13146, 13147, -1, -1, cancelled, 10000))
+      if (!CGUIDialogYesNo::ShowAndGetInput(13144, 13145, cancelled, "", "", 10000))
         return false;
       // reload configuration
       else
@@ -127,7 +127,7 @@ bool XBMCHelper::OnSettingChanging(const CSetting *setting)
     if (ErrorStarting() == true)
     {
       // inform user about error
-      CGUIDialogOK::ShowAndGetInput(13620, 13621, 20022, 20022);
+      CGUIDialogOK::ShowAndGetInput(13620, 13621);
       return false;
     }
   }

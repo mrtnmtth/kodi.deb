@@ -25,7 +25,6 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
-#include <fcntl.h>
 #include "system.h"
 #include "utils/log.h"
 #include "udf25.h"
@@ -593,7 +592,7 @@ int udf25::ReadAt( int64_t pos, size_t len, unsigned char *data )
     return -1;
 
   ssize_t ret = m_fp->Read(data, len);
-  if ( ret < len)
+  if (static_cast<size_t>(ret) < len)
   {
     CLog::Log(LOGERROR, "udf25::ReadFile - less data than requested available!" );
     return (int)ret;
@@ -848,7 +847,7 @@ int udf25::UDFMapICB( struct AD ICB, struct Partition *partition, struct FileAD 
   return 0;
 }
 
-int udf25::UDFScanDir( struct FileAD Dir, char *FileName, struct Partition *partition, struct AD *FileICB, int cache_file_info)
+int udf25::UDFScanDir(const struct FileAD& Dir, char *FileName, struct Partition *partition, struct AD *FileICB, int cache_file_info)
 {
   char filename[ MAX_UDF_FILE_NAME_LEN ];
   uint8_t directory_base[ 2 * DVD_VIDEO_LB_LEN + 2048];
@@ -934,11 +933,12 @@ int udf25::UDFScanDir( struct FileAD Dir, char *FileName, struct Partition *part
     return 0;
 
   p = 0;
-  while( p < Dir.AD_chain[0].Length ) {
+  uint32_t l = Dir.AD_chain[0].Length;
+  while (p < l) {
     if( p > DVD_VIDEO_LB_LEN ) {
       ++lbnum;
       p -= DVD_VIDEO_LB_LEN;
-      Dir.AD_chain[0].Length -= DVD_VIDEO_LB_LEN;
+      l -= DVD_VIDEO_LB_LEN;
       if( DVDReadLBUDF( lbnum, 2, directory, 0 ) <= 0 ) {
         return 0;
       }

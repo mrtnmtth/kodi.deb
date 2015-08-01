@@ -20,6 +20,7 @@
  */
 
 #include "GUIWindowMusicBase.h"
+#include "music/MusicThumbLoader.h"
 
 class CGUIWindowMusicSongs : public CGUIWindowMusicBase, public IBackgroundLoaderObserver
 {
@@ -30,7 +31,7 @@ public:
   virtual bool OnMessage(CGUIMessage& message);
   virtual bool OnAction(const CAction& action);
 
-  void DoScan(const CStdString &strPath);
+  void DoScan(const std::string &strPath);
 protected:
   virtual void OnItemLoaded(CFileItem* pItem) {};
   virtual bool GetDirectory(const std::string &strDirectory, CFileItemList &items);

@@ -19,7 +19,6 @@
  */
 
 #include "CharsetConverter.h"
-#include "Util.h"
 #include "utils/StringUtils.h"
 #include <fribidi/fribidi.h>
 #include "LangInfo.h"
@@ -32,6 +31,7 @@
 
 #include <errno.h>
 #include <iconv.h>
+#include <algorithm>
 
 #if !defined(TARGET_WINDOWS) && defined(HAVE_CONFIG_H)
   #include "config.h"

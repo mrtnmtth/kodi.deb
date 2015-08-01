@@ -33,6 +33,7 @@
 #include "utils/AMLUtils.h"
 #include "utils/log.h"
 #include "utils/StringUtils.h"
+#include "utils/SysfsUtils.h"
 #include "utils/TimeUtils.h"
 
 #if defined(TARGET_ANDROID)
@@ -166,9 +167,7 @@ public:
     CBitstreamConverter::write_bits(&bs, 32, 0);                   // CODEC_HANDLE cntl_handle
     CBitstreamConverter::write_bits(&bs, 32, 0);                   // CODEC_HANDLE sub_handle
 
-    // added in JellyBean 4.2
-    if (CAndroidFeatures::GetVersion() > 16)
-      CBitstreamConverter::write_bits(&bs, 32, 0);                 // CODEC_HANDLE audio_utils_handle
+    CBitstreamConverter::write_bits(&bs, 32, 0);                   // CODEC_HANDLE audio_utils_handle
 
     CBitstreamConverter::write_bits(&bs, 32, p_in->stream_type);   // stream_type_t stream_type
 
@@ -192,15 +191,6 @@ public:
     CBitstreamConverter::write_bits(&bs, 32, 0);                   // int audio_samplerate
     CBitstreamConverter::write_bits(&bs, 32, 0);                   // int vbuf_size
     CBitstreamConverter::write_bits(&bs, 32, 0);                   // int abuf_size
-
-    // ARM requires 8-byte alignment for 64-bit members (ratio64)
-    // and this will force am_sysinfo to be also have 8-byte alignment.
-    // Since the inclusion of audio_utils_handle for JellyBean 4.2
-    // 'naturally' aligns am_sysinfo to 8-byte, we need to compensate
-    // when we are NOT JellyBean 4.2. If these member values get changed,
-    // then make sure you check that am_sysinfo has 8-byte alignment.
-    if (CAndroidFeatures::GetVersion() < 17)
-      CBitstreamConverter::write_bits(&bs, 32, 0);
 
     CBitstreamConverter::write_bits(&bs, 32, p_in->format);        // am_sysinfo, unsigned int format
     CBitstreamConverter::write_bits(&bs, 32, p_in->width);         // am_sysinfo, unsigned int width
@@ -468,6 +458,9 @@ static vformat_t codecid_to_vformat(enum AVCodecID id)
     case AV_CODEC_ID_CAVS:
       format = VFORMAT_AVS;
       break;
+    case AV_CODEC_ID_HEVC:
+      format = VFORMAT_HEVC;
+      break;
 
     default:
       format = VFORMAT_UNSUPPORT;
@@ -576,6 +569,10 @@ static vdec_type_t codec_tag_to_vdec_type(unsigned int codec_tag)
     case AV_CODEC_ID_AVS:
       // avs
       dec_type = VIDEO_DEC_FORMAT_AVS;
+      break;
+    case AV_CODEC_ID_HEVC:
+      // h265
+      dec_type = VIDEO_DEC_FORMAT_HEVC;
       break;
     default:
       dec_type = VIDEO_DEC_FORMAT_UNKNOW;
@@ -913,29 +910,23 @@ static int divx3_write_header(am_private_t *para, am_packet_t *pkt)
 
 static int h264_add_header(unsigned char *buf, int size, am_packet_t *pkt)
 {
-    // h264 annex-b
-	  if ((buf[0]==0 && buf[1]==0 && buf[2]==0 && buf[3]==1) && size < HDR_BUF_SIZE) {
-        CLog::Log(LOGDEBUG, "add four byte NAL 264 header in stream before header len=%d",size);
-        memcpy(pkt->hdr->data, buf, size);
-        pkt->hdr->size = size;
-        return PLAYER_SUCCESS;
+    if (size > HDR_BUF_SIZE)
+    {
+        free(pkt->hdr->data);
+        pkt->hdr->data = (char *)malloc(size);
+        if (!pkt->hdr->data)
+            return PLAYER_NOMEM;
     }
 
-    if ((buf[0]==0 && buf[1]==0 && buf[2]==1) && size < HDR_BUF_SIZE) {
-        CLog::Log(LOGDEBUG, "add three byte NAL 264 header in stream before header len=%d",size);
-        memcpy(pkt->hdr->data, buf, size);
-        pkt->hdr->size = size;
-        return PLAYER_SUCCESS;
-    }
-
-    return PLAYER_FAILED;
+    memcpy(pkt->hdr->data, buf, size);
+    pkt->hdr->size = size;
+    return PLAYER_SUCCESS;
 }
+
 static int h264_write_header(am_private_t *para, am_packet_t *pkt)
 {
     // CLog::Log(LOGDEBUG, "h264_write_header");
-    int ret = -1;
-
-    ret = h264_add_header(para->extradata, para->extrasize, pkt);
+    int ret = h264_add_header(para->extradata, para->extrasize, pkt);
     if (ret == PLAYER_SUCCESS) {
         //if (ctx->vcodec) {
         if (1) {
@@ -947,6 +938,36 @@ static int h264_write_header(am_private_t *para, am_packet_t *pkt)
 
         pkt->newflag = 1;
         ret = write_av_packet(para, pkt);
+    }
+    return ret;
+}
+
+static int hevc_add_header(unsigned char *buf, int size,  am_packet_t *pkt)
+{
+    if (size > HDR_BUF_SIZE)
+    {
+        free(pkt->hdr->data);
+        pkt->hdr->data = (char *)malloc(size);
+        if (!pkt->hdr->data)
+            return PLAYER_NOMEM;
+    }
+
+    memcpy(pkt->hdr->data, buf, size);
+    pkt->hdr->size = size;
+    return PLAYER_SUCCESS;
+}
+
+static int hevc_write_header(am_private_t *para, am_packet_t *pkt)
+{
+    int ret = -1;
+
+    if (para->extradata) {
+      ret = hevc_add_header(para->extradata, para->extrasize, pkt);
+    }
+    if (ret == PLAYER_SUCCESS) {
+      pkt->codec = &para->vcodec;
+      pkt->newflag = 1;
+      ret = write_av_packet(para, pkt);
     }
     return ret;
 }
@@ -1122,6 +1143,11 @@ int pre_header_feeding(am_private_t *para, am_packet_t *pkt)
         */
         } else if (VFORMAT_MJPEG == para->video_format) {
             ret = mjpeg_write_header(para, pkt);
+            if (ret != PLAYER_SUCCESS) {
+                return ret;
+            }
+        } else if (VFORMAT_HEVC == para->video_format) {
+            ret = hevc_write_header(para, pkt);
             if (ret != PLAYER_SUCCESS) {
                 return ret;
             }
@@ -1532,7 +1558,7 @@ bool CAMLCodec::OpenDecoder(CDVDStreamInfo &hints)
 
   if (am_private->stream_type == AM_STREAM_ES && am_private->video_codec_tag != 0)
     am_private->video_codec_type = codec_tag_to_vdec_type(am_private->video_codec_tag);
-  else
+  if (am_private->video_codec_type == VIDEO_DEC_FORMAT_UNKNOW)
     am_private->video_codec_type = codec_tag_to_vdec_type(am_private->video_codec_id);
 
   am_private->flv_flag = 0;
@@ -1581,16 +1607,11 @@ bool CAMLCodec::OpenDecoder(CDVDStreamInfo &hints)
         am_private->gcodec.param = (void*)(EXTERNAL_PTS | SYNC_OUTSIDE);
       break;
     case VFORMAT_H264_4K2K:
-      if (aml_get_device_type() == AML_DEVICE_TYPE_M8) {
-        am_private->gcodec.format = VIDEO_DEC_FORMAT_H264_4K2K;
-        am_private->gcodec.param  = (void*)EXTERNAL_PTS;
-        // h264 in an avi file
-        if (m_hints.ptsinvalid)
-          am_private->gcodec.param = (void*)(EXTERNAL_PTS | SYNC_OUTSIDE);
-      } else {
-        CLog::Log(LOGDEBUG, "CAMLCodec::OpenDecoder codec init failed, 4K supported only on Meson8.");
-        return false;
-      }
+      am_private->gcodec.format = VIDEO_DEC_FORMAT_H264_4K2K;
+      am_private->gcodec.param  = (void*)EXTERNAL_PTS;
+      // h264 in an avi file
+      if (m_hints.ptsinvalid)
+        am_private->gcodec.param = (void*)(EXTERNAL_PTS | SYNC_OUTSIDE);
       break; 
     case VFORMAT_REAL:
       am_private->stream_type = AM_STREAM_RM;
@@ -1620,6 +1641,12 @@ bool CAMLCodec::OpenDecoder(CDVDStreamInfo &hints)
       if (m_hints.ptsinvalid)
         am_private->gcodec.param = (void*)EXTERNAL_PTS;
       break;
+    case VFORMAT_HEVC:
+      am_private->gcodec.format = VIDEO_DEC_FORMAT_HEVC;
+      am_private->gcodec.param  = (void*)EXTERNAL_PTS;
+      if (m_hints.ptsinvalid)
+        am_private->gcodec.param = (void*)(EXTERNAL_PTS | SYNC_OUTSIDE);
+      break;
   }
   am_private->gcodec.param = (void *)((unsigned int)am_private->gcodec.param | (am_private->video_rotation_degree << 16));
 
@@ -1643,7 +1670,7 @@ bool CAMLCodec::OpenDecoder(CDVDStreamInfo &hints)
   m_dll->codec_set_cntl_avthresh(&am_private->vcodec, AV_SYNC_THRESH);
   m_dll->codec_set_cntl_syncthresh(&am_private->vcodec, 0);
   // disable tsync, we are playing video disconnected from audio.
-  aml_set_sysfs_int("/sys/class/tsync/enable", 0);
+  SysfsUtils::SetInt("/sys/class/tsync/enable", 0);
 
   am_private->am_pkt.codec = &am_private->vcodec;
   pre_header_feeding(am_private, &am_private->am_pkt);
@@ -1655,27 +1682,20 @@ bool CAMLCodec::OpenDecoder(CDVDStreamInfo &hints)
 
   m_display_rect = CRect(0, 0, CDisplaySettings::Get().GetCurrentResolutionInfo().iWidth, CDisplaySettings::Get().GetCurrentResolutionInfo().iHeight);
 
-  char buffer[256] = {0};
-  aml_get_sysfs_str("/sys/class/ppmgr/ppscaler", buffer, 255);
-  if (!strstr(buffer, "enabled"))     // Scaler not enabled, use screen size
-  {
-    CLog::Log(LOGDEBUG, "ppscaler not enabled");
-    memset(buffer, 0, 256);
-    aml_get_sysfs_str("/sys/class/display/mode", buffer, 255);
-    RESOLUTION_INFO res;
-    if (aml_mode_to_resolution(buffer, &res))
-      m_display_rect = CRect(0, 0, res.iScreenWidth, res.iScreenHeight);
-  }
+  std::string strScaler;
+  SysfsUtils::GetString("/sys/class/ppmgr/ppscaler", strScaler);
+  if (strScaler.find("enabled") == std::string::npos)     // Scaler not enabled, use screen size
+    m_display_rect = CRect(0, 0, CDisplaySettings::Get().GetCurrentResolutionInfo().iScreenWidth, CDisplaySettings::Get().GetCurrentResolutionInfo().iScreenHeight);
 
 /*
   // if display is set to 1080xxx, then disable deinterlacer for HD content
   // else bandwidth usage is too heavy and it will slow down video decoder.
   char display_mode[256] = {0};
-  aml_get_sysfs_str("/sys/class/display/mode", display_mode, 255);
+  SysfsUtils::GetString("/sys/class/display/mode", display_mode, 255);
   if (strstr(display_mode,"1080"))
-    aml_set_sysfs_int("/sys/module/di/parameters/bypass_all", 1);
+    SysfsUtils::SetInt("/sys/module/di/parameters/bypass_all", 1);
   else
-    aml_set_sysfs_int("/sys/module/di/parameters/bypass_all", 0);
+    SysfsUtils::SetInt("/sys/module/di/parameters/bypass_all", 0);
 */
 
   m_opened = true;
@@ -1708,9 +1728,13 @@ void CAMLCodec::CloseDecoder()
   free(am_private->extradata);
   am_private->extradata = NULL;
   // return tsync to default so external apps work
-  aml_set_sysfs_int("/sys/class/tsync/enable", 1);
+  SysfsUtils::SetInt("/sys/class/tsync/enable", 1);
 
   ShowMainVideo(false);
+
+  // add a little delay after closing in case
+  // we are reopened too fast.
+  usleep(500 * 1000);
 }
 
 void CAMLCodec::Reset()
@@ -1721,8 +1745,9 @@ void CAMLCodec::Reset()
     return;
 
   // set the system blackout_policy to leave the last frame showing
-  int blackout_policy = aml_get_sysfs_int("/sys/class/video/blackout_policy");
-  aml_set_sysfs_int("/sys/class/video/blackout_policy", 0);
+  int blackout_policy;
+  SysfsUtils::GetInt("/sys/class/video/blackout_policy", blackout_policy);
+  SysfsUtils::SetInt("/sys/class/video/blackout_policy", 0);
 
   // restore the speed (some amcodec versions require this)
   if (m_speed != DVD_PLAYSPEED_NORMAL)
@@ -1742,7 +1767,7 @@ void CAMLCodec::Reset()
   pre_header_feeding(am_private, &am_private->am_pkt);
 
   // restore the saved system blackout_policy value
-  aml_set_sysfs_int("/sys/class/video/blackout_policy", blackout_policy);
+  SysfsUtils::SetInt("/sys/class/video/blackout_policy", blackout_policy);
 
   // reset some interal vars
   m_1st_pts = 0;
@@ -2065,7 +2090,7 @@ void CAMLCodec::ShowMainVideo(const bool show)
   if (saved_disable_video == disable_video)
     return;
 
-  aml_set_sysfs_int("/sys/class/video/disable_video", disable_video);
+  SysfsUtils::SetInt("/sys/class/video/disable_video", disable_video);
   saved_disable_video = disable_video;
 }
 
@@ -2074,7 +2099,7 @@ void CAMLCodec::SetVideoZoom(const float zoom)
   // input zoom range is 0.5 to 2.0 with a default of 1.0.
   // output zoom range is 2 to 300 with default of 100.
   // we limit that to a range of 50 to 200 with default of 100.
-  aml_set_sysfs_int("/sys/class/video/zoom", (int)(100 * zoom));
+  SysfsUtils::SetInt("/sys/class/video/zoom", (int)(100 * zoom));
 }
 
 void CAMLCodec::SetVideoContrast(const int contrast)
@@ -2082,19 +2107,19 @@ void CAMLCodec::SetVideoContrast(const int contrast)
   // input contrast range is 0 to 100 with default of 50.
   // output contrast range is -255 to 255 with default of 0.
   int aml_contrast = (255 * (contrast - 50)) / 50;
-  aml_set_sysfs_int("/sys/class/video/contrast", aml_contrast);
+  SysfsUtils::SetInt("/sys/class/video/contrast", aml_contrast);
 }
 void CAMLCodec::SetVideoBrightness(const int brightness)
 {
   // input brightness range is 0 to 100 with default of 50.
   // output brightness range is -127 to 127 with default of 0.
   int aml_brightness = (127 * (brightness - 50)) / 50;
-  aml_set_sysfs_int("/sys/class/video/brightness", aml_brightness);
+  SysfsUtils::SetInt("/sys/class/video/brightness", aml_brightness);
 }
 void CAMLCodec::SetVideoSaturation(const int saturation)
 {
   // output saturation range is -127 to 127 with default of 127.
-  aml_set_sysfs_int("/sys/class/video/saturation", saturation);
+  SysfsUtils::SetInt("/sys/class/video/saturation", saturation);
 }
 
 void CAMLCodec::GetRenderFeatures(Features &renderFeatures)
@@ -2104,13 +2129,14 @@ void CAMLCodec::GetRenderFeatures(Features &renderFeatures)
   renderFeatures.push_back(RENDERFEATURE_BRIGHTNESS);
   renderFeatures.push_back(RENDERFEATURE_STRETCH);
   renderFeatures.push_back(RENDERFEATURE_PIXEL_RATIO);
+  renderFeatures.push_back(RENDERFEATURE_ROTATION);
   return;
 }
 
 void CAMLCodec::SetVideo3dMode(const int mode3d)
 {
   CLog::Log(LOGDEBUG, "CAMLCodec::SetVideo3dMode:mode3d(0x%x)", mode3d);
-  aml_set_sysfs_int("/sys/class/ppmgr/ppmgr_3d_mode", mode3d);
+  SysfsUtils::SetInt("/sys/class/ppmgr/ppmgr_3d_mode", mode3d);
 }
 
 std::string CAMLCodec::GetStereoMode()
@@ -2313,9 +2339,9 @@ void CAMLCodec::SetVideoRect(const CRect &SrcRect, const CRect &DestRect)
   char video_axis[256] = {};
   sprintf(video_axis, "%d %d %d %d", (int)dst_rect.x1, (int)dst_rect.y1, (int)dst_rect.x2, (int)dst_rect.y2);
 
-  aml_set_sysfs_str("/sys/class/video/axis", video_axis);
+  SysfsUtils::SetString("/sys/class/video/axis", video_axis);
   // make sure we are in 'full stretch' so we can stretch
-  aml_set_sysfs_int("/sys/class/video/screen_mode", 1);
+  SysfsUtils::SetInt("/sys/class/video/screen_mode", 1);
 
   // we only get called once gui has changed to something
   // that would show video playback, so show it.

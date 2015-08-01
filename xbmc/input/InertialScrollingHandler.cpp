@@ -19,11 +19,10 @@
  */
 
 
-#include "threads/SystemClock.h"
 #include "InertialScrollingHandler.h"
 #include "Application.h"
 #include "utils/TimeUtils.h"
-#include "guilib/Key.h"
+#include "input/Key.h"
 #include "guilib/GUIWindowManager.h"
 #include "windowing/WindowingFactory.h"
 

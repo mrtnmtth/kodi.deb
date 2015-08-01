@@ -19,7 +19,7 @@
  */
 
 #include "GUIDialogFileStacking.h"
-#include "guilib/Key.h"
+#include "input/Key.h"
 #include "guilib/LocalizeStrings.h"
 #include "FileItem.h"
 #include "utils/StringUtils.h"
@@ -94,7 +94,7 @@ void CGUIDialogFileStacking::OnInitWindow()
     SendMessage(GUI_MSG_LABEL_RESET, GetID(), STACK_LIST);
     for (int i = 0; i < m_iNumberOfFiles; i++)
     {
-      CStdString label = StringUtils::Format(g_localizeStrings.Get(23051).c_str(), i+1);
+      std::string label = StringUtils::Format(g_localizeStrings.Get(23051).c_str(), i+1);
       CFileItemPtr item(new CFileItem(label));
       m_stackItems->Add(item);
     }

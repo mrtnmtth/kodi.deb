@@ -19,9 +19,8 @@
  */
 
 #include "GUIDialogSelect.h"
-#include "guilib/GUIWindowManager.h"
 #include "FileItem.h"
-#include "guilib/Key.h"
+#include "input/Key.h"
 #include "guilib/LocalizeStrings.h"
 #include "utils/StringUtils.h"
 
@@ -35,6 +34,8 @@ CGUIDialogSelect::CGUIDialogSelect(void)
     : CGUIDialogBoxBase(WINDOW_DIALOG_SELECT, "DialogSelect.xml")
 {
   m_bButtonEnabled = false;
+  m_bButtonPressed = false;
+  m_bConfirmed = false;
   m_buttonString = -1;
   m_useDetails = false;
   m_vecList = new CFileItemList;
@@ -87,8 +88,6 @@ bool CGUIDialogSelect::OnMessage(CGUIMessage& message)
 
   case GUI_MSG_WINDOW_INIT:
     {
-      m_bButtonPressed = false;
-      m_bConfirmed = false;
       CGUIDialog::OnMessage(message);
       return true;
     }
@@ -163,6 +162,8 @@ bool CGUIDialogSelect::OnBack(int actionID)
 void CGUIDialogSelect::Reset()
 {
   m_bButtonEnabled = false;
+  m_buttonString = -1;
+  m_bButtonPressed = false;
   m_useDetails = false;
   m_multiSelection = false;
   m_iSelected = -1;
@@ -276,7 +277,7 @@ void CGUIDialogSelect::SetSelected(std::vector<int> selectedIndexes)
   if (selectedIndexes.empty())
     return;
 
-  for (std::vector<int>::const_iterator it = selectedIndexes.begin(); it != selectedIndexes.end(); it++)
+  for (std::vector<int>::const_iterator it = selectedIndexes.begin(); it != selectedIndexes.end(); ++it)
     SetSelected(*it);
 }
 
@@ -285,7 +286,7 @@ void CGUIDialogSelect::SetSelected(const std::vector<std::string> &selectedLabel
   if (selectedLabels.empty())
     return;
 
-  for (std::vector<std::string>::const_iterator it = selectedLabels.begin(); it != selectedLabels.end(); it++)
+  for (std::vector<std::string>::const_iterator it = selectedLabels.begin(); it != selectedLabels.end(); ++it)
     SetSelected(*it);
 }
 

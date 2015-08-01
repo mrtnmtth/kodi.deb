@@ -23,18 +23,15 @@
 #include "MediaSettings.h"
 #include "Application.h"
 #include "PlayListPlayer.h"
-#include "Util.h"
 #include "dialogs/GUIDialogContextMenu.h"
 #include "dialogs/GUIDialogFileBrowser.h"
 #include "dialogs/GUIDialogYesNo.h"
-#include "guilib/WindowIDs.h"
 #include "interfaces/Builtins.h"
 #include "music/MusicDatabase.h"
 #include "profiles/ProfilesManager.h"
 #include "settings/lib/Setting.h"
 #include "storage/MediaManager.h"
 #include "threads/SingleLock.h"
-#include "utils/log.h"
 #include "utils/URIUtils.h"
 #include "utils/XBMCTinyXML.h"
 #include "utils/XMLUtils.h"
@@ -44,6 +41,7 @@ using namespace std;
 
 CMediaSettings::CMediaSettings()
 {
+  m_watchedModes["files"] = WatchedModeAll;
   m_watchedModes["movies"] = WatchedModeAll;
   m_watchedModes["tvshows"] = WatchedModeAll;
   m_watchedModes["musicvideos"] = WatchedModeAll;
@@ -128,7 +126,6 @@ bool CMediaSettings::Load(const TiXmlNode *settings)
       m_defaultVideoSettings.m_AudioDelay = 0.0f;
     if (!XMLUtils::GetFloat(pElement, "subtitledelay", m_defaultVideoSettings.m_SubtitleDelay, -10.0f, 10.0f))
       m_defaultVideoSettings.m_SubtitleDelay = 0.0f;
-    XMLUtils::GetBoolean(pElement, "autocrop", m_defaultVideoSettings.m_Crop);
     XMLUtils::GetBoolean(pElement, "nonlinstretch", m_defaultVideoSettings.m_CustomNonLinStretch);
     if (!XMLUtils::GetInt(pElement, "stereomode", m_defaultVideoSettings.m_StereoMode))
       m_defaultVideoSettings.m_StereoMode = 0;
@@ -213,7 +210,6 @@ bool CMediaSettings::Save(TiXmlNode *settings) const
   XMLUtils::SetFloat(pNode, "gamma", m_defaultVideoSettings.m_Gamma);
   XMLUtils::SetFloat(pNode, "audiodelay", m_defaultVideoSettings.m_AudioDelay);
   XMLUtils::SetFloat(pNode, "subtitledelay", m_defaultVideoSettings.m_SubtitleDelay);
-  XMLUtils::SetBoolean(pNode, "autocrop", m_defaultVideoSettings.m_Crop); 
   XMLUtils::SetBoolean(pNode, "nonlinstretch", m_defaultVideoSettings.m_CustomNonLinStretch);
   XMLUtils::SetInt(pNode, "stereomode", m_defaultVideoSettings.m_StereoMode);
 
@@ -277,7 +273,7 @@ void CMediaSettings::OnSettingAction(const CSetting *setting)
     int retVal = CGUIDialogContextMenu::ShowAndGetChoice(choices);
     if ( retVal > 0 )
     {
-      CStdString path(CProfilesManager::Get().GetDatabaseFolder());
+      std::string path(CProfilesManager::Get().GetDatabaseFolder());
       VECSOURCES shares;
       g_mediaManager.GetLocalDrives(shares);
       if (CGUIDialogFileBrowser::ShowAndGetDirectory(shares, g_localizeStrings.Get(661), path, true))
@@ -301,7 +297,7 @@ void CMediaSettings::OnSettingAction(const CSetting *setting)
   }
   else if (settingId == "karaoke.importcsv")
   {
-    CStdString path(CProfilesManager::Get().GetDatabaseFolder());
+    std::string path(CProfilesManager::Get().GetDatabaseFolder());
     VECSOURCES shares;
     g_mediaManager.GetLocalDrives(shares);
     if (CGUIDialogFileBrowser::ShowAndGetFile(shares, "karaoke.csv", g_localizeStrings.Get(651) , path))
@@ -314,14 +310,14 @@ void CMediaSettings::OnSettingAction(const CSetting *setting)
   }
   else if (settingId == "musiclibrary.cleanup")
   {
-    if (CGUIDialogYesNo::ShowAndGetInput(313, 333, 0, 0))
+    if (CGUIDialogYesNo::ShowAndGetInput(313, 333))
       g_application.StartMusicCleanup(true);
   }
   else if (settingId == "musiclibrary.export")
     CBuiltins::Execute("exportlibrary(music)");
   else if (settingId == "musiclibrary.import")
   {
-    CStdString path;
+    std::string path;
     VECSOURCES shares;
     g_mediaManager.GetLocalDrives(shares);
     if (CGUIDialogFileBrowser::ShowAndGetFile(shares, "musicdb.xml", g_localizeStrings.Get(651) , path))
@@ -334,14 +330,14 @@ void CMediaSettings::OnSettingAction(const CSetting *setting)
   }
   else if (settingId == "videolibrary.cleanup")
   {
-    if (CGUIDialogYesNo::ShowAndGetInput(313, 333, 0, 0))
+    if (CGUIDialogYesNo::ShowAndGetInput(313, 333))
       g_application.StartVideoCleanup(true);
   }
   else if (settingId == "videolibrary.export")
     CBuiltins::Execute("exportlibrary(video)");
   else if (settingId == "videolibrary.import")
   {
-    CStdString path;
+    std::string path;
     VECSOURCES shares;
     g_mediaManager.GetLocalDrives(shares);
     if (CGUIDialogFileBrowser::ShowAndGetDirectory(shares, g_localizeStrings.Get(651) , path))

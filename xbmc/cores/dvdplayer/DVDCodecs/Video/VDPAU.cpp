@@ -36,6 +36,7 @@
 #include "utils/TimeUtils.h"
 #include "DVDCodecs/DVDCodecUtils.h"
 #include "cores/VideoRenderers/RenderFlags.h"
+#include "utils/log.h"
 
 using namespace Actor;
 using namespace VDPAU;
@@ -482,7 +483,7 @@ CDecoder::CDecoder() : m_vdpauOutput(&m_inMsgEvent)
   m_vdpauConfig.context = 0;
 }
 
-bool CDecoder::Open(AVCodecContext* avctx, const enum PixelFormat fmt, unsigned int surfaces)
+bool CDecoder::Open(AVCodecContext* avctx, AVCodecContext* mainctx, const enum PixelFormat fmt, unsigned int surfaces)
 {
   // check if user wants to decode this format with VDPAU
   std::string gpuvendor = g_Windowing.GetRenderVendor();
@@ -568,9 +569,13 @@ bool CDecoder::Open(AVCodecContext* avctx, const enum PixelFormat fmt, unsigned 
       // finally setup ffmpeg
       memset(&m_hwContext, 0, sizeof(AVVDPAUContext));
       m_hwContext.render2 = CDecoder::Render;
-      avctx->get_buffer2     = CDecoder::FFGetBuffer;
-      avctx->slice_flags=SLICE_FLAG_CODED_ORDER|SLICE_FLAG_ALLOW_FIELD;
+      avctx->get_buffer2 = CDecoder::FFGetBuffer;
+      avctx->slice_flags = SLICE_FLAG_CODED_ORDER|SLICE_FLAG_ALLOW_FIELD;
       avctx->hwaccel_context = &m_hwContext;
+
+      mainctx->get_buffer2 = CDecoder::FFGetBuffer;
+      mainctx->slice_flags = SLICE_FLAG_CODED_ORDER|SLICE_FLAG_ALLOW_FIELD;
+      mainctx->hwaccel_context = &m_hwContext;
 
       g_Windowing.Register(this);
       return true;
@@ -1683,8 +1688,7 @@ void CMixer::CreateVdpauMixer()
     &m_config.surfaceHeight,
     &m_config.vdpChromaType};
 
-  VdpStatus vdp_st = VDP_STATUS_ERROR;
-  vdp_st = m_config.context->GetProcs().vdp_video_mixer_create(m_config.context->GetDevice(),
+  VdpStatus vdp_st = m_config.context->GetProcs().vdp_video_mixer_create(m_config.context->GetDevice(),
                                 m_config.context->GetFeatureCount(),
                                 m_config.context->GetFeatures(),
                                 ARSIZE(parameters),
@@ -1902,8 +1906,11 @@ void CMixer::SetColor()
   else
   {
     vdp_st = m_config.context->GetProcs().vdp_generate_csc_matrix(&m_Procamp, colorStandard, &m_CSCMatrix);
-    void const * pm_CSCMatix[] = { &m_CSCMatrix };
-    vdp_st = m_config.context->GetProcs().vdp_video_mixer_set_attribute_values(m_videoMixer, ARSIZE(attributes), attributes, pm_CSCMatix);
+    if(vdp_st != VDP_STATUS_ERROR)
+    {
+      void const * pm_CSCMatix[] = { &m_CSCMatrix };
+      vdp_st = m_config.context->GetProcs().vdp_video_mixer_set_attribute_values(m_videoMixer, ARSIZE(attributes), attributes, pm_CSCMatix);
+    }
   }
 
   CheckStatus(vdp_st, __LINE__);

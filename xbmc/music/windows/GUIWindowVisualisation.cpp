@@ -23,9 +23,8 @@
 #include "music/dialogs/GUIDialogMusicOSD.h"
 #include "GUIUserMessages.h"
 #include "GUIInfoManager.h"
-#include "music/dialogs/GUIDialogVisualisationPresetList.h"
 #include "guilib/GUIWindowManager.h"
-#include "guilib/Key.h"
+#include "input/Key.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/Settings.h"
 
@@ -152,11 +151,9 @@ bool CGUIWindowVisualisation::OnMessage(CGUIMessage& message)
     {
       if (IsActive()) // save any changed settings from the OSD
         CSettings::Get().Save();
-      // check and close any OSD windows
-      CGUIDialogMusicOSD *pOSD = (CGUIDialogMusicOSD *)g_windowManager.GetWindow(WINDOW_DIALOG_MUSIC_OSD);
-      if (pOSD && pOSD->IsDialogRunning()) pOSD->Close(true);
-      CGUIDialogVisualisationPresetList *pList = (CGUIDialogVisualisationPresetList *)g_windowManager.GetWindow(WINDOW_DIALOG_VIS_PRESET_LIST);
-      if (pList && pList->IsDialogRunning()) pList->Close(true);
+
+      // close all active modal dialogs
+      g_windowManager.CloseInternalModalDialogs(true);
     }
     break;
   case GUI_MSG_WINDOW_INIT:

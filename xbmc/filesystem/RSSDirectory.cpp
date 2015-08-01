@@ -22,7 +22,6 @@
 #include "FileItem.h"
 #include "CurlFile.h"
 #include "settings/AdvancedSettings.h"
-#include "settings/MediaSettings.h"
 #include "settings/Settings.h"
 #include "utils/URIUtils.h"
 #include "utils/XBMCTinyXML.h"
@@ -30,7 +29,6 @@
 #include "utils/HTMLUtil.h"
 #include "utils/StringUtils.h"
 #include "video/VideoInfoTag.h"
-#include "music/tags/MusicInfoTag.h"
 #include "utils/log.h"
 #include "URL.h"
 #include "climits"
@@ -91,7 +89,7 @@ static bool IsPathToMedia(const std::string& strPath )
 {
   return URIUtils::HasExtension(strPath,
                               g_advancedSettings.m_videoExtensions + '|' +
-                              g_advancedSettings.m_musicExtensions + '|' +
+                              g_advancedSettings.GetMusicExtensions() + '|' +
                               g_advancedSettings.m_pictureExtensions);
 }
 

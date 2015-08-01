@@ -19,7 +19,6 @@
 //hack around problem with xbmc's typedef int BOOL
 // and obj-c's typedef unsigned char BOOL
 #define BOOL XBMC_BOOL 
-#import "utils/StdString.h"
 #import "PlatformDefs.h"
 #import "ApplicationMessenger.h"
 #import "storage/osx/DarwinStorageProvider.h"
@@ -139,7 +138,13 @@ static void setupWindowMenu(void)
   menuItem = [[NSMenuItem alloc] initWithTitle:@"Minimize" action:@selector(performMiniaturize:) keyEquivalent:@"m"];
   [windowMenu addItem:menuItem];
   [menuItem release];
-
+  
+  // "Title Bar" item
+  menuItem = [[NSMenuItem alloc] initWithTitle:@"Title Bar" action:@selector(titlebarToggle:) keyEquivalent:@""];
+  [windowMenu addItem:menuItem];
+  [menuItem setState: true];
+  [menuItem release];
+  
   // Put menu into the menubar
   windowMenuItem = [[NSMenuItem alloc] initWithTitle:@"Window" action:nil keyEquivalent:@""];
   [windowMenuItem setSubmenu:windowMenu];
@@ -201,6 +206,17 @@ static void setupWindowMenu(void)
     [sender setState:NSOnState];
   }
 }
+
+- (void)titlebarToggle:(id)sender
+{
+  NSWindow* window = [[[NSOpenGLContext currentContext] view] window];
+  [window setStyleMask: [window styleMask] ^ NSTitledWindowMask ];
+  BOOL isSet = [window styleMask] & NSTitledWindowMask;
+  [window setMovableByWindowBackground: !isSet];
+  [sender setState: isSet];
+  
+}
+
 
 @end
 

@@ -29,7 +29,6 @@
 #include "AddonUtils.h"
 #include "utils/log.h"
 #include "cores/IPlayer.h"
-#include "settings/MediaSettings.h"
 
 namespace XBMCAddon
 {
@@ -317,7 +316,7 @@ namespace XBMCAddon
       return g_application.m_pPlayer->IsPlayingVideo();
     }
 
-    String Player::getPlayingFile() throw (PlayerException)
+    String Player::getPlayingFile()
     {
       XBMC_TRACE;
       if (!g_application.m_pPlayer->IsPlaying())
@@ -326,7 +325,7 @@ namespace XBMCAddon
       return g_application.CurrentFile();
     }
 
-    InfoTagVideo* Player::getVideoInfoTag() throw (PlayerException)
+    InfoTagVideo* Player::getVideoInfoTag()
     {
       XBMC_TRACE;
       if (!g_application.m_pPlayer->IsPlayingVideo())
@@ -339,7 +338,7 @@ namespace XBMCAddon
       return new InfoTagVideo();
     }
 
-    InfoTagMusic* Player::getMusicInfoTag() throw (PlayerException)
+    InfoTagMusic* Player::getMusicInfoTag()
     {
       XBMC_TRACE;
       if (g_application.m_pPlayer->IsPlayingVideo() || !g_application.m_pPlayer->IsPlayingAudio())
@@ -352,7 +351,7 @@ namespace XBMCAddon
       return new InfoTagMusic();
     }
 
-    double Player::getTotalTime() throw (PlayerException)
+    double Player::getTotalTime()
     {
       XBMC_TRACE;
       if (!g_application.m_pPlayer->IsPlaying())
@@ -361,7 +360,7 @@ namespace XBMCAddon
       return g_application.GetTotalTime();
     }
 
-    double Player::getTime() throw (PlayerException)
+    double Player::getTime()
     {
       XBMC_TRACE;
       if (!g_application.m_pPlayer->IsPlaying())
@@ -370,7 +369,7 @@ namespace XBMCAddon
       return g_application.GetTime();
     }
 
-    void Player::seekTime(double pTime) throw (PlayerException)
+    void Player::seekTime(double pTime)
     {
       XBMC_TRACE;
       if (!g_application.m_pPlayer->IsPlaying())
@@ -384,14 +383,7 @@ namespace XBMCAddon
       XBMC_TRACE;
       if (g_application.m_pPlayer->HasPlayer())
       {
-        int nStream = g_application.m_pPlayer->AddSubtitle(cLine);
-        if(nStream >= 0)
-        {
-          g_application.m_pPlayer->SetSubtitle(nStream);
-          g_application.m_pPlayer->SetSubtitleVisible(true);
-          CMediaSettings::Get().GetCurrentVideoSettings().m_SubtitleDelay = 0.0f;
-          g_application.m_pPlayer->SetSubTitleDelay(CMediaSettings::Get().GetCurrentVideoSettings().m_SubtitleDelay);
-        }
+        g_application.m_pPlayer->AddSubtitle(cLine);
       }
     }
 

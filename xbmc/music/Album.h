@@ -36,7 +36,7 @@ class CAlbum
 {
 public:
   CAlbum(const CFileItem& item);
-  CAlbum() { idAlbum = 0; iRating = 0; iYear = 0; iTimesPlayed = 0; };
+  CAlbum() { idAlbum = 0; iRating = 0; iYear = 0; iTimesPlayed = 0; releaseType = Album; };
   bool operator<(const CAlbum &a) const;
   void MergeScrapedAlbum(const CAlbum& album, bool override = true);
 
@@ -64,10 +64,22 @@ public:
     iTimesPlayed = 0;
     songs.clear();
     infoSongs.clear();
+    releaseType = Album;
   }
 
-  CStdString GetArtistString() const;
-  CStdString GetGenreString() const;
+  std::string GetArtistString() const;
+  std::string GetGenreString() const;
+
+  typedef enum ReleaseType {
+    Album = 0,
+    Single
+  } ReleaseType;
+
+  std::string GetReleaseType() const;
+  void SetReleaseType(const std::string& strReleaseType);
+
+  static std::string ReleaseTypeToString(ReleaseType releaseType);
+  static ReleaseType ReleaseTypeFromString(const std::string& strReleaseType);
 
   /*! \brief Load album information from an XML file.
    See CVideoInfoTag::Load for a description of the types of elements we load.
@@ -77,11 +89,11 @@ public:
    \sa CVideoInfoTag::Load
    */
   bool Load(const TiXmlElement *element, bool append = false, bool prioritise = false);
-  bool Save(TiXmlNode *node, const CStdString &tag, const CStdString& strPath);
+  bool Save(TiXmlNode *node, const std::string &tag, const std::string& strPath);
 
   long idAlbum;
-  CStdString strAlbum;
-  CStdString strMusicBrainzAlbumID;
+  std::string strAlbum;
+  std::string strMusicBrainzAlbumID;
   std::vector<std::string> artist;
   VECARTISTCREDITS artistCredits;
   std::vector<std::string> genre;
@@ -90,17 +102,18 @@ public:
   std::vector<std::string> styles;
   std::vector<std::string> themes;
   std::map<std::string, std::string> art;
-  CStdString strReview;
-  CStdString strLabel;
-  CStdString strType;
-  CStdString strPath;
-  CStdString m_strDateOfRelease;
+  std::string strReview;
+  std::string strLabel;
+  std::string strType;
+  std::string strPath;
+  std::string m_strDateOfRelease;
   int iRating;
   int iYear;
   bool bCompilation;
   int iTimesPlayed;
   VECSONGS songs;     ///< Local songs
   VECSONGS infoSongs; ///< Scraped songs
+  ReleaseType releaseType;
 };
 
 typedef std::vector<CAlbum> VECALBUMS;

@@ -27,13 +27,13 @@
 
 class CBusyWaiter : public CThread
 {
-  boost::shared_ptr<CEvent>  m_done;
+  std::shared_ptr<CEvent>  m_done;
 public:
   CBusyWaiter(IRunnable *runnable) : CThread(runnable, "waiting"), m_done(new CEvent()) {  }
   
   bool Wait()
   {
-    boost::shared_ptr<CEvent> e_done(m_done);
+    std::shared_ptr<CEvent> e_done(m_done);
 
     Create();
     return CGUIDialogBusy::WaitOnEvent(*e_done);
@@ -42,7 +42,7 @@ public:
   // 'this' is actually deleted from the thread where it's on the stack
   virtual void Process()
   {
-    boost::shared_ptr<CEvent> e_done(m_done);
+    std::shared_ptr<CEvent> e_done(m_done);
 
     CThread::Process();
     (*e_done).Set();
@@ -87,7 +87,8 @@ CGUIDialogBusy::CGUIDialogBusy(void)
   : CGUIDialog(WINDOW_DIALOG_BUSY, "DialogBusy.xml"), m_bLastVisible(false)
 {
   m_loadType = LOAD_ON_GUI_INIT;
-  m_bModal = true;
+  m_modalityType = DialogModalityType::SYSTEM_MODAL;
+  m_bCanceled = false;
   m_progress = 0;
 }
 
@@ -99,11 +100,11 @@ void CGUIDialogBusy::Show_Internal()
 {
   m_bCanceled = false;
   m_active = true;
-  m_bModal = true;
+  m_modalityType = DialogModalityType::SYSTEM_MODAL;
   m_bLastVisible = true;
   m_closing = false;
   m_progress = 0;
-  g_windowManager.RouteToWindow(this);
+  g_windowManager.RegisterDialog(this);
 
   // active this window...
   CGUIMessage msg(GUI_MSG_WINDOW_INIT, 0, 0);

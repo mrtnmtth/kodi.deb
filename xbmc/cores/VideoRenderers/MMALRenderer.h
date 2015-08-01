@@ -20,8 +20,6 @@
  *
  */
 
-#ifdef HAS_MMAL
-
 #include "guilib/GraphicContext.h"
 #include "RenderFlags.h"
 #include "RenderFormats.h"
@@ -30,7 +28,6 @@
 #include "settings/VideoSettings.h"
 #include "cores/dvdplayer/DVDStreamInfo.h"
 #include "guilib/Geometry.h"
-#include "threads/Thread.h"
 #include "BaseRenderer.h"
 
 #include <interface/mmal/mmal.h>
@@ -45,13 +42,12 @@ class CMMALVideoBuffer;
 
 struct DVDVideoPicture;
 
-class CMMALRenderer : public CBaseRenderer, public CThread
+class CMMALRenderer : public CBaseRenderer
 {
   struct YUVBUFFER
   {
     CMMALVideoBuffer *MMALBuffer; // used for hw decoded buffers
     MMAL_BUFFER_HEADER_T *mmal_buffer;  // used for sw decoded buffers
-    unsigned flipindex; /* used to decide if this has been uploaded */
   };
 public:
   CMMALRenderer();
@@ -59,7 +55,6 @@ public:
 
   virtual void Update();
   virtual void SetupScreenshot() {};
-  virtual void Process();
 
   bool RenderCapture(CRenderCapture* capture);
 
@@ -75,7 +70,7 @@ public:
   virtual void         Flush();
   virtual bool         IsConfigured() { return m_bConfigured; }
   virtual void         AddProcessor(CMMALVideoBuffer *buffer, int index);
-  virtual std::vector<ERenderFormat> SupportedFormats() { return m_formats; }
+  virtual CRenderInfo GetRenderInfo();
 
   virtual bool         Supports(ERENDERFEATURE feature);
   virtual bool         Supports(EDEINTERLACEMODE mode);
@@ -87,18 +82,19 @@ public:
   void                 RenderUpdate(bool clear, DWORD flags = 0, DWORD alpha = 255);
 
   virtual void         SetBufferSize(int numBuffers) { m_NumYV12Buffers = numBuffers; }
-  virtual unsigned int GetMaxBufferSize() { return NUM_BUFFERS; }
-  virtual unsigned int GetOptimalBufferSize() { return NUM_BUFFERS; }
   virtual void SetVideoRect(const CRect& SrcRect, const CRect& DestRect);
+  virtual bool         IsGuiLayer() { return false; }
 
   void vout_input_port_cb(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer);
 protected:
+  int m_iYV12RenderBuffer;
   int m_NumYV12Buffers;
 
   std::vector<ERenderFormat> m_formats;
 
   YUVBUFFER            m_buffers[NUM_BUFFERS];
   bool                 m_bConfigured;
+  bool                 m_bMMALConfigured;
   unsigned int         m_extended_format;
   unsigned int         m_destWidth;
   unsigned int         m_destHeight;
@@ -110,16 +106,12 @@ protected:
   RENDER_STEREO_MODE        m_display_stereo_mode;
   bool                      m_StereoInvert;
 
+  CCriticalSection m_sharedSection;
   MMAL_COMPONENT_T *m_vout;
   MMAL_PORT_T *m_vout_input;
   MMAL_POOL_T *m_vout_input_pool;
 
-  MMAL_QUEUE_T     *m_release_queue;
-  CEvent            m_sync;
-  bool init_vout(MMAL_ES_FORMAT_T *m_format);
+  bool init_vout(ERenderFormat format);
   void ReleaseBuffers();
+  void UnInitMMAL();
 };
-
-#else
-#include "LinuxRenderer.h"
-#endif

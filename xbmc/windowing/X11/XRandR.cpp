@@ -20,7 +20,7 @@
 
 #include "XRandR.h"
 
-#ifdef HAS_XRANDR
+#ifdef HAVE_X11
 
 #include <string.h>
 #include <sys/wait.h>
@@ -154,7 +154,7 @@ bool CXRandR::Query(bool force, int screennum, bool ignoreoff)
   return m_outputs.size() > 0;
 }
 
-bool CXRandR::TurnOffOutput(CStdString name)
+bool CXRandR::TurnOffOutput(const std::string& name)
 {
   XOutput *output = GetOutput(name);
   if (!output)
@@ -181,7 +181,7 @@ bool CXRandR::TurnOffOutput(CStdString name)
   return true;
 }
 
-bool CXRandR::TurnOnOutput(CStdString name)
+bool CXRandR::TurnOnOutput(const std::string& name)
 {
   XOutput *output = GetOutput(name);
   if (!output)
@@ -346,7 +346,7 @@ bool CXRandR::SetMode(XOutput output, XMode mode)
   return true;
 }
 
-XMode CXRandR::GetCurrentMode(CStdString outputName)
+XMode CXRandR::GetCurrentMode(const std::string& outputName)
 {
   Query();
   XMode result;
@@ -369,7 +369,7 @@ XMode CXRandR::GetCurrentMode(CStdString outputName)
   return result;
 }
 
-XMode CXRandR::GetPreferredMode(CStdString outputName)
+XMode CXRandR::GetPreferredMode(const std::string& outputName)
 {
   Query();
   XMode result;
@@ -410,8 +410,8 @@ void CXRandR::LoadCustomModeLinesToAllOutputs(void)
   }
 
   char cmd[255];
-  CStdString name;
-  CStdString strModeLine;
+  std::string name;
+  std::string strModeLine;
 
   for (TiXmlElement* modeline = pRootElement->FirstChildElement("modeline"); modeline; modeline = modeline->NextSiblingElement("modeline"))
   {
@@ -449,7 +449,7 @@ void CXRandR::SetNumScreens(unsigned int num)
   m_bInit = false;
 }
 
-bool CXRandR::IsOutputConnected(CStdString name)
+bool CXRandR::IsOutputConnected(const std::string& name)
 {
   bool result = false;
   Query();
@@ -465,7 +465,7 @@ bool CXRandR::IsOutputConnected(CStdString name)
   return result;
 }
 
-XOutput* CXRandR::GetOutput(CStdString outputName)
+XOutput* CXRandR::GetOutput(const std::string& outputName)
 {
   XOutput *result = 0;
   Query();
@@ -480,7 +480,7 @@ XOutput* CXRandR::GetOutput(CStdString outputName)
   return result;
 }
 
-int CXRandR::GetCrtc(int x, int y)
+int CXRandR::GetCrtc(int x, int y, float &hz)
 {
   int crtc = 0;
   for (unsigned int i = 0; i < m_outputs.size(); ++i)
@@ -492,6 +492,14 @@ int CXRandR::GetCrtc(int x, int y)
         (m_outputs[i].y <= y && (m_outputs[i].y+m_outputs[i].h) > y))
     {
       crtc = m_outputs[i].crtc;
+      for (auto mode: m_outputs[i].modes)
+      {
+        if (mode.isCurrent)
+        {
+          hz = mode.hz;
+          break;
+        }
+      }
       break;
     }
   }
@@ -500,7 +508,7 @@ int CXRandR::GetCrtc(int x, int y)
 
 CXRandR g_xrandr;
 
-#endif // HAS_XRANDR
+#endif // HAVE_X11
 
 /*
   int main()

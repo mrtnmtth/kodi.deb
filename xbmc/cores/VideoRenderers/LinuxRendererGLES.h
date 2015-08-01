@@ -42,6 +42,9 @@ namespace Shaders { class BaseVideoFilterShader; }
 class COpenMaxVideo;
 class CDVDVideoCodecStageFright;
 class CDVDMediaCodecInfo;
+#ifdef HAS_IMXVPU
+class CDVDVideoCodecIMXBuffer;
+#endif
 typedef std::vector<int>     Features;
 
 
@@ -142,8 +145,7 @@ public:
   virtual void         ReorderDrawPoints();
   virtual void         ReleaseBuffer(int idx);
   virtual void         SetBufferSize(int numBuffers) { m_NumYV12Buffers = numBuffers; }
-  virtual unsigned int GetMaxBufferSize() { return NUM_BUFFERS; }
-  virtual unsigned int GetOptimalBufferSize();
+  virtual bool         IsGuiLayer();
 
   virtual void RenderUpdate(bool clear, DWORD flags = 0, DWORD alpha = 255);
 
@@ -156,7 +158,7 @@ public:
 
   virtual EINTERLACEMETHOD AutoInterlaceMethod();
 
-  virtual std::vector<ERenderFormat> SupportedFormats() { return m_formats; }
+  virtual CRenderInfo GetRenderInfo();
 
 #ifdef HAVE_LIBOPENMAX
   virtual void         AddProcessor(COpenMax* openMax, DVDVideoPicture *picture, int index);
@@ -177,10 +179,12 @@ public:
 
 protected:
   virtual void Render(DWORD flags, int index);
+  void RenderUpdateVideo(bool clear, DWORD flags = 0, DWORD alpha = 255);
 
   int  NextYV12Texture();
   virtual bool ValidateRenderTarget();
   virtual void LoadShaders(int field=FIELD_FULL);
+  virtual void ReleaseShaders();
   void SetTextureFilter(GLenum method);
   void UpdateVideoFilter();
 
@@ -313,7 +317,8 @@ protected:
                 , unsigned width,  unsigned height
                 , unsigned int stride, int bpp, void* data );
 
-  Shaders::BaseYUV2RGBShader     *m_pYUVShader;
+  Shaders::BaseYUV2RGBShader     *m_pYUVProgShader;
+  Shaders::BaseYUV2RGBShader     *m_pYUVBobShader;
   Shaders::BaseVideoFilterShader *m_pVideoFilterShader;
   ESCALINGMETHOD m_scalingMethod;
   ESCALINGMETHOD m_scalingMethodGui;

@@ -20,7 +20,7 @@
 
 #include "Application.h"
 #include "guilib/GUIWindowManager.h"
-#include "guilib/Key.h"
+#include "input/Key.h"
 #include "settings/AdvancedSettings.h"
 
 #include "GUIDialogKaraokeSongSelector.h"
@@ -141,7 +141,7 @@ void CGUIWindowKaraokeLyrics::newSong(CKaraokeLyrics * lyrics)
   // Set up current background mode
   if ( m_Lyrics->HasVideo() )
   {
-    CStdString path;
+    std::string path;
     int64_t offset;
 
     // Start the required video

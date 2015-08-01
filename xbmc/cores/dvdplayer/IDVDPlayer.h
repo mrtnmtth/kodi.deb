@@ -42,6 +42,7 @@ public:
   virtual bool OpenStream(CDVDStreamInfo &hint) = 0;
   virtual void CloseStream(bool bWaitForBuffers) = 0;
   virtual void SendMessage(CDVDMsg* pMsg, int priority = 0) = 0;
+  virtual void FlushMessages() = 0;
   virtual bool IsInited() const = 0;
   virtual bool AcceptsData() const = 0;
   virtual bool IsStalled() const = 0;
@@ -54,7 +55,6 @@ class IDVDStreamPlayerVideo : public IDVDStreamPlayer
 public:
   ~IDVDStreamPlayerVideo() {}
   float GetRelativeUsage() { return 0.0f; }
-  bool SetPriority(const int iPriority) { return true; }
   virtual bool OpenStream(CDVDStreamInfo &hint) = 0;
   virtual void CloseStream(bool bWaitForBuffers) = 0;
   virtual bool StepFrame() = 0;
@@ -69,7 +69,7 @@ public:
   virtual bool IsSubtitleEnabled() = 0;
   virtual void EnableFullscreen(bool bEnable) = 0;
 #ifdef HAS_VIDEO_PLAYBACK
-  virtual void GetVideoRect(CRect& SrcRect, CRect& DestRect) const = 0;
+  virtual void GetVideoRect(CRect& SrcRect, CRect& DestRect, CRect& ViewRect) const = 0;
   virtual float GetAspectRatio() = 0;
 #endif
   virtual double GetDelay() = 0;
@@ -95,7 +95,6 @@ class IDVDStreamPlayerAudio : public IDVDStreamPlayer
 public:
   ~IDVDStreamPlayerAudio() {}
   float GetRelativeUsage() { return 0.0f; }
-  bool SetPriority(const int iPriority) { return true; }
   virtual bool OpenStream(CDVDStreamInfo &hints) = 0;
   virtual void CloseStream(bool bWaitForBuffers) = 0;
   virtual void SetSpeed(int speed) = 0;

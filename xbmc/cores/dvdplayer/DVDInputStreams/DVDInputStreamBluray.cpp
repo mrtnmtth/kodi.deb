@@ -20,6 +20,8 @@
 #include "system.h"
 #ifdef HAVE_LIBBLURAY
 
+#include <functional>
+
 #include "DVDInputStreamBluray.h"
 #include "IDVDPlayer.h"
 #include "DVDCodecs/Overlay/DVDOverlay.h"
@@ -27,14 +29,12 @@
 #include "settings/Settings.h"
 #include "LangInfo.h"
 #include "utils/log.h"
-#include "utils/StringUtils.h"
 #include "utils/URIUtils.h"
 #include "filesystem/File.h"
 #include "filesystem/Directory.h"
 #include "DllLibbluray.h"
 #include "URL.h"
 #include "guilib/Geometry.h"
-#include "utils/StringUtils.h"
 #include "dialogs/GUIDialogKaiToast.h"
 #include "guilib/LocalizeStrings.h"
 #include "settings/DiscSettings.h"
@@ -200,7 +200,11 @@ CDVDInputStreamBluray::CDVDInputStreamBluray(IDVDPlayer* player) :
   m_player  = player;
   m_navmode = false;
   m_hold = HOLD_NONE;
+  m_angle = 0;
   memset(&m_event, 0, sizeof(m_event));
+#ifdef HAVE_LIBBLURAY_BDJ
+  memset(&m_argb,  0, sizeof(m_argb));
+#endif
 }
 
 CDVDInputStreamBluray::~CDVDInputStreamBluray()
@@ -239,7 +243,7 @@ BLURAY_TITLE_INFO* CDVDInputStreamBluray::GetTitleLongest()
 BLURAY_TITLE_INFO* CDVDInputStreamBluray::GetTitleFile(const std::string& filename)
 {
   unsigned int playlist;
-  if(sscanf(filename.c_str(), "%05d.mpls", &playlist) != 1)
+  if(sscanf(filename.c_str(), "%05u.mpls", &playlist) != 1)
   {
     CLog::Log(LOGERROR, "get_playlist_title - unsupported playlist file selected %s", filename.c_str());
     return NULL;
@@ -804,7 +808,7 @@ void CDVDInputStreamBluray::OverlayCallback(const BD_OVERLAY * const ov)
     }
 
     const BD_PG_RLE_ELEM *rlep = ov->img;
-    uint8_t *img = (uint8_t*) malloc(ov->w * ov->h);
+    uint8_t *img = (uint8_t*) malloc((size_t)ov->w * (size_t)ov->h);
     if (!img)
       return;
     unsigned pixels = ov->w * ov->h;
@@ -927,6 +931,17 @@ bool CDVDInputStreamBluray::SeekChapter(int ch)
     return false;
   else
     return true;
+}
+
+int64_t CDVDInputStreamBluray::GetChapterPos(int ch)
+{
+  if (ch == -1 || ch > GetChapterCount())
+    ch = GetChapter();
+
+  if (m_title && m_title->chapters)
+    return m_title->chapters[ch - 1].start / 90000;
+  else
+    return 0;
 }
 
 int64_t CDVDInputStreamBluray::Seek(int64_t offset, int whence)

@@ -1,5 +1,4 @@
 #pragma once
-
 /*
  *      Copyright (C) 2012-2013 Team XBMC
  *      http://xbmc.org
@@ -20,6 +19,8 @@
  *
  */
 
+#include <map>
+
 #include "XBDateTime.h"
 #include "settings/lib/ISettingCallback.h"
 #include "threads/CriticalSection.h"
@@ -28,8 +29,6 @@
 
 #include "Epg.h"
 #include "EpgDatabase.h"
-
-#include <map>
 
 class CFileItemList;
 class CGUIDialogProgressBarHandle;
@@ -158,6 +157,13 @@ namespace EPG
      * @return The table or NULL if it wasn't found.
      */
     virtual CEpg *GetById(int iEpgId) const;
+
+    /*!
+     * @brief Get the EPG event with the given event id
+     * @param iBroadcastId The event id to get
+     * @return The requested event, or an empty tag when not found
+     */
+    virtual CEpgInfoTagPtr GetTagById(int iBroadcastId) const;
 
     /*!
      * @brief Get an EPG table given a PVR channel.

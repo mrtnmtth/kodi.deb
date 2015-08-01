@@ -23,21 +23,16 @@
 #include "ApplicationMessenger.h"
 #include "FileItem.h"
 #include "guilib/GUIWindowManager.h"
-#include "guilib/Key.h"
+#include "input/Key.h"
 #include "guilib/LocalizeStrings.h"
 #include "dialogs/GUIDialogKaiToast.h"
-#include "dialogs/GUIDialogOK.h"
 #include "GUIDialogPVRGuideInfo.h"
 #include "view/ViewState.h"
 #include "settings/Settings.h"
 #include "GUIInfoManager.h"
-#include "cores/IPlayer.h"
 #include "utils/StringUtils.h"
 
 #include "pvr/PVRManager.h"
-#include "pvr/channels/PVRChannelGroupsContainer.h"
-#include "epg/Epg.h"
-#include "pvr/timers/PVRTimerInfoTag.h"
 #include "pvr/channels/PVRChannelGroupsContainer.h"
 #include "pvr/windows/GUIWindowPVRBase.h"
 
@@ -157,8 +152,8 @@ bool CGUIDialogPVRChannelsOSD::OnAction(const CAction &action)
 
 CPVRChannelGroupPtr CGUIDialogPVRChannelsOSD::GetPlayingGroup()
 {
-  CPVRChannelPtr channel;
-  if (g_PVRManager.GetCurrentChannel(channel))
+  CPVRChannelPtr channel(g_PVRManager.GetCurrentChannel());
+  if (channel)
     return g_PVRManager.GetPlayingGroup(channel->IsRadio());
   else
     return CPVRChannelGroupPtr();
@@ -177,8 +172,8 @@ void CGUIDialogPVRChannelsOSD::Update()
   // empty the list ready for population
   Clear();
 
-  CPVRChannelPtr channel;
-  if (g_PVRManager.GetCurrentChannel(channel))
+  CPVRChannelPtr channel(g_PVRManager.GetCurrentChannel());
+  if (channel)
   {
     CPVRChannelGroupPtr group = g_PVRManager.GetPlayingGroup(channel->IsRadio());
     if (group)
@@ -254,9 +249,9 @@ void CGUIDialogPVRChannelsOSD::GotoChannel(int item)
 
   if (g_PVRManager.IsPlaying() && pItem->HasPVRChannelInfoTag() && g_application.m_pPlayer->HasPlayer())
   {
-    CPVRChannel *channel = pItem->GetPVRChannelInfoTag();
-    if (!g_PVRManager.CheckParentalLock(*channel) ||
-        !g_application.m_pPlayer->SwitchChannel(*channel))
+    CPVRChannelPtr channel = pItem->GetPVRChannelInfoTag();
+    if (!g_PVRManager.CheckParentalLock(channel) ||
+        !g_application.m_pPlayer->SwitchChannel(channel))
     {
       std::string msg = StringUtils::Format(g_localizeStrings.Get(19035).c_str(), channel->ChannelName().c_str()); // CHANNELNAME could not be played. Check the log for details.
       CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Error,
@@ -281,13 +276,13 @@ void CGUIDialogPVRChannelsOSD::ShowInfo(int item)
   CFileItemPtr pItem = m_vecItems->Get(item);
   if (pItem && pItem->IsPVRChannel())
   {
-    CPVRChannel *channel = pItem->GetPVRChannelInfoTag();
-    if (!g_PVRManager.CheckParentalLock(*channel))
+    CPVRChannelPtr channel(pItem->GetPVRChannelInfoTag());
+    if (!g_PVRManager.CheckParentalLock(channel))
       return;
 
     /* Get the current running show on this channel from the EPG storage */
-    CEpgInfoTag epgnow;
-    if (!channel->GetEPGNow(epgnow))
+    CEpgInfoTagPtr epgnow(channel->GetEPGNow());
+    if (!epgnow)
       return;
 
     /* Load programme info dialog */

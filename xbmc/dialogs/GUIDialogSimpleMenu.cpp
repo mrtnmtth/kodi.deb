@@ -34,7 +34,7 @@
 bool CGUIDialogSimpleMenu::ShowPlaySelection(CFileItem& item)
 {
   /* if asked to resume somewhere, we should not show anything */
-  if (item.m_lStartOffset)
+  if (item.m_lStartOffset || (item.HasVideoInfoTag() && item.GetVideoInfoTag()->m_iBookmarkId > 0))
     return true;
 
   if (CSettings::Get().GetInt("disc.playback") != BD_PLAYBACK_SIMPLE_MENU)
@@ -54,6 +54,7 @@ bool CGUIDialogSimpleMenu::ShowPlaySelection(CFileItem& item)
     {
       CURL url("bluray://");
       url.SetHostName(URIUtils::GetParentPath(root));
+      url.SetFileName("root");
       return ShowPlaySelection(item, url.Get());
     }
   }
@@ -69,6 +70,7 @@ bool CGUIDialogSimpleMenu::ShowPlaySelection(CFileItem& item)
 
       CURL url("bluray://");
       url.SetHostName(url2.Get());
+      url.SetFileName("root");
       return ShowPlaySelection(item, url.Get());
     }
   }

@@ -30,7 +30,8 @@
 #include "threads/CriticalSection.h"
 
 class IDispResource;
-class CVideoSyncCocoa;
+class CVideoSyncIos;
+struct CADisplayLinkWrapper;
 
 class CWinSystemIOS : public CWinSystemBase, public CRenderSystemGLES
 {
@@ -40,7 +41,7 @@ public:
 
   virtual bool InitWindowSystem();
   virtual bool DestroyWindowSystem();
-  virtual bool CreateNewWindow(const CStdString& name, bool fullScreen, RESOLUTION_INFO& res, PHANDLE_EVENT_FUNC userFunction);
+  virtual bool CreateNewWindow(const std::string& name, bool fullScreen, RESOLUTION_INFO& res, PHANDLE_EVENT_FUNC userFunction);
   virtual bool DestroyWindow();
   virtual bool ResizeWindow(int newWidth, int newHeight, int newLeft, int newTop);
   virtual bool SetFullScreen(bool fullScreen, RESOLUTION_INFO& res, bool blankOtherDisplays);
@@ -68,10 +69,8 @@ public:
   virtual int GetNumScreens();    
   virtual int GetCurrentScreen();
   
-          void InitDisplayLink(CVideoSyncCocoa *syncImpl);
-          void VblankHandler(int64_t nowtime, double fps);
+          bool InitDisplayLink(CVideoSyncIos *syncImpl);
           void DeinitDisplayLink(void);
-          double GetDisplayLinkFPS(void);
           void OnAppFocusChange(bool focus);
           bool IsBackgrounded() const { return m_bIsBackgrounded; }
 
@@ -82,17 +81,17 @@ protected:
   void        *m_glView; // EAGLView opaque
   void        *m_WorkingContext; // shared EAGLContext opaque
   bool         m_bWasFullScreenBeforeMinimize;
-  CStdString   m_eglext;
+  std::string   m_eglext;
   int          m_iVSyncErrors;
   CCriticalSection             m_resourceSection;
   std::vector<IDispResource*>  m_resources;
   bool         m_bIsBackgrounded;
-  CVideoSyncCocoa *m_VideoSync;
   
 private:
   bool GetScreenResolution(int* w, int* h, double* fps, int screenIdx);
   void FillInVideoModes();
   bool SwitchToVideoMode(int width, int height, double refreshrate, int screenIdx);
+  CADisplayLinkWrapper *m_pDisplayLink;
 };
 
 XBMC_GLOBAL_REF(CWinSystemIOS,g_Windowing);

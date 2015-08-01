@@ -25,7 +25,6 @@
 #include "settings/MediaSourceSettings.h"
 #include "settings/Settings.h"
 #include "filesystem/Directory.h"
-#include "filesystem/PluginDirectory.h"
 #include "guilib/LocalizeStrings.h"
 #include "guilib/WindowIDs.h"
 #include "view/ViewStateSettings.h"
@@ -73,10 +72,11 @@ std::string CGUIViewStateWindowPictures::GetLockType()
 
 std::string CGUIViewStateWindowPictures::GetExtensions()
 {
+  std::string extensions = g_advancedSettings.m_pictureExtensions;
   if (CSettings::Get().GetBool("pictures.showvideos"))
-    return g_advancedSettings.m_pictureExtensions+"|"+g_advancedSettings.m_videoExtensions;
+    extensions += "|" + g_advancedSettings.m_videoExtensions;
 
-  return g_advancedSettings.m_pictureExtensions;
+  return extensions;
 }
 
 VECSOURCES& CGUIViewStateWindowPictures::GetSources()

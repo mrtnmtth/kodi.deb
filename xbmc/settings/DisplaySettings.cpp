@@ -51,9 +51,9 @@ float square_error(float x, float y)
   return std::max(yonx, xony);
 }
 
-static CStdString ModeFlagsToString(unsigned int flags, bool identifier)
+static std::string ModeFlagsToString(unsigned int flags, bool identifier)
 {
-  CStdString res;
+  std::string res;
   if(flags & D3DPRESENTFLAG_INTERLACED)
     res += "i";
   else
@@ -115,7 +115,7 @@ bool CDisplaySettings::Load(const TiXmlNode *settings)
     XMLUtils::GetString(pResolution, "description", cal.strMode);
     XMLUtils::GetInt(pResolution, "subtitles", cal.iSubtitles);
     XMLUtils::GetFloat(pResolution, "pixelratio", cal.fPixelRatio);
-#ifdef HAS_XRANDR
+#ifdef HAVE_X11
     XMLUtils::GetFloat(pResolution, "refreshrate", cal.fRefreshRate);
     XMLUtils::GetString(pResolution, "output", cal.strOutput);
     XMLUtils::GetString(pResolution, "xrandrid", cal.strId);
@@ -138,7 +138,7 @@ bool CDisplaySettings::Load(const TiXmlNode *settings)
     bool found = false;
     for (ResolutionInfos::const_iterator  it = m_calibrations.begin(); it != m_calibrations.end(); ++it)
     {
-      if (it->strMode.Equals(cal.strMode))
+      if (StringUtils::EqualsNoCase(it->strMode, cal.strMode))
       {
         found = true;
         break;
@@ -179,7 +179,7 @@ bool CDisplaySettings::Save(TiXmlNode *settings) const
     XMLUtils::SetString(pNode, "description", it->strMode);
     XMLUtils::SetInt(pNode, "subtitles", it->iSubtitles);
     XMLUtils::SetFloat(pNode, "pixelratio", it->fPixelRatio);
-#ifdef HAS_XRANDR
+#ifdef HAVE_X11
     XMLUtils::SetFloat(pNode, "refreshrate", it->fRefreshRate);
     XMLUtils::SetString(pNode, "output", it->strOutput);
     XMLUtils::SetString(pNode, "xrandrid", it->strId);
@@ -254,7 +254,7 @@ bool CDisplaySettings::OnSettingChanging(const CSetting *setting)
       if (!m_resolutionChangeAborted)
       {
         bool cancelled = false;
-        if (!CGUIDialogYesNo::ShowAndGetInput(13110, 13111, 20022, 20022, -1, -1, cancelled, 10000))
+        if (!CGUIDialogYesNo::ShowAndGetInput(13110, 13111, cancelled, "", "", 10000))
         {
           m_resolutionChangeAborted = true;
           return false;
@@ -275,7 +275,7 @@ bool CDisplaySettings::OnSettingChanging(const CSetting *setting)
     if (!m_resolutionChangeAborted)
     {
       bool cancelled = false;
-      if (!CGUIDialogYesNo::ShowAndGetInput(13110, 13111, 20022, 20022, -1, -1, cancelled, 10000))
+      if (!CGUIDialogYesNo::ShowAndGetInput(13110, 13111, cancelled, "", "", 10000))
       {
         m_resolutionChangeAborted = true;
         return false;
@@ -447,7 +447,7 @@ void CDisplaySettings::ApplyCalibrations()
     {
       if (res == RES_WINDOW)
         continue;
-      if (itCal->strMode.Equals(m_resolutions[res].strMode))
+      if (StringUtils::EqualsNoCase(itCal->strMode, m_resolutions[res].strMode))
       {
         // overscan
         m_resolutions[res].Overscan.left = itCal->Overscan.left;
@@ -500,7 +500,7 @@ void CDisplaySettings::UpdateCalibrations()
     bool found = false;
     for (ResolutionInfos::iterator itCal = m_calibrations.begin(); itCal != m_calibrations.end(); ++itCal)
     {
-      if (itCal->strMode.Equals(m_resolutions[res].strMode))
+      if (StringUtils::EqualsNoCase(itCal->strMode, m_resolutions[res].strMode))
       {
         // TODO: erase calibrations with default values
         *itCal = m_resolutions[res];
@@ -700,6 +700,11 @@ void CDisplaySettings::SettingOptionsScreensFiller(const CSetting *setting, std:
   for (int idx = 0; idx < g_Windowing.GetNumScreens(); idx++)
   {
     int screen = CDisplaySettings::Get().GetResolutionInfo(RES_DESKTOP + idx).iScreen;
+#if defined(TARGET_DARWIN_OSX)
+    if (!CDisplaySettings::Get().GetResolutionInfo(RES_DESKTOP + idx).strOutput.empty())
+      list.push_back(make_pair(CDisplaySettings::Get().GetResolutionInfo(RES_DESKTOP + idx).strOutput, screen));
+    else
+#endif
     list.push_back(make_pair(StringUtils::Format(g_localizeStrings.Get(241).c_str(), screen + 1), screen));
   }
 
@@ -751,13 +756,13 @@ void CDisplaySettings::SettingOptionsPreferredStereoscopicViewModesFiller(const 
 void CDisplaySettings::SettingOptionsMonitorsFiller(const CSetting *setting, std::vector< std::pair<std::string, std::string> > &list, std::string &current, void *data)
 {
 #if defined(HAS_GLX)
-  std::vector<CStdString> monitors;
+  std::vector<std::string> monitors;
   g_Windowing.GetConnectedOutputs(&monitors);
   std::string currentMonitor = CSettings::Get().GetString("videoscreen.monitor");
   for (unsigned int i=0; i<monitors.size(); ++i)
   {
     if(currentMonitor.compare("Default") != 0 &&
-       CDisplaySettings::Get().GetResolutionInfo(RES_DESKTOP).strOutput.Equals(monitors[i]))
+       StringUtils::EqualsNoCase(CDisplaySettings::Get().GetResolutionInfo(RES_DESKTOP).strOutput, monitors[i]))
     {
       current = monitors[i];
     }

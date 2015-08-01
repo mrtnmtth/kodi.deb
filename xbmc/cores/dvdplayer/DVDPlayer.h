@@ -27,18 +27,12 @@
 
 #include "DVDMessageQueue.h"
 #include "DVDClock.h"
-#include "DVDPlayerAudio.h"
 #include "DVDPlayerVideo.h"
 #include "DVDPlayerSubtitle.h"
 #include "DVDPlayerTeletext.h"
 
-//#include "DVDChapterReader.h"
-#include "DVDSubtitles/DVDFactorySubtitle.h"
-#include "utils/BitstreamStats.h"
-
 #include "Edl.h"
 #include "FileItem.h"
-#include "threads/SingleLock.h"
 #include "utils/StreamDetails.h"
 #include "threads/SystemClock.h"
 
@@ -68,6 +62,7 @@ public:
   bool OMXStateExecute(bool lock = true) { return false; }
   void OMXStateIdle(bool lock = true) {}
   bool HDMIClockSync(bool lock = true) { return false; }
+  void OMXSetSpeedAdjust(double adjust, bool lock = true) {}
 };
 #endif
 
@@ -92,6 +87,8 @@ class CDVDDemux;
 class CDemuxStreamVideo;
 class CDemuxStreamAudio;
 class CStreamInfo;
+class CDVDDemuxCC;
+class CDVDPlayer;
 
 namespace PVR
 {
@@ -155,19 +152,19 @@ public:
   }
 };
 
-typedef struct
+typedef struct SelectionStream
 {
-  StreamType   type;
-  int          type_index;
+  StreamType   type = STREAM_NONE;
+  int          type_index = 0;
   std::string  filename;
   std::string  filename2;  // for vobsub subtitles, 2 files are necessary (idx/sub)
   std::string  language;
   std::string  name;
-  CDemuxStream::EFlags flags;
-  int          source;
-  int          id;
+  CDemuxStream::EFlags flags = CDemuxStream::FLAG_NONE;
+  int          source = 0;
+  int          id = 0;
   std::string  codec;
-  int          channels;
+  int          channels = 0;
 } SelectionStream;
 
 typedef std::vector<SelectionStream> SelectionStreams;
@@ -188,6 +185,7 @@ public:
   int              IndexOf (StreamType type, int source, int id) const;
   int              IndexOf (StreamType type, CDVDPlayer& p) const;
   int              Count   (StreamType type) const { return IndexOf(type, STREAM_SOURCE_NONE, -1) + 1; }
+  int              CountSource(StreamType type, StreamSource source) const;
   SelectionStream& Get     (StreamType type, int index);
   bool             Get     (StreamType type, CDemuxStream::EFlags flag, SelectionStream& out);
 
@@ -253,7 +251,7 @@ public:
   virtual void SetSubtitle(int iStream);
   virtual bool GetSubtitleVisible();
   virtual void SetSubtitleVisible(bool bVisible);
-  virtual int  AddSubtitle(const std::string& strSubPath);
+  virtual void AddSubtitle(const std::string& strSubPath);
 
   virtual int GetAudioStreamCount();
   virtual int GetAudioStream();
@@ -264,11 +262,14 @@ public:
 
   virtual int  GetChapterCount();
   virtual int  GetChapter();
-  virtual void GetChapterName(std::string& strChapterName);
+  virtual void GetChapterName(std::string& strChapterName, int chapterIdx=-1);
+  virtual int64_t GetChapterPos(int chapterIdx=-1);
   virtual int  SeekChapter(int iChapter);
 
   virtual void SeekTime(int64_t iTime);
+  virtual bool SeekTimeRelative(int64_t iTime);
   virtual int64_t GetTime();
+  virtual int64_t GetDisplayTime();
   virtual int64_t GetTotalTime();
   virtual void ToFFRW(int iSpeed);
   virtual bool OnAction(const CAction &action);
@@ -284,7 +285,7 @@ public:
 
   virtual std::string GetPlayingTitle();
 
-  virtual bool SwitchChannel(PVR::CPVRChannel &channel);
+  virtual bool SwitchChannel(const PVR::CPVRChannelPtr &channel);
   virtual bool CachePVRStream(void) const;
 
   enum ECacheState
@@ -336,7 +337,7 @@ protected:
 
   bool ShowPVRChannelInfo();
 
-  int  AddSubtitleFile(const std::string& filename, const std::string& subfilename = "", CDemuxStream::EFlags flags = CDemuxStream::FLAG_NONE);
+  int  AddSubtitleFile(const std::string& filename, const std::string& subfilename = "");
   void SetSubtitleVisibleInternal(bool bVisible);
 
   /**
@@ -353,6 +354,7 @@ protected:
 
 
   void FlushBuffers(bool queued, double pts = DVD_NOPTS_VALUE, bool accurate = true, bool sync = true);
+  void TriggerResync();
 
   void HandleMessages();
   void HandlePlaySpeed();
@@ -428,6 +430,7 @@ protected:
   CDVDInputStream* m_pInputStream;  // input stream for current playing file
   CDVDDemux* m_pDemuxer;            // demuxer for current playing file
   CDVDDemux* m_pSubtitleDemuxer;
+  CDVDDemuxCC* m_pCCDemuxer;
 
   struct SDVDInfo
   {
@@ -469,14 +472,14 @@ protected:
       player        = 0;
       timestamp     = 0;
       time          = 0;
+      disptime      = 0;
       time_total    = 0;
       time_offset   = 0;
       time_src      = ETIMESOURCE_CLOCK;
       dts           = DVD_NOPTS_VALUE;
       player_state  = "";
       chapter       = 0;
-      chapter_name  = "";
-      chapter_count = 0;
+      chapters.clear();
       canrecord     = false;
       recording     = false;
       canpause      = false;
@@ -495,15 +498,15 @@ protected:
     double time_offset;       // difference between time and pts
 
     double time;              // current playback time
+    double disptime;          // current time of frame on screen
     double time_total;        // total playback time
     ETimeSource time_src;     // current time source
     double dts;               // last known dts
 
     std::string player_state;  // full player state
 
-    int         chapter;      // current chapter
-    std::string chapter_name; // name of current chapter
-    int         chapter_count;// number of chapter
+    int         chapter;      		   // current chapter
+    std::vector<std::pair<std::string, int64_t>> chapters; // name and position for chapters
 
     bool canrecord;           // can input stream record
     bool recording;           // are we currently recording

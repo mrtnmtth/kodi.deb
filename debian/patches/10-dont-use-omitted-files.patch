@@ -1,10 +1,8 @@
-diff --git a/configure.in b/configure.in
-index 9337c1f..eb83e59 100644
---- a/configure.in
-+++ b/configure.in
-@@ -2509,7 +2509,6 @@ OUTPUT_FILES="Makefile \
-     tools/Linux/FEH-ARM.py \
-     tools/TexturePacker/Makefile \
+--- a/configure.ac
++++ b/configure.ac
+@@ -2505,7 +2505,6 @@
+     tools/Linux/${APP_NAME_LC}-standalone.sh \
+     tools/Linux/${APP_NAME_LC}-xsession.desktop \
      tools/EventClients/Makefile \
 -    tools/EventClients/Clients/OSXRemote/Makefile \
      xbmc/peripherals/bus/Makefile \

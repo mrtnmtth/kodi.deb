@@ -5,15 +5,7 @@ Forwarded: not-needed
 
 --- a/Makefile.in
 +++ b/Makefile.in
-@@ -191,7 +191,6 @@
- PAPCODECS_DIRS= \
- 	lib/nosefart \
- 	lib/timidity \
--	lib/libsidplay2 \
- 	lib/stsound/StSoundLibrary \
- 	lib/snesapu/SNES/SNESAPU \
- 	lib/vgmstream
-@@ -204,7 +203,6 @@
+@@ -187,7 +187,6 @@
  LIB_DIRS=\
  	lib/cximage-6.0 \
  	lib/libexif \
@@ -21,75 +13,54 @@ Forwarded: not-needed
  	lib/cpluff \
  	lib/xbmc-dll-symbols
  
-@@ -433,7 +431,7 @@
- 	$(MAKE) -C lib/timidity
- 	$(MAKE) -C lib/nosefart
- ifneq ($(findstring arm-osx,@ARCH@), arm-osx)
--	$(MAKE) -C lib/libsidplay2
-+#	$(MAKE) -C lib/libsidplay2
- endif
- ifeq (@USE_ASAP_CODEC@,1)
-   ifneq ($(findstring osx,@ARCH@), osx)
-@@ -454,7 +452,7 @@
+@@ -411,7 +410,7 @@
  
- codecs: papcodecs dvdpcodecs dvdpextcodecs
+ codecs: dvdpcodecs dvdpextcodecs
  
--libs: $(LIBSSE4) libhdhomerun imagelib libexif system/libcpluff-@ARCH@.so $(CMYTH)
-+libs: $(LIBSSE4) imagelib libexif system/libcpluff-@ARCH@.so $(CMYTH)
+-libs: $(LIBSSE4) libhdhomerun imagelib libexif system/libcpluff-@ARCH@.so
++libs: $(LIBSSE4) imagelib libexif system/libcpluff-@ARCH@.so
  
- externals: codecs libs visualizations screensavers libaddon pvraddons
+ externals: codecs libs visualizations screensavers libaddon
  
 --- a/bootstrap.mk
 +++ b/bootstrap.mk
 @@ -2,7 +2,7 @@
  BOOTSTRAP_SUBDIRS += xbmc/screensavers/rsxs-0.9/configure.ac
- BOOTSTRAP_SUBDIRS += xbmc/visualizations/Goom/goom2k4-0/configure.in
+ BOOTSTRAP_SUBDIRS += xbmc/visualizations/Goom/goom2k4-0/configure.ac
  BOOTSTRAP_SUBDIRS += lib/cpluff/configure.ac
 -BOOTSTRAP_SUBDIRS += lib/gtest/configure.ac
 +#BOOTSTRAP_SUBDIRS += lib/gtest/configure.ac
  
  ifneq ($(wildcard lib/libdvd/libdvdcss/configure.ac),)
  BOOTSTRAP_SUBDIRS += lib/libdvd/libdvdcss/configure.ac
---- a/configure.in
-+++ b/configure.in
-@@ -1162,6 +1162,12 @@
+--- a/configure.ac
++++ b/configure.ac
+@@ -1218,6 +1218,9 @@
  PKG_CHECK_MODULES([TAGLIB],  [taglib >= 1.8],
    [INCLUDES="$INCLUDES $TAGLIB_CFLAGS"; LIBS="$LIBS $TAGLIB_LIBS"],
    AC_MSG_ERROR($missing_library))
-+PKG_CHECK_MODULES([SIDPLAY],  [libsidplay2],
-+  [INCLUDES="$INCLUDES $SIDPLAY_CFLAGS"; LIBS="$LIBS $SIDPLAY_LIBS"],
-+  AC_MSG_ERROR($missing_library))
 +PKG_CHECK_MODULES([DVDREAD],  [dvdread],
 +  [INCLUDES="$INCLUDES $DVDREAD_CFLAGS"; LIBS="$LIBS $DVDREAD_LIBS"],
 +  AC_MSG_ERROR($missing_library))
  
  if test "$use_optical_drive" = "yes"; then
    PKG_CHECK_MODULES([CDIO],       [libcdio],
-@@ -1253,6 +1259,8 @@
- XB_FIND_SONAME([MODPLUG],     [modplug])
+@@ -1312,6 +1315,7 @@
+ XB_FIND_SONAME([VORBISFILE],  [vorbisfile])
  XB_FIND_SONAME([ASS],         [ass])
  XB_FIND_SONAME([MPEG2],       [mpeg2])
 +XB_FIND_SONAME([HDHOMERUN],   [hdhomerun])
-+XB_FIND_SONAME([SIDPLAY2],    [sidplay2])
  
  # WebServer
  if test "$use_webserver" = "yes"; then
-@@ -2458,7 +2466,6 @@
-     lib/timidity/Makefile \
-     lib/asap/Makefile \
-     lib/nosefart/Makefile \
--    lib/libsidplay2/Makefile \
-     lib/vgmstream/Makefile \
-     lib/snesapu/SNES/SNESAPU/Makefile \
-     lib/stsound/StSoundLibrary/Makefile \
-@@ -2474,7 +2481,6 @@
+@@ -2477,7 +2481,6 @@
+     xbmc/network/Makefile \
+     xbmc/network/upnp/Makefile \
      lib/libexif/Makefile \
-     lib/libXDAAP/Makefile \
-     lib/cmyth/Makefile \
 -    lib/libhdhomerun/Makefile \
-     lib/libsquish/Makefile \
      lib/cximage-6.0/Makefile \
      lib/libUPnP/Makefile \
+     xbmc/DllPaths_generated.h \
 --- a/lib/cximage-6.0/Makefile.in
 +++ b/lib/cximage-6.0/Makefile.in
 @@ -4,8 +4,8 @@
@@ -121,17 +92,8 @@ Forwarded: not-needed
 -#define DLL_PATH_LIBHDHOMERUN  "special://xbmcbin/system/hdhomerun-@ARCH@.so"
 +#define DLL_PATH_LIBHDHOMERUN  "@HDHOMERUN_SONAME@"
  #define DLL_PATH_MEDIAINFO     "special://xbmcbin/system/mediainfo-@ARCH@.so"
- #define DLL_PATH_LIBCMYTH      "special://xbmcbin/system/libcmyth-@ARCH@.so"
  
-@@ -54,7 +54,7 @@
- #define DLL_PATH_MODULE_CODEC  "special://xbmcbin/system/players/paplayer/dumb-@ARCH@.so"
- #define DLL_PATH_MPC_CODEC     "special://xbmcbin/system/players/paplayer/libmpcdec-@ARCH@.so"
- #define DLL_PATH_NSF_CODEC     "special://xbmcbin/system/players/paplayer/nosefart-@ARCH@.so"
--#define DLL_PATH_SID_CODEC     "special://xbmcbin/system/players/paplayer/libsidplay2-@ARCH@.so"
-+#define DLL_PATH_SID_CODEC     "@SIDPLAY2_SONAME@"
- #define DLL_PATH_SPC_CODEC     "special://xbmcbin/system/players/paplayer/SNESAPU-@ARCH@.so"
- #define DLL_PATH_VGM_CODEC     "special://xbmcbin/system/players/paplayer/vgmstream-@ARCH@.so"
- #define DLL_PATH_WAVPACK_CODEC "@WAVPACK_SONAME@"
+ #define DLL_PATH_LIBRTMP       "@RTMP_SONAME@"
 --- a/xbmc/filesystem/DllHDHomeRun.h
 +++ b/xbmc/filesystem/DllHDHomeRun.h
 @@ -20,7 +20,7 @@

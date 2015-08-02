@@ -5,7 +5,7 @@ Forwarded: not-needed
 
 --- a/codegenerator.mk
 +++ b/codegenerator.mk
-@@ -41,10 +41,9 @@
+@@ -42,10 +42,9 @@
  
  $(GENDIR)/%.cpp: $(GENDIR)/%.xml $(JAVA) $(SWIG) $(DOXY_XML_PATH)
  	# Work around potential groovy bug reported at: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=733234

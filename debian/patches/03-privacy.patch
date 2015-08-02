@@ -1,13 +1,11 @@
-diff --git a/system/settings/settings.xml b/system/settings/settings.xml
-index f92bd59..a856784 100644
 --- a/system/settings/settings.xml
 +++ b/system/settings/settings.xml
-@@ -92,7 +92,7 @@
-       <group id="2">
-         <setting id="lookandfeel.enablerssfeeds" type="boolean" label="13305" help="36111">
+@@ -260,7 +260,7 @@
+       <group id="1">
+         <setting id="filelists.showparentdiritems" type="boolean" label="13306" help="36122">
            <level>1</level>
 -          <default>true</default>
 +          <default>false</default>
            <control type="toggle" />
          </setting>
-         <setting id="lookandfeel.rssedit" type="string" parent="lookandfeel.enablerssfeeds" label="21450" help="36112">
+         <setting id="filelists.showextensions" type="boolean" label="497" help="36123">

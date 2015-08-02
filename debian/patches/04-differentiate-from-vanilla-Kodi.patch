@@ -21,7 +21,7 @@
  			<left>0</left>
 --- a/xbmc/GUIInfoManager.cpp
 +++ b/xbmc/GUIInfoManager.cpp
-@@ -4240,12 +4240,12 @@
+@@ -4352,12 +4352,12 @@
    if (strlen(CCompileInfo::GetSuffix()) == 0)
      return StringUtils::Format("%d.%d", CCompileInfo::GetMajor(), CCompileInfo::GetMinor());
    else
@@ -29,16 +29,16 @@
 +    return StringUtils::Format("%d.%d-%s Debian package version:%s", CCompileInfo::GetMajor(), CCompileInfo::GetMinor(), CCompileInfo::GetSuffix(), DEB_VERSION);
  }
  
- CStdString CGUIInfoManager::GetVersion()
+ std::string CGUIInfoManager::GetVersion()
  {
 -  return GetVersionShort() + " Git:" + CCompileInfo::GetSCMID();
 +  return GetVersionShort() + " Git: (unknown)";
  }
  
- CStdString CGUIInfoManager::GetBuild()
-@@ -4255,7 +4255,7 @@
+ std::string CGUIInfoManager::GetBuild()
+@@ -4367,7 +4367,7 @@
  
- CStdString CGUIInfoManager::GetAppName()
+ std::string CGUIInfoManager::GetAppName()
  {
 -  return CCompileInfo::GetAppName();
 +  return StringUtils::Format("%s from Debian", CCompileInfo::GetAppName());

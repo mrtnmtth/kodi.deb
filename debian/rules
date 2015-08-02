@@ -125,11 +125,6 @@ override_dh_auto_install:
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
 	$(MAKE) eventclients DESTDIR=$(CURDIR)/debian/tmp \
 		WII_EXTRA_OPTS=-DCWIID_OLD
-	mkdir -p $(CURDIR)/debian/tmp/usr/include/xbmc
-	sed 's|../library.xbmc.addon/|xbmc/|' addons/library.xbmc.gui/libXBMC_gui.h > \
-		$(CURDIR)/debian/tmp/usr/include/xbmc/libXBMC_gui.h
-	sed 's|../library.xbmc.addon/|xbmc/|' addons/library.xbmc.pvr/libXBMC_pvr.h > \
-		$(CURDIR)/debian/tmp/usr/include/xbmc/libXBMC_pvr.h
 
 override_dh_install:
 	dh_install -XLICENCE -XLICENSE \

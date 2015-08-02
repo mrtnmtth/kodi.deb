@@ -1,8 +1,16 @@
-kodi (14.2+dfsg1-3) UNRELEASED; urgency=medium
+kodi (15.0+dfsg1-1) UNRELEASED; urgency=medium
 
-  *
+  * New upstream release 15.0
+    See http://www.kodi.tv/kodi-15-0-isengard-one-release-to-rule-them-all/
+  * Depend on libav.*-dev provided by src:ffmpeg
+  * Recommend udisks2 instead of udisks.
+    Udisks has been removed from unstable but support for udisks2 is not
+    implemented yet.
+  * Ship patch helping Jessie backports
+  * Refresh patches
+  * Eliminate __DATE__ macros from source to make build more reproducible
 
- -- Balint Reczey <balint@balintreczey.hu>  Sun, 19 Jul 2015 23:19:16 +0200
+ -- Balint Reczey <balint@balintreczey.hu>  Sun, 02 Aug 2015 21:29:16 +0200
 
 kodi (14.2+dfsg1-2) unstable; urgency=medium
 

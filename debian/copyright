@@ -126,10 +126,6 @@ Files: lib/*
 Copyright: 2005-2013, Team XBMC
 License: GPL-2+
 
-Files: lib/DllModplug.h
-Copyright: 2009-2013, Team XBMC
-License: GPL-2+
-
 Files: lib/SlingboxLib/*
 Copyright: 2010, 2011, Stonyx
 License: GPL
@@ -137,88 +133,6 @@ License: GPL
 Files: lib/addons/*
 Copyright: 2012, 2013, Team XBMC
 License: GPL-2+
-
-Files: lib/asap/*
-Copyright: 2005-2009, Piotr Fusik
-License: GPL-2+
-
-Files: lib/asap/asap.h
-Copyright: 2009, Marek Konopka
-  2005-2009, Piotr Fusik
-  2002-2005, Radek Sterba
-  1999, David Spilka
-  1994-2005, Marcin Lewandowski
-License: GPL-2+
-
-Files: lib/asap/gsplayer/*
-Copyright: 2003-2005, Y.Nagamidori
-License: GPL-2+
-
-Files: lib/cmyth/*
-Copyright: 2004-2012, Eric Lund, Jon Gettler
-License: LGPL-2.1+
-
-Files: lib/cmyth/include/refmem/atomic.h
-Copyright: 2004-2008, Eric Lund, Jon Gettler
-License: LGPL-2.1+
-
-Files: lib/cmyth/libcmyth/*
-Copyright: 2004-2010, Eric Lund
-License: LGPL-2.1+
-
-Files: lib/cmyth/libcmyth/bookmark.c
-Copyright: 2005-2009, Jon Gettler
-License: LGPL-2.1+
-
-Files: lib/cmyth/libcmyth/cmyth_local.h
- lib/cmyth/libcmyth/connection.c
-Copyright: 2004-2012, Eric Lund, Jon Gettler
-License: LGPL-2.1+
-
-Files: lib/cmyth/libcmyth/cmyth_msc.h
-Copyright: 2012, Jon Gettler
-License: LGPL-2.1+
-
-Files: lib/cmyth/libcmyth/commbreak.c
- lib/cmyth/libcmyth/event.c
-Copyright: 2005-2012, Jon Gettler
-License: LGPL-2.1+
-
-Files: lib/cmyth/libcmyth/debug.c
-Copyright: 2004-2009, Eric Lund
-License: LGPL-2.1+
-
-Files: lib/cmyth/libcmyth/file.c
- lib/cmyth/libcmyth/mythtv_mysql.c
- lib/cmyth/libcmyth/ringbuf.c
- lib/cmyth/libcmyth/socket.c
-Copyright: 2004-2012, Eric Lund
-License: LGPL-2.1+
-
-Files: lib/cmyth/libcmyth/livetv.c
-Copyright: 2006-2012, Sergio Slobodrian
-License: LGPL-2.1+
-
-Files: lib/cmyth/libcmyth/mysql_query.c
- lib/cmyth/libcmyth/safe_string.h
-Copyright: 2006-2009, Simon Hyde
-License: LGPL-2.1+
-
-Files: lib/cmyth/libcmyth/recorder.c
-Copyright: 2004-2009, Eric Lund, Jon Gettler
-License: LGPL-2.1+
-
-Files: lib/cmyth/libcmyth/utf8tolatin1.c
-Copyright: 2002, Ulric Eriksson <ulric@siag.nu>
-License: GPL-2+
-
-Files: lib/cmyth/librefmem/alloc.c
-Copyright: 2005, 2006, Eric Lund, Jon Gettler
-License: LGPL-2.1+
-
-Files: lib/cmyth/librefmem/debug_refmem.c
-Copyright: 2004-2006, Eric Lund
-License: LGPL-2.1+
 
 Files: lib/cpluff/*
 Copyright: 2007, Johannes Lehtinen
@@ -358,16 +272,6 @@ Files: lib/cximage-6.0/raw/dcraw.c
 Copyright: 1997-2009, by Dave Coffin, dcoffin a cybercom o net
 License: GPL-2+
 
-Files: lib/libRTV/*
-Copyright: 2002, John Todd Larason <jtl@molehill.org>
-License: GPL-2+
-
-Files: lib/libRTV/interface.c
-Copyright: 2003, 2004, rtvguy
-  2002, John Todd Larason <jtl@molehill.org>
-  2002, 2003, Lee Thompson <thompsonl@logh.net>
-License: GPL-2+
-
 Files: lib/libUPnP/*
 Copyright: 2004-2010, Plutinosoft, LLC
 License: GPL-2+
@@ -387,65 +291,6 @@ License: GPL-2+
 Files: lib/libUPnP/Platinum/Source/Tools/*
 Copyright: 2004-2008, Plutinosoft, LLC
 License: GPL-2+
-
-Files: lib/libXDAAP/*
-Copyright: 2004, David Hammerton
-License: Expat
-
-Files: lib/libXDAAP/Authentication/*
-Copyright: 2004, David Hammerton
-  2003, Apple Computer, Inc.
-License: Expat
-
-Files: lib/libXDAAP/Authentication/hasher.h
-Copyright: 2004, David Hammerton
-License: Expat
-
-Files: lib/libXDAAP/Authentication/md5.c
-Copyright: 2004, David Hammerton <crazney@crazney.net>
-License: public-domain and Expat
- Parts found in the public domain with no copyright claim.
- .
- see rfc1321
- .
- Permission is hereby granted, free of charge, to any person
- obtaining a copy of this software and associated documentation
- files (the "Software"), to deal in the Software without
- restriction, including without limitation the rights to use,
- copy, modify, merge, publish, distribute, sublicense, and/or
- sell copies of the Software, and to permit persons to whom the
- Software is furnished to do so, subject to the following conditions:
- .
- The above copyright notice and this permission notice shall be
- included in all copies or substantial portions of the Software.
- .
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- OTHER DEALINGS IN THE SOFTWARE.
-
-Files: lib/libXDAAP/daap_contentcodes.h
- lib/libXDAAP/debug.c
-Copyright: David Hammerton 2003
-License: Expat
-
-Files: lib/libXDAAP/debug.h
-Copyright: 2003, David Hammerton
-License: Expat
-
-Files: lib/libXDAAP/global.c
- lib/libXDAAP/private.h
-Copyright: 2003, David Hammerton
-License: Expat
-
-Files: lib/libXDAAP/libXDAAP.c
-Copyright: 2004, Forza (Chris Barnett)
-  2004, David Hammerton
-License: Expat
 
 Files: lib/libdvd/libdvdnav/*
 Copyright: Daniel Caujolle-Bert <segfault@club-internet.fr>
@@ -548,291 +393,6 @@ Files: lib/libexif/ExifParse.cpp
 Copyright: 2005-2007, Team XboxMediaCenter
 License: GPL-2+
 
-Files: lib/libhts/*
-Copyright: 2007-2008, Andreas Öman
-License: GPL-2+
-
-Files: lib/libhts/htsstr.c
- lib/libhts/htsstr.h
-Copyright: 2008, Mattias Wadman
-  2008, Andreas Öman
-License: GPL-2+
-
-Files: lib/libhts/net_winsock.c
-Copyright: 2007, 2008, Joakim Plate
-  2007, 2008, Andreas Öman
-License: GPL-2+
-
-Files: lib/libhts/sha1.c
- lib/libhts/sha1.h
-Copyright: 2007, Michael Niedermayer <michaelni@gmx.at>
-License: LGPL-2.1+
-
-Files: lib/libsquish/*
-Copyright: 2006, Simon Brown si@sjbrown.co.uk
-License: Expat
-
-Files: lib/libsquish/clusterfit.cpp
- lib/libsquish/clusterfit.h
-Copyright: 2007, Ignacio Castano icastano@nvidia.com
-  2006, Simon Brown si@sjbrown.co.uk
-License: Expat
-
-Files: lib/nosefart/*
-Copyright: 2008-2013, Team XBMC
-License: GPL-2+
-
-Files: lib/nosefart/src/*
-Copyright: 1998-2000, Matthew Conte (matt@conte.com)
-License: LGPL-2
-
-Files: lib/nosefart/src/memguard.c
-Copyright: 1998-2000, Matthew Conte (matt@conte.com)
-  1998, the Retrocade group
-License: LGPL-2
- This program is free software; you can redistribute it and/or
- modify it under the terms of version 2 of the GNU Library General
- Public License as published by the Free Software Foundation.
- .
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Library General Public License for more details.  To obtain a
- copy of the GNU Library General Public License, write to the Free
- Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- .
- Any permitted reproduction of these routines, in whole or in part,
- must bear this legend.
-
-Files: lib/nosefart/src/sndhrdw/fmopl.c
-Copyright: 1999, Tatsuyuki Satoh , MultiArcadeMachineEmurator development
-License: GPL-2+
-
-Files: lib/snesapu/A2Misc.h
-Copyright: 2006, Alpha-II Productions *
-License: LGPL-2.1+
-
-Files: lib/snesapu/SNES/SNESAPU/SNESAPU.cpp
-Copyright: 2001-2006, Alpha-II Productions *
-License: GPL-2+
-
-Files: lib/snesapu/SNES/SNESAPU/SNESAPU.h
-Copyright: 2001-2006, Alpha-II Productions *
-License: LGPL-2.1+
-
-Files: lib/stsound/*
-Copyright: 1995-1999, Arnaud Carre ( http://leonard.oxg.free.fr )
-License: GPL-2+
-
-Files: lib/stsound/StSoundLibrary/LZH/*
-Copyright: 1996, Kerwin F. Medina
-  1991, Haruhiko Okumura
-License: GPL-2+
-
-Files: lib/stsound/StSoundLibrary/XBMCYM.cpp
-Copyright: 2008-2013, Team XBMC
-License: GPL-2+
-
-Files: lib/timidity/*
-Copyright: 1999-2002, Masanao Izumo <mo@goice.co.jp>
-  1995, Tuukka Toivonen <tt@cgs.fi>
-License: GPL-2+
-
-Files: lib/timidity/interface/VTPrsTbl.c
- lib/timidity/interface/VTparse.h
-Copyright: 1987, by Digital Equipment Corporation, Maynard, Massachusetts
-License: GPL-2+
-
-Files: lib/timidity/interface/alsaseq_c.c
-Copyright: 2000, Takashi Iwai <tiwai@suse.de>
-  1999-2004, Masanao Izumo <iz@onicos.co.jp>
-  1995, Tuukka Toivonen <tt@cgs.fi>
-License: GPL-2+
-
-Files: lib/timidity/interface/ncurs_c.c
- lib/timidity/interface/server_c.c
- lib/timidity/interface/slang_c.c
- lib/timidity/interface/vt100_c.c
- lib/timidity/interface/w32g_i.c
- lib/timidity/interface/w32g_syn.c
- lib/timidity/interface/xaw_i.c
-Copyright: 1999-2004, Masanao Izumo <iz@onicos.co.jp>
-  1995, Tuukka Toivonen <tt@cgs.fi>
-License: GPL-2+
-
-Files: lib/timidity/interface/portmidisyn_c.c
- lib/timidity/interface/rtsyn.h
- lib/timidity/interface/rtsyn_portmidi.c
- lib/timidity/interface/rtsyn_winmm.c
-Copyright: 2003, Keishi Suenaga <s_keishi@mutt.freemail.ne.jp>
-  2000, Takashi Iwai <tiwai@suse.de>
-  1999-2002, Masanao Izumo <mo@goice.co.jp>
-  1995, Tuukka Toivonen <tt@cgs.fi>
-License: GPL-2+
-
-Files: lib/timidity/interface/rtsyn_common.c
-Copyright: 2003, Keishi Suenaga <s_keishi@mutt.freemail.ne.jp>
-  2000, Takashi Iwai <tiwai@suse.de>
-  1999-2004, Masanao Izumo <iz@onicos.co.jp>
-  1995, Tuukka Toivonen <tt@cgs.fi>
-License: GPL-2+
-
-Files: lib/timidity/interface/w32g_c.c
- lib/timidity/interface/w32g_ini.c
- lib/timidity/interface/w32g_playlist.c
- lib/timidity/interface/w32g_utl.c
-Copyright: 1999-2002, Masanao Izumo <mo@goice.co.jp>
-  1995, Tuukka Toivonen <toivonen@clinet.fi>
-License: GPL-2+
-
-Files: lib/timidity/interface/winsyn_c.c
-Copyright: 2002, 2003, Keishi Suenaga <s_keishi@mutt.freemail.ne.jp>
-  2000, Takashi Iwai <tiwai@suse.de>
-  1999-2002, Masanao Izumo <mo@goice.co.jp>
-  1995, Tuukka Toivonen <tt@cgs.fi>
-License: GPL-2+
-
-Files: lib/timidity/interface/xaw_redef.c
-Copyright: 1987, 1988, by Digital Equipment Corporation, Maynard, Massachusetts
-  1987, 1988, 1994, X Consortium
-License: Expat
-
-Files: lib/timidity/libarc/deflate.c
-Copyright: 1999-2002, Masanao Izumo <mo@goice.co.jp>
-  1995, Tuukka Toivonen <tt@cgs.fi>
-  1992, 1993, Jean-loup Gailly
-License: GPL-2+
-
-Files: lib/timidity/libunimod/*
-Copyright: 1998, 1999, Miodrag Vallat
-License: LGPL-2+
-
-Files: lib/timidity/libunimod/load_gdm.c
-Copyright: 1998, 1999, Miodrag Vallat and others - see file AUTHORS file
-License: LGPL
-
-Files: lib/timidity/libunimod/load_okt.c
-Copyright: 1999, 2000, Miodrag Vallat and others - see file AUTHORS file
-License: LGPL-2+
-
-Files: lib/timidity/script/*
-Copyright: 1999-2004, Masanao Izumo <iz@onicos.co.jp>
-  1995, Tuukka Toivonen <tt@cgs.fi>
-License: GPL-2+
-
-Files: lib/timidity/script/wcc386_w.sh
-Copyright: 2004, Keishi Suenaga <s_kesihi@mutt.freemail.ne.jp>
-License: GPL-2+
-
-Files: lib/timidity/timidity/dl_dyld.c
-Copyright: 1999-2001, Masanao Izumo <mo@goice.co.jp>
-  1995, Tuukka Toivonen <tt@cgs.fi>
-License: GPL-2+
-
-Files: lib/timidity/timidity/effect.c
- lib/timidity/timidity/instrum.c
- lib/timidity/timidity/loadtab.c
- lib/timidity/timidity/playmidi.c
- lib/timidity/timidity/playmidi.h
- lib/timidity/timidity/readmidi.c
- lib/timidity/timidity/readmidi.h
- lib/timidity/timidity/recache.c
- lib/timidity/timidity/tables.c
- lib/timidity/timidity/tables.h
- lib/timidity/timidity/timidity.c
-Copyright: 1999-2004, Masanao Izumo <iz@onicos.co.jp>
-  1995, Tuukka Toivonen <tt@cgs.fi>
-License: GPL-2+
-
-Files: lib/timidity/timidity/hpux_d_a.c
-Copyright: 1999-2002, Masanao Izumo <mo@goice.co.jp>
-  1997, Lawrence T. Hoff
-  1995, Tuukka Toivonen <tt@cgs.fi>
-License: GPL-2+
-
-Files: lib/timidity/timidity/jack_a.c
-Copyright: 2003, Takashi Iwai <tiwai@suse.de>
-  1999-2002, Masanao Izumo <mo@goice.co.jp>
-  1995, Tuukka Toivonen <tt@cgs.fi>
-License: GPL-2+
-
-Files: lib/timidity/timidity/mod.c
-Copyright: 1999-2002, Masanao Izumo <mo@goice.co.jp>
-  1998, 1999, Miodrag Vallat and others - see file libunimod/AUTHORS
-  1995, Tuukka Toivonen <tt@cgs.fi>
-License: GPL-2+
-
-Files: lib/timidity/timidity/mt19937ar.c
-Copyright: 1997-2002, Makoto Matsumoto and Takuji Nishimura
-License: BSD-2-clause
-
-Files: lib/timidity/timidity/nas_a.c
-Copyright: 1999-2002, Masanao Izumo <mo@goice.co.jp>
-  1999, Michael Haardt <michael@moria.de>
-  1995, Tuukka Toivonen <tt@cgs.fi>
-License: GPL-2+
-
-Files: lib/timidity/timidity/reverb.c
- lib/timidity/timidity/reverb.h
-Copyright: 1999-2002, Masanao Izumo <mo@goice.co.jp>
-  1997-1999, Masaki Kiryu <mkiryu@usa.net>
-  1995, Tuukka Toivonen <tt@cgs.fi>
-License: GPL-2+
-
-Files: lib/timidity/timidity/sbkconv.c
- lib/timidity/timidity/sffile.c
- lib/timidity/timidity/sffile.h
- lib/timidity/timidity/sndfont.c
-Copyright: 1999-2002, Masanao Izumo <mo@goice.co.jp>
-  1996, 1997, Takashi Iwai
-  1995, Tuukka Toivonen <tt@cgs.fi>
-License: GPL-2+
-
-Files: lib/timidity/timidity_codec.h
-Copyright: 1995, Tuukka Toivonen <toivonen@clinet.fi>
-License: GPL-2+
-
-Files: lib/timidity/utils/fft4g.c
- lib/timidity/utils/fft4g.h
-Copyright: 1996-1999, Takuya OOURA
-License: GPL-2+
-
-Files: lib/timidity/utils/nkflib.c
-Copyright: 1999-2002, Masanao Izumo <mo@goice.co.jp>
-  1996, 1998 琉球大学情報工学科 河野 真治 <kono@ie.u-ryukyu.ac.jp>
-  1995, Tuukka Toivonen <tt@cgs.fi>
-  1987, Fujitsu LTD. (Itaru ICHIKAWA)
-License: GPL-2+
-
-Files: lib/timidity/utils/tmdy_getopt.h
-Copyright: 90-94, 96-99, 1989, Free Software Foundation, Inc
-License: LGPL-2+
-
-Files: lib/vgmstream/*
-Copyright: 2008-2013, Team XBMC
-License: GPL-2+
-
-Files: lib/vgmstream/ext_includes/*
-Copyright: 2005-2007, Paul Hsieh
-License: BSD-3-clause
-
-Files: lib/vgmstream/src/coding/acm_decoder.c
- lib/vgmstream/src/coding/acm_decoder.h
-Copyright: 2008, Adam Gashlin
-  2004-2008, Marko Kreen
-License: ISC
- Permission to use, copy, modify, and distribute this software for any
- purpose with or without fee is hereby granted, provided that the above
- copyright notice and this permission notice appear in all copies.
- .
- THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 Files: tools/EventClients/*
 Copyright: 2008-2013, Team XBMC
 License: GPL-2+
@@ -877,22 +437,6 @@ License: GPL-2+
 Files: tools/Linux/*
 Copyright: 2013, Team XBMC
 License: GPL-2+
-
-Files: tools/TexturePacker/*
-Copyright: 2005-2013, Team XBMC
-License: GPL-2+
-
-Files: tools/TexturePacker/SDL_anigif.cpp
-Copyright: 1996, Torsten Martinsen
- 1997-2006, Sam Lantinga
- 2006, Doug McFadyen
- 1990, 1991, 1993, David Koblas
-License: LGPL-2.1+
-
-Files: tools/TexturePacker/SDL_anigif.h
-Copyright: 2006, Doug McFadyen
-  1997-2006, Sam Lantinga
-License: LGPL-2.1+
 
 Files: tools/UpdateThumbs.py
 Copyright: 2005-2013, Team XBMC
@@ -980,11 +524,6 @@ Copyright: 2007-2013, Team XBMC
  2007, authors of ffmpeg & xvid & mplayer
 License: GPL-2+
 
-Files: xbmc/cores/dvdplayer/DVDCodecs/Overlay/libspucc/*
-Copyright: 2000-2008, the xine project
-  2001, Christian Vogler
-License: GPL-2+
-
 Files: xbmc/cores/dvdplayer/DVDCodecs/Video/libmpeg2/*
 Copyright: 2000-2004, Michel Lespinasse <walken@zoy.org>
   1999, 2000, Aaron Holtzman <aholtzma@ess.engr.uvic.ca>
@@ -1055,15 +594,6 @@ License: GPL-2+
 Files: xbmc/dbwrappers/dataset.h
 Copyright: 2002, Leo Seib, Hannover
 License: Expat
-
-Files: xbmc/filesystem/DAAPDirectory.cpp
- xbmc/filesystem/DAAPDirectory.h
- xbmc/filesystem/DAAPFile.cpp
- xbmc/filesystem/DAAPFile.h
-Copyright: 2005-2013, Team XBMC
-  2004, Forza (Chris Barnett)
-  ?, by the authors of libOpenDAAP
-License: GPL-2+
 
 Files: xbmc/filesystem/File.cpp
  xbmc/filesystem/File.h
@@ -1259,11 +789,6 @@ License: GPL-2+
 Files: xbmc/utils/StringUtils.cpp
 Copyright: 2005-2013, Team XBMC
   2012, Leigh Brasington
-License: GPL-2+
-
-Files: xbmc/utils/fft.cpp
- xbmc/utils/fft.h
-Copyright: 1998, Arvin Schnell
 License: GPL-2+
 
 Files: xbmc/utils/fstrcmp.c

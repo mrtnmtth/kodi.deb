@@ -397,11 +397,11 @@ Files: tools/EventClients/*
 Copyright: 2008-2013, Team XBMC
 License: GPL-2+
 
-Files: tools/EventClients/Clients/J2ME Client/*
+Files: tools/EventClients/Clients/J2ME?Client/*
 Copyright: 2008, topfs2
 License: GPL-2+
 
-Files: tools/EventClients/Clients/Kodi Send/*
+Files: tools/EventClients/Clients/Kodi?Send/*
 Copyright: 2009, Team XBMC
 License: GPL-2+
 
@@ -419,9 +419,9 @@ Files: tools/EventClients/Clients/WiiRemote/wiiuse_v0.12/*
 Copyright: 2006-2007, Michael Laforest
 License: GPL-3+
 
-Files: tools/EventClients/Clients/Xbox360 Controller/Xbox360Controller.cpp
- tools/EventClients/Clients/Xbox360 Controller/Xbox360Controller.h
- tools/EventClients/Clients/Xbox360 Controller/Xbox360EventClient.cpp
+Files: tools/EventClients/Clients/Xbox360?Controller/Xbox360Controller.cpp
+ tools/EventClients/Clients/Xbox360?Controller/Xbox360Controller.h
+ tools/EventClients/Clients/Xbox360?Controller/Xbox360EventClient.cpp
 Copyright: 2009-2013, Team XBMC
 License: GPL-2+
 
@@ -430,7 +430,7 @@ Files: tools/EventClients/lib/python/ps3/keymaps.py
 Copyright: 2008-2013, Team XBMC
 License: GPL-2+
 
-Files: tools/Fake Episode Maker/*
+Files: tools/Fake?Episode?Maker/*
 Copyright: 2008-2013, Team XBMC
 License: GPL-2+
 

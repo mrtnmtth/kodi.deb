@@ -112,7 +112,7 @@ Build-Depends: autoconf,
  zlib1g-dev
 Standards-Version: 3.9.5
 Homepage: http://kodi.tv/
-Vcs-Git: git://git.debian.org/pkg-multimedia/kodi.git
+Vcs-Git: git://anonscm.debian.org/pkg-multimedia/kodi.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-multimedia/kodi.git
 
 Package: kodi

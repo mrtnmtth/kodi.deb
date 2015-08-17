@@ -5,8 +5,6 @@ Files-Excluded: addons/service.xbmc.versioncheck
  addons/skin.confluence/fonts/Roboto-*.ttf
  addons/webinterface.default/js/iscroll-min.js
  addons/webinterface.default/js/jquery-1.8.2.min.js
- lib/afpfs-ng
- lib/asap/win32
  lib/boost
  lib/cpluff/libcpluff/win32
  lib/cximage-6.0/jasper
@@ -16,35 +14,20 @@ Files-Excluded: addons/service.xbmc.versioncheck
  lib/cximage-6.0/png
  lib/cximage-6.0/tiff
  lib/cximage-6.0/zlib
- lib/enca
- lib/ffmpeg
- lib/freetype
  lib/groovy
  lib/gtest
- lib/libass
  lib/libbluray
- lib/libcec
  lib/libdvd/includes/dvdcss
  lib/libdvd/libdvdcss
  lib/libdvd/libdvdnav/msvc
  lib/libdvd/libdvdread/msvc
  lib/libhdhomerun
- lib/libhts/Win32
- lib/liblame
- lib/libmad
- lib/libmicrohttpd
- lib/libmodplug
  lib/libmpeg2
- lib/libnfs
  lib/librtmp
- lib/libRTV/*.lib
- lib/libshairport
- lib/libsidplay2
  lib/libUPnP/Neptune/ThirdParty/zlib-*
  lib/libUPnP/Platinum/Build/Targets/mipsel-psp-linux
  lib/libUPnP/Platinum/Targets/universal-apple-*
  lib/libUPnP/Platinum/ThirdParty/log4net
- lib/snesapu/SNES/SNESAPU/SNESAPU.lib
  lib/taglib
  lib/UnrarXLib
  lib/win32
@@ -56,7 +39,6 @@ Files-Excluded: addons/service.xbmc.versioncheck
  tools/depends/target
  tools/EventClients/Clients/OSXRemote
  tools/rbp
- tools/TexturePacker/Win32
  tools/windows
  xbmc/visualizations/Goom/goom2k4-0/mac
  xbmc/visualizations/Vortex/angelscript/angelscript/lib/angelscript.lib

@@ -9,6 +9,22 @@ kodi (15.0+dfsg1-1) UNRELEASED; urgency=medium
   * Ship patch helping Jessie backports
   * Refresh patches
   * Eliminate __DATE__ macros from source to make build more reproducible
+  * Build-depend on libsdl2.*-dev instead of libsdl.*-dev
+  * Build-depend on libgif-dev
+  * Drop obsoleted fix of installed header's include paths
+  * Refresh include file list included by kodi-addons-dev
+  * Build depend on libcec (>= 3)
+  * Build-depend on groovy2 instead of groovy
+  * Sort build dependencies
+  * Fix packaging repository URL
+  * Remove removed files from debian/copyright
+  * Fix filenames with spaces in debian/copyright
+  * Ship TexturePacker in kodi-addons-dev in /usr/lib/kodi
+  * Build depend on libcec-platform-dev
+  * Stop using embedded gnulib modules in rsxs screensaver (Closes: #795813)
+  * Add missing copyright paragraphs to d/copyright
+  * Stop marking files as excluded which are removed from upstream tarball already
+  * Bump standards version to 3.9.6
 
  -- Balint Reczey <balint@balintreczey.hu>  Sun, 02 Aug 2015 21:29:16 +0200
 

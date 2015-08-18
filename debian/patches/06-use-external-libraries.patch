@@ -290,3 +290,21 @@ Forwarded: not-needed
  
  SOLARWINDS-OUT=$(OUTDIR)/screensaver.rsxs.solarwinds/Solarwinds.xbs
  SOLARWINDS-DEP=$(RSXS)/src/solarwinds/rs-solarwinds
+--- a/tools/depends/native/TexturePacker/Makefile
++++ b/tools/depends/native/TexturePacker/Makefile
+@@ -9,13 +9,13 @@
+ 
+ ifeq ($(NATIVEPLATFORM),)
+   PLATFORM = native
+-  EXTRA_CONFIGURE = --enable-static
++#  EXTRA_CONFIGURE = --enable-static
+ else
+   PLATFORM = $(NATIVEPLATFORM)
+ endif
+ 
+ ifeq ($(NATIVE_OS), linux)
+-  EXTRA_CONFIGURE = --enable-static
++#  EXTRA_CONFIGURE = --enable-static
+ endif
+ ifeq ($(NATIVE_OS), android)
+   EXTRA_CONFIGURE = --enable-static

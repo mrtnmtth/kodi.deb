@@ -23,12 +23,15 @@ kodi (15.1+dfsg1-1) unstable; urgency=medium
   * Build depend on libcec-platform-dev
   * Stop using embedded gnulib modules in rsxs screensaver (Closes: #795813)
   * Add missing copyright paragraphs to d/copyright
-  * Stop marking files as excluded which are removed from upstream tarball already
+  * Stop marking files as excluded which are removed from upstream tarball
+    already
   * Bump standards version to 3.9.6
   * New upstream release 15.1
     See http://kodi.tv/kodi-15-1-isengard-maintenance-release/
+  * Move TexturePacker to kodi-bin
+  * Stop building TexturePacker statically
 
- -- Balint Reczey <balint@balintreczey.hu>  Mon, 17 Aug 2015 18:29:16 +0200
+ -- Balint Reczey <balint@balintreczey.hu>  Tue, 18 Aug 2015 14:16:59 +0200
 
 kodi (14.2+dfsg1-2) unstable; urgency=medium
 

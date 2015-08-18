@@ -6,13 +6,6 @@ DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 DEB_HOST_ARCH ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
 
-ifeq (,$(filter i386 amd64,$(DEB_HOST_ARCH)))
-  ARCH_SPECIFIC_OPTIONS = --disable-crystalhd
-else
-  ARCH_SPECIFIC_OPTIONS = --enable-crystalhd
-  ARCH_SPECIFIC_LIB_RECOMMENDS = -lcrystalhd
-endif
-
 GL_CONFIG_OPTIONS = --enable-gl --disable-gles --enable-vdpau
 ARCH_SPECIFIC_LIB_RECOMMENDS_ADD = -lvdpau
 
@@ -53,19 +46,14 @@ KODI_CONFIG_OPTIONS ?= --host=$(DEB_HOST_GNU_TYPE) \
   --prefix=/usr --docdir=/usr/share/doc/kodi \
   --enable-debug \
   $(GL_CONFIG_OPTIONS) \
-  --disable-vdadecoder \
   --disable-vtbdecoder \
   --disable-openmax \
   --disable-tegra \
   --disable-profiling \
   --enable-joystick \
-  --enable-xrandr \
-  --enable-sdl \
   --enable-pulse \
   --enable-rtmp \
-  --enable-ffmpeg-libvorbis \
   --disable-mid \
-  --disable-hal \
   --enable-avahi \
   --disable-asap-codec \
   --enable-webserver \
@@ -73,9 +61,7 @@ KODI_CONFIG_OPTIONS ?= --host=$(DEB_HOST_GNU_TYPE) \
   --enable-texturepacker \
   --enable-nfs \
   --enable-libcec \
-  --disable-afpclient \
   --disable-airtunes \
-  --enable-external-libraries \
   --with-ffmpeg=shared \
   --disable-dependency-tracking \
   --disable-dvdcss \

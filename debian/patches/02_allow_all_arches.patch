@@ -1,8 +1,6 @@
-diff --git a/m4/xbmc_arch.m4 b/m4/xbmc_arch.m4
-index 0b66a82..6c76401 100644
 --- a/m4/xbmc_arch.m4
 +++ b/m4/xbmc_arch.m4
-@@ -27,7 +27,7 @@ case $build in
+@@ -27,7 +27,7 @@
       AC_SUBST(NATIVE_ARCH_DEFINES, "-DTARGET_POSIX -DTARGET_LINUX -D_LINUX")
       ;;
    *)
@@ -11,7 +9,7 @@ index 0b66a82..6c76401 100644
  esac
  
  
-@@ -70,7 +70,7 @@ case $host in
+@@ -70,7 +70,7 @@
       AC_SUBST(ARCH_DEFINES, "-DTARGET_POSIX -DTARGET_LINUX -D_LINUX -DTARGET_ANDROID")
       ;;
    *)
@@ -20,3 +18,14 @@ index 0b66a82..6c76401 100644
  esac
  
  if test "$target_platform" = "target_android" ; then
+--- a/configure.ac
++++ b/configure.ac
+@@ -715,7 +715,7 @@
+      USE_STATIC_FFMPEG=1
+      ;;
+   *)
+-     AC_MSG_ERROR(unsupported host ($host))
++     ARCH=$host_cpu"-"$host_os
+ esac
+ AC_SUBST([ARCH])
+ 

@@ -29,7 +29,7 @@ DEB_CFLAGS ?=  $(shell dpkg-buildflags --get CPPFLAGS) \
   $(filter-out -g -O2, $(shell dpkg-buildflags --get CFLAGS))
 DEB_CXXFLAGS ?= $(shell dpkg-buildflags --get CPPFLAGS) \
   $(filter-out -g -O2, $(shell dpkg-buildflags --get CXXFLAGS))
-DEB_LDFLAGS ?= $(shell dpkg-buildflags --get LDFLAGS) $(shell pkg-config --libs ftgl)
+DEB_LDFLAGS ?= $(shell dpkg-buildflags --get LDFLAGS) $(shell pkg-config --libs ftgl) -latomic
 ENV_OPTIONS = CFLAGS="$(DEB_CFLAGS)" CXXFLAGS="$(DEB_CXXFLAGS)" \
   LDFLAGS="$(DEB_LDFLAGS)"
 

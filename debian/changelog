@@ -1,6 +1,10 @@
-kodi (15.1+dfsg1-2) UNRELEASED; urgency=medium
+kodi (15.1+dfsg1-2) unstable; urgency=medium
 
-  *
+  * Don't stop configuration for unknown architectures
+  * Drop unknown ./configure options
+  * Continue configuration for unknown arches even further (Closes: #790635)
+  * Link with libatomic to fix FTBFS on powerpc and some other architectures
+  * Fix broken symlinks to DejaVuSans font files
 
  -- Balint Reczey <balint@balintreczey.hu>  Tue, 18 Aug 2015 23:51:14 +0200
 

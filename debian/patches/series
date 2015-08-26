@@ -1,3 +1,4 @@
+0001-arm64-Fix-build-breakages-due-to-architecture-specif.patch
 01_reproducible_build.patch
 02_allow_all_arches.patch
 03-privacy.patch

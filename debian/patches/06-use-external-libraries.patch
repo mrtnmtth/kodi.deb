@@ -35,7 +35,7 @@ Forwarded: not-needed
  BOOTSTRAP_SUBDIRS += lib/libdvd/libdvdcss/configure.ac
 --- a/configure.ac
 +++ b/configure.ac
-@@ -1218,6 +1218,9 @@
+@@ -1219,6 +1219,9 @@
  PKG_CHECK_MODULES([TAGLIB],  [taglib >= 1.8],
    [INCLUDES="$INCLUDES $TAGLIB_CFLAGS"; LIBS="$LIBS $TAGLIB_LIBS"],
    AC_MSG_ERROR($missing_library))
@@ -45,7 +45,7 @@ Forwarded: not-needed
  
  if test "$use_optical_drive" = "yes"; then
    PKG_CHECK_MODULES([CDIO],       [libcdio],
-@@ -1312,6 +1315,7 @@
+@@ -1313,6 +1316,7 @@
  XB_FIND_SONAME([VORBISFILE],  [vorbisfile])
  XB_FIND_SONAME([ASS],         [ass])
  XB_FIND_SONAME([MPEG2],       [mpeg2])
@@ -53,7 +53,7 @@ Forwarded: not-needed
  
  # WebServer
  if test "$use_webserver" = "yes"; then
-@@ -2477,7 +2481,6 @@
+@@ -2478,7 +2482,6 @@
      xbmc/network/Makefile \
      xbmc/network/upnp/Makefile \
      lib/libexif/Makefile \

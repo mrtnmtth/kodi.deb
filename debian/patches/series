@@ -3,6 +3,7 @@
 02_allow_all_arches.patch
 03-privacy.patch
 04-differentiate-from-vanilla-Kodi.patch
+05-dont-require-neon-on-arm-armhf.patch
 06-use-external-libraries.patch
 07-use-system-groovy.patch
 09-use-correct-ftgl.h

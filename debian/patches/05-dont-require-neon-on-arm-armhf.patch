@@ -1,0 +1,20 @@
+Description: Don't use NEON on arm and armhf architectures
+ NEON is not required in those Debian port and usin it breaks build on
+ official build servers.
+ .
+Author: Balint Reczey <balint@balintreczey.hu>
+Forwarded: not-needed
+
+diff --git a/configure.ac b/configure.ac
+index 1f94a25..377cc1a 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -685,7 +685,7 @@ case $host in
+      ARCH="arm"
+      use_arch="arm"
+      use_joystick=no
+-     use_neon=yes
++     use_neon=no
+      use_gles=yes
+      use_gl=no
+      use_wayland=no

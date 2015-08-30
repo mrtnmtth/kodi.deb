@@ -1,6 +1,7 @@
 kodi (15.1+dfsg1-3) unstable; urgency=medium
 
-  * Make configure more verbose when building on architecture not supported by upstream
+  * Make configure more verbose when building on architecture not supported
+    by upstream
   * Fix FTBFS on aarch64 (Closes: #796532)
   * Don't use NEON on arm/armhf. (Closes: #797204)
   * Fix build on s390x

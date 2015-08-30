@@ -1,0 +1,59 @@
+Description: Fix build on s390x
+ Upstream is most probably not interested in this port thus I have not
+ forwarded the patch.
+ .
+Author: Balint Reczey <balint@balintreczey.hu>
+Forwarded: not-needed
+
+diff --git a/xbmc/cores/DllLoader/DllLoader.h b/xbmc/cores/DllLoader/DllLoader.h
+index e669203..30dde17 100644
+--- a/xbmc/cores/DllLoader/DllLoader.h
++++ b/xbmc/cores/DllLoader/DllLoader.h
+@@ -23,7 +23,7 @@
+ #include "coffldr.h"
+ #include "LibraryLoader.h"
+ 
+-#if defined(__linux__) && !defined(__powerpc__) && !defined(__arm__) && !defined(__mips__) && !defined(__aarch64__)
++#if defined(__linux__) && !defined(__powerpc__) && !defined(__arm__) && !defined(__mips__) && !defined(__aarch64__) && !defined(__s390x__)
+ #define USE_LDT_KEEPER
+ #include "ldt_keeper.h"
+ #endif
+diff --git a/xbmc/cores/DllLoader/ldt_keeper.c b/xbmc/cores/DllLoader/ldt_keeper.c
+index 1c0cdb2..397389a 100644
+--- a/xbmc/cores/DllLoader/ldt_keeper.c
++++ b/xbmc/cores/DllLoader/ldt_keeper.c
+@@ -19,7 +19,7 @@
+  */
+ 
+ //#ifndef __powerpc__
+-#if !defined(__powerpc__) && !defined(__ppc__) && !defined(__arm__) && !defined(__mips__) && !defined(__aarch64__)
++#if !defined(__powerpc__) && !defined(__ppc__) && !defined(__arm__) && !defined(__mips__) && !defined(__aarch64__) && !defined(__s390x__)
+ 
+ #include "ldt_keeper.h"
+ 
+diff --git a/xbmc/cores/VideoRenderers/LinuxRendererGL.h b/xbmc/cores/VideoRenderers/LinuxRendererGL.h
+index 5a3e3df..6068c47 100644
+--- a/xbmc/cores/VideoRenderers/LinuxRendererGL.h
++++ b/xbmc/cores/VideoRenderers/LinuxRendererGL.h
+@@ -323,7 +323,7 @@ protected:
+ 
+ 
+ inline int NP2( unsigned x ) {
+-#if defined(TARGET_POSIX) && !defined(__POWERPC__) && !defined(__PPC__) && !defined(__arm__) && !defined(__mips__) && !defined(__aarch64__)
++#if defined(TARGET_POSIX) && !defined(__POWERPC__) && !defined(__PPC__) && !defined(__arm__) && !defined(__mips__) && !defined(__aarch64__) && !defined(__s390x__)
+   // If there are any issues compiling this, just append a ' && 0'
+   // to the above to make it '#if defined(TARGET_POSIX) && 0'
+ 
+diff --git a/xbmc/utils/MathUtils.h b/xbmc/utils/MathUtils.h
+index a925480..180652d 100644
+--- a/xbmc/utils/MathUtils.h
++++ b/xbmc/utils/MathUtils.h
+@@ -35,7 +35,7 @@
+ #if defined(__ppc__) || \
+     defined(__powerpc__) || \
+     defined(__mips__) || \
+-    defined(__arm__) || defined(__aarch64__)
++    defined(__arm__) || defined(__aarch64__) || defined(__s390x__)
+   #define DISABLE_MATHUTILS_ASM_ROUND_INT
+ #endif
+ 

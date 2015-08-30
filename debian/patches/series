@@ -6,5 +6,6 @@
 05-dont-require-neon-on-arm-armhf.patch
 06-use-external-libraries.patch
 07-use-system-groovy.patch
+08-fix-s390x-build.patch
 09-use-correct-ftgl.h
 10-dont-use-omitted-files.patch

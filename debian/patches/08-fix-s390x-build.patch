@@ -5,8 +5,6 @@ Description: Fix build on s390x
 Author: Balint Reczey <balint@balintreczey.hu>
 Forwarded: not-needed
 
-diff --git a/xbmc/cores/DllLoader/DllLoader.h b/xbmc/cores/DllLoader/DllLoader.h
-index e669203..30dde17 100644
 --- a/xbmc/cores/DllLoader/DllLoader.h
 +++ b/xbmc/cores/DllLoader/DllLoader.h
 @@ -23,7 +23,7 @@
@@ -18,8 +16,6 @@ index e669203..30dde17 100644
  #define USE_LDT_KEEPER
  #include "ldt_keeper.h"
  #endif
-diff --git a/xbmc/cores/DllLoader/ldt_keeper.c b/xbmc/cores/DllLoader/ldt_keeper.c
-index 1c0cdb2..397389a 100644
 --- a/xbmc/cores/DllLoader/ldt_keeper.c
 +++ b/xbmc/cores/DllLoader/ldt_keeper.c
 @@ -19,7 +19,7 @@
@@ -31,11 +27,9 @@ index 1c0cdb2..397389a 100644
  
  #include "ldt_keeper.h"
  
-diff --git a/xbmc/cores/VideoRenderers/LinuxRendererGL.h b/xbmc/cores/VideoRenderers/LinuxRendererGL.h
-index 5a3e3df..6068c47 100644
 --- a/xbmc/cores/VideoRenderers/LinuxRendererGL.h
 +++ b/xbmc/cores/VideoRenderers/LinuxRendererGL.h
-@@ -323,7 +323,7 @@ protected:
+@@ -323,7 +323,7 @@
  
  
  inline int NP2( unsigned x ) {
@@ -44,8 +38,6 @@ index 5a3e3df..6068c47 100644
    // If there are any issues compiling this, just append a ' && 0'
    // to the above to make it '#if defined(TARGET_POSIX) && 0'
  
-diff --git a/xbmc/utils/MathUtils.h b/xbmc/utils/MathUtils.h
-index a925480..180652d 100644
 --- a/xbmc/utils/MathUtils.h
 +++ b/xbmc/utils/MathUtils.h
 @@ -35,7 +35,7 @@
@@ -57,3 +49,128 @@ index a925480..180652d 100644
    #define DISABLE_MATHUTILS_ASM_ROUND_INT
  #endif
  
+--- a/xbmc/threads/Atomics.cpp
++++ b/xbmc/threads/Atomics.cpp
+@@ -106,7 +106,7 @@
+ ///////////////////////////////////////////////////////////////////////////
+ long long cas2(volatile long long* pAddr, long long expectedVal, long long swapVal)
+ {
+-#if defined(__ppc__) || defined(__powerpc__) || defined(__arm__) || defined(__aarch64__) // PowerPC and ARM
++#if defined(__ppc__) || defined(__powerpc__) || defined(__arm__) || defined(__aarch64__) || defined(__s390x__)// PowerPC, ARM & et al.
+ // Not available/required
+ // Hack to allow compilation
+   throw "cas2 is not implemented";
+--- a/xbmc/threads/Atomics.h
++++ b/xbmc/threads/Atomics.h
+@@ -23,7 +23,7 @@
+ 
+ // TODO: Inline these methods
+ long cas(volatile long *pAddr, long expectedVal, long swapVal);
+-#if !defined(__ppc__) && !defined(__powerpc__) && !defined(__arm__)
++#if !defined(__ppc__) && !defined(__powerpc__) && !defined(__arm__) && !defined(__s390x__)
+ long long cas2(volatile long long* pAddr, long long expectedVal, long long swapVal);
+ #endif
+ long AtomicIncrement(volatile long* pAddr);
+--- a/xbmc/threads/LockFree.cpp
++++ b/xbmc/threads/LockFree.cpp
+@@ -43,7 +43,7 @@
+     top = pStack->top;
+     pNode->next.ptr = top.ptr; // Link in the new node
+     newTop.ptr = pNode;
+-#if defined(__ppc__) || defined(__powerpc__) || defined(__arm__)
++#if defined(__ppc__) || defined(__powerpc__) || defined(__arm__) || defined(__s390x__)
+   } while(cas((long*)&pStack->top, atomic_ptr_to_long(top), atomic_ptr_to_long(newTop)) != atomic_ptr_to_long(top));
+ #else
+     newTop.version = top.version + 1;
+@@ -61,7 +61,7 @@
+     if (top.ptr == NULL)
+       return NULL;
+     newTop.ptr = ((lf_node*)top.ptr)->next.ptr; // Unlink the current top node
+-#if defined(__ppc__) || defined(__powerpc__) || defined(__arm__)
++#if defined(__ppc__) || defined(__powerpc__) || defined(__arm__) || defined(__s390x__)
+   } while(cas((long*)&pStack->top, atomic_ptr_to_long(top), atomic_ptr_to_long(newTop)) != atomic_ptr_to_long(top));
+ #else
+     newTop.version = top.version + 1;
+@@ -188,7 +188,7 @@
+   {
+     tail = pQueue->tail;
+     next = ((lf_queue_node*)tail.ptr)->next;
+-#if defined(__ppc__) || defined(__powerpc__) || defined(__arm__)
++#if defined(__ppc__) || defined(__powerpc__) || defined(__arm__) || defined(__s390x__)
+     if (atomic_ptr_to_long(tail) == atomic_ptr_to_long(pQueue->tail)) // Check consistency
+ #else
+     if (atomic_ptr_to_long_long(tail) == atomic_ptr_to_long_long(pQueue->tail)) // Check consistency
+@@ -197,7 +197,7 @@
+       if (next.ptr == NULL) // Was tail pointing to the last node?
+       {
+         node.ptr = pNode;
+-#if defined(__ppc__) || defined(__powerpc__) || defined(__arm__)
++#if defined(__ppc__) || defined(__powerpc__) || defined(__arm__) || defined(__s390x__)
+         if (cas((long*)&((lf_queue_node*)tail.ptr)->next, atomic_ptr_to_long(next), atomic_ptr_to_long(node)) == atomic_ptr_to_long(next)) // Try to link node at end
+ #else
+         node.version = next.version + 1;
+@@ -208,7 +208,7 @@
+       else // tail was lagging, try to help...
+       {
+         node.ptr = next.ptr;
+-#if defined(__ppc__) || defined(__powerpc__) || defined(__arm__)
++#if defined(__ppc__) || defined(__powerpc__) || defined(__arm__) || defined(__s390x__)
+         cas((long*)&pQueue->tail, atomic_ptr_to_long(tail), atomic_ptr_to_long(node)); // We don't care if we  are successful or not
+ #else
+         node.version = tail.version + 1;
+@@ -218,7 +218,7 @@
+     }
+   } while (true); // Keep trying until the enqueue is done
+   node.ptr = pNode;
+-#if defined(__ppc__) || defined(__powerpc__) || defined(__arm__)
++#if defined(__ppc__) || defined(__powerpc__) || defined(__arm__) || defined(__s390x__)
+   cas((long*)&pQueue->tail, atomic_ptr_to_long(tail), atomic_ptr_to_long(node)); // Try to swing the tail to the new node
+ #else
+   node.version = tail.version + 1;
+@@ -237,7 +237,7 @@
+     head = pQueue->head;
+     tail = pQueue->tail;
+     next = ((lf_queue_node*)head.ptr)->next;
+-#if defined(__ppc__) || defined(__powerpc__) || defined(__arm__)
++#if defined(__ppc__) || defined(__powerpc__) || defined(__arm__) || defined(__s390x__)
+     if (atomic_ptr_to_long(head) == atomic_ptr_to_long(pQueue->head)) // Check consistency
+ #else
+     if (atomic_ptr_to_long_long(head) == atomic_ptr_to_long_long(pQueue->head)) // Check consistency
+@@ -248,7 +248,7 @@
+         if (next.ptr == NULL) // Queue is empty
+           return NULL;
+         node.ptr = next.ptr;
+-#if defined(__ppc__) || defined(__powerpc__) || defined(__arm__)
++#if defined(__ppc__) || defined(__powerpc__) || defined(__arm__) || defined(__s390x__)
+         cas((long*)&pQueue->tail, atomic_ptr_to_long(tail), atomic_ptr_to_long(node)); // Tail is lagging. Try to advance it.
+ #else
+         node.version = tail.version + 1;
+@@ -259,7 +259,7 @@
+       {
+         pVal = ((lf_queue_node*)next.ptr)->value;
+         node.ptr = next.ptr;
+-#if defined(__ppc__) || defined(__powerpc__) || defined(__arm__)
++#if defined(__ppc__) || defined(__powerpc__) || defined(__arm__) || defined(__s390x__)
+         if (cas((long*)&pQueue->head, atomic_ptr_to_long(head), atomic_ptr_to_long(node)) == atomic_ptr_to_long(head))
+ #else
+         node.version = head.version + 1;
+--- a/xbmc/threads/LockFree.h
++++ b/xbmc/threads/LockFree.h
+@@ -30,7 +30,7 @@
+ // A unique-valued pointer. Version is incremented with each write.
+ union atomic_ptr
+ {
+-#if !defined(__ppc__) && !defined(__powerpc__) && !defined(__arm__)
++#if !defined(__ppc__) && !defined(__powerpc__) && !defined(__arm__) && !defined(__s390x__)
+   long long d;
+   struct {
+     void* ptr;
+@@ -44,7 +44,7 @@
+ #endif
+ };
+ 
+-#if defined(__ppc__) || defined(__powerpc__) || defined(__arm__)
++#if defined(__ppc__) || defined(__powerpc__) || defined(__arm__) || defined(__s390x__)
+   #define atomic_ptr_to_long(p) (long) *((long*)&p)
+ #else
+   // This is ugly but correct as long as sizeof(void*) == sizeof(long)...

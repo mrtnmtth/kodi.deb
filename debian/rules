@@ -46,7 +46,6 @@ endif
 KODI_CONFIG_OPTIONS ?= --host=$(DEB_HOST_GNU_TYPE) \
   --build=$(DEB_BUILD_GNU_TYPE) \
   --prefix=/usr --docdir=/usr/share/doc/kodi \
-  --enable-debug \
   $(GL_CONFIG_OPTIONS) \
   --disable-vtbdecoder \
   --disable-openmax \
@@ -162,9 +161,6 @@ debian/tmp/kodi-bin-recommends-dummy.so:
 		-lvorbisenc \
 		-lvorbisfile \
 		$(ARCH_SPECIFIC_LIB_RECOMMENDS)
-
-override_dh_strip:
-	dh_strip --dbg-package=kodi-dbg
 
 override_dh_installinit:
 	echo "Shipping systemd kodi.service file as an example only"

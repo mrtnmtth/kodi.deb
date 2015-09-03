@@ -103,7 +103,7 @@ override_dh_auto_configure: configure
 		$(DEJAVUSANS) \
 		$(CURDIR)/media/Fonts/arial.ttf
 	./bootstrap
-	./configure $(KODI_CONFIG_OPTIONS)
+	dh_auto_configure -- $(KODI_CONFIG_OPTIONS)
 	# Add "from Debian" next to Kodi's original logo
 	inkscape -z --export-png=addons/skin.confluence/media/from-debian-logo.png debian/from-debian-logo.svg
 

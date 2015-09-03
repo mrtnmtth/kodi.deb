@@ -6,6 +6,8 @@ DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 DEB_HOST_ARCH ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
 
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+
 GL_CONFIG_OPTIONS = --enable-gl --disable-gles --enable-vdpau
 ARCH_SPECIFIC_LIB_RECOMMENDS_ADD = -lvdpau
 
@@ -109,6 +111,8 @@ override_dh_auto_configure: configure
 
 override_dh_auto_install:
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
+	install -m 755 $(CURDIR)/tools/depends/native/TexturePacker/bin/TexturePacker \
+		$(CURDIR)/debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/kodi/
 	$(MAKE) eventclients DESTDIR=$(CURDIR)/debian/tmp \
 		WII_EXTRA_OPTS=-DCWIID_OLD
 
@@ -123,12 +127,12 @@ override_dh_makeshlibs:
 	# We don't install shared libraries in standard locations so don't run
 	# dh_makeshlibs
 	# OTOH we need to remove exec flag after dh_strip
-	chmod -x $(CURDIR)/debian/tmp/usr/lib/kodi/addons/visualization.*/*.vis
-	-chmod -x $(CURDIR)/debian/tmp/usr/lib/kodi/addons/screensaver.rsxs.*/*.xbs
+	chmod -x $(CURDIR)/debian/tmp/usr/lib/*/kodi/addons/visualization.*/*.vis
+	-chmod -x $(CURDIR)/debian/tmp/usr/lib/*/kodi/addons/screensaver.rsxs.*/*.xbs
 
 override_dh_shlibdeps: debian/tmp/kodi-bin-depends-dummy.so debian/tmp/kodi-bin-recommends-dummy.so
 	dh_shlibdeps -a -O--parallel \
-		-l$(CURDIR)/debian/kodi-bin/usr/lib/kodi/system/players/dvdplayer
+		-l$(CURDIR)/debian/kodi-bin/usr/lib/*/kodi/system/players/dvdplayer
 	# Need to manually add dependencies for dlopened libs.
 	dpkg-shlibdeps -pdlopenlibs -edebian/tmp/kodi-bin-depends-dummy.so -xlibc6 -O >>debian/kodi-bin.substvars
 	dpkg-shlibdeps -dRecommends -edebian/tmp/kodi-bin-recommends-dummy.so -xlibc6 -O >>debian/kodi-bin.substvars

@@ -1,2 +1,1 @@
-usr/lib/kodi
-../../tools/depends/native/TexturePacker/bin/TexturePacker /usr/lib/kodi
+usr/lib/*/kodi

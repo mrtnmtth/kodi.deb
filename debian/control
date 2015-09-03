@@ -118,6 +118,7 @@ Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-multimedia/kodi.git
 
 Package: kodi
 Architecture: all
+Multi-Arch: foreign
 Depends: kodi-bin (>= ${source:Version}),
          kodi-bin (<< ${source:Version}.1~),
          mesa-utils,
@@ -155,6 +156,8 @@ Description: Open Source Home Theatre (arch-independent data package)
 
 Package: kodi-bin
 Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends},
          ${dlopenlibs:Depends},
          ${misc:Depends}
@@ -210,6 +213,7 @@ Description: Open Source Home Theatre - debug symbols
 
 Package: kodi-eventclients-common
 Architecture: all
+Multi-Arch: foreign
 Depends: ${python:Depends}, ${misc:Depends}
 Description: Open Source Home Theatre (Event Client Common package)
  Kodi, formerly known as XBMC is an award winning free and
@@ -233,6 +237,7 @@ Description: Open Source Home Theatre (Event Client Common package)
 
 Package: kodi-eventclients-dev
 Architecture: all
+Multi-Arch: foreign
 Section: libdevel
 Depends: kodi-eventclients-common (= ${binary:Version}),
          ${misc:Depends}
@@ -310,6 +315,7 @@ Description: Open Source Home Theatre (Event Client J2ME package)
 
 Package: kodi-eventclients-ps3
 Architecture: all
+Multi-Arch: foreign
 Depends: kodi-eventclients-common (= ${binary:Version}),
          python-bluez | python-lightblue,
          ${python:Depends},
@@ -361,6 +367,7 @@ Description: Open Source Home Theatre (Event Client Kodi-SEND package)
 
 Package: kodi-addons-dev
 Architecture: all
+Multi-Arch: foreign
 Section: libdevel
 Depends: ${misc:Depends}
 Description: Open Source Home Theatre (Addons Dev package)

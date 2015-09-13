@@ -3,3 +3,4 @@ usr/include/kodi/D*
 usr/include/kodi/kodi_*
 usr/include/kodi/lib*
 usr/include/kodi/xbmc_*
+usr/lib/*/kodi/*.cmake

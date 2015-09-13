@@ -7,5 +7,5 @@
 06-use-external-libraries.patch
 07-use-system-groovy.patch
 08-fix-s390x-build.patch
-09-use-correct-ftgl.h
+09-use-correct-ftgl.h.patch
 10-dont-use-omitted-files.patch

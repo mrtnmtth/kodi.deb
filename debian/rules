@@ -162,5 +162,8 @@ debian/tmp/kodi-bin-recommends-dummy.so:
 		-lvorbisfile \
 		$(ARCH_SPECIFIC_LIB_RECOMMENDS)
 
+override_dh_strip:
+	dh_strip --ddeb-migration="kodi-dbg (<< 15.1+dfsg1-4~)"
+
 override_dh_installinit:
 	echo "Shipping systemd kodi.service file as an example only"

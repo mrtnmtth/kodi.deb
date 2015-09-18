@@ -1,10 +1,7 @@
 #!/usr/bin/make -f
 
-# These are used for cross-compiling and for saving the configure script
-# from having to guess our platform (since we know it already)
-DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
-DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
-DEB_HOST_ARCH ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
+# This has to be exported to make some magic below work.
+export DH_OPTIONS
 
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
@@ -27,25 +24,17 @@ endif
 ARCH_SPECIFIC_LIB_RECOMMENDS += $(ARCH_SPECIFIC_LIB_RECOMMENDS_ADD)
 
 # Various environment variables to set
-DEB_CFLAGS ?=  $(shell dpkg-buildflags --get CPPFLAGS) \
-  $(filter-out -g -O2, $(shell dpkg-buildflags --get CFLAGS))
-DEB_CXXFLAGS ?= $(shell dpkg-buildflags --get CPPFLAGS) \
-  $(filter-out -g -O2, $(shell dpkg-buildflags --get CXXFLAGS))
-DEB_LDFLAGS ?= $(shell dpkg-buildflags --get LDFLAGS) $(shell pkg-config --libs ftgl) -latomic
-ENV_OPTIONS = CFLAGS="$(DEB_CFLAGS)" CXXFLAGS="$(DEB_CXXFLAGS)" \
-  LDFLAGS="$(DEB_LDFLAGS)"
+export DEB_LDFLAGS_MAINT_APPEND = $(shell pkg-config --libs ftgl) -latomic
 
 # fall back to old location of libhdhomerun includes if needed
 ifneq ("$(wildcard /usr/lib/libhdhomerun/hdhomerun.h)","")
-  DEB_CXXFLAGS += -I/usr/lib/
+export DEB_CXXFLAGS_MAINT_APPEND = -I/usr/lib/
 endif
 
 # List of options to pass to configure. Can be overridden.
 # Extra options can simply be passed using KODI_CONFIG_EXTRA_OPTIONS env
 # variable.
 KODI_CONFIG_OPTIONS ?= --host=$(DEB_HOST_GNU_TYPE) \
-  --build=$(DEB_BUILD_GNU_TYPE) \
-  --prefix=/usr --docdir=/usr/share/doc/kodi \
   $(GL_CONFIG_OPTIONS) \
   --disable-vtbdecoder \
   --disable-openmax \
@@ -69,8 +58,7 @@ KODI_CONFIG_OPTIONS ?= --host=$(DEB_HOST_GNU_TYPE) \
   --disable-non-free \
   --disable-gtest \
   $(ARCH_SPECIFIC_OPTIONS) \
-  $(KODI_CONFIG_EXTRA_OPTIONS) \
-  $(ENV_OPTIONS)
+  $(KODI_CONFIG_EXTRA_OPTIONS)
 
 # Used to show what config options are enabled
 show-kodi-config-options:

@@ -1,6 +1,29 @@
-kodi (15.1+dfsg1-4) UNRELEASED; urgency=medium
+kodi (15.2~rc1+dfsg1-1) UNRELEASED; urgency=medium
 
-  *
+  [ Balint Reczey ]
+  * Really fix s390x build
+  * Call ./configure through dh_auto_configure
+  * Convert to package to use multiarch library dirs
+  * Stop shipping kodi-dbg and disable debugging during build.
+    This is a preparation for the automatically generated debug packages
+    and switching to FFmpeg resulted less reported crashes to BTS.
+    Kodi-dbg packages used quite a big space on mirrors and weren't used
+    frequently.
+  * Make kodi-addons-dev Replaces/Breaks: kodi-bin (<= 15.1+dfsg1-3)
+    This is needed to manage moving .cmake files to to kodi-addons-dev.
+  * Migrate from kodi-dbg to ddebs properly.
+    Thanks to Mattia Rizzolo
+  * Make kodi-addons-dev Architecture: any
+  * Simplify debian/rules using exporting DH_OPTIONS
+  * New upstream release candidate 15.2 RC1
+    See http://kodi.tv/kodi-15-2-isengard-release-candidate-2/
+
+  [ Tobias Grimm ]
+  * Fixed file name of patches/09-use-correct-ftgl.h
+  * Install *.cmake files in kodi-addons-dev
+
+  [ Mattia Rizzolo ]
+  * debian/rules: correct use of `echo`
 
  -- Balint Reczey <balint@balintreczey.hu>  Wed, 02 Sep 2015 22:47:48 +0200
 

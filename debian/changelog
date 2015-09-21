@@ -1,4 +1,4 @@
-kodi (15.2~rc1+dfsg1-1) UNRELEASED; urgency=medium
+kodi (15.2~rc1+dfsg1-1) unstable; urgency=medium
 
   [ Balint Reczey ]
   * Really fix s390x build
@@ -17,6 +17,7 @@ kodi (15.2~rc1+dfsg1-1) UNRELEASED; urgency=medium
   * Simplify debian/rules using exporting DH_OPTIONS
   * New upstream release candidate 15.2 RC1
     See http://kodi.tv/kodi-15-2-isengard-release-candidate-2/
+  * Refresh patches
 
   [ Tobias Grimm ]
   * Fixed file name of patches/09-use-correct-ftgl.h
@@ -25,7 +26,7 @@ kodi (15.2~rc1+dfsg1-1) UNRELEASED; urgency=medium
   [ Mattia Rizzolo ]
   * debian/rules: correct use of `echo`
 
- -- Balint Reczey <balint@balintreczey.hu>  Wed, 02 Sep 2015 22:47:48 +0200
+ -- Balint Reczey <balint@balintreczey.hu>  Mon, 21 Sep 2015 10:38:00 +0200
 
 kodi (15.1+dfsg1-3) unstable; urgency=medium
 

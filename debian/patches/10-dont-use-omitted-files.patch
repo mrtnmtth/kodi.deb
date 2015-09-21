@@ -1,6 +1,6 @@
 --- a/configure.ac
 +++ b/configure.ac
-@@ -2505,7 +2505,6 @@
+@@ -2506,7 +2506,6 @@
      tools/Linux/${APP_NAME_LC}-standalone.sh \
      tools/Linux/${APP_NAME_LC}-xsession.desktop \
      tools/EventClients/Makefile \

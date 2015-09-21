@@ -21,7 +21,7 @@
  			<left>0</left>
 --- a/xbmc/GUIInfoManager.cpp
 +++ b/xbmc/GUIInfoManager.cpp
-@@ -4352,12 +4352,12 @@
+@@ -4348,12 +4348,12 @@
    if (strlen(CCompileInfo::GetSuffix()) == 0)
      return StringUtils::Format("%d.%d", CCompileInfo::GetMajor(), CCompileInfo::GetMinor());
    else
@@ -36,7 +36,7 @@
  }
  
  std::string CGUIInfoManager::GetBuild()
-@@ -4367,7 +4367,7 @@
+@@ -4363,7 +4363,7 @@
  
  std::string CGUIInfoManager::GetAppName()
  {

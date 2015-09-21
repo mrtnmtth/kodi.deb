@@ -16,7 +16,7 @@ Forwarded: not-needed
  
 --- a/xbmc/GUIInfoManager.cpp
 +++ b/xbmc/GUIInfoManager.cpp
-@@ -4362,7 +4362,7 @@
+@@ -4358,7 +4358,7 @@
  
  std::string CGUIInfoManager::GetBuild()
  {

@@ -1,8 +1,15 @@
-kodi (15.2~rc1+dfsg1-2) UNRELEASED; urgency=medium
+kodi (15.2~rc1+dfsg1-2) unstable; urgency=medium
 
-  *
+  * Make Breaks/Replaces relation to xbmc packages versioned.
+    This lets dummy transition-only xbmc packages coexist with kodi.
+    Also remove Provides/Replaces relations remaining from xbmc packaging.
+    (Closes: #799823)
+  * Split architecture-indepedent data to kodi-data.
+    Only the kodi and kodi-standalone binaries are kept in kodi package which is
+    now Architecture:any since it contains the architecture-specific path to
+    kodi.bin. (Closes: #799979)
 
- -- Balint Reczey <balint@balintreczey.hu>  Wed, 23 Sep 2015 20:25:04 +0200
+ -- Balint Reczey <balint@balintreczey.hu>  Sat, 26 Sep 2015 15:13:36 +0200
 
 kodi (15.2~rc1+dfsg1-1) unstable; urgency=medium
 

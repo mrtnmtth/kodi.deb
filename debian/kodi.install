@@ -1,7 +1,3 @@
 usr/bin/kodi
-usr/share/kodi
-usr/share/icons
-usr/share/applications
-usr/share/kodi/addons/skin.confluence
 usr/bin/kodi-standalone
-usr/share/xsessions
+usr/share/applications

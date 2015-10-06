@@ -1,6 +1,7 @@
-kodi (15.2~rc3+dfsg1-1) UNRELEASED; urgency=medium
+kodi (15.2~rc3+dfsg1-1) unstable; urgency=medium
 
-  *
+  * New upstream release candidate 15.2 RC3
+    See http://kodi.tv/kodi-15-2-isengard-release-candidate-3
 
  -- Balint Reczey <balint@balintreczey.hu>  Tue, 06 Oct 2015 12:06:19 +0200
 

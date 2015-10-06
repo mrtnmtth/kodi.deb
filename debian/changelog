@@ -1,3 +1,9 @@
+kodi (15.2~rc3+dfsg1-1) UNRELEASED; urgency=medium
+
+  *
+
+ -- Balint Reczey <balint@balintreczey.hu>  Tue, 06 Oct 2015 12:06:19 +0200
+
 kodi (15.2~rc1+dfsg1-2) unstable; urgency=medium
 
   * Make Breaks/Replaces relation to xbmc packages versioned.

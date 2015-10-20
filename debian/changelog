@@ -1,6 +1,9 @@
-kodi (15.2~rc3+dfsg1-2) UNRELEASED; urgency=medium
+kodi (15.2+dfsg1-1) UNRELEASED; urgency=medium
 
-  *
+  * Skip handling migration to automatic debug packages when it is not supported by debhelper
+  * Update debian/watch to not skip part of oddly named versions
+  * New upstream release 15.2
+    See http://kodi.tv/kodi-15-2-isengard-final-release/
 
  -- Balint Reczey <balint@balintreczey.hu>  Wed, 07 Oct 2015 11:59:20 +0200
 

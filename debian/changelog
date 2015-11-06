@@ -1,9 +1,21 @@
-kodi (15.2~rc3+dfsg1-1~bpo8+1) jessie-backports; urgency=medium
+kodi (15.2+dfsg1-1~bpo8+1) jessie-backports; urgency=medium
 
-  * Skip handling migration to automatic debug packages when it is not supported by debhelper
   * Rebuild for jessie-backports.
 
- -- Balint Reczey <balint@balintreczey.hu>  Mon, 19 Oct 2015 22:12:41 +0200
+ -- Balint Reczey <balint@balintreczey.hu>  Fri, 06 Nov 2015 20:05:13 +0400
+
+kodi (15.2+dfsg1-1) unstable; urgency=medium
+
+  [ Balint Reczey ]
+  * Skip handling migration to automatic debug packages when it is not supported by debhelper
+  * Update debian/watch to not skip part of oddly named versions
+  * New upstream release 15.2
+    See http://kodi.tv/kodi-15-2-isengard-final-release/
+
+  [ Andreas Cadhalpun ]
+  * Fix FTBFS with upcoming FFmpeg 2.9 release (Closes: #803831)
+
+ -- Balint Reczey <balint@balintreczey.hu>  Fri, 06 Nov 2015 18:42:22 +0400
 
 kodi (15.2~rc3+dfsg1-1) unstable; urgency=medium
 

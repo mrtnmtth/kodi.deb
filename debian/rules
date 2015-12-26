@@ -8,6 +8,13 @@ DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 GL_CONFIG_OPTIONS = --enable-gl --disable-gles --enable-vdpau
 ARCH_SPECIFIC_LIB_RECOMMENDS_ADD = -lvdpau
 
+# Disable debugging by default
+ifneq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
+DEBUG_CONFIG_OPTIONS += --enable-debug
+else
+DEBUG_CONFIG_OPTIONS += --disable-debug
+endif
+
 # Enable gles for armel, armhf
 # Also disable VDPAU and VAAPI there since they break the build with gles
 ifneq (,$(filter armel armhf,$(DEB_HOST_ARCH)))
@@ -39,6 +46,7 @@ KODI_CONFIG_OPTIONS ?= --host=$(DEB_HOST_GNU_TYPE) \
   --disable-vtbdecoder \
   --disable-openmax \
   --disable-tegra \
+  $(DEBUG_CONFIG_OPTIONS) \
   --disable-profiling \
   --enable-joystick \
   --enable-pulse \

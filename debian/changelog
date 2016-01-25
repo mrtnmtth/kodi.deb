@@ -1,6 +1,6 @@
-kodi (15.2+dfsg1-3) UNRELEASED; urgency=medium
+kodi (15.2+dfsg1-3) unstable; urgency=medium
 
-  *
+  * Disable PIE due to build failure on amd64
 
  -- Balint Reczey <balint@balintreczey.hu>  Mon, 25 Jan 2016 10:35:02 +0100
 

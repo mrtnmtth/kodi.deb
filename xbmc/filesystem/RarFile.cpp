@@ -20,6 +20,7 @@
 
 #include "system.h"
 #include "RarFile.h"
+#include <algorithm>
 #include <sys/stat.h>
 #include "Util.h"
 #include "utils/CharsetConverter.h"
@@ -38,7 +39,6 @@
 #endif
 
 using namespace XFILE;
-using namespace std;
 
 #define SEEKTIMOUT 30000
 
@@ -302,7 +302,7 @@ ssize_t CRarFile::Read(void *lpBuf, size_t uiBufSize)
   int64_t uicBufSize = uiBufSize;
   if (m_iDataInBuffer > 0)
   {
-    int64_t iCopy = (uiBufSize < static_cast<size_t>(m_iDataInBuffer)) ? uiBufSize : m_iDataInBuffer;
+    int64_t iCopy = std::min(static_cast<int64_t>(uiBufSize), m_iDataInBuffer);
     memcpy(lpBuf,m_szStartOfBuffer,size_t(iCopy));
     m_szStartOfBuffer += iCopy;
     m_iDataInBuffer -= int(iCopy);
@@ -551,13 +551,13 @@ void CRarFile::InitFromUrl(const CURL& url)
   m_strPassword = url.GetUserName();
   m_strPathInRar = url.GetFileName();
 
-  vector<std::string> options;
+  std::vector<std::string> options;
   if (!url.GetOptions().empty())
     StringUtils::Tokenize(url.GetOptions().substr(1), options, "&");
 
   m_bFileOptions = 0;
 
-  for( vector<std::string>::iterator it = options.begin();it != options.end(); ++it)
+  for(std::vector<std::string>::iterator it = options.begin();it != options.end(); ++it)
   {
     size_t iEqual = (*it).find('=');
     if(iEqual != std::string::npos)

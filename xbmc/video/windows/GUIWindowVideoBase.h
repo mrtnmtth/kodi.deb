@@ -49,7 +49,7 @@ public:
   static bool HasResumeItemOffset(const CFileItem *item);
 
   void AddToDatabase(int iItem);
-  virtual void OnInfo(CFileItem* pItem, ADDON::ScraperPtr& scraper);
+  virtual void OnItemInfo(CFileItem* pItem, ADDON::ScraperPtr& scraper);
 
 
   /*! \brief Show the resume menu for this item (if it has a resume bookmark)
@@ -109,7 +109,7 @@ protected:
    \param item the selected item
    \return true if the action is performed, false otherwise
    */
-  bool OnInfo(int item);
+  bool OnItemInfo(int item);
   /*! \brief perform a given action on a file
    \param item the selected item
    \param action the action to perform
@@ -124,7 +124,7 @@ protected:
   virtual bool OnPlayAndQueueMedia(const CFileItemPtr &item);
   void LoadPlayList(const std::string& strPlayList, int iPlayList = PLAYLIST_VIDEO);
 
-  bool ShowIMDB(CFileItem *item, const ADDON::ScraperPtr& content, bool fromDB);
+  bool ShowIMDB(CFileItemPtr item, const ADDON::ScraperPtr& content, bool fromDB);
 
   void AddItemToPlayList(const CFileItemPtr &pItem, CFileItemList &queuedItems);
 

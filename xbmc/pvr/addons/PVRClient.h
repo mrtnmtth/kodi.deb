@@ -23,6 +23,7 @@
 #include "addons/AddonDll.h"
 #include "addons/DllPVRClient.h"
 #include "network/ZeroconfBrowser.h"
+
 #include "pvr/channels/PVRChannel.h"
 #include "pvr/recordings/PVRRecordings.h"
 
@@ -41,10 +42,14 @@ namespace PVR
   class CPVRRecordings;
   class CPVREpgContainer;
   class CPVRClient;
+  class CPVRTimerType;
 
   typedef std::vector<PVR_MENUHOOK> PVR_MENUHOOKS;
   typedef std::shared_ptr<CPVRClient> PVR_CLIENT;
   #define PVR_INVALID_CLIENT_ID (-2)
+
+  typedef std::shared_ptr<CPVRTimerType> CPVRTimerTypePtr;
+  typedef std::vector<CPVRTimerTypePtr>  CPVRTimerTypes;
 
   /*!
    * Interface from XBMC to a PVR add-on.
@@ -65,7 +70,7 @@ namespace PVR
     virtual void OnPostInstall(bool update, bool modal);
     virtual void OnPreUnInstall();
     virtual void OnPostUnInstall();
-    virtual bool CanInstall(const std::string &referer);
+    virtual bool CanInstall();
     bool NeedsConfiguration(void) const { return m_bNeedsConfiguration; }
 
     /** @name PVR add-on methods */
@@ -379,6 +384,13 @@ namespace PVR
      */
     PVR_ERROR UpdateTimer(const CPVRTimerInfoTag &timer);
 
+    /*!
+     * @brief Get all timer types supported by the backend.
+     * @param results The container to store the result in.
+     * @return PVR_ERROR_NO_ERROR if the list has been fetched successfully.
+     */
+    PVR_ERROR GetTimerTypes(CPVRTimerTypes& results) const;
+
     //@}
     /** @name PVR live stream methods */
     //@{
@@ -526,7 +538,6 @@ namespace PVR
     bool SupportsRadio(void) const;
     bool SupportsRecordings(void) const;
     bool SupportsRecordingsUndelete(void) const;
-    bool SupportsRecordingFolders(void) const;
     bool SupportsRecordingPlayCount(void) const;
     bool SupportsRecordingEdl(void) const;
     bool SupportsTimers(void) const;
@@ -544,6 +555,11 @@ namespace PVR
     CPVRChannelPtr GetPlayingChannel() const;
 
     static const char *ToString(const PVR_ERROR error);
+
+    /*!
+     * @brief is timeshift active?
+     */
+    bool IsTimeshifting() const;
 
     /*!
      * @brief actual playing time
@@ -648,6 +664,7 @@ namespace PVR
     bool                   m_bReadyToUse;          /*!< true if this add-on is connected to the backend, false otherwise */
     std::string            m_strHostName;          /*!< the host name */
     PVR_MENUHOOKS          m_menuhooks;            /*!< the menu hooks for this add-on */
+    CPVRTimerTypes         m_timertypes;           /*!< timer types supported by this backend */
     int                    m_iClientId;            /*!< database ID of the client */
 
     /* cached data */

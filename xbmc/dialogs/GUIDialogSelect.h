@@ -37,13 +37,12 @@ public:
 
   void Reset();
   int  Add(const std::string& strLabel);
-  int  Add(const CFileItem* pItem);
-  void Add(const CFileItemList& items);
-  void SetItems(CFileItemList* items);
+  int  Add(const CFileItem& item);
+  void SetItems(const CFileItemList& items);
   int GetSelectedLabel() const;
   const std::string& GetSelectedLabelText() const;
   const CFileItemPtr GetSelectedItem() const;
-  const CFileItemList& GetSelectedItems() const;
+  const std::vector<int>& GetSelectedItems() const;
   void EnableButton(bool enable, int string);
   bool IsButtonPressed();
   void Sort(bool bSortOrder = true);
@@ -57,17 +56,18 @@ protected:
   virtual CGUIControl *GetFirstFocusableControl(int id);
   virtual void OnWindowLoaded();
   virtual void OnInitWindow();
+  virtual void OnDeinitWindow(int nextWindowID);
   virtual void OnWindowUnload();
   void SetupButton();
 
   bool m_bButtonEnabled;
   int m_buttonString;
   bool m_bButtonPressed;
-  int m_iSelected;
+  CFileItemPtr m_selectedItem;
   bool m_useDetails;
   bool m_multiSelection;
 
-  CFileItemList* m_selectedItems;
+  std::vector<int> m_selectedItems;
   CFileItemList* m_vecList;
   CGUIViewControl m_viewControl;
 };

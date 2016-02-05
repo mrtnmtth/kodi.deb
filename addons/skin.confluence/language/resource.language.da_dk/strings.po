@@ -220,6 +220,10 @@ msgctxt "#31119"
 msgid "Hide background fanart"
 msgstr "Skjul baggrundsfankunst"
 
+msgctxt "#31122"
+msgid "Hide EPG if RDS is present on channel window"
+msgstr "Skjul EPG hvis RDS er til stede på kanalvindue"
+
 msgctxt "#31124"
 msgid "Show background \"Now playing\" video"
 msgstr "Vis \"Spiller nu\" i baggrunden for videoer"
@@ -227,14 +231,6 @@ msgstr "Vis \"Spiller nu\" i baggrunden for videoer"
 msgctxt "#31125"
 msgid "Show background \"Now playing\" visualisation"
 msgstr "Vis \"Spiller nu\" visualisering i baggrunden"
-
-msgctxt "#31126"
-msgid "Play TV theme songs in video library (TvTunes add-on)"
-msgstr "Afspil kendingsmelodier til TV-serier i videobiblioteket (TvTunes add-on)"
-
-msgctxt "#31127"
-msgid "TvTunes"
-msgstr "TvTunes"
 
 msgctxt "#31128"
 msgid "Lyrics"
@@ -352,10 +348,6 @@ msgctxt "#31320"
 msgid "Last logged in"
 msgstr "Sidst logget ind"
 
-msgctxt "#31321"
-msgid "Karaoke song selector"
-msgstr "Sangvalg til Karaoke"
-
 msgctxt "#31322"
 msgid "Aired"
 msgstr "Sendt"
@@ -445,8 +437,8 @@ msgid "[B]CONFIGURE VIDEO SETTINGS[/B][CR][CR]Manage your video library · Set v
 msgstr "[B]KONFIGURER VIDEOINDSTILLINGER[/B][CR][CR]Administrer dit videobibliotek · Vælg indstillinger for videoafspilning · Skift indstillinger for videooversigt[CR]Vælg skrifttype til undertekster"
 
 msgctxt "#31402"
-msgid "[B]CONFIGURE MUSIC SETTINGS[/B][CR][CR]Manage your music library · Set music playback options · Change music listing options[CR]Setup song submission · Set karaoke options"
-msgstr "[B]KONFIGURER MUSIKINDSTILLINGER[/B][CR][CR]Administrer dit musikbibliotek · Vælg indstillinger for musikafspilning · Skift indstillinger for musikoversigt[CR]Opsæt sangindsendelse · Vælg karaoke-indstillinger"
+msgid "[B]CONFIGURE MUSIC SETTINGS[/B][CR][CR]Manage your music library · Set music playback options · Change music listing options[CR]Setup song submission"
+msgstr "[B]KONFIGURER MUSIKINDSTILLINGER[/B][CR][CR]Administrer dit musikbibliotek · Angiv indstillinger for musikafspilning · Ændr indstillinger for musikvisning[CR]Opsæt sangindsendelse"
 
 msgctxt "#31403"
 msgid "[B]CONFIGURE PICTURE SETTINGS[/B][CR][CR]Set picture listing options · Configure slideshow"

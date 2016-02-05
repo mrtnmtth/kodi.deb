@@ -32,9 +32,9 @@ namespace XBMCAddon
       Window(true), WindowDialogMixin(this)
     {
       CSingleLock lock(g_graphicsContext);
-      InterceptorBase* interceptor = new Interceptor<CGUIWindow>("CGUIWindow", this, getNextAvailalbeWindowId());
+      InterceptorBase* interceptor = new Interceptor<CGUIWindow>("CGUIWindow", this, getNextAvailableWindowId());
       // set the render order to the dialog's default because this dialog is mapped to CGUIWindow instead of CGUIDialog
-      interceptor->SetRenderOrder(RenderOrder::DIALOG);
+      interceptor->SetRenderOrder(RENDER_ORDER_DIALOG);
       setWindow(interceptor);
     }
 

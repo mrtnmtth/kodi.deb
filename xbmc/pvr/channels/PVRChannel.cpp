@@ -19,18 +19,21 @@
  */
 
 #include "FileItem.h"
-#include "guilib/LocalizeStrings.h"
-#include "utils/log.h"
-#include "filesystem/File.h"
-#include "utils/StringUtils.h"
-#include "threads/SingleLock.h"
-
-#include "pvr/channels/PVRChannelGroupInternal.h"
 #include "epg/EpgContainer.h"
-#include "pvr/timers/PVRTimers.h"
+#include "filesystem/File.h"
+#include "guilib/LocalizeStrings.h"
+#include "threads/SingleLock.h"
+#include "utils/log.h"
+#include "utils/StringUtils.h"
+#include "utils/Variant.h"
+
 #include "pvr/PVRDatabase.h"
 #include "pvr/PVRManager.h"
 #include "pvr/addons/PVRClients.h"
+#include "pvr/timers/PVRTimers.h"
+
+#include "PVRChannel.h"
+#include "PVRChannelGroupInternal.h"
 
 #include <assert.h>
 
@@ -145,7 +148,7 @@ bool CPVRChannel::Delete(void)
     return bReturn;
 
   /* delete the EPG table */
-  CEpg *epg = GetEPG();
+  CEpgPtr epg = GetEPG();
   if (epg)
   {
     CPVRChannelPtr empty;
@@ -159,7 +162,7 @@ bool CPVRChannel::Delete(void)
   return bReturn;
 }
 
-CEpg *CPVRChannel::GetEPG(void) const
+CEpgPtr CPVRChannel::GetEPG(void) const
 {
   int iEpgId(-1);
   {
@@ -540,7 +543,7 @@ void CPVRChannel::UpdateEncryptionName(void)
 
 int CPVRChannel::GetEPG(CFileItemList &results) const
 {
-  CEpg *epg = GetEPG();
+  CEpgPtr epg = GetEPG();
   if (!epg)
   {
     CLog::Log(LOGDEBUG, "PVR - %s - cannot get EPG for channel '%s'",
@@ -553,7 +556,7 @@ int CPVRChannel::GetEPG(CFileItemList &results) const
 
 bool CPVRChannel::ClearEPG() const
 {
-  CEpg *epg = GetEPG();
+  CEpgPtr epg = GetEPG();
   if (epg)
     epg->Clear();
 
@@ -562,7 +565,7 @@ bool CPVRChannel::ClearEPG() const
 
 CEpgInfoTagPtr CPVRChannel::GetEPGNow() const
 {
-  CEpg *epg = GetEPG();
+  CEpgPtr epg = GetEPG();
   if (epg)
     return epg->GetTagNow();
 
@@ -572,7 +575,7 @@ CEpgInfoTagPtr CPVRChannel::GetEPGNow() const
 
 CEpgInfoTagPtr CPVRChannel::GetEPGNext() const
 {
-  CEpg *epg = GetEPG();
+  CEpgPtr epg = GetEPG();
   if (epg)
     return epg->GetTagNext();
 
@@ -726,6 +729,12 @@ bool CPVRChannel::IsChanged() const
 {
   CSingleLock lock(m_critSection);
   return m_bChanged;
+}
+
+void CPVRChannel::Persisted()
+{
+  CSingleLock lock(m_critSection);
+  m_bChanged = false;
 }
 
 int CPVRChannel::UniqueID(void) const

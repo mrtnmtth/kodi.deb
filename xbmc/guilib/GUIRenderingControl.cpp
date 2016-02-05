@@ -23,8 +23,6 @@
 #include "guilib/IRenderingCallback.h"
 #include "windowing/WindowingFactory.h"
 
-using namespace std;
-
 #define LABEL_ROW1 10
 #define LABEL_ROW2 11
 #define LABEL_ROW3 12
@@ -61,7 +59,7 @@ bool CGUIRenderingControl::InitCallback(IRenderingCallback *callback)
 
   void *device = NULL;
 #if HAS_DX
-  device = g_Windowing.Get3DDevice();
+  device = g_Windowing.Get3D11Device();
 #endif
   if (callback->Create((int)(x+0.5f), (int)(y+0.5f), (int)(w+0.5f), (int)(h+0.5f), device))
     m_callback = callback;

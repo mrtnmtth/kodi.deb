@@ -228,14 +228,6 @@ msgctxt "#31125"
 msgid "Show background \"Now playing\" visualisation"
 msgstr "Ползвай за фон възпроизвежданата визуализация"
 
-msgctxt "#31126"
-msgid "Play TV theme songs in video library (TvTunes add-on)"
-msgstr "Възпроизвеждай мелодии от ТВ Сериали в библиотеката (добавка TvTunes)"
-
-msgctxt "#31127"
-msgid "TvTunes"
-msgstr "TvTunes"
-
 msgctxt "#31128"
 msgid "Lyrics"
 msgstr "Лирики"
@@ -314,7 +306,7 @@ msgstr "Скрий фен-арта"
 
 msgctxt "#31308"
 msgid "Movie details"
-msgstr "Подробности за филма"
+msgstr "Детайли за филма"
 
 msgctxt "#31309"
 msgid "Memory used:"
@@ -352,10 +344,6 @@ msgctxt "#31320"
 msgid "Last logged in"
 msgstr "Последно влизане"
 
-msgctxt "#31321"
-msgid "Karaoke song selector"
-msgstr "Прозорец за избор на караоке песен"
-
 msgctxt "#31322"
 msgid "Aired"
 msgstr "Излъчен"
@@ -386,7 +374,7 @@ msgstr "Натиснете бутона, за да започне[CR][CR]въз�
 
 msgctxt "#31331"
 msgid "Album details"
-msgstr "Подробности за албума"
+msgstr "Детайли за албума"
 
 msgctxt "#31351"
 msgid "Pause"
@@ -445,8 +433,8 @@ msgid "[B]CONFIGURE VIDEO SETTINGS[/B][CR][CR]Manage your video library · Set v
 msgstr "[B]КОНФИГУРИРАЙТЕ ВИДЕОТО[/B][CR][CR]Управлявайте видео библиотеката си · Настройте възпроизвеждането на видео[CR]Променете настройките на списъците с видео файлове · Задайте шрифт за субтитрите"
 
 msgctxt "#31402"
-msgid "[B]CONFIGURE MUSIC SETTINGS[/B][CR][CR]Manage your music library · Set music playback options · Change music listing options[CR]Setup song submission · Set karaoke options"
-msgstr "[B]КОНФИГУРИРАЙТЕ МУЗИКАТА[/B][CR][CR]Управлявайте музикалната си библиотеката · Настройте възпроизвеждането на музика[CR]Променете настройките на списъците с аудио файлове · Настройте караоке плеъра"
+msgid "[B]CONFIGURE MUSIC SETTINGS[/B][CR][CR]Manage your music library · Set music playback options · Change music listing options[CR]Setup song submission"
+msgstr "[B]КОНФИГУРИРАЙТЕ МУЗИКАТА[/B][CR][CR]Управлявайте музикалната си библиотека · Настройте възпроизвеждането на музика[CR]Променете настройките на списъците с аудио файлове"
 
 msgctxt "#31403"
 msgid "[B]CONFIGURE PICTURE SETTINGS[/B][CR][CR]Set picture listing options · Configure slideshow"

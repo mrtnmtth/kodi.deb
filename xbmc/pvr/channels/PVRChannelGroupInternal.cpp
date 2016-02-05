@@ -20,17 +20,19 @@
 
 #include "PVRChannelGroupInternal.h"
 
-#include "dialogs/GUIDialogOK.h"
-#include "settings/AdvancedSettings.h"
-#include "utils/log.h"
+#include <cassert>
+#include <utility>
 
+#include "dialogs/GUIDialogOK.h"
+#include "epg/EpgContainer.h"
+#include "pvr/addons/PVRClients.h"
 #include "pvr/PVRDatabase.h"
 #include "pvr/PVRManager.h"
-#include "epg/EpgContainer.h"
 #include "pvr/timers/PVRTimers.h"
-#include "pvr/addons/PVRClients.h"
-
-#include <assert.h>
+#include "PVRChannelGroupsContainer.h"
+#include "settings/AdvancedSettings.h"
+#include "utils/log.h"
+#include "utils/Variant.h"
 
 using namespace PVR;
 using namespace EPG;
@@ -169,7 +171,7 @@ bool CPVRChannelGroupInternal::RemoveFromGroup(const CPVRChannelPtr &channel)
   CPVRChannelPtr currentChannel(g_PVRManager.GetCurrentChannel());
   if (currentChannel && currentChannel == channel)
   {
-    CGUIDialogOK::ShowAndGetInput(19098, 19102);
+    CGUIDialogOK::ShowAndGetInput(CVariant{19098}, CVariant{19102});
     return false;
   }
 
@@ -315,7 +317,7 @@ void CPVRChannelGroupInternal::CreateChannelEpg(CPVRChannelPtr channel, bool bFo
   CSingleLock lock(channel->m_critSection);
   if (!channel->m_bEPGCreated || bForce)
   {
-    CEpg *epg = g_EpgContainer.CreateChannelEpg(channel);
+    CEpgPtr epg = g_EpgContainer.CreateChannelEpg(channel);
     if (epg)
     {
       channel->m_bEPGCreated = true;
@@ -340,7 +342,7 @@ bool CPVRChannelGroupInternal::CreateChannelEpgs(bool bForce /* = false */)
 
   if (HasChangedChannels())
   {
-    g_EpgContainer.PersistTables();
+    g_EpgContainer.MarkTablesForPersist();
     return Persist();
   }
 

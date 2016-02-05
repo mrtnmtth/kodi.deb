@@ -18,6 +18,12 @@
  *
  */
 
+#include <cstdlib>
+#include <memory>
+#include <set>
+#include <string>
+#include <vector>
+
 #include "SmartPlayList.h"
 #include "Util.h"
 #include "filesystem/File.h"
@@ -34,14 +40,12 @@
 #include "utils/XMLUtils.h"
 #include "video/VideoDatabase.h"
 
-using namespace std;
 using namespace XFILE;
 
 typedef struct
 {
   char string[17];
   Field field;
-  SortBy sort;
   CDatabaseQueryRule::FIELD_TYPE type;
   StringValidation::Validator validator;
   bool browseable;
@@ -49,67 +53,67 @@ typedef struct
 } translateField;
 
 static const translateField fields[] = {
-  { "none",              FieldNone,                    SortByNone,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 231 },
-  { "filename",          FieldFilename,                SortByFile,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 561 },
-  { "path",              FieldPath,                    SortByPath,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  573 },
-  { "album",             FieldAlbum,                   SortByAlbum,                    CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  558 },
-  { "albumartist",       FieldAlbumArtist,             SortByNone,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  566 },
-  { "artist",            FieldArtist,                  SortByArtist,                   CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  557 },
-  { "tracknumber",       FieldTrackNumber,             SortByTrackNumber,              CDatabaseQueryRule::NUMERIC_FIELD,  StringValidation::IsPositiveInteger,  false, 554 },
-  { "comment",           FieldComment,                 SortByNone,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 569 },
-  { "review",            FieldReview,                  SortByNone,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 183 },
-  { "themes",            FieldThemes,                  SortByNone,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 21895 },
-  { "moods",             FieldMoods,                   SortByNone,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 175 },
-  { "styles",            FieldStyles,                  SortByNone,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 176 },
-  { "type",              FieldAlbumType,               SortByAlbumType,                CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 564 },
-  { "label",             FieldMusicLabel,              SortByNone,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 21899 },
-  { "title",             FieldTitle,                   SortByTitle,                    CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  556 },
-  { "sorttitle",         FieldSortTitle,               SortBySortTitle,                CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 171 },
-  { "year",              FieldYear,                    SortByYear,                     CDatabaseQueryRule::NUMERIC_FIELD,  StringValidation::IsPositiveInteger,  true,  562 },
-  { "time",              FieldTime,                    SortByTime,                     CDatabaseQueryRule::SECONDS_FIELD,  StringValidation::IsTime,             false, 180 },
-  { "playcount",         FieldPlaycount,               SortByPlaycount,                CDatabaseQueryRule::NUMERIC_FIELD,  StringValidation::IsPositiveInteger,  false, 567 },
-  { "lastplayed",        FieldLastPlayed,              SortByLastPlayed,               CDatabaseQueryRule::DATE_FIELD,     NULL,                                 false, 568 },
-  { "inprogress",        FieldInProgress,              SortByNone,                     CDatabaseQueryRule::BOOLEAN_FIELD,  NULL,                                 false, 575 },
-  { "rating",            FieldRating,                  SortByRating,                   CDatabaseQueryRule::NUMERIC_FIELD,  CSmartPlaylistRule::ValidateRating,   false, 563 },
-  { "votes",             FieldVotes,                   SortByVotes,                    CDatabaseQueryRule::TEXT_FIELD,     StringValidation::IsPositiveInteger,  false, 205 },
-  { "top250",            FieldTop250,                  SortByTop250,                   CDatabaseQueryRule::NUMERIC_FIELD,  NULL,                                 false, 13409 },
-  { "mpaarating",        FieldMPAA,                    SortByMPAA,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 20074 },
-  { "dateadded",         FieldDateAdded,               SortByDateAdded,                CDatabaseQueryRule::DATE_FIELD,     NULL,                                 false, 570 },
-  { "genre",             FieldGenre,                   SortByGenre,                    CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  515 },
-  { "plot",              FieldPlot,                    SortByNone,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 207 },
-  { "plotoutline",       FieldPlotOutline,             SortByNone,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 203 },
-  { "tagline",           FieldTagline,                 SortByNone,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 202 },
-  { "set",               FieldSet,                     SortByNone,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  20457 },
-  { "director",          FieldDirector,                SortByNone,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  20339 },
-  { "actor",             FieldActor,                   SortByNone,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  20337 },
-  { "writers",           FieldWriter,                  SortByNone,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  20417 },
-  { "airdate",           FieldAirDate,                 SortByYear,                     CDatabaseQueryRule::DATE_FIELD,     NULL,                                 false, 20416 },
-  { "hastrailer",        FieldTrailer,                 SortByNone,                     CDatabaseQueryRule::BOOLEAN_FIELD,  NULL,                                 false, 20423 },
-  { "studio",            FieldStudio,                  SortByStudio,                   CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  572 },
-  { "country",           FieldCountry,                 SortByCountry,                  CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  574 },
-  { "tvshow",            FieldTvShowTitle,             SortByTvShowTitle,              CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  20364 },
-  { "status",            FieldTvShowStatus,            SortByTvShowStatus,             CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 126 },
-  { "season",            FieldSeason,                  SortBySeason,                   CDatabaseQueryRule::NUMERIC_FIELD,  StringValidation::IsPositiveInteger,  false, 20373 },
-  { "episode",           FieldEpisodeNumber,           SortByEpisodeNumber,            CDatabaseQueryRule::NUMERIC_FIELD,  StringValidation::IsPositiveInteger,  false, 20359 },
-  { "numepisodes",       FieldNumberOfEpisodes,        SortByNumberOfEpisodes,         CDatabaseQueryRule::NUMERIC_FIELD,  StringValidation::IsPositiveInteger,  false, 20360 },
-  { "numwatched",        FieldNumberOfWatchedEpisodes, SortByNumberOfWatchedEpisodes,  CDatabaseQueryRule::NUMERIC_FIELD,  StringValidation::IsPositiveInteger,  false, 21457 },
-  { "videoresolution",   FieldVideoResolution,         SortByVideoResolution,          CDatabaseQueryRule::NUMERIC_FIELD,  NULL,                                 false, 21443 },
-  { "videocodec",        FieldVideoCodec,              SortByVideoCodec,               CDatabaseQueryRule::TEXTIN_FIELD,   NULL,                                 false, 21445 },
-  { "videoaspect",       FieldVideoAspectRatio,        SortByVideoAspectRatio,         CDatabaseQueryRule::NUMERIC_FIELD,  NULL,                                 false, 21374 },
-  { "audiochannels",     FieldAudioChannels,           SortByAudioChannels,            CDatabaseQueryRule::NUMERIC_FIELD,  NULL,                                 false, 21444 },
-  { "audiocodec",        FieldAudioCodec,              SortByAudioCodec,               CDatabaseQueryRule::TEXTIN_FIELD,   NULL,                                 false, 21446 },
-  { "audiolanguage",     FieldAudioLanguage,           SortByAudioLanguage,            CDatabaseQueryRule::TEXTIN_FIELD,   NULL,                                 false, 21447 },
-  { "subtitlelanguage",  FieldSubtitleLanguage,        SortBySubtitleLanguage,         CDatabaseQueryRule::TEXTIN_FIELD,   NULL,                                 false, 21448 },
-  { "random",            FieldRandom,                  SortByRandom,                   CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 590 },
-  { "playlist",          FieldPlaylist,                SortByPlaylistOrder,            CDatabaseQueryRule::PLAYLIST_FIELD, NULL,                                 true,  559 },
-  { "virtualfolder",     FieldVirtualFolder,           SortByNone,                     CDatabaseQueryRule::PLAYLIST_FIELD, NULL,                                 true,  614 },
-  { "tag",               FieldTag,                     SortByNone,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  20459 },
-  { "instruments",       FieldInstruments,             SortByNone,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 21892 },
-  { "biography",         FieldBiography,               SortByNone,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 21887 },
-  { "born",              FieldBorn,                    SortByNone,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 21893 },
-  { "bandformed",        FieldBandFormed,              SortByNone,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 21894 },
-  { "disbanded",         FieldDisbanded,               SortByNone,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 21896 },
-  { "died",              FieldDied,                    SortByNone,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 21897 }
+  { "none",              FieldNone,                    CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 231 },
+  { "filename",          FieldFilename,                CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 561 },
+  { "path",              FieldPath,                    CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  573 },
+  { "album",             FieldAlbum,                   CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  558 },
+  { "albumartist",       FieldAlbumArtist,             CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  566 },
+  { "artist",            FieldArtist,                  CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  557 },
+  { "tracknumber",       FieldTrackNumber,             CDatabaseQueryRule::NUMERIC_FIELD,  StringValidation::IsPositiveInteger,  false, 554 },
+  { "comment",           FieldComment,                 CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 569 },
+  { "review",            FieldReview,                  CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 183 },
+  { "themes",            FieldThemes,                  CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 21895 },
+  { "moods",             FieldMoods,                   CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 175 },
+  { "styles",            FieldStyles,                  CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 176 },
+  { "type",              FieldAlbumType,               CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 564 },
+  { "label",             FieldMusicLabel,              CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 21899 },
+  { "title",             FieldTitle,                   CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  556 },
+  { "sorttitle",         FieldSortTitle,               CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 171 },
+  { "year",              FieldYear,                    CDatabaseQueryRule::NUMERIC_FIELD,  StringValidation::IsPositiveInteger,  true,  562 },
+  { "time",              FieldTime,                    CDatabaseQueryRule::SECONDS_FIELD,  StringValidation::IsTime,             false, 180 },
+  { "playcount",         FieldPlaycount,               CDatabaseQueryRule::NUMERIC_FIELD,  StringValidation::IsPositiveInteger,  false, 567 },
+  { "lastplayed",        FieldLastPlayed,              CDatabaseQueryRule::DATE_FIELD,     NULL,                                 false, 568 },
+  { "inprogress",        FieldInProgress,              CDatabaseQueryRule::BOOLEAN_FIELD,  NULL,                                 false, 575 },
+  { "rating",            FieldRating,                  CDatabaseQueryRule::NUMERIC_FIELD,  CSmartPlaylistRule::ValidateRating,   false, 563 },
+  { "votes",             FieldVotes,                   CDatabaseQueryRule::TEXT_FIELD,     StringValidation::IsPositiveInteger,  false, 205 },
+  { "top250",            FieldTop250,                  CDatabaseQueryRule::NUMERIC_FIELD,  NULL,                                 false, 13409 },
+  { "mpaarating",        FieldMPAA,                    CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 20074 },
+  { "dateadded",         FieldDateAdded,               CDatabaseQueryRule::DATE_FIELD,     NULL,                                 false, 570 },
+  { "genre",             FieldGenre,                   CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  515 },
+  { "plot",              FieldPlot,                    CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 207 },
+  { "plotoutline",       FieldPlotOutline,             CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 203 },
+  { "tagline",           FieldTagline,                 CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 202 },
+  { "set",               FieldSet,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  20457 },
+  { "director",          FieldDirector,                CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  20339 },
+  { "actor",             FieldActor,                   CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  20337 },
+  { "writers",           FieldWriter,                  CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  20417 },
+  { "airdate",           FieldAirDate,                 CDatabaseQueryRule::DATE_FIELD,     NULL,                                 false, 20416 },
+  { "hastrailer",        FieldTrailer,                 CDatabaseQueryRule::BOOLEAN_FIELD,  NULL,                                 false, 20423 },
+  { "studio",            FieldStudio,                  CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  572 },
+  { "country",           FieldCountry,                 CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  574 },
+  { "tvshow",            FieldTvShowTitle,             CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  20364 },
+  { "status",            FieldTvShowStatus,            CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 126 },
+  { "season",            FieldSeason,                  CDatabaseQueryRule::NUMERIC_FIELD,  StringValidation::IsPositiveInteger,  false, 20373 },
+  { "episode",           FieldEpisodeNumber,           CDatabaseQueryRule::NUMERIC_FIELD,  StringValidation::IsPositiveInteger,  false, 20359 },
+  { "numepisodes",       FieldNumberOfEpisodes,        CDatabaseQueryRule::NUMERIC_FIELD,  StringValidation::IsPositiveInteger,  false, 20360 },
+  { "numwatched",        FieldNumberOfWatchedEpisodes, CDatabaseQueryRule::NUMERIC_FIELD,  StringValidation::IsPositiveInteger,  false, 21457 },
+  { "videoresolution",   FieldVideoResolution,         CDatabaseQueryRule::NUMERIC_FIELD,  NULL,                                 false, 21443 },
+  { "videocodec",        FieldVideoCodec,              CDatabaseQueryRule::TEXTIN_FIELD,   NULL,                                 false, 21445 },
+  { "videoaspect",       FieldVideoAspectRatio,        CDatabaseQueryRule::NUMERIC_FIELD,  NULL,                                 false, 21374 },
+  { "audiochannels",     FieldAudioChannels,           CDatabaseQueryRule::NUMERIC_FIELD,  NULL,                                 false, 21444 },
+  { "audiocodec",        FieldAudioCodec,              CDatabaseQueryRule::TEXTIN_FIELD,   NULL,                                 false, 21446 },
+  { "audiolanguage",     FieldAudioLanguage,           CDatabaseQueryRule::TEXTIN_FIELD,   NULL,                                 false, 21447 },
+  { "subtitlelanguage",  FieldSubtitleLanguage,        CDatabaseQueryRule::TEXTIN_FIELD,   NULL,                                 false, 21448 },
+  { "random",            FieldRandom,                  CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 590 },
+  { "playlist",          FieldPlaylist,                CDatabaseQueryRule::PLAYLIST_FIELD, NULL,                                 true,  559 },
+  { "virtualfolder",     FieldVirtualFolder,           CDatabaseQueryRule::PLAYLIST_FIELD, NULL,                                 true,  614 },
+  { "tag",               FieldTag,                     CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 true,  20459 },
+  { "instruments",       FieldInstruments,             CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 21892 },
+  { "biography",         FieldBiography,               CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 21887 },
+  { "born",              FieldBorn,                    CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 21893 },
+  { "bandformed",        FieldBandFormed,              CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 21894 },
+  { "disbanded",         FieldDisbanded,               CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 21896 },
+  { "died",              FieldDied,                    CDatabaseQueryRule::TEXT_FIELD,     NULL,                                 false, 21897 }
 };
 
 static const size_t NUM_FIELDS = sizeof(fields) / sizeof(translateField);
@@ -161,16 +165,16 @@ std::string CSmartPlaylistRule::TranslateField(int field) const
 
 SortBy CSmartPlaylistRule::TranslateOrder(const char *order)
 {
-  for (unsigned int i = 0; i < NUM_FIELDS; i++)
-    if (StringUtils::EqualsNoCase(order, fields[i].string)) return fields[i].sort;
-  return SortByNone;
+  return SortUtils::SortMethodFromString(order);
 }
 
 std::string CSmartPlaylistRule::TranslateOrder(SortBy order)
 {
-  for (unsigned int i = 0; i < NUM_FIELDS; i++)
-    if (order == fields[i].sort) return fields[i].string;
-  return "none";
+  std::string sortOrder = SortUtils::SortMethodToString(order);
+  if (sortOrder.empty())
+    return "none";
+
+  return sortOrder;
 }
 
 Field CSmartPlaylistRule::TranslateGroup(const char *group)
@@ -238,8 +242,8 @@ bool CSmartPlaylistRule::Validate(const std::string &input, void *data)
     return true;
 
   // split the input into multiple values and validate every value separately
-  vector<string> values = StringUtils::Split(input, RULE_VALUE_SEPARATOR);
-  for (vector<string>::const_iterator it = values.begin(); it != values.end(); ++it)
+  std::vector<std::string> values = StringUtils::Split(input, RULE_VALUE_SEPARATOR);
+  for (std::vector<std::string>::const_iterator it = values.begin(); it != values.end(); ++it)
   {
     if (!validator(*it, data))
       return false;
@@ -251,17 +255,17 @@ bool CSmartPlaylistRule::Validate(const std::string &input, void *data)
 bool CSmartPlaylistRule::ValidateRating(const std::string &input, void *data)
 {
   char *end = NULL;
-  string strRating = input;
+  std::string strRating = input;
   StringUtils::Trim(strRating);
 
-  double rating = strtod(strRating.c_str(), &end);
+  double rating = std::strtod(strRating.c_str(), &end);
   return (end == NULL || *end == '\0') &&
          rating >= 0.0 && rating <= 10.0;
 }
 
-vector<Field> CSmartPlaylistRule::GetFields(const std::string &type)
+std::vector<Field> CSmartPlaylistRule::GetFields(const std::string &type)
 {
-  vector<Field> fields;
+  std::vector<Field> fields;
   bool isVideo = false;
   if (type == "mixed")
   {
@@ -440,7 +444,7 @@ vector<Field> CSmartPlaylistRule::GetFields(const std::string &type)
 
 std::vector<SortBy> CSmartPlaylistRule::GetOrders(const std::string &type)
 {
-  vector<SortBy> orders;
+  std::vector<SortBy> orders;
   orders.push_back(SortByNone);
   if (type == "songs")
   {
@@ -550,7 +554,7 @@ std::vector<SortBy> CSmartPlaylistRule::GetOrders(const std::string &type)
 
 std::vector<Field> CSmartPlaylistRule::GetGroups(const std::string &type)
 {
-  vector<Field> groups;
+  std::vector<Field> groups;
   groups.push_back(FieldUnknown);
 
   if (type == "artists")
@@ -623,7 +627,7 @@ std::string CSmartPlaylistRule::GetLocalizedRule() const
 std::string CSmartPlaylistRule::GetVideoResolutionQuery(const std::string &parameter) const
 {
   std::string retVal(" IN (SELECT DISTINCT idFile FROM streamdetails WHERE iVideoWidth ");
-  int iRes = (int)strtol(parameter.c_str(), NULL, 10);
+  int iRes = (int)std::strtol(parameter.c_str(), NULL, 10);
 
   int min, max;
   if (iRes >= 1080)     { min = 1281; max = INT_MAX; }
@@ -750,7 +754,11 @@ std::string CSmartPlaylistRule::FormatWhereClause(const std::string &negate, con
     table = "artistview";
 
     if (m_field == FieldGenre)
-      query = negate + " EXISTS (SELECT DISTINCT song_artist.idArtist FROM song_artist, song_genre, genre WHERE song_artist.idArtist = " + GetField(FieldId, strType) + " AND song_artist.idSong = song_genre.idSong AND song_genre.idGenre = genre.idGenre AND genre.strGenre" + parameter + ")";
+    {
+      query = negate + " (EXISTS (SELECT DISTINCT song_artist.idArtist FROM song_artist, song_genre, genre WHERE song_artist.idArtist = " + GetField(FieldId, strType) + " AND song_artist.idSong = song_genre.idSong AND song_genre.idGenre = genre.idGenre AND genre.strGenre" + parameter + ")";
+      query += " OR ";
+      query += "EXISTS (SELECT DISTINCT album_artist.idArtist FROM album_artist, album_genre, genre WHERE album_artist.idArtist = " + GetField(FieldId, strType) + " AND album_artist.idAlbum = album_genre.idAlbum AND album_genre.idGenre = genre.idGenre AND genre.strGenre" + parameter + "))";
+    }
   }
   else if (strType == "movies")
   {
@@ -1331,7 +1339,7 @@ bool CSmartPlaylist::IsMusicType(const std::string &type)
          type == "songs" || type == "mixed";
 }
 
-std::string CSmartPlaylist::GetWhereClause(const CDatabase &db, set<std::string> &referencedPlaylists) const
+std::string CSmartPlaylist::GetWhereClause(const CDatabase &db, std::set<std::string> &referencedPlaylists) const
 {
   return m_ruleCombination.GetWhereClause(db, GetType(), referencedPlaylists);
 }
@@ -1353,8 +1361,8 @@ std::string CSmartPlaylist::GetSaveLocation() const
 
 void CSmartPlaylist::GetAvailableFields(const std::string &type, std::vector<std::string> &fieldList)
 {
-  vector<Field> typeFields = CSmartPlaylistRule::GetFields(type);
-  for (vector<Field>::const_iterator field = typeFields.begin(); field != typeFields.end(); ++field)
+  std::vector<Field> typeFields = CSmartPlaylistRule::GetFields(type);
+  for (std::vector<Field>::const_iterator field = typeFields.begin(); field != typeFields.end(); ++field)
   {
     for (unsigned int i = 0; i < NUM_FIELDS; i++)
     {

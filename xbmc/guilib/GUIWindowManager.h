@@ -28,16 +28,27 @@
  *
  */
 
-#include "GUIWindow.h"
-#include "IWindowManagerCallback.h"
-#include "IMsgTargetCallback.h"
-#include "DirtyRegionTracker.h"
-#include "utils/GlobalsHandling.h"
-#include "guilib/WindowIDs.h"
 #include <list>
+#include <utility>
+
+#include "DirtyRegionTracker.h"
+#include "guilib/WindowIDs.h"
+#include "GUIWindow.h"
+#include "IMsgTargetCallback.h"
+#include "IWindowManagerCallback.h"
+#include "messaging/IMessageTarget.h"
+#include "utils/GlobalsHandling.h"
 
 class CGUIDialog;
 enum class DialogModalityType;
+
+namespace KODI
+{
+  namespace MESSAGING
+  {
+    class CApplicationMessenger;
+  }
+}
 
 #define WINDOW_ID_MASK 0xffff
 
@@ -45,7 +56,7 @@ enum class DialogModalityType;
  \ingroup winman
  \brief
  */
-class CGUIWindowManager
+class CGUIWindowManager : public KODI::MESSAGING::IMessageTarget
 {
 public:
   CGUIWindowManager(void);
@@ -67,6 +78,9 @@ public:
 
   void CloseDialogs(bool forceClose = false) const;
   void CloseInternalModalDialogs(bool forceClose = false) const;
+
+  virtual void OnApplicationMessage(KODI::MESSAGING::ThreadMessage* pMsg) override;
+  virtual int GetMessageMask() override;
 
   // OnAction() runs through our active dialogs and windows and sends the message
   // off to the callbacks (application, python, playlist player) and to the
@@ -155,7 +169,6 @@ public:
   bool IsWindowActive(const std::string &xmlFile, bool ignoreClosing = true) const;
   bool IsWindowVisible(const std::string &xmlFile) const;
   bool IsWindowTopMost(const std::string &xmlFile) const;
-  bool IsOverlayAllowed() const;
   /*! \brief Checks if the given window is an addon window.
    *
    * \return true if the given window is an addon window, otherwise false.
@@ -166,7 +179,6 @@ public:
    * \return true if the given window is a python window, otherwise false.
    */
   bool IsPythonWindow(int id) const { return (id >= WINDOW_PYTHON_START && id <= WINDOW_PYTHON_END); };
-  void ShowOverlay(CGUIWindow::OVERLAY_STATE state);
   void GetActiveModelessWindows(std::vector<int> &ids);
 #ifdef _DEBUG
   void DumpTextureUse();
@@ -176,14 +188,13 @@ private:
 
   void LoadNotOnDemandWindows();
   void UnloadNotOnDemandWindows();
-  void HideOverlay(CGUIWindow::OVERLAY_STATE state);
   void AddToWindowHistory(int newWindowID);
   void ClearWindowHistory();
   void CloseWindowSync(CGUIWindow *window, int nextWindowID = 0);
   CGUIWindow *GetTopMostDialog() const;
 
-  friend class CApplicationMessenger;
-
+  friend class KODI::MESSAGING::CApplicationMessenger;
+  
   /*! \brief Activate the given window.
    *
    * \param windowID The window ID to activate.
@@ -210,7 +221,6 @@ private:
   CCriticalSection m_critSection;
   std::vector <IMsgTargetCallback*> m_vecMsgTargets;
 
-  bool m_bShowOverlay;
   int  m_iNested;
   bool m_initialized;
 

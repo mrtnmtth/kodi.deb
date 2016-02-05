@@ -21,6 +21,7 @@
 #include "GUIEditControl.h"
 #include "GUIWindowManager.h"
 #include "utils/CharsetConverter.h"
+#include "utils/Variant.h"
 #include "GUIKeyboardFactory.h"
 #include "dialogs/GUIDialogNumeric.h"
 #include "input/XBMC_vkeys.h"
@@ -37,8 +38,6 @@
 
 const char* CGUIEditControl::smsLetters[10] = { " !@#$%^&*()[]{}<>/\\|0", ".,;:\'\"-+_=?`~1", "abc2ABC", "def3DEF", "ghi4GHI", "jkl5JKL", "mno6MNO", "pqrs7PQRS", "tuv8TUV", "wxyz9WXYZ" };
 const unsigned int CGUIEditControl::smsDelay = 1000;
-
-using namespace std;
 
 #ifdef TARGET_WINDOWS
 extern HWND g_hWnd;
@@ -363,7 +362,7 @@ void CGUIEditControl::OnClick()
       // fallthrough
     case INPUT_TYPE_TEXT:
     default:
-      textChanged = CGUIKeyboardFactory::ShowAndGetInput(utf8, heading, true, m_inputType == INPUT_TYPE_PASSWORD || m_inputType == INPUT_TYPE_PASSWORD_MD5);
+      textChanged = CGUIKeyboardFactory::ShowAndGetInput(utf8, CVariant{heading}, true, m_inputType == INPUT_TYPE_PASSWORD || m_inputType == INPUT_TYPE_PASSWORD_MD5);
       break;
   }
   if (textChanged)
@@ -547,7 +546,7 @@ std::wstring CGUIEditControl::GetDisplayedText() const
       text.append(m_text2.size() - m_cursorPos, L'*');
     }
     else
-      text.append(m_text2.size(), L'*');;
+      text.append(m_text2.size(), L'*');
   }
   else if (!m_edit.empty())
     text.insert(m_editOffset, m_edit);
@@ -653,7 +652,6 @@ void CGUIEditControl::SetCursorPosition(unsigned int iPosition)
 void CGUIEditControl::OnSMSCharacter(unsigned int key)
 {
   assert(key < 10);
-  bool sendUpdate = false;
   if (m_smsTimer.IsRunning())
   {
     // we're already entering an SMS character
@@ -661,7 +659,6 @@ void CGUIEditControl::OnSMSCharacter(unsigned int key)
     { // a different key was clicked than last time, or we have timed out
       m_smsLastKey = key;
       m_smsKeyIndex = 0;
-      sendUpdate = true;
     }
     else
     { // same key as last time within the appropriate time period
@@ -679,7 +676,7 @@ void CGUIEditControl::OnSMSCharacter(unsigned int key)
   m_smsKeyIndex = m_smsKeyIndex % strlen(smsLetters[key]);
 
   m_text2.insert(m_text2.begin() + m_cursorPos++, smsLetters[key][m_smsKeyIndex]);
-  UpdateText(sendUpdate);
+  UpdateText();
   m_smsTimer.StartZero();
 }
 

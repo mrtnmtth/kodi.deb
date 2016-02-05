@@ -34,14 +34,12 @@
 #include "utils/Variant.h"
 #include "utils/StringUtils.h"
 
-#include <climits>
-
 CGUIWindowDebugInfo::CGUIWindowDebugInfo(void)
-    : CGUIDialog(WINDOW_DEBUG_INFO, "")
+  : CGUIDialog(WINDOW_DEBUG_INFO, "", DialogModalityType::MODELESS)
 {
   m_needsScaling = false;
   m_layout = NULL;
-  m_renderOrder = INT_MAX - 2;
+  m_renderOrder = RENDER_ORDER_WINDOW_DEBUG;
 }
 
 CGUIWindowDebugInfo::~CGUIWindowDebugInfo(void)
@@ -51,7 +49,7 @@ CGUIWindowDebugInfo::~CGUIWindowDebugInfo(void)
 void CGUIWindowDebugInfo::UpdateVisibility()
 {
   if (LOG_LEVEL_DEBUG_FREEMEM <= g_advancedSettings.m_logLevel || g_SkinInfo->IsDebugging())
-    Show();
+    Open();
   else
     Close();
 }

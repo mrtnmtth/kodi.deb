@@ -31,6 +31,7 @@
 #include "guilib/LocalizeStrings.h"
 #include "storage/MediaManager.h"
 #include "ContextMenuManager.h"
+#include "utils/Variant.h"
 
 using namespace XFILE;
 
@@ -132,7 +133,7 @@ void CGUIDialogFavourites::OnPopupMenu(int item)
   choices.Add(5, 20019);
 
   CFileItemPtr itemPtr = m_favourites->Get(item);
-  CContextMenuManager::Get().AddVisibleItems(itemPtr, choices);
+  CContextMenuManager::GetInstance().AddVisibleItems(itemPtr, choices);
 
   int button = CGUIDialogContextMenu::ShowAndGetChoice(choices);
 
@@ -150,7 +151,7 @@ void CGUIDialogFavourites::OnPopupMenu(int item)
   else if (button == 5)
     OnSetThumb(item);
   else if (button >= CONTEXT_BUTTON_FIRST_ADDON)
-    CContextMenuManager::Get().Execute(button, itemPtr);
+    CContextMenuManager::GetInstance().OnClick(button, itemPtr);
 }
 
 void CGUIDialogFavourites::OnMoveItem(int item, int amount)
@@ -188,7 +189,7 @@ void CGUIDialogFavourites::OnRename(int item)
     return;
 
   std::string label((*m_favourites)[item]->GetLabel());
-  if (CGUIKeyboardFactory::ShowAndGetInput(label, g_localizeStrings.Get(16008), false))
+  if (CGUIKeyboardFactory::ShowAndGetInput(label, CVariant{g_localizeStrings.Get(16008)}, false))
     (*m_favourites)[item]->SetLabel(label);
 
   CFavouritesDirectory::Save(*m_favourites);

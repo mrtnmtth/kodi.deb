@@ -1,5 +1,4 @@
 #pragma once
-
 /*
  *      Copyright (C) 2012-2013 Team XBMC
  *      http://xbmc.org
@@ -69,6 +68,7 @@ namespace PVR
 
   protected:
     virtual void SaveViewState();
+    virtual bool HideParentDirItems(void);
   };
 
   class CGUIViewStateWindowPVRSearch : public CGUIViewStatePVR

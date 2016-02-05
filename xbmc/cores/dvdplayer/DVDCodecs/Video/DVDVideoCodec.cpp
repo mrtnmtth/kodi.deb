@@ -23,7 +23,7 @@
 #include "settings/Settings.h"
 #include "settings/lib/Setting.h"
 
-bool CDVDVideoCodec::IsSettingVisible(const std::string &condition, const std::string &value, const CSetting *setting)
+bool CDVDVideoCodec::IsSettingVisible(const std::string &condition, const std::string &value, const CSetting *setting, void *data)
 {
   if (setting == NULL || value.empty())
     return false;
@@ -39,18 +39,18 @@ bool CDVDVideoCodec::IsSettingVisible(const std::string &condition, const std::s
   // nvidia does only need mpeg-4 setting
   if (isNvidia) 
   {
-    if (settingId == "videoplayer.usevdpaumpeg4")
+    if (settingId == CSettings::SETTING_VIDEOPLAYER_USEVDPAUMPEG4)
       return true;
 
     return false; //will also hide intel settings on nvidia hardware
   }
   else if (isIntel) // intel needs vc1, mpeg-2 and mpeg4 setting
   {
-    if (settingId == "videoplayer.usevaapimpeg4")
+    if (settingId == CSettings::SETTING_VIDEOPLAYER_USEVAAPIMPEG4)
       return true;
-    if (settingId == "videoplayer.usevaapivc1")
+    if (settingId == CSettings::SETTING_VIDEOPLAYER_USEVAAPIVC1)
       return true;
-    if (settingId == "videoplayer.usevaapimpeg2")
+    if (settingId == CSettings::SETTING_VIDEOPLAYER_USEVAAPIMPEG2)
       return true;
 
     return false; //this will also hide nvidia settings on intel hardware
@@ -72,7 +72,7 @@ bool CDVDVideoCodec::IsCodecDisabled(DVDCodecAvailableType* map, unsigned int si
     }
   }
   if(index > -1)
-    return (!CSettings::Get().GetBool(map[index].setting) || !CDVDVideoCodec::IsSettingVisible("unused", "unused", CSettings::Get().GetSetting(map[index].setting)));
+    return (!CSettings::GetInstance().GetBool(map[index].setting) || !CDVDVideoCodec::IsSettingVisible("unused", "unused", CSettings::GetInstance().GetSetting(map[index].setting), NULL));
 
   return false; //don't disable what we don't have
 }

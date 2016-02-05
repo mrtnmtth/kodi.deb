@@ -33,13 +33,15 @@
 #include "DVDVideoCodecStageFright.h"
 #include "utils/log.h"
 #include "Application.h"
-#include "ApplicationMessenger.h"
+#include "messaging/ApplicationMessenger.h"
 #include "windowing/WindowingFactory.h"
 #include "settings/AdvancedSettings.h"
 
 #include "DllLibStageFrightCodec.h"
 
 #define CLASSNAME "CDVDVideoCodecStageFright"
+
+using namespace KODI::MESSAGING;
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -64,7 +66,7 @@ CDVDVideoCodecStageFright::~CDVDVideoCodecStageFright()
 bool CDVDVideoCodecStageFright::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options)
 {
   // we always qualify even if DVDFactoryCodec does this too.
-  if (CSettings::Get().GetBool("videoplayer.usestagefright") && !hints.software)
+  if (CSettings::GetInstance().GetBool("videoplayer.usestagefright") && !hints.software)
   {
     m_convert_bitstream = false;
     CLog::Log(LOGDEBUG,
@@ -116,9 +118,14 @@ bool CDVDVideoCodecStageFright::Open(CDVDStreamInfo &hints, CDVDCodecOptions &op
       case CODEC_ID_VP8:
         m_pFormatName = "stf-vpx";
         break;
-      case CODEC_ID_WMV3:
-      case CODEC_ID_VC1:
+      case AV_CODEC_ID_VP9:
+        m_pFormatName = "stf-vp9";
+        break;
+      case AV_CODEC_ID_WMV3:
         m_pFormatName = "stf-wmv";
+        break;
+      case AV_CODEC_ID_VC1:
+        m_pFormatName = "stf-vc1";
         break;
       default:
         return false;
@@ -129,7 +136,7 @@ bool CDVDVideoCodecStageFright::Open(CDVDStreamInfo &hints, CDVDCodecOptions &op
       return false;
     m_stf_dll->EnableDelayedUnload(false);
 
-    m_stf_handle = m_stf_dll->create_stf(&g_application, &CApplicationMessenger::Get(), &g_Windowing, &g_advancedSettings);
+    m_stf_handle = m_stf_dll->create_stf(&g_application, &CApplicationMessenger::GetInstance(), &g_Windowing, &g_advancedSettings);
 
     if (!m_stf_dll->stf_Open(m_stf_handle, hints))
     {

@@ -20,7 +20,7 @@
 // and obj-c's typedef unsigned char BOOL
 #define BOOL XBMC_BOOL 
 #import "PlatformDefs.h"
-#import "ApplicationMessenger.h"
+#import "messaging/ApplicationMessenger.h"
 #import "storage/osx/DarwinStorageProvider.h"
 #undef BOOL
 
@@ -589,7 +589,7 @@ int main(int argc, char *argv[])
 
   // Create XBMCDelegate and make it the app delegate
   xbmc_delegate = [[XBMCDelegate alloc] init];
-  [NSApp setDelegate:xbmc_delegate];
+  [[NSApplication sharedApplication] setDelegate:xbmc_delegate];
 
   // Start the main event loop
   [NSApp run];

@@ -230,7 +230,7 @@ bool CLinuxRendererGLES::Configure(unsigned int width, unsigned int height, unsi
   // Calculate the input frame aspect ratio.
   CalculateFrameAspectRatio(d_width, d_height);
   ChooseBestResolution(fps);
-  SetViewMode(CMediaSettings::Get().GetCurrentVideoSettings().m_ViewMode);
+  SetViewMode(CMediaSettings::GetInstance().GetCurrentVideoSettings().m_ViewMode);
   ManageDisplay();
 
   m_bConfigured = true;
@@ -594,6 +594,59 @@ void CLinuxRendererGLES::RenderUpdateVideo(bool clear, DWORD flags, DWORD alpha)
 
     return;
   }
+#ifdef TARGET_ANDROID
+  else if (m_renderMethod & RENDER_MEDIACODECSURFACE)
+  {
+    CDVDMediaCodecInfo *mci = m_buffers[m_iYV12RenderBuffer].mediacodec;
+    if (mci)
+    {
+      // this hack is needed to get the 2D mode of a 3D movie going
+      RENDER_STEREO_MODE stereo_mode = g_graphicsContext.GetStereoMode();
+      if (stereo_mode)
+        g_graphicsContext.SetStereoView(RENDER_STEREO_VIEW_LEFT);
+
+      ManageDisplay();
+
+      if (stereo_mode)
+        g_graphicsContext.SetStereoView(RENDER_STEREO_VIEW_OFF);
+
+      CRect dstRect(m_destRect);
+      CRect srcRect(m_sourceRect);
+      switch (stereo_mode)
+      {
+        case RENDER_STEREO_MODE_SPLIT_HORIZONTAL:
+          dstRect.y2 *= 2.0;
+          srcRect.y2 *= 2.0;
+        break;
+
+        case RENDER_STEREO_MODE_SPLIT_VERTICAL:
+          dstRect.x2 *= 2.0;
+          srcRect.x2 *= 2.0;
+        break;
+
+        default:
+        break;
+      }
+
+      // Handle orientation
+      switch (m_renderOrientation)
+      {
+        case 90:
+        case 270:
+        {
+          int diff = (int) ((dstRect.Height() - dstRect.Width()) / 2);
+          dstRect = CRect(dstRect.x1 - diff, dstRect.y1, dstRect.x2 + diff, dstRect.y2);
+          break;
+        }
+
+        default:
+          break;
+      }
+
+      mci->RenderUpdate(srcRect, dstRect);
+    }
+  }
+#endif
 #ifdef HAS_IMXVPU
   else if (m_renderMethod & RENDER_IMXMAP)
   {
@@ -700,7 +753,7 @@ unsigned int CLinuxRendererGLES::PreInit()
   m_bConfigured = false;
   m_bValidated = false;
   UnInit();
-  m_resolution = CDisplaySettings::Get().GetCurrentResolution();
+  m_resolution = CDisplaySettings::GetInstance().GetCurrentResolution();
   if ( m_resolution == RES_WINDOW )
     m_resolution = RES_DESKTOP;
 
@@ -722,6 +775,7 @@ unsigned int CLinuxRendererGLES::PreInit()
 #endif
 #if defined(TARGET_ANDROID)
   m_formats.push_back(RENDER_FMT_MEDIACODEC);
+  m_formats.push_back(RENDER_FMT_MEDIACODECSURFACE);
 #endif
 #ifdef HAS_IMXVPU
   m_formats.push_back(RENDER_FMT_IMXMAP);
@@ -735,9 +789,9 @@ unsigned int CLinuxRendererGLES::PreInit()
 
 void CLinuxRendererGLES::UpdateVideoFilter()
 {
-  if (m_scalingMethodGui == CMediaSettings::Get().GetCurrentVideoSettings().m_ScalingMethod)
+  if (m_scalingMethodGui == CMediaSettings::GetInstance().GetCurrentVideoSettings().m_ScalingMethod)
     return;
-  m_scalingMethodGui = CMediaSettings::Get().GetCurrentVideoSettings().m_ScalingMethod;
+  m_scalingMethodGui = CMediaSettings::GetInstance().GetCurrentVideoSettings().m_ScalingMethod;
   m_scalingMethod    = m_scalingMethodGui;
 
   if(!Supports(m_scalingMethod))
@@ -801,7 +855,7 @@ void CLinuxRendererGLES::LoadShaders(int field)
 #ifdef TARGET_DARWIN_IOS
   float ios_version = CDarwinUtils::GetIOSVersion();
 #endif
-  int requestedMethod = CSettings::Get().GetInt("videoplayer.rendermethod");
+  int requestedMethod = CSettings::GetInstance().GetInt(CSettings::SETTING_VIDEOPLAYER_RENDERMETHOD);
   CLog::Log(LOGDEBUG, "GL: Requested render method: %d", requestedMethod);
 
   ReleaseShaders();
@@ -826,6 +880,12 @@ void CLinuxRendererGLES::LoadShaders(int field)
       {
         CLog::Log(LOGNOTICE, "GL: Using MediaCodec render method");
         m_renderMethod = RENDER_MEDIACODEC;
+        break;
+      }
+      else if (m_format == RENDER_FMT_MEDIACODECSURFACE)
+      {
+        CLog::Log(LOGNOTICE, "GL: Using MediaCodec (Surface) render method");
+        m_renderMethod = RENDER_MEDIACODECSURFACE;
         break;
       }
       else if (m_format == RENDER_FMT_IMXMAP)
@@ -902,7 +962,7 @@ void CLinuxRendererGLES::LoadShaders(int field)
     m_textureCreate = &CLinuxRendererGLES::CreateCVRefTexture;
     m_textureDelete = &CLinuxRendererGLES::DeleteCVRefTexture;
   }
-  else if (m_format == RENDER_FMT_BYPASS)
+  else if (m_format == RENDER_FMT_BYPASS || m_format == RENDER_FMT_MEDIACODECSURFACE)
   {
     m_textureUpload = &CLinuxRendererGLES::UploadBYPASSTexture;
     m_textureCreate = &CLinuxRendererGLES::CreateBYPASSTexture;
@@ -1043,6 +1103,8 @@ void CLinuxRendererGLES::ReleaseBuffer(int idx)
       SAFE_RELEASE(buf.mediacodec);
     }
   }
+  if ( m_renderMethod & RENDER_MEDIACODECSURFACE )
+    SAFE_RELEASE(buf.mediacodec);
 #endif
 #ifdef HAS_IMXVPU
   if (m_renderMethod & RENDER_IMXMAP)
@@ -1053,7 +1115,7 @@ void CLinuxRendererGLES::ReleaseBuffer(int idx)
 void CLinuxRendererGLES::Render(DWORD flags, int index)
 {
   // If rendered directly by the hardware
-  if (m_renderMethod & RENDER_BYPASS)
+  if (m_renderMethod & RENDER_BYPASS || m_renderMethod & RENDER_MEDIACODECSURFACE)
     return;
 
   // obtain current field, if interlaced
@@ -1160,8 +1222,8 @@ void CLinuxRendererGLES::RenderSinglePass(int index, int field)
   else
     pYUVShader = m_pYUVProgShader;
 
-  pYUVShader->SetBlack(CMediaSettings::Get().GetCurrentVideoSettings().m_Brightness * 0.01f - 0.5f);
-  pYUVShader->SetContrast(CMediaSettings::Get().GetCurrentVideoSettings().m_Contrast * 0.02f);
+  pYUVShader->SetBlack(CMediaSettings::GetInstance().GetCurrentVideoSettings().m_Brightness * 0.01f - 0.5f);
+  pYUVShader->SetContrast(CMediaSettings::GetInstance().GetCurrentVideoSettings().m_Contrast * 0.02f);
   pYUVShader->SetWidth(im.width);
   pYUVShader->SetHeight(im.height);
   if     (field == FIELD_TOP)
@@ -1280,8 +1342,8 @@ void CLinuxRendererGLES::RenderMultiPass(int index, int field)
   m_fbo.BeginRender();
   VerifyGLState();
 
-  m_pYUVProgShader->SetBlack(CMediaSettings::Get().GetCurrentVideoSettings().m_Brightness * 0.01f - 0.5f);
-  m_pYUVProgShader->SetContrast(CMediaSettings::Get().GetCurrentVideoSettings().m_Contrast * 0.02f);
+  m_pYUVProgShader->SetBlack(CMediaSettings::GetInstance().GetCurrentVideoSettings().m_Brightness * 0.01f - 0.5f);
+  m_pYUVProgShader->SetContrast(CMediaSettings::GetInstance().GetCurrentVideoSettings().m_Contrast * 0.02f);
   m_pYUVProgShader->SetWidth(im.width);
   m_pYUVProgShader->SetHeight(im.height);
   if     (field == FIELD_TOP)
@@ -1430,9 +1492,9 @@ void CLinuxRendererGLES::RenderSoftware(int index, int field)
   g_Windowing.EnableGUIShader(SM_TEXTURE_RGBA);
 
   GLint   contrastLoc = g_Windowing.GUIShaderGetContrast();
-  glUniform1f(contrastLoc, CMediaSettings::Get().GetCurrentVideoSettings().m_Contrast * 0.02f);
+  glUniform1f(contrastLoc, CMediaSettings::GetInstance().GetCurrentVideoSettings().m_Contrast * 0.02f);
   GLint   brightnessLoc = g_Windowing.GUIShaderGetBrightness();
-  glUniform1f(brightnessLoc, CMediaSettings::Get().GetCurrentVideoSettings().m_Brightness * 0.01f - 0.5f);
+  glUniform1f(brightnessLoc, CMediaSettings::GetInstance().GetCurrentVideoSettings().m_Brightness * 0.01f - 0.5f);
 
   GLubyte idx[4] = {0, 1, 3, 2};        //determines order of triangle strip
   GLfloat ver[4][4];
@@ -1500,9 +1562,9 @@ void CLinuxRendererGLES::RenderOpenMax(int index, int field)
   g_Windowing.EnableGUIShader(SM_TEXTURE_RGBA);
 
   GLint   contrastLoc = g_Windowing.GUIShaderGetContrast();
-  glUniform1f(contrastLoc, CMediaSettings::Get().GetCurrentVideoSettings().m_Contrast * 0.02f);
+  glUniform1f(contrastLoc, CMediaSettings::GetInstance().GetCurrentVideoSettings().m_Contrast * 0.02f);
   GLint   brightnessLoc = g_Windowing.GUIShaderGetBrightness();
-  glUniform1f(brightnessLoc, CMediaSettings::Get().GetCurrentVideoSettings().m_Brightness * 0.01f - 0.5f);
+  glUniform1f(brightnessLoc, CMediaSettings::GetInstance().GetCurrentVideoSettings().m_Brightness * 0.01f - 0.5f);
 
   GLubyte idx[4] = {0, 1, 3, 2};        //determines order of triangle strip
   GLfloat ver[4][4];
@@ -1591,9 +1653,9 @@ void CLinuxRendererGLES::RenderEglImage(int index, int field)
     g_Windowing.EnableGUIShader(SM_TEXTURE_RGBA);
 
   GLint   contrastLoc = g_Windowing.GUIShaderGetContrast();
-  glUniform1f(contrastLoc, CMediaSettings::Get().GetCurrentVideoSettings().m_Contrast * 0.02f);
+  glUniform1f(contrastLoc, CMediaSettings::GetInstance().GetCurrentVideoSettings().m_Contrast * 0.02f);
   GLint   brightnessLoc = g_Windowing.GUIShaderGetBrightness();
-  glUniform1f(brightnessLoc, CMediaSettings::Get().GetCurrentVideoSettings().m_Brightness * 0.01f - 0.5f);
+  glUniform1f(brightnessLoc, CMediaSettings::GetInstance().GetCurrentVideoSettings().m_Brightness * 0.01f - 0.5f);
 
   GLubyte idx[4] = {0, 1, 3, 2};        //determines order of triangle strip
   GLfloat ver[4][4];
@@ -1686,9 +1748,9 @@ void CLinuxRendererGLES::RenderSurfaceTexture(int index, int field)
     g_Windowing.EnableGUIShader(SM_TEXTURE_RGBA_OES);
 
   GLint   contrastLoc = g_Windowing.GUIShaderGetContrast();
-  glUniform1f(contrastLoc, CMediaSettings::Get().GetCurrentVideoSettings().m_Contrast * 0.02f);
+  glUniform1f(contrastLoc, CMediaSettings::GetInstance().GetCurrentVideoSettings().m_Contrast * 0.02f);
   GLint   brightnessLoc = g_Windowing.GUIShaderGetBrightness();
-  glUniform1f(brightnessLoc, CMediaSettings::Get().GetCurrentVideoSettings().m_Brightness * 0.01f - 0.5f);
+  glUniform1f(brightnessLoc, CMediaSettings::GetInstance().GetCurrentVideoSettings().m_Brightness * 0.01f - 0.5f);
 
   glUniformMatrix4fv(g_Windowing.GUIShaderGetCoord0Matrix(), 1, GL_FALSE, m_textureMatrix);
 
@@ -1776,9 +1838,9 @@ void CLinuxRendererGLES::RenderCoreVideoRef(int index, int field)
   g_Windowing.EnableGUIShader(SM_TEXTURE_RGBA);
 
   GLint   contrastLoc = g_Windowing.GUIShaderGetContrast();
-  glUniform1f(contrastLoc, CMediaSettings::Get().GetCurrentVideoSettings().m_Contrast * 0.02f);
+  glUniform1f(contrastLoc, CMediaSettings::GetInstance().GetCurrentVideoSettings().m_Contrast * 0.02f);
   GLint   brightnessLoc = g_Windowing.GUIShaderGetBrightness();
-  glUniform1f(brightnessLoc, CMediaSettings::Get().GetCurrentVideoSettings().m_Brightness * 0.01f - 0.5f);
+  glUniform1f(brightnessLoc, CMediaSettings::GetInstance().GetCurrentVideoSettings().m_Brightness * 0.01f - 0.5f);
 
   GLubyte idx[4] = {0, 1, 3, 2};        //determines order of triangle strip
   GLfloat ver[4][4];
@@ -1836,7 +1898,7 @@ bool CLinuxRendererGLES::RenderCapture(CRenderCapture* capture)
     return false;
 
   // If rendered directly by the hardware
-  if (m_renderMethod & RENDER_BYPASS)
+  if (m_renderMethod & RENDER_BYPASS || m_renderMethod & RENDER_MEDIACODECSURFACE)
   {
     capture->BeginRender();
     capture->EndRender();
@@ -2838,11 +2900,14 @@ bool CLinuxRendererGLES::Supports(ERENDERFEATURE feature)
     return itr != m_renderFeatures.end();
   }
 
-  if(feature == RENDERFEATURE_BRIGHTNESS)
-    return true;
+  if (!(m_renderMethod & RENDER_MEDIACODECSURFACE))
+  {
+    if(feature == RENDERFEATURE_BRIGHTNESS)
+      return true;
 
-  if(feature == RENDERFEATURE_CONTRAST)
-    return true;
+    if(feature == RENDERFEATURE_CONTRAST)
+      return true;
+  }
 
   if(feature == RENDERFEATURE_GAMMA)
     return false;
@@ -2926,6 +2991,9 @@ bool CLinuxRendererGLES::Supports(EINTERLACEMETHOD method)
       return false;
   }
 
+  if(m_renderMethod & RENDER_MEDIACODECSURFACE)
+    return false;
+
   if(m_renderMethod & RENDER_CVREF)
     return false;
 
@@ -2967,6 +3035,9 @@ bool CLinuxRendererGLES::Supports(ESCALINGMETHOD method)
   if(m_renderMethod & RENDER_IMXMAP)
     return false;
 
+  if (m_renderMethod & RENDER_MEDIACODECSURFACE)
+    return false;
+
   if(method == VS_SCALINGMETHOD_NEAREST
   || method == VS_SCALINGMETHOD_LINEAR)
     return true;
@@ -2994,6 +3065,9 @@ EINTERLACEMETHOD CLinuxRendererGLES::AutoInterlaceMethod()
   if(m_renderMethod & RENDER_MEDIACODEC)
     return VS_INTERLACEMETHOD_RENDER_BOB_INVERTED;
 
+  if(m_renderMethod & RENDER_MEDIACODECSURFACE)
+    return VS_INTERLACEMETHOD_NONE;
+
   if(m_renderMethod & RENDER_CVREF)
     return VS_INTERLACEMETHOD_NONE;
 
@@ -3015,7 +3089,8 @@ CRenderInfo CLinuxRendererGLES::GetRenderInfo()
   if(m_format == RENDER_FMT_OMXEGL ||
      m_format == RENDER_FMT_CVBREF ||
      m_format == RENDER_FMT_EGLIMG ||
-     m_format == RENDER_FMT_MEDIACODEC)
+     m_format == RENDER_FMT_MEDIACODEC ||
+    m_format == RENDER_FMT_MEDIACODECSURFACE)
     info.optimal_buffer_size = 2;
   else if(m_format == RENDER_FMT_IMXMAP)
   {
@@ -3114,7 +3189,7 @@ void CLinuxRendererGLES::AddProcessor(CDVDVideoCodecIMXBuffer *buffer, int index
 
 bool CLinuxRendererGLES::IsGuiLayer()
 {
-  if (m_format == RENDER_FMT_BYPASS || m_format == RENDER_FMT_IMXMAP)
+  if (m_format == RENDER_FMT_BYPASS || m_format == RENDER_FMT_IMXMAP || m_format == RENDER_FMT_MEDIACODECSURFACE)
     return false;
   else
     return true;

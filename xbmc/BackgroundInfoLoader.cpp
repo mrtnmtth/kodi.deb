@@ -22,8 +22,7 @@
 #include "FileItem.h"
 #include "threads/SingleLock.h"
 #include "utils/log.h"
-
-using namespace std;
+#include "URL.h"
 
 CBackgroundInfoLoader::CBackgroundInfoLoader() : m_thread (NULL)
 {
@@ -48,7 +47,7 @@ void CBackgroundInfoLoader::Run()
       OnLoaderStart();
 
       // Stage 1: All "fast" stuff we have already cached
-      for (vector<CFileItemPtr>::const_iterator iter = m_vecItems.begin(); iter != m_vecItems.end(); ++iter)
+      for (std::vector<CFileItemPtr>::const_iterator iter = m_vecItems.begin(); iter != m_vecItems.end(); ++iter)
       {
         CFileItemPtr pItem = *iter;
 
@@ -63,12 +62,12 @@ void CBackgroundInfoLoader::Run()
         }
         catch (...)
         {
-          CLog::Log(LOGERROR, "CBackgroundInfoLoader::LoadItemCached - Unhandled exception for item %s", pItem->GetPath().c_str());
+          CLog::Log(LOGERROR, "CBackgroundInfoLoader::LoadItemCached - Unhandled exception for item %s", CURL::GetRedacted(pItem->GetPath()).c_str());
         }
       }
 
       // Stage 2: All "slow" stuff that we need to lookup
-      for (vector<CFileItemPtr>::const_iterator iter = m_vecItems.begin(); iter != m_vecItems.end(); ++iter)
+      for (std::vector<CFileItemPtr>::const_iterator iter = m_vecItems.begin(); iter != m_vecItems.end(); ++iter)
       {
         CFileItemPtr pItem = *iter;
 
@@ -83,7 +82,7 @@ void CBackgroundInfoLoader::Run()
         }
         catch (...)
         {
-          CLog::Log(LOGERROR, "CBackgroundInfoLoader::LoadItemLookup - Unhandled exception for item %s", pItem->GetPath().c_str());
+          CLog::Log(LOGERROR, "CBackgroundInfoLoader::LoadItemLookup - Unhandled exception for item %s", CURL::GetRedacted(pItem->GetPath()).c_str());
         }
       }
     }

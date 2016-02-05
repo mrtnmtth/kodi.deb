@@ -23,6 +23,8 @@
 using namespace ActiveAE;
 #include "ActiveAESound.h"
 #include "ActiveAEStream.h"
+#include "cores/AudioEngine/DSPAddons/ActiveAEDSP.h"
+#include "cores/AudioEngine/DSPAddons/ActiveAEDSPProcess.h"
 #include "cores/AudioEngine/Utils/AEUtil.h"
 #include "cores/AudioEngine/AEResampleFactory.h"
 #include "cores/AudioEngine/Encoders/AEEncoderFFmpeg.h"
@@ -42,6 +44,7 @@ void CEngineStats::Reset(unsigned int sampleRate)
   m_sinkSampleRate = sampleRate;
   m_bufferedSamples = 0;
   m_suspended = false;
+  m_hasDSP = false;
   m_playingPTS = 0;
   m_clockId = 0;
 }
@@ -154,6 +157,30 @@ bool CEngineStats::IsSuspended()
   return m_suspended;
 }
 
+void CEngineStats::SetDSP(bool state)
+{
+  CSingleLock lock(m_lock);
+  m_hasDSP = state;
+}
+
+void CEngineStats::SetCurrentSinkFormat(AEAudioFormat SinkFormat)
+{
+  CSingleLock lock(m_lock);
+  m_sinkFormat = SinkFormat;
+}
+
+bool CEngineStats::HasDSP()
+{
+  CSingleLock lock(m_lock);
+  return m_hasDSP;
+}
+
+AEAudioFormat CEngineStats::GetCurrentSinkFormat()
+{
+  CSingleLock lock(m_lock);
+  return m_sinkFormat;
+}
+
 CActiveAE::CActiveAE() :
   CThread("ActiveAE"),
   m_controlPort("OutputControlPort", &m_inMsgEvent, &m_outMsgEvent),
@@ -175,6 +202,7 @@ CActiveAE::CActiveAE() :
   m_audioCallback = NULL;
   m_vizInitialized = false;
   m_sinkHasVolume = false;
+  m_aeGUISoundForce = false;
   m_stats.Reset(44100);
 }
 
@@ -522,6 +550,13 @@ void CActiveAE::StateMachine(int signal, Protocol *port, Message *msg)
             par->stream->m_resampleBuffers->m_resampleRatio = par->parameter.double_par;
           }
           return;
+        case CActiveAEControlProtocol::STREAMFFMPEGINFO:
+          MsgStreamFFmpegInfo *info;
+          info = (MsgStreamFFmpegInfo*)msg->data;
+          info->stream->m_profile = info->profile;
+          info->stream->m_matrixEncoding = info->matrix_encoding;
+          info->stream->m_audioServiceType = info->audio_service_type;
+          return;
         case CActiveAEControlProtocol::STREAMFADE:
           MsgStreamFade *fade;
           fade = (MsgStreamFade*)msg->data;
@@ -546,11 +581,15 @@ void CActiveAE::StateMachine(int signal, Protocol *port, Message *msg)
         case CActiveAEDataProtocol::PLAYSOUND:
           CActiveAESound *sound;
           sound = *(CActiveAESound**)msg->data;
-          if (m_settings.guisoundmode == AE_SOUND_OFF ||
-             (m_settings.guisoundmode == AE_SOUND_IDLE && !m_streams.empty()))
-            return;
           if (sound)
           {
+            m_aeGUISoundForce = m_settings.dspaddonsenabled && sound->GetChannel() != AE_CH_NULL;
+
+            if ((m_settings.guisoundmode == AE_SOUND_OFF ||
+                (m_settings.guisoundmode == AE_SOUND_IDLE && !m_streams.empty())) &&
+                !m_aeGUISoundForce)
+              return;
+
             SoundState st = {sound, 0};
             m_sounds_playing.push_back(st);
             m_extTimeout = 0;
@@ -1110,9 +1149,12 @@ void CActiveAE::Configure(AEAudioFormat *desiredFmt)
     }
     m_internalFormat = outputFormat;
 
+    bool isRaw;
     std::list<CActiveAEStream*>::iterator it;
     for(it=m_streams.begin(); it!=m_streams.end(); ++it)
     {
+      isRaw = AE_IS_RAW((*it)->m_format.m_dataFormat);
+
       if (!(*it)->m_inputBuffers)
       {
         // align input buffers with period of sink or encoder
@@ -1133,9 +1175,16 @@ void CActiveAE::Configure(AEAudioFormat *desiredFmt)
       }
       if (!(*it)->m_resampleBuffers)
       {
+        bool useDSP = !isRaw ? m_settings.dspaddonsenabled : false;
+
         (*it)->m_resampleBuffers = new CActiveAEBufferPoolResample((*it)->m_inputBuffers->m_format, outputFormat, m_settings.resampleQuality);
         (*it)->m_resampleBuffers->m_forceResampler = (*it)->m_forceResampler;
-        (*it)->m_resampleBuffers->Create(MAX_CACHE_LEVEL*1000, false, m_settings.stereoupmix, m_settings.normalizelevels);
+        (*it)->m_resampleBuffers->m_bypassDSP = (*it)->m_bypassDSP;
+        if (useDSP && !(*it)->m_resampleBuffers->m_bypassDSP)
+          (*it)->m_resampleBuffers->SetExtraData((*it)->m_profile, (*it)->m_matrixEncoding, (*it)->m_audioServiceType);
+        (*it)->m_resampleBuffers->Create(MAX_CACHE_LEVEL*1000, false, m_settings.stereoupmix, m_settings.normalizelevels, useDSP);
+
+        m_stats.SetDSP(useDSP);
       }
       if (m_mode == MODE_TRANSCODE || m_streams.size() > 1)
         (*it)->m_resampleBuffers->m_fillPackets = true;
@@ -1195,7 +1244,8 @@ void CActiveAE::Configure(AEAudioFormat *desiredFmt)
   if (!CompareFormat(oldInternalFormat, m_internalFormat))
   {
     if (m_settings.guisoundmode == AE_SOUND_ALWAYS ||
-       (m_settings.guisoundmode == AE_SOUND_IDLE && m_streams.empty()))
+       (m_settings.guisoundmode == AE_SOUND_IDLE && m_streams.empty()) ||
+       m_aeGUISoundForce)
     {
       std::vector<CActiveAESound*>::iterator it;
       for (it = m_sounds.begin(); it != m_sounds.end(); ++it)
@@ -1251,6 +1301,11 @@ CActiveAEStream* CActiveAE::CreateStream(MsgStreamNew *streamMsg)
 
   if (streamMsg->options & AESTREAM_FORCE_RESAMPLE)
     stream->m_forceResampler = true;
+
+  if(streamMsg->options & AESTREAM_BYPASS_ADSP)
+  {
+    stream->m_bypassDSP = true;
+  }
 
   m_streams.push_back(stream);
 
@@ -1360,6 +1415,8 @@ void CActiveAE::SStopSound(CActiveAESound *sound)
   {
     if (it->sound == sound)
     {
+      if (sound->GetChannel() != AE_CH_NULL)
+        m_aeGUISoundForce = false;
       m_sounds_playing.erase(it);
       return;
     }
@@ -1393,13 +1450,27 @@ void CActiveAE::ChangeResamplers()
          !m_settings.normalizelevels)
       normalize = false;
 
-    if ((*it)->m_resampleBuffers && (*it)->m_resampleBuffers->m_resampler &&
+    /* Disable upmix if DSP layout > 2.0, becomes perfomed by DSP */
+    bool ignoreUpmix = false;
+    if (m_settings.dspaddonsenabled && (*it)->m_resampleBuffers->m_useDSP && (*it)->m_resampleBuffers->m_processor->GetChannelLayout().Count() > 2)
+      ignoreUpmix = true;
+
+    if ((*it)->m_resampleBuffers->m_useResampler &&
         (((*it)->m_resampleBuffers->m_resampleQuality != m_settings.resampleQuality) ||
-        (((*it)->m_resampleBuffers->m_stereoUpmix != m_settings.stereoupmix)) ||
+        (((*it)->m_resampleBuffers->m_stereoUpmix != m_settings.stereoupmix) && !ignoreUpmix) ||
         ((*it)->m_resampleBuffers->m_normalize != normalize)))
     {
       (*it)->m_resampleBuffers->m_changeResampler = true;
     }
+    if ((*it)->m_resampleBuffers->m_useDSP != m_settings.dspaddonsenabled ||
+        ((*it)->m_resampleBuffers->m_useDSP &&
+        (((*it)->m_resampleBuffers->m_resampleQuality != m_settings.resampleQuality) ||
+        ((*it)->m_resampleBuffers->m_stereoUpmix != m_settings.stereoupmix))))
+    {
+      (*it)->m_resampleBuffers->m_changeDSP = true;
+    }
+
+    (*it)->m_resampleBuffers->m_useDSP = m_settings.dspaddonsenabled;
     (*it)->m_resampleBuffers->m_resampleQuality = m_settings.resampleQuality;
     (*it)->m_resampleBuffers->m_stereoUpmix = m_settings.stereoupmix;
     (*it)->m_resampleBuffers->m_normalize = normalize;
@@ -1447,30 +1518,34 @@ void CActiveAE::ApplySettingsToFormat(AEAudioFormat &format, AudioSettings &sett
     // consider user channel layout for those cases
     // 1. input stream is multichannel
     // 2. stereo upmix is selected
-    // 3. fixed mode
+    // 3. audio dsp is used
+    // 4. fixed mode
     if ((format.m_channelLayout.Count() > 2) ||
          settings.stereoupmix ||
+         settings.dspaddonsenabled ||
          (settings.config == AE_CONFIG_FIXED))
     {
-      CAEChannelInfo stdLayout;
+      AEStdChLayout stdChannelLayout;
       switch (settings.channels)
       {
         default:
-        case  0: stdLayout = AE_CH_LAYOUT_2_0; break;
-        case  1: stdLayout = AE_CH_LAYOUT_2_0; break;
-        case  2: stdLayout = AE_CH_LAYOUT_2_1; break;
-        case  3: stdLayout = AE_CH_LAYOUT_3_0; break;
-        case  4: stdLayout = AE_CH_LAYOUT_3_1; break;
-        case  5: stdLayout = AE_CH_LAYOUT_4_0; break;
-        case  6: stdLayout = AE_CH_LAYOUT_4_1; break;
-        case  7: stdLayout = AE_CH_LAYOUT_5_0; break;
-        case  8: stdLayout = AE_CH_LAYOUT_5_1; break;
-        case  9: stdLayout = AE_CH_LAYOUT_7_0; break;
-        case 10: stdLayout = AE_CH_LAYOUT_7_1; break;
+        case  0: stdChannelLayout = AE_CH_LAYOUT_2_0; break;
+        case  1: stdChannelLayout = AE_CH_LAYOUT_2_0; break;
+        case  2: stdChannelLayout = AE_CH_LAYOUT_2_1; break;
+        case  3: stdChannelLayout = AE_CH_LAYOUT_3_0; break;
+        case  4: stdChannelLayout = AE_CH_LAYOUT_3_1; break;
+        case  5: stdChannelLayout = AE_CH_LAYOUT_4_0; break;
+        case  6: stdChannelLayout = AE_CH_LAYOUT_4_1; break;
+        case  7: stdChannelLayout = AE_CH_LAYOUT_5_0; break;
+        case  8: stdChannelLayout = AE_CH_LAYOUT_5_1; break;
+        case  9: stdChannelLayout = AE_CH_LAYOUT_7_0; break;
+        case 10: stdChannelLayout = AE_CH_LAYOUT_7_1; break;
       }
 
-      if (m_settings.config == AE_CONFIG_FIXED || (settings.stereoupmix && format.m_channelLayout.Count() <= 2))
-        format.m_channelLayout = stdLayout;
+      CAEChannelInfo stdLayout(stdChannelLayout);
+
+      if (m_settings.config == AE_CONFIG_FIXED || settings.dspaddonsenabled || (settings.stereoupmix && format.m_channelLayout.Count() <= 2))
+        format.m_channelLayout = CActiveAEDSP::GetInstance().GetInternalChannelLayout(stdChannelLayout);
       else if (m_extKeepConfig && (settings.config == AE_CONFIG_AUTO) && (oldMode != MODE_RAW))
         format.m_channelLayout = m_internalFormat.m_channelLayout;
       else
@@ -1581,6 +1656,7 @@ bool CActiveAE::InitSink()
       m_sinkHasVolume = data->hasVolume;
       m_stats.SetSinkCacheTotal(data->cacheTotal);
       m_stats.SetSinkLatency(data->latency);
+      m_stats.SetCurrentSinkFormat(m_sinkFormat);
     }
     reply->Release();
   }
@@ -1589,6 +1665,9 @@ bool CActiveAE::InitSink()
     CLog::Log(LOGERROR, "ActiveAE::%s - failed to init", __FUNCTION__);
     m_stats.SetSinkCacheTotal(0);
     m_stats.SetSinkLatency(0);
+    AEAudioFormat invalidFormat;
+    invalidFormat.m_dataFormat = AE_FMT_INVALID;
+    m_stats.SetCurrentSinkFormat(invalidFormat);
     m_extError = true;
     return false;
   }
@@ -1949,7 +2028,7 @@ bool CActiveAE::RunStages()
             {
               // copy the samples into the viz input buffer
               CSampleBuffer *viz = m_vizBuffersInput->GetFreeBuffer();
-              int samples = std::min(512, out->pkt->nb_samples);
+              int samples = out->pkt->nb_samples;
               int bytes = samples * out->pkt->config.channels / out->pkt->planes * out->pkt->bytes_per_sample;
               for(int i= 0; i < out->pkt->planes; i++)
               {
@@ -1972,8 +2051,7 @@ bool CActiveAE::RunStages()
                 break;
               else
               {
-                int samples;
-                samples = std::min(512, buf->pkt->nb_samples);
+                int samples = buf->pkt->nb_samples;
                 m_audioCallback->OnAudioData((float*)(buf->pkt->data[0]), samples);
                 buf->Return();
                 m_vizBuffers->m_outputSamples.pop_front();
@@ -2146,28 +2224,30 @@ void CActiveAE::Deamplify(CSoundPacket &dstSample)
 
 void CActiveAE::LoadSettings()
 {
-  m_settings.device = CSettings::Get().GetString("audiooutput.audiodevice");
-  m_settings.passthoughdevice = CSettings::Get().GetString("audiooutput.passthroughdevice");
+  m_settings.device = CSettings::GetInstance().GetString(CSettings::SETTING_AUDIOOUTPUT_AUDIODEVICE);
+  m_settings.passthoughdevice = CSettings::GetInstance().GetString(CSettings::SETTING_AUDIOOUTPUT_PASSTHROUGHDEVICE);
 
-  m_settings.config = CSettings::Get().GetInt("audiooutput.config");
-  m_settings.channels = (m_sink.GetDeviceType(m_settings.device) == AE_DEVTYPE_IEC958) ? AE_CH_LAYOUT_2_0 : CSettings::Get().GetInt("audiooutput.channels");
-  m_settings.samplerate = CSettings::Get().GetInt("audiooutput.samplerate");
+  m_settings.config = CSettings::GetInstance().GetInt(CSettings::SETTING_AUDIOOUTPUT_CONFIG);
+  m_settings.channels = (m_sink.GetDeviceType(m_settings.device) == AE_DEVTYPE_IEC958) ? AE_CH_LAYOUT_2_0 : CSettings::GetInstance().GetInt(CSettings::SETTING_AUDIOOUTPUT_CHANNELS);
+  m_settings.samplerate = CSettings::GetInstance().GetInt(CSettings::SETTING_AUDIOOUTPUT_SAMPLERATE);
 
-  m_settings.stereoupmix = IsSettingVisible("audiooutput.stereoupmix") ? CSettings::Get().GetBool("audiooutput.stereoupmix") : false;
-  m_settings.normalizelevels = !CSettings::Get().GetBool("audiooutput.maintainoriginalvolume");
-  m_settings.guisoundmode = CSettings::Get().GetInt("audiooutput.guisoundmode");
+  m_settings.dspaddonsenabled = IsSettingVisible(CSettings::SETTING_AUDIOOUTPUT_DSPADDONSENABLED) ? CSettings::GetInstance().GetBool(CSettings::SETTING_AUDIOOUTPUT_DSPADDONSENABLED) : false;
 
-  m_settings.passthrough = m_settings.config == AE_CONFIG_FIXED ? false : CSettings::Get().GetBool("audiooutput.passthrough");
+  m_settings.stereoupmix = IsSettingVisible(CSettings::SETTING_AUDIOOUTPUT_STEREOUPMIX) ? CSettings::GetInstance().GetBool(CSettings::SETTING_AUDIOOUTPUT_STEREOUPMIX) : false;
+  m_settings.normalizelevels = !CSettings::GetInstance().GetBool(CSettings::SETTING_AUDIOOUTPUT_MAINTAINORIGINALVOLUME);
+  m_settings.guisoundmode = CSettings::GetInstance().GetInt(CSettings::SETTING_AUDIOOUTPUT_GUISOUNDMODE);
+
+  m_settings.passthrough = m_settings.config == AE_CONFIG_FIXED ? false : CSettings::GetInstance().GetBool(CSettings::SETTING_AUDIOOUTPUT_PASSTHROUGH);
   if (!m_sink.HasPassthroughDevice())
     m_settings.passthrough = false;
-  m_settings.ac3passthrough = CSettings::Get().GetBool("audiooutput.ac3passthrough");
-  m_settings.ac3transcode = CSettings::Get().GetBool("audiooutput.ac3transcode");
-  m_settings.eac3passthrough = CSettings::Get().GetBool("audiooutput.eac3passthrough");
-  m_settings.truehdpassthrough = CSettings::Get().GetBool("audiooutput.truehdpassthrough");
-  m_settings.dtspassthrough = CSettings::Get().GetBool("audiooutput.dtspassthrough");
-  m_settings.dtshdpassthrough = CSettings::Get().GetBool("audiooutput.dtshdpassthrough");
+  m_settings.ac3passthrough = CSettings::GetInstance().GetBool(CSettings::SETTING_AUDIOOUTPUT_AC3PASSTHROUGH);
+  m_settings.ac3transcode = CSettings::GetInstance().GetBool(CSettings::SETTING_AUDIOOUTPUT_AC3TRANSCODE);
+  m_settings.eac3passthrough = CSettings::GetInstance().GetBool(CSettings::SETTING_AUDIOOUTPUT_EAC3PASSTHROUGH);
+  m_settings.truehdpassthrough = CSettings::GetInstance().GetBool(CSettings::SETTING_AUDIOOUTPUT_TRUEHDPASSTHROUGH);
+  m_settings.dtspassthrough = CSettings::GetInstance().GetBool(CSettings::SETTING_AUDIOOUTPUT_DTSPASSTHROUGH);
+  m_settings.dtshdpassthrough = CSettings::GetInstance().GetBool(CSettings::SETTING_AUDIOOUTPUT_DTSHDPASSTHROUGH);
 
-  m_settings.resampleQuality = static_cast<AEQuality>(CSettings::Get().GetInt("audiooutput.processquality"));
+  m_settings.resampleQuality = static_cast<AEQuality>(CSettings::GetInstance().GetInt(CSettings::SETTING_AUDIOOUTPUT_PROCESSQUALITY));
 }
 
 bool CActiveAE::Initialize()
@@ -2176,7 +2256,7 @@ bool CActiveAE::Initialize()
   Message *reply;
   if (m_controlPort.SendOutMessageSync(CActiveAEControlProtocol::INIT,
                                                  &reply,
-                                                 10000))
+                                                 60000))
   {
     bool success = reply->signal == CActiveAEControlProtocol::ACC;
     reply->Release();
@@ -2215,23 +2295,23 @@ std::string CActiveAE::GetDefaultDevice(bool passthrough)
 
 void CActiveAE::OnSettingsChange(const std::string& setting)
 {
-  if (setting == "audiooutput.passthroughdevice"      ||
-      setting == "audiooutput.audiodevice"            ||
-      setting == "audiooutput.config"                 ||
-      setting == "audiooutput.ac3passthrough"         ||
-      setting == "audiooutput.ac3transcode"           ||
-      setting == "audiooutput.eac3passthrough"        ||
-      setting == "audiooutput.dtspassthrough"         ||
-      setting == "audiooutput.truehdpassthrough"      ||
-      setting == "audiooutput.dtshdpassthrough"       ||
-      setting == "audiooutput.channels"               ||
-      setting == "audiooutput.stereoupmix"            ||
-      setting == "audiooutput.streamsilence"          ||
-      setting == "audiooutput.processquality"         ||
-      setting == "audiooutput.passthrough"            ||
-      setting == "audiooutput.samplerate"             ||
-      setting == "audiooutput.maintainoriginalvolume" ||
-      setting == "audiooutput.guisoundmode")
+  if (setting == CSettings::SETTING_AUDIOOUTPUT_PASSTHROUGHDEVICE      ||
+      setting == CSettings::SETTING_AUDIOOUTPUT_AUDIODEVICE            ||
+      setting == CSettings::SETTING_AUDIOOUTPUT_CONFIG                 ||
+      setting == CSettings::SETTING_AUDIOOUTPUT_AC3PASSTHROUGH         ||
+      setting == CSettings::SETTING_AUDIOOUTPUT_AC3TRANSCODE           ||
+      setting == CSettings::SETTING_AUDIOOUTPUT_EAC3PASSTHROUGH        ||
+      setting == CSettings::SETTING_AUDIOOUTPUT_DTSPASSTHROUGH         ||
+      setting == CSettings::SETTING_AUDIOOUTPUT_TRUEHDPASSTHROUGH      ||
+      setting == CSettings::SETTING_AUDIOOUTPUT_DTSHDPASSTHROUGH       ||
+      setting == CSettings::SETTING_AUDIOOUTPUT_CHANNELS               ||
+      setting == CSettings::SETTING_AUDIOOUTPUT_STEREOUPMIX            ||
+      setting == CSettings::SETTING_AUDIOOUTPUT_STREAMSILENCE          ||
+      setting == CSettings::SETTING_AUDIOOUTPUT_PROCESSQUALITY         ||
+      setting == CSettings::SETTING_AUDIOOUTPUT_PASSTHROUGH            ||
+      setting == CSettings::SETTING_AUDIOOUTPUT_SAMPLERATE             ||
+      setting == CSettings::SETTING_AUDIOOUTPUT_MAINTAINORIGINALVOLUME ||
+      setting == CSettings::SETTING_AUDIOOUTPUT_GUISOUNDMODE)
   {
     m_controlPort.SendOutMessage(CActiveAEControlProtocol::RECONFIGURE);
   }
@@ -2239,7 +2319,7 @@ void CActiveAE::OnSettingsChange(const std::string& setting)
 
 bool CActiveAE::SupportsRaw(AEDataFormat format, int samplerate)
 {
-  if (!m_sink.SupportsFormat(CSettings::Get().GetString("audiooutput.passthroughdevice"), format, samplerate))
+  if (!m_sink.SupportsFormat(CSettings::GetInstance().GetString(CSettings::SETTING_AUDIOOUTPUT_PASSTHROUGHDEVICE), format, samplerate))
     return false;
 
   return true;
@@ -2252,18 +2332,18 @@ bool CActiveAE::SupportsSilenceTimeout()
 
 bool CActiveAE::HasStereoAudioChannelCount()
 {
-  std::string device = CSettings::Get().GetString("audiooutput.audiodevice");
-  int numChannels = (m_sink.GetDeviceType(device) == AE_DEVTYPE_IEC958) ? AE_CH_LAYOUT_2_0 : CSettings::Get().GetInt("audiooutput.channels");
-  bool passthrough = CSettings::Get().GetInt("audiooutput.config") == AE_CONFIG_FIXED ? false : CSettings::Get().GetBool("audiooutput.passthrough");
+  std::string device = CSettings::GetInstance().GetString(CSettings::SETTING_AUDIOOUTPUT_AUDIODEVICE);
+  int numChannels = (m_sink.GetDeviceType(device) == AE_DEVTYPE_IEC958) ? AE_CH_LAYOUT_2_0 : CSettings::GetInstance().GetInt(CSettings::SETTING_AUDIOOUTPUT_CHANNELS);
+  bool passthrough = CSettings::GetInstance().GetInt(CSettings::SETTING_AUDIOOUTPUT_CONFIG) == AE_CONFIG_FIXED ? false : CSettings::GetInstance().GetBool(CSettings::SETTING_AUDIOOUTPUT_PASSTHROUGH);
   return numChannels == AE_CH_LAYOUT_2_0 && ! (passthrough &&
-    CSettings::Get().GetBool("audiooutput.ac3passthrough") &&
-    CSettings::Get().GetBool("audiooutput.ac3transcode"));
+    CSettings::GetInstance().GetBool(CSettings::SETTING_AUDIOOUTPUT_AC3PASSTHROUGH) &&
+    CSettings::GetInstance().GetBool(CSettings::SETTING_AUDIOOUTPUT_AC3TRANSCODE));
 }
 
 bool CActiveAE::HasHDAudioChannelCount()
 {
-  std::string device = CSettings::Get().GetString("audiooutput.audiodevice");
-  int numChannels = (m_sink.GetDeviceType(device) == AE_DEVTYPE_IEC958) ? AE_CH_LAYOUT_2_0 : CSettings::Get().GetInt("audiooutput.channels");
+  std::string device = CSettings::GetInstance().GetString(CSettings::SETTING_AUDIOOUTPUT_AUDIODEVICE);
+  int numChannels = (m_sink.GetDeviceType(device) == AE_DEVTYPE_IEC958) ? AE_CH_LAYOUT_2_0 : CSettings::GetInstance().GetInt(CSettings::SETTING_AUDIOOUTPUT_CHANNELS);
   return numChannels > AE_CH_LAYOUT_5_1;
 }
 
@@ -2281,53 +2361,72 @@ bool CActiveAE::SupportsQualityLevel(enum AEQuality level)
 
 bool CActiveAE::IsSettingVisible(const std::string &settingId)
 {
-  if (settingId == "audiooutput.samplerate")
+  if (settingId == CSettings::SETTING_AUDIOOUTPUT_SAMPLERATE)
   {
-    if (m_sink.GetDeviceType(CSettings::Get().GetString("audiooutput.audiodevice")) == AE_DEVTYPE_IEC958)
+    if (m_sink.GetDeviceType(CSettings::GetInstance().GetString(CSettings::SETTING_AUDIOOUTPUT_AUDIODEVICE)) == AE_DEVTYPE_IEC958)
       return true;
-    if (CSettings::Get().GetInt("audiooutput.config") == AE_CONFIG_FIXED)
+    if (CSettings::GetInstance().GetInt(CSettings::SETTING_AUDIOOUTPUT_CONFIG) == AE_CONFIG_FIXED)
       return true;
   }
-  else if (settingId == "audiooutput.channels")
+  else if (settingId == CSettings::SETTING_AUDIOOUTPUT_CHANNELS)
   {
-    if (m_sink.GetDeviceType(CSettings::Get().GetString("audiooutput.audiodevice")) != AE_DEVTYPE_IEC958)
+    if (m_sink.GetDeviceType(CSettings::GetInstance().GetString(CSettings::SETTING_AUDIOOUTPUT_AUDIODEVICE)) != AE_DEVTYPE_IEC958)
       return true;
   }
-  else if (settingId == "audiooutput.passthrough")
+  else if (settingId == CSettings::SETTING_AUDIOOUTPUT_PASSTHROUGH)
   {
-    if (m_sink.HasPassthroughDevice() && CSettings::Get().GetInt("audiooutput.config") != AE_CONFIG_FIXED)
+    if (m_sink.HasPassthroughDevice() && CSettings::GetInstance().GetInt(CSettings::SETTING_AUDIOOUTPUT_CONFIG) != AE_CONFIG_FIXED)
       return true;
   }
-  else if (settingId == "audiooutput.truehdpassthrough")
+  else if (settingId == CSettings::SETTING_AUDIOOUTPUT_TRUEHDPASSTHROUGH)
   {
-    if (m_sink.SupportsFormat(CSettings::Get().GetString("audiooutput.passthroughdevice"), AE_FMT_TRUEHD, 192000) &&
-        CSettings::Get().GetInt("audiooutput.config") != AE_CONFIG_FIXED)
+    if (m_sink.SupportsFormat(CSettings::GetInstance().GetString(CSettings::SETTING_AUDIOOUTPUT_PASSTHROUGHDEVICE), AE_FMT_TRUEHD, 192000) &&
+        CSettings::GetInstance().GetInt(CSettings::SETTING_AUDIOOUTPUT_CONFIG) != AE_CONFIG_FIXED)
       return true;
   }
-  else if (settingId == "audiooutput.dtshdpassthrough")
+  else if (settingId == CSettings::SETTING_AUDIOOUTPUT_DTSHDPASSTHROUGH)
   {
-    if (m_sink.SupportsFormat(CSettings::Get().GetString("audiooutput.passthroughdevice"), AE_FMT_DTSHD, 192000) &&
-        CSettings::Get().GetInt("audiooutput.config") != AE_CONFIG_FIXED)
+    if (m_sink.SupportsFormat(CSettings::GetInstance().GetString(CSettings::SETTING_AUDIOOUTPUT_PASSTHROUGHDEVICE), AE_FMT_DTSHD, 192000) &&
+        CSettings::GetInstance().GetInt(CSettings::SETTING_AUDIOOUTPUT_CONFIG) != AE_CONFIG_FIXED)
       return true;
   }
-  else if (settingId == "audiooutput.eac3passthrough")
+  else if (settingId == CSettings::SETTING_AUDIOOUTPUT_EAC3PASSTHROUGH)
   {
-    if (m_sink.SupportsFormat(CSettings::Get().GetString("audiooutput.passthroughdevice"), AE_FMT_EAC3, 192000) &&
-        CSettings::Get().GetInt("audiooutput.config") != AE_CONFIG_FIXED)
+    if (m_sink.SupportsFormat(CSettings::GetInstance().GetString(CSettings::SETTING_AUDIOOUTPUT_PASSTHROUGHDEVICE), AE_FMT_EAC3, 192000) &&
+        CSettings::GetInstance().GetInt(CSettings::SETTING_AUDIOOUTPUT_CONFIG) != AE_CONFIG_FIXED)
       return true;
   }
-  else if (settingId == "audiooutput.stereoupmix")
+  else if (settingId == CSettings::SETTING_AUDIOOUTPUT_STEREOUPMIX)
   {
     if (m_sink.HasPassthroughDevice() ||
-        CSettings::Get().GetInt("audiooutput.channels") > AE_CH_LAYOUT_2_0)
+        CSettings::GetInstance().GetInt(CSettings::SETTING_AUDIOOUTPUT_CHANNELS) > AE_CH_LAYOUT_2_0)
     return true;
   }
-  else if (settingId == "audiooutput.ac3transcode")
+  else if (settingId == CSettings::SETTING_AUDIOOUTPUT_AC3TRANSCODE)
   {
     if (m_sink.HasPassthroughDevice() &&
-        CSettings::Get().GetBool("audiooutput.ac3passthrough") &&
-        CSettings::Get().GetInt("audiooutput.config") != AE_CONFIG_FIXED &&
-        (CSettings::Get().GetInt("audiooutput.channels") <= AE_CH_LAYOUT_2_0 || m_sink.GetDeviceType(CSettings::Get().GetString("audiooutput.audiodevice")) == AE_DEVTYPE_IEC958))
+        CSettings::GetInstance().GetBool(CSettings::SETTING_AUDIOOUTPUT_AC3PASSTHROUGH) &&
+        CSettings::GetInstance().GetInt(CSettings::SETTING_AUDIOOUTPUT_CONFIG) != AE_CONFIG_FIXED &&
+        (CSettings::GetInstance().GetInt(CSettings::SETTING_AUDIOOUTPUT_CHANNELS) <= AE_CH_LAYOUT_2_0 || m_sink.GetDeviceType(CSettings::GetInstance().GetString(CSettings::SETTING_AUDIOOUTPUT_AUDIODEVICE)) == AE_DEVTYPE_IEC958))
+      return true;
+  }
+  else if (settingId == CSettings::SETTING_AUDIOOUTPUT_DSPADDONSENABLED)
+  {
+    if (m_sink.GetDeviceType(CSettings::GetInstance().GetString(CSettings::SETTING_AUDIOOUTPUT_AUDIODEVICE)) != AE_DEVTYPE_IEC958)
+    {
+      return true;
+    }
+  }
+  else if (settingId == CSettings::SETTING_AUDIOOUTPUT_DSPSETTINGS)
+  {
+    if (CSettings::GetInstance().GetBool(CSettings::SETTING_AUDIOOUTPUT_DSPADDONSENABLED) &&
+        m_sink.GetDeviceType(CSettings::GetInstance().GetString(CSettings::SETTING_AUDIOOUTPUT_AUDIODEVICE)) != AE_DEVTYPE_IEC958)
+      return true;
+  }
+  else if (settingId == CSettings::SETTING_AUDIOOUTPUT_DSPRESETDB)
+  {
+    if (CSettings::GetInstance().GetBool(CSettings::SETTING_AUDIOOUTPUT_DSPADDONSENABLED) &&
+        m_sink.GetDeviceType(CSettings::GetInstance().GetString(CSettings::SETTING_AUDIOOUTPUT_AUDIODEVICE)) != AE_DEVTYPE_IEC958)
       return true;
   }
   return false;
@@ -2409,6 +2508,16 @@ void CActiveAE::KeepConfiguration(unsigned int millis)
 void CActiveAE::DeviceChange()
 {
   m_controlPort.SendOutMessage(CActiveAEControlProtocol::DEVICECHANGE);
+}
+
+bool CActiveAE::HasDSP()
+{
+  return m_stats.HasDSP();
+};
+
+AEAudioFormat CActiveAE::GetCurrentSinkFormat()
+{
+  return m_stats.GetCurrentSinkFormat();
 }
 
 void CActiveAE::OnLostDevice()
@@ -2647,8 +2756,9 @@ void CActiveAE::StopSound(CActiveAESound *sound)
  */
 void CActiveAE::ResampleSounds()
 {
-  if (m_settings.guisoundmode == AE_SOUND_OFF ||
-     (m_settings.guisoundmode == AE_SOUND_IDLE && !m_streams.empty()))
+  if ((m_settings.guisoundmode == AE_SOUND_OFF ||
+      (m_settings.guisoundmode == AE_SOUND_IDLE && !m_streams.empty())) &&
+      !m_aeGUISoundForce)
     return;
 
   std::vector<CActiveAESound*>::iterator it;
@@ -2684,6 +2794,21 @@ bool CActiveAE::ResampleSound(CActiveAESound *sound)
   dst_config.bits_per_sample = CAEUtil::DataFormatToUsedBits(m_internalFormat.m_dataFormat);
   dst_config.dither_bits = CAEUtil::DataFormatToDitherBits(m_internalFormat.m_dataFormat);
 
+  AEChannel testChannel = sound->GetChannel();
+  CAEChannelInfo outChannels;
+  if (sound->GetSound(true)->config.channels == 1 && testChannel != AE_CH_NULL)
+  {
+    for (unsigned int out=0; out < m_internalFormat.m_channelLayout.Count(); out++)
+    {
+      if (m_internalFormat.m_channelLayout[out] == AE_CH_FC && testChannel != AE_CH_FC) /// To become center clear on position test ??????
+        outChannels += AE_CH_FL;
+      else if (m_internalFormat.m_channelLayout[out] == testChannel)
+        outChannels += AE_CH_FC;
+      else
+        outChannels += m_internalFormat.m_channelLayout[out];
+    }
+  }
+
   IAEResample *resampler = CAEResampleFactory::Create(AERESAMPLEFACTORY_QUICK_RESAMPLE);
   resampler->Init(dst_config.channel_layout,
                   dst_config.channels,
@@ -2699,7 +2824,7 @@ bool CActiveAE::ResampleSound(CActiveAESound *sound)
                   orig_config.dither_bits,
                   false,
                   true,
-                  NULL,
+                  outChannels.Count() > 0 ? &outChannels : NULL,
                   m_settings.resampleQuality,
                   false);
 
@@ -2835,6 +2960,17 @@ void CActiveAE::SetStreamResampleRatio(CActiveAEStream *stream, double ratio)
   msg.parameter.double_par = ratio;
   m_controlPort.SendOutMessage(CActiveAEControlProtocol::STREAMRESAMPLERATIO,
                                      &msg, sizeof(MsgStreamParameter));
+}
+
+void CActiveAE::SetStreamFFmpegInfo(CActiveAEStream *stream, int profile, enum AVMatrixEncoding matrix_encoding, enum AVAudioServiceType audio_service_type)
+{
+  MsgStreamFFmpegInfo msg;
+  msg.stream = stream;
+  msg.profile = profile;
+  msg.matrix_encoding = matrix_encoding;
+  msg.audio_service_type = audio_service_type;
+
+  m_controlPort.SendOutMessage(CActiveAEControlProtocol::STREAMFFMPEGINFO, &msg, sizeof(MsgStreamFFmpegInfo));
 }
 
 void CActiveAE::SetStreamFade(CActiveAEStream *stream, float from, float target, unsigned int millis)

@@ -27,7 +27,6 @@
 #include "FileItem.h"
 #include "profiles/ProfilesManager.h"
 #include "settings/AdvancedSettings.h"
-#include "utils/AutoPtrHandle.h"
 #include "PlayerCoreConfig.h"
 #include "PlayerSelectionRule.h"
 #include "guilib/LocalizeStrings.h"
@@ -35,8 +34,6 @@
 #include "utils/XMLUtils.h"
 
 #define PLAYERCOREFACTORY_XML "playercorefactory.xml"
-
-using namespace AUTOPTR;
 
 CPlayerCoreFactory::CPlayerCoreFactory()
 { }
@@ -49,7 +46,7 @@ CPlayerCoreFactory::~CPlayerCoreFactory()
     delete *it;
 }
 
-CPlayerCoreFactory& CPlayerCoreFactory::Get()
+CPlayerCoreFactory& CPlayerCoreFactory::GetInstance()
 {
   static CPlayerCoreFactory sPlayerCoreFactory;
   return sPlayerCoreFactory;
@@ -58,7 +55,7 @@ CPlayerCoreFactory& CPlayerCoreFactory::Get()
 void CPlayerCoreFactory::OnSettingsLoaded()
 {
   LoadConfiguration("special://xbmc/system/" PLAYERCOREFACTORY_XML, true);
-  LoadConfiguration(CProfilesManager::Get().GetUserDataItem(PLAYERCOREFACTORY_XML), false);
+  LoadConfiguration(CProfilesManager::GetInstance().GetUserDataItem(PLAYERCOREFACTORY_XML), false);
 }
 
 /* generic function to make a vector unique, removes later duplicates */

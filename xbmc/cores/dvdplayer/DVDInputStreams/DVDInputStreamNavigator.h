@@ -77,7 +77,7 @@ public:
   CDVDInputStreamNavigator(IDVDPlayer* player);
   virtual ~CDVDInputStreamNavigator();
 
-  virtual bool Open(const char* strFile, const std::string& content);
+  virtual bool Open(const char* strFile, const std::string& content, bool contentLookup);
   virtual void Close();
   virtual int Read(uint8_t* buf, int buf_size);
   virtual int64_t Seek(int64_t offset, int whence);
@@ -143,11 +143,11 @@ public:
   bool GetDVDTitleString(std::string& titleStr);
   bool GetDVDSerialString(std::string& serialStr);
 
+  void CheckButtons();
+
 protected:
 
   int ProcessBlock(uint8_t* buffer, int* read);
-
-  void CheckButtons();
 
   /**
    * XBMC     : the audio stream id we use in xbmc

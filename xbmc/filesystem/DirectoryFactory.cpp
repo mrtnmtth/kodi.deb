@@ -35,6 +35,7 @@
 #include "VideoDatabaseDirectory.h"
 #include "FavouritesDirectory.h"
 #include "LibraryDirectory.h"
+#include "EventsDirectory.h"
 #include "AddonsDirectory.h"
 #include "SourcesDirectory.h"
 #include "FTPDirectory.h"
@@ -76,12 +77,11 @@
 #if defined(TARGET_ANDROID)
 #include "APKDirectory.h"
 #endif
+#include "XbtDirectory.h"
 #include "ZipDirectory.h"
 #ifdef HAS_FILESYSTEM_RAR
 #include "RarDirectory.h"
 #endif
-#include "HDHomeRunDirectory.h"
-#include "SlingboxDirectory.h"
 #include "FileItem.h"
 #include "URL.h"
 #include "RSSDirectory.h"
@@ -112,7 +112,7 @@ using namespace XFILE;
  */
 IDirectory* CDirectoryFactory::Create(const CURL& url)
 {
-  if (!CWakeOnAccess::Get().WakeUpHost(url))
+  if (!CWakeOnAccess::GetInstance().WakeUpHost(url))
     return NULL;
 
   CFileItem item(url.Get(), false);
@@ -150,6 +150,7 @@ IDirectory* CDirectoryFactory::Create(const CURL& url)
     CLog::Log(LOGWARNING, "%s - Compiled without non-free, rar support is disabled", __FUNCTION__);
 #endif
   }
+  if (url.IsProtocol("xbt")) return new CXbtDirectory();
   if (url.IsProtocol("multipath")) return new CMultiPathDirectory();
   if (url.IsProtocol("stack")) return new CStackDirectory();
   if (url.IsProtocol("playlistmusic")) return new CPlaylistDirectory();
@@ -171,8 +172,9 @@ IDirectory* CDirectoryFactory::Create(const CURL& url)
   if (url.IsProtocol("bluray")) return new CBlurayDirectory();
 #endif
   if (url.IsProtocol("resource")) return new CResourceDirectory();
+  if (url.IsProtocol("events")) return new CEventsDirectory();
 
-  bool networkAvailable = g_application.getNetwork().IsAvailable(true); // true to wait for the network (if possible)
+  bool networkAvailable = g_application.getNetwork().IsAvailable();
   if (networkAvailable)
   {
     if (url.IsProtocol("ftp") || url.IsProtocol("ftps")) return new CFTPDirectory();
@@ -193,8 +195,6 @@ IDirectory* CDirectoryFactory::Create(const CURL& url)
 #ifdef HAS_UPNP
     if (url.IsProtocol("upnp")) return new CUPnPDirectory();
 #endif
-    if (url.IsProtocol("hdhomerun")) return new CHomeRunDirectory();
-    if (url.IsProtocol("sling")) return new CSlingboxDirectory();
     if (url.IsProtocol("rss")) return new CRSSDirectory();
 #ifdef HAS_FILESYSTEM_SAP
     if (url.IsProtocol("sap")) return new CSAPDirectory();

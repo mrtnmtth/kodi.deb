@@ -19,10 +19,11 @@
  *
  */
 
-#include "system.h"
 #include "bus/PeripheralBus.h"
 #include "devices/Peripheral.h"
+#include "messaging/IMessageTarget.h"
 #include "settings/lib/ISettingCallback.h"
+#include "system.h"
 #include "threads/CriticalSection.h"
 #include "threads/Thread.h"
 #include "utils/Observer.h"
@@ -36,13 +37,14 @@ class CKey;
 
 namespace PERIPHERALS
 {
-  #define g_peripherals CPeripherals::Get()
+  #define g_peripherals CPeripherals::GetInstance()
 
   class CPeripherals :  public ISettingCallback,
-                        public Observable
+                        public Observable,
+                        public KODI::MESSAGING::IMessageTarget
   {
   public:
-    static CPeripherals &Get(void);
+    static CPeripherals &GetInstance();
     virtual ~CPeripherals(void);
 
     /*!
@@ -207,8 +209,11 @@ namespace PERIPHERALS
 #endif
     }
     
-    virtual void OnSettingChanged(const CSetting *setting);
-    virtual void OnSettingAction(const CSetting *setting);
+    virtual void OnSettingChanged(const CSetting *setting) override;
+    virtual void OnSettingAction(const CSetting *setting) override;
+
+    virtual void OnApplicationMessage(KODI::MESSAGING::ThreadMessage* pMsg) override;
+    virtual int GetMessageMask() override;
 
   private:
     CPeripherals(void);

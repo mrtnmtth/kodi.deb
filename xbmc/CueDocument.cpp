@@ -66,7 +66,6 @@
 
 #include <set>
 
-using namespace std;
 using namespace XFILE;
 
 // Stuff for read CUE data from different sources.
@@ -160,6 +159,7 @@ CCueDocument::CCueDocument()
   : m_iYear(0)
   , m_iTrack(0)
   , m_iDiscNumber(0)
+  , m_bOneFilePerTrack(false)
 {
 }
 
@@ -209,14 +209,14 @@ void CCueDocument::UpdateMediaFile(const std::string& oldMediaFile, const std::s
   }
 }
 
-void CCueDocument::GetMediaFiles(vector<std::string>& mediaFiles)
+void CCueDocument::GetMediaFiles(std::vector<std::string>& mediaFiles)
 {
-  typedef set<std::string> TSet;
+  typedef std::set<std::string> TSet;
   TSet uniqueFiles;
   for (Tracks::const_iterator it = m_tracks.begin(); it != m_tracks.end(); ++it)
     uniqueFiles.insert(it->strFile);
 
-  for (TSet::const_iterator it = uniqueFiles.begin(); it != uniqueFiles.end(); it++)
+  for (TSet::const_iterator it = uniqueFiles.begin(); it != uniqueFiles.end(); ++it)
     mediaFiles.push_back(*it);
 }
 
@@ -230,16 +230,24 @@ bool CCueDocument::IsLoaded() const
   return !m_tracks.empty();
 }
 
+bool CCueDocument::IsOneFilePerTrack() const
+{
+  return m_bOneFilePerTrack;
+}
+
 bool CCueDocument::GetSong(int aTrackNumber, CSong& aSong)
 {
   if (aTrackNumber < 0 || aTrackNumber >= static_cast<int>(m_tracks.size()))
     return false;
   const CCueTrack& track = m_tracks[aTrackNumber];
+  //Pass artist to MusicInfoTag object by setting artist description string only.
+  //Artist credits not used during loading from cue sheet.
   if ((track.strArtist.length() == 0) && (m_strArtist.length() > 0))
-    aSong.artist = StringUtils::Split(m_strArtist, g_advancedSettings.m_musicItemSeparator);
+    aSong.strArtistDesc = m_strArtist;
   else
-    aSong.artist = StringUtils::Split(track.strArtist, g_advancedSettings.m_musicItemSeparator);
-  aSong.albumArtist = StringUtils::Split(m_strArtist, g_advancedSettings.m_musicItemSeparator);
+    aSong.strArtistDesc = track.strArtist;
+  //Pass album artist to MusicInfoTag object by setting album artist vector. 
+  aSong.SetAlbumArtist(StringUtils::Split(m_strArtist, g_advancedSettings.m_musicItemSeparator));
   aSong.strAlbum = m_strAlbum;
   aSong.genre = StringUtils::Split(m_strGenre, g_advancedSettings.m_musicItemSeparator);
   aSong.iYear = m_iYear;
@@ -294,6 +302,7 @@ bool CCueDocument::Parse(CueReader& reader, const std::string& strFile)
   bool bCurrentFileChanged = false;
   int time;
   int totalTracks = -1;
+  int numberFiles = -1;
 
   // Run through the .CUE file and extract the tracks...
   while (true)
@@ -359,6 +368,7 @@ bool CCueDocument::Parse(CueReader& reader, const std::string& strFile)
     }
     else if (StringUtils::StartsWithNoCase(strLine, "FILE"))
     {
+      numberFiles++;
       // already a file name? then the time computation will be changed
       if (!strCurrentFile.empty())
         bCurrentFileChanged = true;
@@ -395,6 +405,10 @@ bool CCueDocument::Parse(CueReader& reader, const std::string& strFile)
     m_tracks[totalTracks].iEndTime = 0;
   else
     CLog::Log(LOGERROR, "No INDEX 01 tags in CUE file!");
+
+  if ( totalTracks == numberFiles )
+    m_bOneFilePerTrack = true;
+
   return (totalTracks >= 0);
 }
 
@@ -441,7 +455,7 @@ int CCueDocument::ExtractTimeFromIndex(const std::string &index)
   }
   StringUtils::TrimLeft(numberTime);
   // split the resulting string
-  vector<string> time = StringUtils::Split(numberTime, ":");
+  std::vector<std::string> time = StringUtils::Split(numberTime, ":");
   if (time.size() != 3)
     return -1;
 

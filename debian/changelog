@@ -1,3 +1,10 @@
+kodi (16.0~rc3+dfsg1-1) UNRELEASED; urgency=medium
+
+  * New upstream release candidate 16.0 RC3
+    See http://kodi.tv/kodi-16-0-jarvis-release-candidate-3/
+
+ -- Balint Reczey <balint@balintreczey.hu>  Fri, 05 Feb 2016 22:54:06 +0100
+
 kodi (15.2+dfsg1-3) unstable; urgency=medium
 
   * Disable PIE due to build failure on amd64

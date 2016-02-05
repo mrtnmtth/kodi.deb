@@ -19,6 +19,7 @@
  */
 
 #include "PVROperations.h"
+#include "messaging/ApplicationMessenger.h"
 
 #include "pvr/PVRManager.h"
 #include "pvr/channels/PVRChannelGroupsContainer.h"
@@ -27,11 +28,12 @@
 #include "pvr/recordings/PVRRecordings.h"
 #include "epg/Epg.h"
 #include "epg/EpgContainer.h"
+#include "utils/Variant.h"
 
-using namespace std;
 using namespace JSONRPC;
 using namespace PVR;
 using namespace EPG;
+using namespace KODI::MESSAGING;
 
 JSONRPC_STATUS CPVROperations::GetProperties(const std::string &method, ITransportLayer *transport, IClient *client, const CVariant &parameterObject, CVariant &result)
 {
@@ -70,7 +72,7 @@ JSONRPC_STATUS CPVROperations::GetChannelGroups(const std::string &method, ITran
 
   int start, end;
 
-  vector<CPVRChannelGroupPtr> groupList = channelGroups->GetMembers();
+  std::vector<CPVRChannelGroupPtr> groupList = channelGroups->GetMembers(true);
   HandleLimits(parameterObject, result, groupList.size(), start, end);
   for (int index = start; index < end; index++)
     FillChannelGroupDetails(groupList.at(index), parameterObject, result["channelgroups"], true);
@@ -161,8 +163,8 @@ JSONRPC_STATUS CPVROperations::GetBroadcasts(const std::string &method, ITranspo
   if (channel == NULL)
     return InvalidParams;
 
-  CEpg *channelEpg = channel->GetEPG();
-  if (channelEpg == NULL)
+  CEpgPtr channelEpg = channel->GetEPG();
+  if (!channelEpg)
     return InternalError;
 
   CFileItemList programFull;
@@ -180,7 +182,7 @@ JSONRPC_STATUS CPVROperations::GetBroadcastDetails(const std::string &method, IT
 
   EpgSearchFilter filter;
   filter.Reset();
-  filter.m_iUniqueBroadcastId = (int)parameterObject["broadcastid"].asInteger();
+  filter.m_iUniqueBroadcastId = parameterObject["broadcastid"].asUnsignedInteger();
 
   CFileItemList broadcasts;
   int resultSize = g_EpgContainer.GetEPGSearch(broadcasts, filter);

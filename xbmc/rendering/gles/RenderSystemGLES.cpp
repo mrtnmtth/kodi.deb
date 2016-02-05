@@ -88,11 +88,24 @@ bool CRenderSystemGLES::InitRenderSystem()
   }
   
   // Get our driver vendor and renderer
-  m_RenderVendor = (const char*) glGetString(GL_VENDOR);
-  m_RenderRenderer = (const char*) glGetString(GL_RENDERER);
+  const char *tmpVendor = (const char*) glGetString(GL_VENDOR);
+  m_RenderVendor.clear();
+  if (tmpVendor != NULL)
+    m_RenderVendor = tmpVendor;
+
+  const char *tmpRenderer = (const char*) glGetString(GL_RENDERER);
+  m_RenderRenderer.clear();
+  if (tmpRenderer != NULL)
+    m_RenderRenderer = tmpRenderer;
 
   m_RenderExtensions  = " ";
-  m_RenderExtensions += (const char*) glGetString(GL_EXTENSIONS);
+
+  const char *tmpExtensions = (const char*) glGetString(GL_EXTENSIONS);
+  if (tmpExtensions != NULL)
+  {
+    m_RenderExtensions += tmpExtensions;
+  }
+
   m_RenderExtensions += " ";
 
   LogGraphicsInfo();
@@ -388,7 +401,7 @@ void CRenderSystemGLES::ApplyStateBlock()
   glClear(GL_DEPTH_BUFFER_BIT);
 }
 
-void CRenderSystemGLES::SetCameraPosition(const CPoint &camera, int screenWidth, int screenHeight)
+void CRenderSystemGLES::SetCameraPosition(const CPoint &camera, int screenWidth, int screenHeight, float stereoFactor)
 { 
   if (!m_bRenderCreated)
     return;
@@ -401,7 +414,7 @@ void CRenderSystemGLES::SetCameraPosition(const CPoint &camera, int screenWidth,
   float h = (float)m_viewPort[3]*0.5f;
 
   glMatrixModview->LoadIdentity();
-  glMatrixModview->Translatef(-(w + offset.x), +(h + offset.y), 0);
+  glMatrixModview->Translatef(-(w + offset.x - stereoFactor), +(h + offset.y), 0);
   glMatrixModview->LookAt(0.0, 0.0, -2.0*h, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0);
   glMatrixModview.Load();
 
@@ -427,7 +440,7 @@ bool CRenderSystemGLES::TestRender()
 {
   static float theta = 0.0;
 
-  //RESOLUTION_INFO resInfo = CDisplaySettings::Get().GetCurrentResolutionInfo();
+  //RESOLUTION_INFO resInfo = CDisplaySettings::GetInstance().GetCurrentResolutionInfo();
   //glViewport(0, 0, resInfo.iWidth, resInfo.iHeight);
 
   glMatrixModview.Push();

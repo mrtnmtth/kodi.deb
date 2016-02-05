@@ -68,7 +68,7 @@ bool CTextureCacheJob::DoWork()
 
   // check whether we need cache the job anyway
   bool needsRecaching = false;
-  std::string path(CTextureCache::Get().CheckCachedImage(m_url, false, needsRecaching));
+  std::string path(CTextureCache::GetInstance().CheckCachedImage(m_url, false, needsRecaching));
   if (!path.empty() && !needsRecaching)
     return false;
   return CacheTexture();
@@ -79,7 +79,8 @@ bool CTextureCacheJob::CacheTexture(CBaseTexture **out_texture)
   // unwrap the URL as required
   std::string additional_info;
   unsigned int width, height;
-  std::string image = DecodeImageURL(m_url, width, height, additional_info);
+  CPictureScalingAlgorithm::Algorithm scalingAlgorithm;
+  std::string image = DecodeImageURL(m_url, width, height, scalingAlgorithm, additional_info);
 
   m_details.updateable = additional_info != "music" && UpdateableURL(image);
 
@@ -98,7 +99,7 @@ bool CTextureCacheJob::CacheTexture(CBaseTexture **out_texture)
     m_details.file = m_cachePath + ".jpg";
     if (out_texture)
       *out_texture = LoadImage(CTextureCache::GetCachedPath(m_details.file), width, height, "" /* already flipped */);
-    CLog::Log(LOGDEBUG, "Fast %s image '%s' to '%s': %p", m_oldHash.empty() ? "Caching" : "Recaching", image.c_str(), m_details.file.c_str(), out_texture);
+    CLog::Log(LOGDEBUG, "Fast %s image '%s' to '%s': %p", m_oldHash.empty() ? "Caching" : "Recaching", CURL::GetRedacted(image).c_str(), m_details.file.c_str(), out_texture);
     return true;
   }
 #endif
@@ -110,9 +111,9 @@ bool CTextureCacheJob::CacheTexture(CBaseTexture **out_texture)
     else
       m_details.file = m_cachePath + ".jpg";
 
-    CLog::Log(LOGDEBUG, "%s image '%s' to '%s':", m_oldHash.empty() ? "Caching" : "Recaching", image.c_str(), m_details.file.c_str());
+    CLog::Log(LOGDEBUG, "%s image '%s' to '%s':", m_oldHash.empty() ? "Caching" : "Recaching", CURL::GetRedacted(image).c_str(), m_details.file.c_str());
 
-    if (CPicture::CacheTexture(texture, width, height, CTextureCache::GetCachedPath(m_details.file)))
+    if (CPicture::CacheTexture(texture, width, height, CTextureCache::GetCachedPath(m_details.file), scalingAlgorithm))
     {
       m_details.width = width;
       m_details.height = height;
@@ -138,7 +139,8 @@ bool CTextureCacheJob::ResizeTexture(const std::string &url, uint8_t* &result, s
   // unwrap the URL as required
   std::string additional_info;
   unsigned int width, height;
-  std::string image = DecodeImageURL(url, width, height, additional_info);
+  CPictureScalingAlgorithm::Algorithm scalingAlgorithm;
+  std::string image = DecodeImageURL(url, width, height, scalingAlgorithm, additional_info);
   if (image.empty())
     return false;
 
@@ -146,18 +148,19 @@ bool CTextureCacheJob::ResizeTexture(const std::string &url, uint8_t* &result, s
   if (texture == NULL)
     return false;
 
-  bool success = CPicture::ResizeTexture(image, texture, width, height, result, result_size);
+  bool success = CPicture::ResizeTexture(image, texture, width, height, result, result_size, scalingAlgorithm);
   delete texture;
 
   return success;
 }
 
-std::string CTextureCacheJob::DecodeImageURL(const std::string &url, unsigned int &width, unsigned int &height, std::string &additional_info)
+std::string CTextureCacheJob::DecodeImageURL(const std::string &url, unsigned int &width, unsigned int &height, CPictureScalingAlgorithm::Algorithm& scalingAlgorithm, std::string &additional_info)
 {
   // unwrap the URL as required
   std::string image(url);
   additional_info.clear();
   width = height = 0;
+  scalingAlgorithm = CPictureScalingAlgorithm::NoAlgorithm;
   if (StringUtils::StartsWith(url, "image://"))
   {
     // format is image://[type@]<url_encoded_path>?options
@@ -182,6 +185,9 @@ std::string CTextureCacheJob::DecodeImageURL(const std::string &url, unsigned in
       if (thumbURL.HasOption("height") && StringUtils::IsInteger(thumbURL.GetOption("height")))
         height = strtol(thumbURL.GetOption("height").c_str(), NULL, 0);
     }
+
+    if (thumbURL.HasOption("scaling_algorithm"))
+      scalingAlgorithm = CPictureScalingAlgorithm::FromString(thumbURL.GetOption("scaling_algorithm"));
   }
   return image;
 }
@@ -202,7 +208,7 @@ CBaseTexture *CTextureCacheJob::LoadImage(const std::string &image, unsigned int
       && !StringUtils::StartsWithNoCase(file.GetMimeType(), "image/") && !StringUtils::EqualsNoCase(file.GetMimeType(), "application/octet-stream")) // ignore non-pictures
     return NULL;
 
-  CBaseTexture *texture = CBaseTexture::LoadFromFile(image, width, height, CSettings::Get().GetBool("pictures.useexifrotation"), requirePixels, file.GetMimeType());
+  CBaseTexture *texture = CBaseTexture::LoadFromFile(image, width, height, requirePixels, file.GetMimeType());
   if (!texture)
     return NULL;
 
@@ -233,13 +239,13 @@ std::string CTextureCacheJob::GetImageHash(const std::string &url)
     if (!time)
       time = st.st_ctime;
     if (time || st.st_size)
-      return StringUtils::Format("d%" PRId64"s%" PRId64, time, st.st_size);;
+      return StringUtils::Format("d%" PRId64"s%" PRId64, time, st.st_size);
 
     // the image exists but we couldn't determine the mtime/ctime and/or size
     // so set an obviously bad hash
     return "BADHASH";
   }
-  CLog::Log(LOGDEBUG, "%s - unable to stat url %s", __FUNCTION__, url.c_str());
+  CLog::Log(LOGDEBUG, "%s - unable to stat url %s", __FUNCTION__, CURL::GetRedacted(url).c_str());
   return "";
 }
 

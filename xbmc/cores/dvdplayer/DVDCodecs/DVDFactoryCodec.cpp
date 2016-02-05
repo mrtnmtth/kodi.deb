@@ -209,7 +209,7 @@ CDVDVideoCodec* CDVDFactoryCodec::CreateVideoCodec(CDVDStreamInfo &hint, const C
 
 #if defined(HAS_LIBAMCODEC)
   // amcodec can handle dvd playback.
-  if (!hint.software && CSettings::Get().GetBool("videoplayer.useamcodec"))
+  if (!hint.software && CSettings::GetInstance().GetBool(CSettings::SETTING_VIDEOPLAYER_USEAMCODEC))
   {
     switch(hint.codec)
     {
@@ -234,7 +234,7 @@ CDVDVideoCodec* CDVDFactoryCodec::CreateVideoCodec(CDVDStreamInfo &hint, const C
 #endif
 
 #if defined(TARGET_DARWIN_OSX)
-  if (!hint.software && CSettings::Get().GetBool("videoplayer.usevda") && !g_advancedSettings.m_useFfmpegVda)
+  if (!hint.software && CSettings::GetInstance().GetBool(CSettings::SETTING_VIDEOPLAYER_USEVDA) && !g_advancedSettings.m_useFfmpegVda)
   {
     if (hint.codec == AV_CODEC_ID_H264 && !hint.ptsinvalid)
     {
@@ -244,7 +244,7 @@ CDVDVideoCodec* CDVDFactoryCodec::CreateVideoCodec(CDVDStreamInfo &hint, const C
 #endif
 
 #if defined(HAVE_VIDEOTOOLBOXDECODER)
-  if (!hint.software && CSettings::Get().GetBool("videoplayer.usevideotoolbox"))
+  if (!hint.software && CSettings::GetInstance().GetBool(CSettings::SETTING_VIDEOPLAYER_USEVIDEOTOOLBOX))
   {
     if (g_sysinfo.HasVideoToolBoxDecoder())
     {
@@ -263,7 +263,23 @@ CDVDVideoCodec* CDVDFactoryCodec::CreateVideoCodec(CDVDStreamInfo &hint, const C
 #endif
 
 #if defined(TARGET_ANDROID)
-  if (!hint.software && CSettings::Get().GetBool("videoplayer.usemediacodec"))
+  if (!hint.software && CSettings::GetInstance().GetBool(CSettings::SETTING_VIDEOPLAYER_USEMEDIACODECSURFACE))
+  {
+    switch(hint.codec)
+    {
+      case AV_CODEC_ID_MPEG4:
+      case AV_CODEC_ID_MSMPEG4V2:
+      case AV_CODEC_ID_MSMPEG4V3:
+        // Avoid h/w decoder for SD; Those files might use features
+        // not supported and can easily be soft-decoded
+        if (hint.width <= 800)
+          break;
+      default:
+        CLog::Log(LOGINFO, "MediaCodec (Surface) Video Decoder...");
+        if ( (pCodec = OpenCodec(new CDVDVideoCodecAndroidMediaCodec(true), hint, options)) ) return pCodec;
+    }
+  }
+  if (!hint.software && CSettings::GetInstance().GetBool(CSettings::SETTING_VIDEOPLAYER_USEMEDIACODEC))
   {
     switch(hint.codec)
     {
@@ -276,13 +292,13 @@ CDVDVideoCodec* CDVDFactoryCodec::CreateVideoCodec(CDVDStreamInfo &hint, const C
           break;
       default:
         CLog::Log(LOGINFO, "MediaCodec Video Decoder...");
-        if ( (pCodec = OpenCodec(new CDVDVideoCodecAndroidMediaCodec(), hint, options)) ) return pCodec;
+        if ( (pCodec = OpenCodec(new CDVDVideoCodecAndroidMediaCodec(false), hint, options)) ) return pCodec;
     }
   }
 #endif
 
 #if defined(HAVE_LIBOPENMAX)
-    if (CSettings::Get().GetBool("videoplayer.useomx") && !hint.software )
+    if (CSettings::GetInstance().GetBool(CSettings::SETTING_VIDEOPLAYER_USEOMX) && !hint.software )
     {
       if (hint.codec == AV_CODEC_ID_H264 || hint.codec == AV_CODEC_ID_MPEG2VIDEO || hint.codec == AV_CODEC_ID_VC1)
       {
@@ -292,7 +308,7 @@ CDVDVideoCodec* CDVDFactoryCodec::CreateVideoCodec(CDVDStreamInfo &hint, const C
 #endif
 
 #if defined(HAS_MMAL)
-    if (CSettings::Get().GetBool("videoplayer.usemmal") && !hint.software )
+    if (CSettings::GetInstance().GetBool(CSettings::SETTING_VIDEOPLAYER_USEMMAL) && !hint.software )
     {
       if (hint.codec == AV_CODEC_ID_H264 || hint.codec == AV_CODEC_ID_H263 || hint.codec == AV_CODEC_ID_MPEG4 ||
           hint.codec == AV_CODEC_ID_MPEG1VIDEO || hint.codec == AV_CODEC_ID_MPEG2VIDEO ||
@@ -305,7 +321,7 @@ CDVDVideoCodec* CDVDFactoryCodec::CreateVideoCodec(CDVDStreamInfo &hint, const C
 #endif
 
 #if defined(HAS_LIBSTAGEFRIGHT)
-    if (!hint.software && CSettings::Get().GetBool("videoplayer.usestagefright"))
+    if (!hint.software && CSettings::GetInstance().GetBool(CSettings::SETTING_VIDEOPLAYER_USESTAGEFRIGHT))
     {
       switch(hint.codec)
       {

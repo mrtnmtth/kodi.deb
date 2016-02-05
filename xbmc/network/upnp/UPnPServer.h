@@ -18,11 +18,13 @@
  *
  */
 #pragma once
+#include <utility>
 #include <Platinum/Source/Devices/MediaConnect/PltMediaConnect.h>
 
-#include "interfaces/IAnnouncer.h"
 #include "FileItem.h"
+#include "interfaces/IAnnouncer.h"
 
+class CVariant;
 class CThumbLoader;
 class PLT_MediaObject;
 class PLT_HttpRequestContext;

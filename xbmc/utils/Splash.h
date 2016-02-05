@@ -27,7 +27,7 @@ class CGUIImage;
 class CSplash
 {
 public:
-  static CSplash& Get();
+  static CSplash& GetInstance();
 
   void Show();
 
@@ -39,9 +39,4 @@ protected:
 
 private:
   CGUIImage* m_image;
-#ifdef HAS_DX
-  D3DGAMMARAMP newRamp;
-  D3DGAMMARAMP oldRamp;
-
-#endif
 };

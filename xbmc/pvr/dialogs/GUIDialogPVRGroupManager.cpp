@@ -18,19 +18,21 @@
  *
  */
 
-#include "GUIDialogPVRGroupManager.h"
 #include "FileItem.h"
-#include "guilib/GUIKeyboardFactory.h"
 #include "dialogs/GUIDialogOK.h"
 #include "dialogs/GUIDialogYesNo.h"
-#include "guilib/GUIWindowManager.h"
-#include "input/Key.h"
-#include "guilib/LocalizeStrings.h"
+#include "guilib/GUIKeyboardFactory.h"
 #include "guilib/GUIRadioButtonControl.h"
+#include "guilib/GUIWindowManager.h"
+#include "guilib/LocalizeStrings.h"
+#include "input/Key.h"
 #include "utils/StringUtils.h"
+#include "utils/Variant.h"
 
 #include "pvr/PVRManager.h"
 #include "pvr/channels/PVRChannelGroupsContainer.h"
+
+#include "GUIDialogPVRGroupManager.h"
 
 using namespace PVR;
 
@@ -100,7 +102,7 @@ bool CGUIDialogPVRGroupManager::ActionButtonNewGroup(CGUIMessage &message)
   {
     std::string strGroupName = "";
     /* prompt for a group name */
-    if (CGUIKeyboardFactory::ShowAndGetInput(strGroupName, g_localizeStrings.Get(19139), false))
+    if (CGUIKeyboardFactory::ShowAndGetInput(strGroupName, CVariant{g_localizeStrings.Get(19139)}, false))
     {
       if (strGroupName != "")
       {
@@ -134,11 +136,11 @@ bool CGUIDialogPVRGroupManager::ActionButtonDeleteGroup(CGUIMessage &message)
     if (!pDialog)
       return bReturn;
 
-    pDialog->SetHeading(117);
-    pDialog->SetLine(0, "");
-    pDialog->SetLine(1, m_selectedGroup->GroupName());
-    pDialog->SetLine(2, "");
-    pDialog->DoModal();
+    pDialog->SetHeading(CVariant{117});
+    pDialog->SetLine(0, CVariant{""});
+    pDialog->SetLine(1, CVariant{m_selectedGroup->GroupName()});
+    pDialog->SetLine(2, CVariant{""});
+    pDialog->Open();
 
     if (pDialog->IsConfirmed())
     {
@@ -163,7 +165,7 @@ bool CGUIDialogPVRGroupManager::ActionButtonRenameGroup(CGUIMessage &message)
       return bReturn;
 
     std::string strGroupName(m_selectedGroup->GroupName());
-    if (CGUIKeyboardFactory::ShowAndGetInput(strGroupName, g_localizeStrings.Get(19139), false))
+    if (CGUIKeyboardFactory::ShowAndGetInput(strGroupName, CVariant{g_localizeStrings.Get(19139)}, false))
     {
       if (strGroupName != "")
       {
@@ -192,7 +194,7 @@ bool CGUIDialogPVRGroupManager::ActionButtonUngroupedChannels(CGUIMessage &messa
     {
       if (m_channelGroups->GetFolderCount() == 0)
       {
-        CGUIDialogOK::ShowAndGetInput(19033, 19137);
+        CGUIDialogOK::ShowAndGetInput(CVariant{19033}, CVariant{19137});
       }
       else if (m_ungroupedChannels->GetFileCount() > 0)
       {

@@ -19,16 +19,18 @@
  *
  */
 
+#include "addons/AddonDatabase.h"
 #include "threads/CriticalSection.h"
 #include "threads/Thread.h"
 #include "utils/Observer.h"
-#include "PVRClient.h"
+
 #include "pvr/channels/PVRChannel.h"
 #include "pvr/recordings/PVRRecording.h"
-#include "addons/AddonDatabase.h"
 
-#include <vector>
+#include "PVRClient.h"
+
 #include <deque>
+#include <vector>
 
 namespace EPG
 {
@@ -321,6 +323,12 @@ namespace PVR
     //@{
 
     /*!
+     * @brief Check whether there is at least one connected client supporting timers.
+     * @return True if at least one connected client supports timers, false otherwise.
+     */
+    bool SupportsTimers() const;
+
+    /*!
      * @brief Check whether a client supports timers.
      * @param iClientId The id of the client to check.
      * @return True if the supports timers, false otherwise.
@@ -367,6 +375,21 @@ namespace PVR
      * @return True if the timer was renamed successfully, false otherwise.
      */
     PVR_ERROR RenameTimer(const CPVRTimerInfoTag &timer, const std::string &strNewName);
+
+    /*!
+     * @brief Get all supported timer types.
+     * @param results The container to store the result in.
+     * @return PVR_ERROR_NO_ERROR if the list has been fetched successfully.
+     */
+    PVR_ERROR GetTimerTypes(CPVRTimerTypes& results) const;
+
+    /*!
+     * @brief Get all timer types supported by a certain client.
+     * @param iClientId The id of the client.
+     * @param results The container to store the result in.
+     * @return PVR_ERROR_NO_ERROR if the list has been fetched successfully.
+     */
+    PVR_ERROR GetTimerTypes(CPVRTimerTypes& results, int iClientId) const;
 
     //@}
 
@@ -615,7 +638,6 @@ namespace PVR
     bool SupportsChannelSettings(int iClientId) const;
     bool SupportsLastPlayedPosition(int iClientId) const;
     bool SupportsRadio(int iClientId) const;
-    bool SupportsRecordingFolders(int iClientId) const;
     bool SupportsRecordingPlayCount(int iClientId) const;
     bool SupportsRecordingEdl(int iClientId) const;
     bool SupportsTimers(int iClientId) const;
@@ -627,6 +649,7 @@ namespace PVR
 
     std::string GetBackendHostnameByClientId(int iClientId) const;
 
+    bool IsTimeshifting() const;
     time_t GetPlayingTime() const;
     time_t GetBufferTimeStart() const;
     time_t GetBufferTimeEnd() const;

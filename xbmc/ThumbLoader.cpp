@@ -23,7 +23,6 @@
 #include "FileItem.h"
 #include "TextureCache.h"
 
-using namespace std;
 using namespace XFILE;
 
 CThumbLoader::CThumbLoader() :
@@ -114,7 +113,7 @@ bool CProgramThumbLoader::FillThumb(CFileItem &item)
 
   if (!thumb.empty())
   {
-    CTextureCache::Get().BackgroundCacheImage(thumb);
+    CTextureCache::GetInstance().BackgroundCacheImage(thumb);
     item.SetArt("thumb", thumb);
   }
   return true;

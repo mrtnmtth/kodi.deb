@@ -1,6 +1,6 @@
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      Copyright (C) 2005-2015 Team XBMC
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
+ *  along with Kodi; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
@@ -56,7 +56,7 @@ class CButtonTranslator
 #endif
 
 private:
-  //private construction, and no assignements; use the provided singleton methods
+  //private construction, and no assignments; use the provided singleton methods
   CButtonTranslator();
   CButtonTranslator(const CButtonTranslator&);
   CButtonTranslator const& operator=(CButtonTranslator const&);
@@ -78,7 +78,26 @@ public:
   static void GetActions(std::vector<std::string> &actionList);
   static void GetWindows(std::vector<std::string> &windowList);
 
+  /*! \brief Finds out if a longpress mapping exists for this key
+   \param window id of the current window
+   \param key to search a mapping for
+   \return true if a longpress mapping exists
+   */
+  bool HasLonpressMapping(int window, const CKey &key);
+
+  /*! \brief Obtain the action configured for a given window and key
+   \param window the window id
+   \param key the key to query the action for
+   \param fallback if no action is directly configured for the given window, obtain the action from fallback window, if exists or from global config as last resort
+   \return the action matching the key
+   */
   CAction GetAction(int window, const CKey &key, bool fallback = true);
+
+  /*! \brief Obtain the global action configured for a given key
+   \param key the key to query the action for
+   \return the global action
+   */
+  CAction GetGlobalAction(const CKey &key);
 
   /*! \brief Translate between a window name and it's id
    \param window name of the window
@@ -157,9 +176,9 @@ private:
   JoystickMap::const_iterator FindWindowMap(const std::string& joyName, const JoystickMap &maps) const;
   JoystickFamilyMap::const_iterator FindJoystickFamily(const std::string& joyName) const;
   JoystickFamilyMap m_joystickFamilies;
-  JoystickMap m_joystickButtonMap;                        // <joy family, button map>
-  JoystickMap m_joystickAxisMap;                          // <joy family, axis map>
-  JoystickMap m_joystickHatMap;                           // <joy family, hat map>
+  JoystickMap m_joystickButtonMap;                           // <joy family, button map>
+  JoystickMap m_joystickAxisMap;                             // <joy family, axis map>
+  JoystickMap m_joystickHatMap;                              // <joy family, hat map>
   std::map<std::string, AxesConfig> m_joystickAxesConfigs;   // <joy family, axes config>
 #endif
 

@@ -48,14 +48,14 @@ bool CDVDInputStreamFFmpeg::IsEOF()
     return false;
 }
 
-bool CDVDInputStreamFFmpeg::Open(const char* strFile, const std::string& content)
+bool CDVDInputStreamFFmpeg::Open(const char* strFile, const std::string& content, bool contentLookup)
 {
   CFileItem item(strFile, false);
   std::string selected;
   if (item.IsInternetStream() && (item.IsType(".m3u8") || content == "application/vnd.apple.mpegurl"))
   {
     // get the available bandwidth and  determine the most appropriate stream
-    int bandwidth = CSettings::Get().GetInt("network.bandwidth");
+    int bandwidth = CSettings::GetInstance().GetInt(CSettings::SETTING_NETWORK_BANDWIDTH);
     if(bandwidth <= 0)
       bandwidth = INT_MAX;
     selected = PLAYLIST::CPlayListM3U::GetBestBandwidthStream(strFile, bandwidth);
@@ -66,7 +66,7 @@ bool CDVDInputStreamFFmpeg::Open(const char* strFile, const std::string& content
     }
   }
 
-  if (!CDVDInputStream::Open(strFile, content))
+  if (!CDVDInputStream::Open(strFile, content, contentLookup))
     return false;
 
   m_can_pause = true;

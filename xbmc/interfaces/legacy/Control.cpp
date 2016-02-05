@@ -103,12 +103,18 @@ namespace XBMCAddon
         label,
         true,
         0,
-        true);
+        true,
+        false);
 
       CGUIMessage msg(GUI_MSG_LABEL_RESET, iParentId, iControlId);
       pGUIControl->OnMessage(msg);
 
       return pGUIControl;
+    }
+
+    void ControlFadeLabel::setScrolling(bool scroll)
+    {
+      static_cast<CGUIFadeLabelControl*>(pGUIControl)->SetScrolling(scroll);
     }
 
     // ============================================================
@@ -598,8 +604,9 @@ namespace XBMCAddon
                                            long _textOffsetX, long _textOffsetY,
                                            long alignment, const char* font, const char* _textColor,
                                            const char* _disabledColor, long angle,
-                                           const char* _shadowColor, const char* _focusedColor) :
-      strFont("font13"), textColor(0xffffffff), disabledColor(0x60ffffff),
+                                           const char* _shadowColor, const char* _focusedColor,
+                                           const char* disabledOnTexture, const char* disabledOffTexture) :
+      strFont("font13"), textColor(0xffffffff), disabledColor(0x60ffffff), 
       textOffsetX(_textOffsetX), textOffsetY(_textOffsetY), align(alignment), iAngle(angle),
       shadowColor(0), focusedColor(0xffffffff)
     {
@@ -727,7 +734,9 @@ namespace XBMCAddon
         CTextureInfo(strTextureRadioOnFocus),
         CTextureInfo(strTextureRadioOnNoFocus),
         CTextureInfo(strTextureRadioOffFocus),
-        CTextureInfo(strTextureRadioOffNoFocus));
+        CTextureInfo(strTextureRadioOffNoFocus),
+        CTextureInfo(strTextureRadioOnDisabled), 
+        CTextureInfo(strTextureRadioOffDisabled));
 
       CGUIRadioButtonControl* pGuiButtonControl =
         (CGUIRadioButtonControl*)pGUIControl;
@@ -870,10 +879,10 @@ namespace XBMCAddon
         LOCKGUI;
         if (pGUIControl)
         {
-          pGUIControl->SetNavigationAction(ACTION_MOVE_UP,    up->iControlId);
-          pGUIControl->SetNavigationAction(ACTION_MOVE_DOWN,  down->iControlId);
-          pGUIControl->SetNavigationAction(ACTION_MOVE_LEFT,  left->iControlId);
-          pGUIControl->SetNavigationAction(ACTION_MOVE_RIGHT, right->iControlId);
+          pGUIControl->SetAction(ACTION_MOVE_UP,    up->iControlId);
+          pGUIControl->SetAction(ACTION_MOVE_DOWN,  down->iControlId);
+          pGUIControl->SetAction(ACTION_MOVE_LEFT,  left->iControlId);
+          pGUIControl->SetAction(ACTION_MOVE_RIGHT, right->iControlId);
         }
       }
     }
@@ -886,7 +895,7 @@ namespace XBMCAddon
       {
         LOCKGUI;
         if (pGUIControl)
-          pGUIControl->SetNavigationAction(ACTION_MOVE_UP, control->iControlId);
+          pGUIControl->SetAction(ACTION_MOVE_UP, control->iControlId);
       }
     }
 
@@ -898,7 +907,7 @@ namespace XBMCAddon
       {
         LOCKGUI;
         if (pGUIControl)
-          pGUIControl->SetNavigationAction(ACTION_MOVE_DOWN, control->iControlId);
+          pGUIControl->SetAction(ACTION_MOVE_DOWN, control->iControlId);
       }
     }
 
@@ -910,7 +919,7 @@ namespace XBMCAddon
       {
         LOCKGUI;
         if (pGUIControl)
-          pGUIControl->SetNavigationAction(ACTION_MOVE_LEFT, control->iControlId);
+          pGUIControl->SetAction(ACTION_MOVE_LEFT, control->iControlId);
       }
     }
 
@@ -922,7 +931,7 @@ namespace XBMCAddon
       {
         LOCKGUI;
         if (pGUIControl)
-          pGUIControl->SetNavigationAction(ACTION_MOVE_RIGHT, control->iControlId);
+          pGUIControl->SetAction(ACTION_MOVE_RIGHT, control->iControlId);
       }
     }
 
@@ -943,16 +952,22 @@ namespace XBMCAddon
       strTextureDown = XBMCAddonUtils::getDefaultImage((char*)"listcontrol", (char*)"texturedown", (char*)"scroll-down.png");
       strTextureUpFocus = XBMCAddonUtils::getDefaultImage((char*)"listcontrol", (char*)"textureupfocus", (char*)"scroll-up-focus.png");
       strTextureDownFocus = XBMCAddonUtils::getDefaultImage((char*)"listcontrol", (char*)"texturedownfocus", (char*)"scroll-down-focus.png");
+      strTextureUpDisabled = XBMCAddonUtils::getDefaultImage((char*)"listcontrol", (char*)"textureupdisabled", (char*)"scroll-up.png");
+      strTextureDownDisabled = XBMCAddonUtils::getDefaultImage((char*)"listcontrol", (char*)"texturedowndisabled", (char*)"scroll-down.png");
     }
 
-    void ControlSpin::setTextures(const char* up, const char* down,
-                                  const char* upFocus,
-                                  const char* downFocus)
+    void ControlSpin::setTextures(const char* up, const char* down, 
+                                  const char* upFocus, 
+                                  const char* downFocus,
+                                  const char* upDisabled, 
+                                  const char* downDisabled)
     {
       strTextureUp = up;
       strTextureDown = down;
       strTextureUpFocus = upFocus;
       strTextureDownFocus = downFocus;
+      strTextureUpDisabled = upDisabled;
+      strTextureDownDisabled = downDisabled;
       /*
         PyXBMCGUILock();
         if (self->pGUIControl)

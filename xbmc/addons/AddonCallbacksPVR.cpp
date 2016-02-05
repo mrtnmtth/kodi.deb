@@ -20,6 +20,8 @@
 
 #include "Application.h"
 #include "AddonCallbacksPVR.h"
+#include "events/EventLog.h"
+#include "events/NotificationEvent.h"
 #include "utils/log.h"
 #include "utils/StringUtils.h"
 #include "dialogs/GUIDialogKaiToast.h"
@@ -211,12 +213,8 @@ void CAddonCallbacksPVR::PVRTransferTimerEntry(void *addonData, const ADDON_HAND
     return;
   }
 
+  /* Note: channel can be NULL here, for instance for epg-based repeating timers ("record on any channel" condition). */
   CPVRChannelPtr channel = g_PVRChannelGroups->GetByUniqueID(timer->iClientChannelUid, client->GetID());
-  if (!channel)
-  {
-    CLog::Log(LOGERROR, "PVR - %s - cannot find channel %d on client %d", __FUNCTION__, timer->iClientChannelUid, client->GetID());
-    return;
-  }
 
   /* transfer this entry to the timers container */
   CPVRTimerInfoTagPtr transferTimer(new CPVRTimerInfoTag(*timer, channel, client->GetID()));
@@ -254,12 +252,7 @@ void CAddonCallbacksPVR::PVRRecording(void *addonData, const char *strName, cons
     return;
   }
 
-  std::string strLine1;
-  if (bOnOff)
-    strLine1 = StringUtils::Format(g_localizeStrings.Get(19197).c_str(), client->Name().c_str());
-  else
-    strLine1 = StringUtils::Format(g_localizeStrings.Get(19198).c_str(), client->Name().c_str());
-
+  std::string strLine1 = StringUtils::Format(g_localizeStrings.Get(bOnOff ? 19197 : 19198).c_str(), client->Name().c_str());
   std::string strLine2;
   if (strName)
     strLine2 = strName;
@@ -268,6 +261,7 @@ void CAddonCallbacksPVR::PVRRecording(void *addonData, const char *strName, cons
 
   /* display a notification for 5 seconds */
   CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Info, strLine1, strLine2, 5000, false);
+  CEventLog::GetInstance().Add(EventPtr(new CNotificationEvent(client->Name(), strLine1, client->Icon(), strLine2)));
 
   CLog::Log(LOGDEBUG, "PVR - %s - recording %s on client '%s'. name='%s' filename='%s'",
       __FUNCTION__, bOnOff ? "started" : "finished", client->Name().c_str(), strName, strFileName);

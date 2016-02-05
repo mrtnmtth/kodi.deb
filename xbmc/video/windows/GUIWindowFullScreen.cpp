@@ -22,7 +22,7 @@
 #include "system.h"
 #include "GUIWindowFullScreen.h"
 #include "Application.h"
-#include "ApplicationMessenger.h"
+#include "messaging/ApplicationMessenger.h"
 #ifdef HAS_VIDEO_PLAYBACK
 #include "cores/VideoRenderers/RenderManager.h"
 #endif
@@ -46,12 +46,15 @@
 #include "input/ButtonTranslator.h"
 #include "windowing/WindowingFactory.h"
 #include "cores/IPlayer.h"
+#include "guiinfo/GUIInfoLabels.h"
 
 #include <stdio.h>
 #include <algorithm>
 #if defined(TARGET_DARWIN)
 #include "linux/LinuxResourceCounter.h"
 #endif
+
+using namespace KODI::MESSAGING;
 
 #define BLUE_BAR                          0
 #define LABEL_ROW1                       10
@@ -119,6 +122,17 @@ bool CGUIWindowFullScreen::OnAction(const CAction &action)
     }
   }
 
+  if (CSettings::GetInstance().GetBool(CSettings::SETTING_PVRPLAYBACK_CONFIRMCHANNELSWITCH) &&
+      g_infoManager.IsPlayerChannelPreviewActive() &&
+      (action.GetID() == ACTION_SELECT_ITEM || CButtonTranslator::GetInstance().GetGlobalAction(action.GetButtonCode()).GetID() == ACTION_SELECT_ITEM))
+  {
+    // If confirm channel switch is active, channel preview is currently shown
+    // and the button that caused this action matches (global) action "Select" (OK)
+    // switch to the channel currently displayed within the preview.
+    g_application.m_pPlayer->SwitchChannel(g_application.CurrentFileItem().GetPVRChannelInfoTag());
+    return true;
+  }
+
   switch (action.GetID())
   {
   case ACTION_SHOW_OSD:
@@ -180,7 +194,7 @@ bool CGUIWindowFullScreen::OnAction(const CAction &action)
       if (pDialog)
       {
         CFileItem item(g_application.CurrentFileItem());
-        pDialog->DoModal();
+        pDialog->Open();
         return true;
       }
       break;
@@ -210,7 +224,7 @@ bool CGUIWindowFullScreen::OnAction(const CAction &action)
       if (m_bShowViewModeInfo)
       {
 #ifdef HAS_VIDEO_PLAYBACK
-        g_renderManager.SetViewMode(++CMediaSettings::Get().GetCurrentVideoSettings().m_ViewMode);
+        g_renderManager.SetViewMode(++CMediaSettings::GetInstance().GetCurrentVideoSettings().m_ViewMode);
 #endif
       }
       m_bShowViewModeInfo = true;
@@ -321,7 +335,7 @@ bool CGUIWindowFullScreen::OnMessage(CGUIMessage& message)
 
       CGUIWindow::OnMessage(message);
 
-      CSettings::Get().Save();
+      CSettings::GetInstance().Save();
 
       CSingleLock lock (g_graphicsContext);
       g_graphicsContext.SetFullScreenVideo(false);
@@ -443,7 +457,7 @@ void CGUIWindowFullScreen::FrameMove()
     {
       // get the "View Mode" string
       std::string strTitle = g_localizeStrings.Get(629);
-      std::string strMode = g_localizeStrings.Get(630 + CMediaSettings::Get().GetCurrentVideoSettings().m_ViewMode);
+      std::string strMode = g_localizeStrings.Get(630 + CMediaSettings::GetInstance().GetCurrentVideoSettings().m_ViewMode);
       std::string strInfo = StringUtils::Format("%s : %s", strTitle.c_str(), strMode.c_str());
       CGUIMessage msg(GUI_MSG_LABEL_SET, GetID(), LABEL_ROW1);
       msg.SetLabel(strInfo);
@@ -462,10 +476,10 @@ void CGUIWindowFullScreen::FrameMove()
                                                  (int)info.SrcRect.Height(),
                                                  (int)(info.DestRect.Width() * xscale),
                                                  (int)(info.DestRect.Height() * yscale),
-                                                 CDisplaySettings::Get().GetZoomAmount(),
-                                                 info.videoAspectRatio*CDisplaySettings::Get().GetPixelRatio(),
-                                                 CDisplaySettings::Get().GetPixelRatio(),
-                                                 CDisplaySettings::Get().GetVerticalShift());
+                                                 CDisplaySettings::GetInstance().GetZoomAmount(),
+                                                 info.videoAspectRatio*CDisplaySettings::GetInstance().GetPixelRatio(),
+                                                 CDisplaySettings::GetInstance().GetPixelRatio(),
+                                                 CDisplaySettings::GetInstance().GetVerticalShift());
       CGUIMessage msg(GUI_MSG_LABEL_SET, GetID(), LABEL_ROW2);
       msg.SetLabel(strSizing);
       OnMessage(msg);
@@ -635,7 +649,7 @@ void CGUIWindowFullScreen::ToggleOSD()
     if (pOSD->IsDialogRunning())
       pOSD->Close();
     else
-      pOSD->DoModal();
+      pOSD->Open();
   }
 
   MarkDirtyRegion();
@@ -647,6 +661,6 @@ void CGUIWindowFullScreen::TriggerOSD()
   if (pOSD && !pOSD->IsDialogRunning())
   {
     pOSD->SetAutoClose(3000);
-    pOSD->DoModal();
+    pOSD->Open();
   }
 }

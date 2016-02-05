@@ -18,6 +18,9 @@
  *
  */
 
+#include <string>
+#include <vector>
+
 #include "GUIDialogSettingsManualBase.h"
 #include "settings/SettingAddon.h"
 #include "settings/SettingPath.h"
@@ -26,8 +29,7 @@
 #include "settings/lib/SettingSection.h"
 #include "settings/lib/SettingsManager.h"
 #include "utils/StringUtils.h"
-
-using namespace std;
+#include "utils/Variant.h"
 
 CGUIDialogSettingsManualBase::CGUIDialogSettingsManualBase(int windowId, const std::string &xmlFile)
     : CGUIDialogSettingsManagerBase(windowId, xmlFile),
@@ -95,7 +97,7 @@ CSettingGroup* CGUIDialogSettingsManualBase::AddGroup(CSettingCategory *category
 
   size_t groups = category->GetGroups().size();
 
-  CSettingGroup *group = new CSettingGroup(StringUtils::Format("%zu", groups + 1), m_settingsManager);
+  CSettingGroup *group = new CSettingGroup(StringUtils::Format("%" PRIuS, groups + 1), m_settingsManager);
   if (group == NULL)
     return NULL;
 
@@ -598,7 +600,7 @@ CSettingList* CGUIDialogSettingsManualBase::AddList(CSettingGroup *group, const 
 
 CSettingList* CGUIDialogSettingsManualBase::AddList(CSettingGroup *group, const std::string &id, int label, int level, std::vector<int> values,
                                                     IntegerSettingOptionsFiller filler, int heading, int minimumItems /* = 0 */, int maximumItems /* = -1 */,
-                                                    bool visible /* = true */, int help /* = -1 */)
+                                                    bool visible /* = true */, int help /* = -1 */, SettingControlListValueFormatter formatter /* = NULL */)
 {
   if (group == NULL || id.empty() || label < 0 || filler == NULL ||
       GetSetting(id) != NULL)
@@ -630,7 +632,7 @@ CSettingList* CGUIDialogSettingsManualBase::AddList(CSettingGroup *group, const 
   // setting the default will also set the actual value on an unchanged setting
   setting->SetDefault(settingValues);
 
-  setting->SetControl(GetListControl("integer", false, heading, true));
+  setting->SetControl(GetListControl("integer", false, heading, true, formatter));
   setting->SetMinimumItems(minimumItems);
   setting->SetMaximumItems(maximumItems);
   setSettingDetails(setting, level, visible, help);
@@ -1023,7 +1025,7 @@ ISettingControl* CGUIDialogSettingsManualBase::GetSpinnerControl(const std::stri
   return control;
 }
 
-ISettingControl* CGUIDialogSettingsManualBase::GetListControl(const std::string &format, bool delayed /* = false */, int heading /* = -1 */, bool multiselect /* = false */)
+ISettingControl* CGUIDialogSettingsManualBase::GetListControl(const std::string &format, bool delayed /* = false */, int heading /* = -1 */, bool multiselect /* = false */,SettingControlListValueFormatter formatter /* = NULL */)
 {
   CSettingControlList *control = new CSettingControlList();
   if (!control->SetFormat(format))
@@ -1035,6 +1037,7 @@ ISettingControl* CGUIDialogSettingsManualBase::GetListControl(const std::string 
   control->SetDelayed(delayed);
   control->SetHeading(heading);
   control->SetMultiSelect(multiselect);
+  control->SetFormatter(formatter);
 
   return control;
 }

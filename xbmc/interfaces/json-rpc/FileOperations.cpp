@@ -31,6 +31,7 @@
 #include "URL.h"
 #include "utils/URIUtils.h"
 #include "utils/FileUtils.h"
+#include "utils/Variant.h"
 
 using namespace XFILE;
 using namespace JSONRPC;
@@ -40,7 +41,7 @@ JSONRPC_STATUS CFileOperations::GetRootDirectory(const std::string &method, ITra
   std::string media = parameterObject["media"].asString();
   StringUtils::ToLower(media);
 
-  VECSOURCES *sources = CMediaSourceSettings::Get().GetSources(media);
+  VECSOURCES *sources = CMediaSourceSettings::GetInstance().GetSources(media);
   if (sources)
   {
     CFileItemList items;

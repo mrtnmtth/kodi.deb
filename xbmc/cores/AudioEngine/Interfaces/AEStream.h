@@ -20,18 +20,13 @@
  */
 
 #include "cores/AudioEngine/Utils/AEAudioFormat.h"
+#include "cores/AudioEngine/Utils/AEStreamData.h"
 #include "cores/IAudioCallback.h"
 #include <stdint.h>
 
-/**
- * Bit options to pass to IAE::GetStream
- */
-enum AEStreamOptions
-{
-  AESTREAM_FORCE_RESAMPLE = 0x01, /* force resample even if rates match */
-  AESTREAM_PAUSED         = 0x02, /* create the stream paused */
-  AESTREAM_AUTOSTART      = 0x04  /* autostart the stream when enough data is buffered */
-};
+extern "C" {
+#include "libavcodec/avcodec.h"
+}
 
 /**
  * IAEStream Stream Interface for streaming audio
@@ -160,6 +155,14 @@ public:
   virtual void SetAmplification(float amplify) = 0;
 
   /**
+   * Sets the stream ffmpeg informations if present.
+   + @param profile
+   * @param matrix_encoding
+   * @param audio_service_type
+   */
+  virtual void SetFFmpegInfo(int profile, enum AVMatrixEncoding matrix_encoding, enum AVAudioServiceType audio_service_type) = 0;
+
+  /**
    * Returns the size of one audio frame in bytes (channelCount * resolution)
    * @return The size in bytes of one frame
   */
@@ -239,5 +242,10 @@ public:
    * Sginal a clock change
    */
   virtual void Discontinuity() = 0;
+
+  /**
+   * Indicates if dsp addon system is active.
+   */
+  virtual bool HasDSP() = 0;
 };
 

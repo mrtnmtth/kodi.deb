@@ -22,13 +22,12 @@
 
 #if !defined(TARGET_POSIX) && !defined(HAS_GL)
 
-#include "RenderFormats.h"
 #include "BaseRenderer.h"
+#include "DXVAHD.h"
 #include "guilib/D3DResource.h"
+#include "RenderFormats.h"
 #include "RenderCapture.h"
 #include "settings/VideoSettings.h"
-#include "DXVA.h"
-#include "DXVAHD.h"
 
 #define ALIGN(value, alignment) (((value)+((alignment)-1))&~((alignment)-1))
 #define CLAMP(a, min, max) ((a) > (max) ? (max) : ( (a) < (min) ? (min) : a ))
@@ -98,37 +97,43 @@ struct SVideoBuffer
 struct SVideoPlane
 {
   CD3DTexture    texture;
-  D3DLOCKED_RECT rect;                  // rect.pBits != NULL is used to know if the texture is locked
+  D3D11_MAPPED_SUBRESOURCE rect;       // rect.pBits != NULL is used to know if the texture is locked
 };
 
 struct YUVBuffer : SVideoBuffer
 {
-  YUVBuffer() : m_width(0), m_height(0), m_format(RENDER_FMT_NONE), m_activeplanes(0), m_locked(false) {}
+  YUVBuffer() : m_width(0), m_height(0), m_format(RENDER_FMT_NONE), m_activeplanes(0), m_locked(false), m_staging(nullptr)
+  {
+    memset(&m_sDesc, 0, sizeof(CD3D11_TEXTURE2D_DESC));
+  }
   ~YUVBuffer();
-  bool Create(ERenderFormat format, unsigned int width, unsigned int height);
+  bool Create(ERenderFormat format, unsigned int width, unsigned int height, bool dynamic);
   virtual void Release();
   virtual void StartDecode();
   virtual void StartRender();
   virtual void Clear();
   unsigned int GetActivePlanes() { return m_activeplanes; }
   virtual bool IsReadyToRender();
+  bool CopyFromDXVA(ID3D11VideoDecoderOutputView* pView);
 
   SVideoPlane planes[MAX_PLANES];
 
 private:
+  void PerformCopy();
+
   unsigned int     m_width;
   unsigned int     m_height;
   ERenderFormat    m_format;
   unsigned int     m_activeplanes;
   bool             m_locked;
+  D3D11_MAP        m_mapType;
+  ID3D11Texture2D* m_staging;
+  CD3D11_TEXTURE2D_DESC m_sDesc;
 };
 
 struct DXVABuffer : SVideoBuffer
 {
-  DXVABuffer()
-  {
-    pic = NULL;
-  }
+  DXVABuffer() { pic = nullptr; }
   ~DXVABuffer() { SAFE_RELEASE(pic); }
   DXVA::CRenderPicture *pic;
   unsigned int frameIdx;
@@ -178,12 +183,10 @@ protected:
   void         RenderPS();
   void         Stage1();
   void         Stage2();
-  void         ScaleFixedPipeline();
-  void         CopyAlpha(int w, int h, unsigned char* src, unsigned char *srca, int srcstride, unsigned char* dst, unsigned char* dsta, int dststride);
+  void         ScaleGUIShader();
   virtual void ManageTextures();
   void         DeleteYV12Texture(int index);
   bool         CreateYV12Texture(int index);
-  void         CopyYV12Texture(int dest);
   int          NextYV12Texture();
 
   void SelectRenderMethod();
@@ -194,6 +197,7 @@ protected:
   void SelectPSVideoFilter();
   void UpdatePSVideoFilter();
   bool CreateIntermediateRenderTarget(unsigned int width, unsigned int height);
+  bool CopyDXVA2YUVBuffer(ID3D11VideoDecoderOutputView* pView, YUVBuffer *pBuf);
 
   void RenderProcessor(DWORD flags);
   int  m_iYV12RenderBuffer;
@@ -202,41 +206,31 @@ protected:
   bool                 m_bConfigured;
   SVideoBuffer        *m_VideoBuffers[NUM_BUFFERS];
   RenderMethod         m_renderMethod;
-  DXVA::CProcessor    *m_processor;
+  DXVA::CProcessorHD  *m_processor;
   std::vector<ERenderFormat> m_formats;
 
   // software scale libraries (fallback if required pixel shaders version is not available)
   struct SwsContext   *m_sw_scale_ctx;
 
   // Software rendering
-  D3DTEXTUREFILTERTYPE m_TextureFilter;
+  SHADER_SAMPLER       m_TextureFilter;
   CD3DTexture          m_SWTarget;
 
   // PS rendering
   bool                 m_bUseHQScaler;
   CD3DTexture          m_IntermediateTarget;
-
   CYUV2RGBShader*      m_colorShader;
   CConvolutionShader*  m_scalerShader;
-
   ESCALINGMETHOD       m_scalingMethod;
   ESCALINGMETHOD       m_scalingMethodGui;
-
-  D3DCAPS9             m_deviceCaps;
-
   bool                 m_bFilterInitialized;
 
   int                  m_iRequestedMethod;
-
-  // clear colour for "black" bars
-  DWORD                m_clearColour;
   unsigned int         m_extended_format;
-
   // Width and height of the render target
   // the separable HQ scalers need this info, but could the m_destRect be used instead?
   unsigned int         m_destWidth;
   unsigned int         m_destHeight;
-
   int                  m_neededBuffers;
   unsigned int         m_frameIdx;
 };

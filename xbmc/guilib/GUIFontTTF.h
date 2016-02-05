@@ -34,6 +34,14 @@
 #include "utils/auto_buffer.h"
 #include "Geometry.h"
 
+#ifdef HAS_DX
+#include "DirectXMath.h"
+#include "DirectXPackedVector.h"
+
+using namespace DirectX;
+using namespace DirectX::PackedVector;
+#endif
+
 // forward definition
 class CBaseTexture;
 
@@ -63,7 +71,7 @@ struct SVertex
 {
   float x, y, z;
 #ifdef HAS_DX
-  unsigned char b, g, r, a;
+  XMFLOAT4 col;
 #else
   unsigned char r, g, b, a;
 #endif
@@ -131,6 +139,7 @@ protected:
 
   // modifying glyphs
   void EmboldenGlyph(FT_GlyphSlot slot);
+  void LightenGlyph(FT_GlyphSlot slot);
   static void ObliqueGlyph(FT_GlyphSlot slot);
 
   CBaseTexture* m_texture;        // texture that holds our rendered characters (8bit alpha only)
@@ -149,7 +158,7 @@ protected:
   color_t m_color;
 
   Character *m_char;                 // our characters
-  Character *m_charquick[256*4];     // ascii chars (4 styles) here
+  Character *m_charquick[256*7];     // ascii chars (7 styles) here
   int m_maxChars;                    // size of character array (can be incremented)
   int m_numChars;                    // the current number of cached characters
 

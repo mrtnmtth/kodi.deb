@@ -31,6 +31,7 @@
 class CArchive;
 class TiXmlNode;
 class TiXmlElement;
+class CVariant;
 
 struct SActorInfo
 {
@@ -108,6 +109,7 @@ public:
   void SetVotes(std::string votes);
   void SetArtist(std::vector<std::string> artist);
   void SetSet(std::string set);
+  void SetSetOverview(std::string setOverview);
   void SetTags(std::vector<std::string> tags);
   void SetFile(std::string file);
   void SetPath(std::string path);
@@ -123,7 +125,8 @@ public:
   void SetAlbum(std::string album);
   void SetShowLink(std::vector<std::string> showLink);
   void SetUniqueId(std::string uniqueId);
-
+  void SetNamedSeasons(std::map<int, std::string> namedSeasons);
+  void SetUserrating(int userrating);
 
   std::string m_basePath; // the base path of the video, for folder-based lookups
   int m_parentPathID;      // the parent path id where the base path of the video lies
@@ -144,6 +147,7 @@ public:
   typedef std::vector< SActorInfo >::const_iterator iCast;
   std::string m_strSet;
   int m_iSetId;
+  std::string m_strSetOverview;
   std::vector<std::string> m_tags;
   std::string m_strFile;
   std::string m_strPath;
@@ -161,6 +165,7 @@ public:
   std::string m_strAlbum;
   CDateTime m_lastPlayed;
   std::vector<std::string> m_showLink;
+  std::map<int, std::string> m_namedSeasons;
   int m_playCount;
   int m_iTop250;
   int m_iYear;
@@ -173,6 +178,7 @@ public:
   int m_iSpecialSortEpisode;
   int m_iTrack;
   float m_fRating;
+  int m_iUserRating;
   float m_fEpBookmark;
   int m_iBookmarkId;
   int m_iIdShow;

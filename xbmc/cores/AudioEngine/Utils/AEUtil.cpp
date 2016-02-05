@@ -31,8 +31,6 @@ extern "C" {
 #include "libavutil/channel_layout.h"
 }
 
-using namespace std;
-
 /* declare the rng seed and initialize it */
 unsigned int CAEUtil::m_seed = (unsigned int)(CurrentHostCounter() / 1000.0f);
 #ifdef __SSE2__
@@ -40,21 +38,22 @@ unsigned int CAEUtil::m_seed = (unsigned int)(CurrentHostCounter() / 1000.0f);
   MEMALIGN(16, __m128i CAEUtil::m_sseSeed) = _mm_set_epi32(CAEUtil::m_seed, CAEUtil::m_seed+1, CAEUtil::m_seed, CAEUtil::m_seed+1);
 #endif
 
-void   AEDelayStatus::SetDelay(double d)
+void AEDelayStatus::SetDelay(double d)
 {
   delay = d;
-  tick  = CurrentHostCounter();
+  maxcorrection = d;
+  tick = CurrentHostCounter();
 }
 
 double AEDelayStatus::GetDelay()
 {
-  double d = delay;
-  if(tick)
-    d -= (double)(CurrentHostCounter() - tick) / CurrentHostFrequency();
-  if(d < 0)
-    return 0.0;
-  else
-    return d;
+  double d = 0;
+  if (tick)
+    d = (double)(CurrentHostCounter() - tick) / CurrentHostFrequency();
+  if (d > maxcorrection)
+    d = maxcorrection;
+
+  return delay - d;
 }
 
 CAEChannelInfo CAEUtil::GuessChLayout(const unsigned int channels)
@@ -554,6 +553,33 @@ uint64_t CAEUtil::GetAVChannelLayout(CAEChannelInfo &info)
   if (info.HasChannel(AE_CH_TBL))   channelLayout |= AV_CH_TOP_BACK_LEFT;
   if (info.HasChannel(AE_CH_TBC))   channelLayout |= AV_CH_TOP_BACK_CENTER;
   if (info.HasChannel(AE_CH_TBR))   channelLayout |= AV_CH_TOP_BACK_RIGHT;
+
+  return channelLayout;
+}
+
+CAEChannelInfo CAEUtil::GetAEChannelLayout(uint64_t layout)
+{
+  CAEChannelInfo channelLayout;
+  channelLayout.Reset();
+
+  if (layout & AV_CH_FRONT_LEFT)       channelLayout += AE_CH_FL;
+  if (layout & AV_CH_FRONT_RIGHT)      channelLayout += AE_CH_FR;
+  if (layout & AV_CH_FRONT_CENTER)     channelLayout += AE_CH_FC;
+  if (layout & AV_CH_LOW_FREQUENCY)    channelLayout += AE_CH_LFE;
+  if (layout & AV_CH_BACK_LEFT)        channelLayout += AE_CH_BL;
+  if (layout & AV_CH_BACK_RIGHT)       channelLayout += AE_CH_BR;
+  if (layout & AV_CH_FRONT_LEFT_OF_CENTER)  channelLayout += AE_CH_FLOC;
+  if (layout & AV_CH_FRONT_RIGHT_OF_CENTER) channelLayout += AE_CH_FROC;
+  if (layout & AV_CH_BACK_CENTER)      channelLayout += AE_CH_BC;
+  if (layout & AV_CH_SIDE_LEFT)        channelLayout += AE_CH_SL;
+  if (layout & AV_CH_SIDE_RIGHT)       channelLayout += AE_CH_SR;
+  if (layout & AV_CH_TOP_CENTER)       channelLayout += AE_CH_TC;
+  if (layout & AV_CH_TOP_FRONT_LEFT)   channelLayout += AE_CH_TFL;
+  if (layout & AV_CH_TOP_FRONT_CENTER) channelLayout += AE_CH_TFC;
+  if (layout & AV_CH_TOP_FRONT_RIGHT)  channelLayout += AE_CH_TFR;
+  if (layout & AV_CH_TOP_BACK_LEFT)    channelLayout += AE_CH_BL;
+  if (layout & AV_CH_TOP_BACK_CENTER)  channelLayout += AE_CH_BC;
+  if (layout & AV_CH_TOP_BACK_RIGHT)   channelLayout += AE_CH_BR;
 
   return channelLayout;
 }

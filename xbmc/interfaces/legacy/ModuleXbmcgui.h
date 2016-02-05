@@ -25,16 +25,6 @@ namespace XBMCAddon
   namespace xbmcgui
   {
     /**
-     * lock() -- deprecated and serves no purpose anymore.
-     */
-    void lock();
-
-    /**
-     * unlock() -- deprecated and serves no purpose anymore.
-     */
-    void unlock();
-
-    /**
      * getCurrentWindowId() -- Returns the id for the current 'active' window as an integer.
      * 
      * example:

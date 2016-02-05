@@ -25,6 +25,8 @@
 #include "threads/CriticalSection.h"
 #include "utils/GlobalsHandling.h"
 
+class CVariant;
+
 namespace ANNOUNCEMENT
 {
   class CAnnouncementManager
@@ -32,7 +34,7 @@ namespace ANNOUNCEMENT
   public:
     virtual ~CAnnouncementManager();
 
-    static CAnnouncementManager& Get();
+    static CAnnouncementManager& GetInstance();
 
     void Deinitialize();
 

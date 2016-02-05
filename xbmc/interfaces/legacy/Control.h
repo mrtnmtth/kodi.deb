@@ -328,13 +328,16 @@ namespace XBMCAddon
        */
       virtual void setTextures(const char* up, const char* down, 
                                const char* upFocus, 
-                               const char* downFocus);
+                               const char* downFocus,
+                               const char* upDisabled, const char* downDisabled);
 #ifndef SWIG
       color_t color;
       std::string strTextureUp;
       std::string strTextureDown;
       std::string strTextureUpFocus;
       std::string strTextureDownFocus;
+      std::string strTextureUpDisabled;
+      std::string strTextureDownDisabled;
 #endif
 
     private:
@@ -437,7 +440,7 @@ namespace XBMCAddon
      * alignment      : [opt] integer - alignment of label - *Note, see xbfont.h\n
      * focusTexture   : [opt] string - filename for focus texture.\n
      * noFocusTexture : [opt] string - filename for no focus texture.\n
-     * isPassword     : [opt] bool - if true, mask text value.
+     * isPassword     : [opt] bool - True=mask text value with ****.
      * 
      * *Note, You can use the above as keywords for arguments and skip certain optional arguments.\n
      *        Once you use a keyword, all following arguments require the keyword.\n
@@ -833,6 +836,16 @@ namespace XBMCAddon
        virtual void addLabel(const String& label);
 
       /**
+       * setScrolling(scroll) -- Set scrolling.
+       *
+       * scroll          : boolean - True = enabled / False = disabled
+       *
+       * example:
+       *   - self.fadelabel.setScrolling(False)
+       */
+      virtual void setScrolling(bool scroll);
+
+      /**
        * reset() -- Clear this fade label.
        * 
        * example:
@@ -970,13 +983,14 @@ namespace XBMCAddon
                    const char* colorDiffuse = NULL);
 
       /**
-       * setImage(filename, useCache) -- Changes the image.
+       * setImage(filename[, useCache]) -- Changes the image.
        * 
-       * filename       : string - image filename.
-       * useCache       : [opt] bool - true/use cache, false/don't use cache
+       * filename       : string - image filename.\n
+       * useCache       : [opt] bool - True=use cache (default) / False=don't use cache.
        * 
        * example:
        *   - self.image.setImage('special://home/scripts/test.png')
+       *   - self.image.setImage('special://home/scripts/test.png', False)
        */
       virtual void setImage(const char* imageFilename, const bool useCache = true);
 
@@ -1350,13 +1364,14 @@ namespace XBMCAddon
       ControlRadioButton(long x, long y, long width, long height, const String& label,
                          const char* focusOnTexture = NULL, const char* noFocusOnTexture = NULL,
                          const char* focusOffTexture = NULL, const char* noFocusOffTexture = NULL,
-                         const char* focusTexture = NULL, const char* noFocusTexture = NULL, 
+                         const char* focusTexture = NULL, const char* noFocusTexture = NULL,
                          long textOffsetX = CONTROL_TEXT_OFFSET_X, 
                          long textOffsetY = CONTROL_TEXT_OFFSET_Y, 
                          long _alignment = (XBFONT_LEFT | XBFONT_CENTER_Y), 
                          const char* font = NULL, const char* textColor = NULL,
                          const char* disabledColor = NULL, long angle = 0,
-                         const char* shadowColor = NULL, const char* focusedColor = NULL);
+                         const char* shadowColor = NULL, const char* focusedColor = NULL,
+                         const char* disabledOnTexture = NULL, const char* disabledOffTexture = NULL);
 
       // setSelected() Method
       /**
@@ -1434,6 +1449,8 @@ namespace XBMCAddon
       std::string strTextureRadioOnNoFocus;
       std::string strTextureRadioOffFocus;
       std::string strTextureRadioOffNoFocus;
+      std::string strTextureRadioOnDisabled;
+      std::string strTextureRadioOffDisabled;
       color_t textColor;
       color_t disabledColor;
       int textOffsetX;

@@ -27,7 +27,6 @@
 #include <limits.h>
 
 using namespace XFILE;
-using namespace std;
 
 CDVDInputStreamStack::CDVDInputStreamStack() : CDVDInputStream(DVDSTREAM_TYPE_FILE)
 {
@@ -46,9 +45,9 @@ bool CDVDInputStreamStack::IsEOF()
   return m_eof;
 }
 
-bool CDVDInputStreamStack::Open(const char* path, const std::string& content)
+bool CDVDInputStreamStack::Open(const char* path, const std::string& content, bool contentLookup)
 {
-  if (!CDVDInputStream::Open(path, content))
+  if (!CDVDInputStream::Open(path, content, contentLookup))
     return false;
 
   CStackDirectory dir;

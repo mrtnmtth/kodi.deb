@@ -18,40 +18,48 @@
  *
  */
 
-#include "GUIWindowPVRBase.h"
-
 #include "Application.h"
-#include "ApplicationMessenger.h"
-#include "dialogs/GUIDialogNumeric.h"
+#include "cores/AudioEngine/DSPAddons/ActiveAEDSP.h"
 #include "dialogs/GUIDialogKaiToast.h"
+#include "dialogs/GUIDialogNumeric.h"
 #include "dialogs/GUIDialogOK.h"
-#include "dialogs/GUIDialogYesNo.h"
-#include "dialogs/GUIDialogSelect.h"
 #include "dialogs/GUIDialogProgress.h"
+#include "dialogs/GUIDialogSelect.h"
+#include "dialogs/GUIDialogYesNo.h"
+#include "epg/Epg.h"
+#include "epg/GUIEPGGridContainer.h"
 #include "filesystem/StackDirectory.h"
-#include "input/Key.h"
 #include "guilib/GUIMessage.h"
 #include "guilib/GUIWindowManager.h"
-#include "GUIWindowPVRRecordings.h"
+#include "input/Key.h"
+#include "messaging/ApplicationMessenger.h"
+#include "settings/MediaSettings.h"
+#include "settings/Settings.h"
+#include "threads/SingleLock.h"
+#include "utils/Observer.h"
+#include "utils/StringUtils.h"
+#include "utils/Variant.h"
+
 #include "pvr/PVRManager.h"
 #include "pvr/addons/PVRClients.h"
 #include "pvr/dialogs/GUIDialogPVRGuideInfo.h"
 #include "pvr/dialogs/GUIDialogPVRRecordingInfo.h"
+#include "pvr/dialogs/GUIDialogPVRTimerSettings.h"
 #include "pvr/timers/PVRTimers.h"
-#include "epg/Epg.h"
-#include "epg/GUIEPGGridContainer.h"
-#include "settings/MediaSettings.h"
-#include "settings/Settings.h"
-#include "threads/SingleLock.h"
-#include "utils/StringUtils.h"
-#include "utils/Observer.h"
+
+#include "GUIWindowPVRBase.h"
+#include "GUIWindowPVRRecordings.h"
+
+#include <utility>
 
 #define MAX_INVALIDATION_FREQUENCY 2000 // limit to one invalidation per X milliseconds
 
 using namespace PVR;
 using namespace EPG;
+using namespace KODI::MESSAGING;
 
-std::map<bool, std::string> CGUIWindowPVRBase::m_selectedItemPaths;
+CCriticalSection CGUIWindowPVRBase::m_selectedItemPathsLock;
+std::string CGUIWindowPVRBase::m_selectedItemPaths[2];
 
 CGUIWindowPVRBase::CGUIWindowPVRBase(bool bRadio, int id, const std::string &xmlFile) :
   CGUIMediaWindow(id, xmlFile.c_str()),
@@ -67,24 +75,21 @@ CGUIWindowPVRBase::~CGUIWindowPVRBase(void)
 
 void CGUIWindowPVRBase::SetSelectedItemPath(bool bRadio, const std::string &path)
 {
-  m_selectedItemPaths.at(bRadio) = path;
+  CSingleLock lock(m_selectedItemPathsLock);
+  m_selectedItemPaths[bRadio] = path;
 }
 
 std::string CGUIWindowPVRBase::GetSelectedItemPath(bool bRadio)
 {
-  if (!m_selectedItemPaths.at(bRadio).empty())
-    return m_selectedItemPaths.at(bRadio);
-  else if (g_PVRManager.IsPlaying())
-    return g_application.CurrentFile();
-
-  return "";
+  CSingleLock lock(m_selectedItemPathsLock);
+  return m_selectedItemPaths[bRadio];
 }
 
 void CGUIWindowPVRBase::Notify(const Observable &obs, const ObservableMessage msg)
 {
   UpdateSelectedItemPath();
   CGUIMessage m(GUI_MSG_REFRESH_LIST, GetID(), 0, msg);
-  CApplicationMessenger::Get().SendGUIMessage(m);
+  CApplicationMessenger::GetInstance().SendGUIMessage(m);
 }
 
 bool CGUIWindowPVRBase::OnAction(const CAction &action)
@@ -128,7 +133,7 @@ void CGUIWindowPVRBase::OnInitWindow(void)
       dialog->SetHeading(CVariant{19235});
       dialog->SetText(CVariant{19045});
       dialog->ShowProgressBar(false);
-      dialog->StartModal();
+      dialog->Open();
 
       // do not block the gfx context while waiting
       CSingleExit exit(g_graphicsContext);
@@ -265,6 +270,21 @@ bool CGUIWindowPVRBase::OnContextButton(int itemNumber, CONTEXT_BUTTON button)
   return bReturn || CGUIMediaWindow::OnContextButton(itemNumber, button);
 }
 
+bool CGUIWindowPVRBase::OnContextButtonActiveAEDSPSettings(CFileItem *item, CONTEXT_BUTTON button)
+{
+  bool bReturn = false;
+
+  if (button == CONTEXT_BUTTON_ACTIVE_ADSP_SETTINGS)
+  {
+    bReturn = true;
+
+    if (ActiveAE::CActiveAEDSP::GetInstance().IsProcessing())
+      g_windowManager.ActivateWindow(WINDOW_DIALOG_AUDIO_DSP_OSD_SETTINGS);
+  }
+
+  return bReturn;
+}
+
 void CGUIWindowPVRBase::SetInvalid()
 {
   if (m_refreshTimeout.IsTimePast())
@@ -277,6 +297,12 @@ void CGUIWindowPVRBase::SetInvalid()
   }
 }
 
+bool CGUIWindowPVRBase::CanBeActivated() const
+{
+  // No activation if PVR is not enabled.
+  return CSettings::GetInstance().GetBool(CSettings::SETTING_PVRMANAGER_ENABLED);
+}
+
 bool CGUIWindowPVRBase::OpenGroupSelectionDialog(void)
 {
   CGUIDialogSelect *dialog = (CGUIDialogSelect*)g_windowManager.GetWindow(WINDOW_DIALOG_SELECT);
@@ -287,11 +313,11 @@ bool CGUIWindowPVRBase::OpenGroupSelectionDialog(void)
   g_PVRChannelGroups->Get(m_bRadio)->GetGroupList(&options, true);
 
   dialog->Reset();
-  dialog->SetHeading(g_localizeStrings.Get(19146));
-  dialog->SetItems(&options);
+  dialog->SetHeading(CVariant{g_localizeStrings.Get(19146)});
+  dialog->SetItems(options);
   dialog->SetMultiSelection(false);
   dialog->SetSelected(m_group->GroupName());
-  dialog->DoModal();
+  dialog->Open();
 
   if (!dialog->IsConfirmed())
     return false;
@@ -345,7 +371,7 @@ bool CGUIWindowPVRBase::PlayFile(CFileItem *item, bool bPlayMinimized /* = false
     return true;
   }
 
-  CMediaSettings::Get().SetVideoStartWindowed(bPlayMinimized);
+  CMediaSettings::GetInstance().SetVideoStartWindowed(bPlayMinimized);
 
   if (item->HasPVRRecordingInfoTag())
   {
@@ -364,16 +390,16 @@ bool CGUIWindowPVRBase::PlayFile(CFileItem *item, bool bPlayMinimized /* = false
         CGUIDialogYesNo* pDialog = (CGUIDialogYesNo*) g_windowManager.GetWindow(WINDOW_DIALOG_YES_NO);
         if (pDialog)
         {
-          pDialog->SetHeading(19687); // Play recording
-          pDialog->SetLine(0, "");
-          pDialog->SetLine(1, 12021); // Start from beginning
-          pDialog->SetLine(2, recording->m_strTitle.c_str());
-          pDialog->DoModal();
+          pDialog->SetHeading(CVariant{19687}); // Play recording
+          pDialog->SetLine(0, CVariant{""});
+          pDialog->SetLine(1, CVariant{12021}); // Start from beginning
+          pDialog->SetLine(2, CVariant{recording->m_strTitle});
+          pDialog->Open();
 
           if (pDialog->IsConfirmed())
           {
             CFileItem recordingItem(recording);
-            return PlayRecording(&recordingItem, CSettings::Get().GetBool("pvrplayback.playminimized"), bCheckResume);
+            return PlayRecording(&recordingItem, CSettings::GetInstance().GetBool(CSettings::SETTING_PVRPLAYBACK_PLAYMINIMIZED), bCheckResume);
           }
         }
       }
@@ -388,7 +414,7 @@ bool CGUIWindowPVRBase::PlayFile(CFileItem *item, bool bPlayMinimized /* = false
 
       if (!bSwitchSuccessful)
       {
-        CApplicationMessenger::Get().PlayFile(*item, false);
+        CApplicationMessenger::GetInstance().PostMsg(TMSG_MEDIA_PLAY, 0, 0, static_cast<void*>(new CFileItem(*item)));
         return true;
       }
     }
@@ -410,60 +436,134 @@ bool CGUIWindowPVRBase::PlayFile(CFileItem *item, bool bPlayMinimized /* = false
   return true;
 }
 
-bool CGUIWindowPVRBase::StartRecordFile(const CFileItem &item)
+bool CGUIWindowPVRBase::ShowTimerSettings(CFileItem *item)
 {
-  if (!item.HasEPGInfoTag())
+  if (!item->IsPVRTimer())
     return false;
 
-  const CEpgInfoTagPtr tag = item.GetEPGInfoTag();
+  CGUIDialogPVRTimerSettings* pDlgInfo = (CGUIDialogPVRTimerSettings*)g_windowManager.GetWindow(WINDOW_DIALOG_PVR_TIMER_SETTING);
+
+  if (!pDlgInfo)
+    return false;
+
+  pDlgInfo->SetTimer(item);
+  pDlgInfo->Open();
+
+  return pDlgInfo->IsConfirmed();
+}
+
+bool CGUIWindowPVRBase::AddTimer(CFileItem *item, bool bAdvanced)
+{
+  CFileItemPtr epgTag;
+  if (item->IsEPG())
+  {
+    epgTag.reset(new CFileItem(*item));
+    if (!epgTag->GetEPGInfoTag()->HasPVRChannel())
+      return false;
+  }
+  else if (item->IsPVRChannel())
+  {
+    CPVRChannelPtr channel(item->GetPVRChannelInfoTag());
+    if (!channel)
+      return false;
+
+    CEpgInfoTagPtr epgNow(channel->GetEPGNow());
+    if (!epgNow)
+      return false;
+
+    epgTag.reset(new CFileItem(epgNow));
+  }
+
+  const CEpgInfoTagPtr tag = epgTag->GetEPGInfoTag();
   CPVRChannelPtr channel = tag->ChannelTag();
 
   if (!channel || !g_PVRManager.CheckParentalLock(channel))
     return false;
 
-  CFileItemPtr timer = g_PVRTimers->GetTimerForEpgTag(&item);
+  CFileItemPtr timer = g_PVRTimers->GetTimerForEpgTag(item);
   if (timer && timer->HasPVRTimerInfoTag())
   {
-    CGUIDialogOK::ShowAndGetInput(19033, 19034);
+    CGUIDialogOK::ShowAndGetInput(CVariant{19033}, CVariant{19034});
     return false;
   }
 
-  // ask for confirmation before starting a timer
-  CGUIDialogYesNo* pDialog = (CGUIDialogYesNo*)g_windowManager.GetWindow(WINDOW_DIALOG_YES_NO);
-  if (!pDialog)
-    return false;
-  pDialog->SetHeading(264);
-  pDialog->SetLine(0, tag->PVRChannelName());
-  pDialog->SetLine(1, "");
-  pDialog->SetLine(2, tag->Title());
-  pDialog->DoModal();
-
-  if (!pDialog->IsConfirmed())
-    return false;
-
-  CPVRTimerInfoTagPtr newTimer = CPVRTimerInfoTag::CreateFromEpg(tag);
   bool bReturn(false);
-  if (newTimer)
+
+  if (bAdvanced)
   {
-    bReturn = g_PVRTimers->AddTimer(newTimer);
+    CPVRTimerInfoTagPtr newTimer = CPVRTimerInfoTag::CreateFromEpg(tag, true);
+    if (newTimer)
+    {
+      CFileItem *newItem = new CFileItem(newTimer);
+
+      if (ShowTimerSettings(newItem))
+        bReturn = g_PVRTimers->AddTimer(newItem->GetPVRTimerInfoTag());
+
+      delete newItem;
+    }
+  }
+  else
+  {
+    CPVRTimerInfoTagPtr newTimer = CPVRTimerInfoTag::CreateFromEpg(tag);
+
+    if (newTimer)
+      bReturn = g_PVRTimers->AddTimer(newTimer);
   }
   return bReturn;
 }
 
-bool CGUIWindowPVRBase::StopRecordFile(const CFileItem &item)
+bool CGUIWindowPVRBase::DeleteTimer(CFileItem *item)
 {
-  if (!item.HasEPGInfoTag())
+  return DeleteTimer(item, false);
+}
+
+bool CGUIWindowPVRBase::StopRecordFile(CFileItem *item)
+{
+  return DeleteTimer(item, true);
+}
+
+bool CGUIWindowPVRBase::DeleteTimer(CFileItem *item, bool bIsRecording)
+{
+  CFileItemPtr timer;
+
+  if (item->IsPVRTimer())
+  {
+    timer.reset(new CFileItem(*item));
+  }
+  else if (item->IsEPG())
+  {
+    timer = g_PVRTimers->GetTimerForEpgTag(item);
+  }
+  else if (item->IsPVRChannel())
+  {
+    CPVRChannelPtr channel(item->GetPVRChannelInfoTag());
+    if (!channel)
+      return false;
+
+    CFileItemPtr epgNow(new CFileItem(channel->GetEPGNow()));
+    timer = g_PVRTimers->GetTimerForEpgTag(epgNow.get());
+  }
+
+  if (!timer || !timer->HasPVRTimerInfoTag())
     return false;
 
-  const CEpgInfoTagPtr tag(item.GetEPGInfoTag());
-  if (!tag || !tag->HasPVRChannel())
+  if (bIsRecording)
+  {
+    if (ConfirmStopRecording(timer.get()))
+      return CPVRTimers::DeleteTimer(*timer, true, false);
+  }
+  else if (timer->GetPVRTimerInfoTag()->HasTimerType() &&
+           timer->GetPVRTimerInfoTag()->GetTimerType()->IsReadOnly())
+  {
     return false;
-
-  CFileItemPtr timer = g_PVRTimers->GetTimerForEpgTag(&item);
-  if (!timer || !timer->HasPVRTimerInfoTag() || timer->GetPVRTimerInfoTag()->m_bIsRepeating)
-    return false;
-
-  return g_PVRTimers->DeleteTimer(*timer);
+  }
+  else
+  {
+    bool bDeleteSchedule(false);
+    if (ConfirmDeleteTimer(timer.get(), bDeleteSchedule))
+      return CPVRTimers::DeleteTimer(*timer, false, bDeleteSchedule);
+  }
+  return false;
 }
 
 void CGUIWindowPVRBase::CheckResumeRecording(CFileItem *item)
@@ -490,7 +590,7 @@ bool CGUIWindowPVRBase::PlayRecording(CFileItem *item, bool bPlayMinimized /* = 
   {
     if (bCheckResume)
       CheckResumeRecording(item);
-    CApplicationMessenger::Get().PlayFile(*item, false);
+    CApplicationMessenger::GetInstance().PostMsg(TMSG_MEDIA_PLAY, 0, 0, static_cast<void*>(new CFileItem(*item)));
     return true;
   }
 
@@ -536,13 +636,13 @@ bool CGUIWindowPVRBase::PlayRecording(CFileItem *item, bool bPlayMinimized /* = 
   else
   {
     CLog::Log(LOGERROR, "CGUIWindowPVRCommon - %s - can't open recording: no valid filename", __FUNCTION__);
-    CGUIDialogOK::ShowAndGetInput(19033, 19036);
+    CGUIDialogOK::ShowAndGetInput(CVariant{19033}, CVariant{19036});
     return false;
   }
 
   if (bCheckResume)
     CheckResumeRecording(item);
-  CApplicationMessenger::Get().PlayFile(*item, false);
+  CApplicationMessenger::GetInstance().PostMsg(TMSG_MEDIA_PLAY, 0, 0, static_cast<void*>(new CFileItem(*item)));
 
   return true;
 }
@@ -553,7 +653,7 @@ void CGUIWindowPVRBase::ShowRecordingInfo(CFileItem *item)
   if (item->IsPVRRecording() && pDlgInfo)
   {
     pDlgInfo->SetRecording(item);
-    pDlgInfo->DoModal();
+    pDlgInfo->Open();
   }
 }
 
@@ -571,6 +671,16 @@ void CGUIWindowPVRBase::ShowEPGInfo(CFileItem *item)
       bHasChannel = true;
     }
   }
+  else if (item->IsPVRTimer())
+  {
+    CEpgInfoTagPtr epg(item->GetPVRTimerInfoTag()->GetEpgInfoTag());
+    if (epg && epg->HasPVRChannel())
+    {
+      channel = epg->ChannelTag();
+      bHasChannel = true;
+    }
+    tag = new CFileItem(epg);
+  }
   else if (item->IsPVRChannel())
   {
     CEpgInfoTagPtr epgnow(item->GetPVRChannelInfoTag()->GetEPGNow());
@@ -578,7 +688,7 @@ void CGUIWindowPVRBase::ShowEPGInfo(CFileItem *item)
     bHasChannel = true;
     if (!epgnow)
     {
-      CGUIDialogOK::ShowAndGetInput(19033, 19055);
+      CGUIDialogOK::ShowAndGetInput(CVariant{19033}, CVariant{19055});
       return;
     }
     tag = new CFileItem(epgnow);
@@ -588,7 +698,7 @@ void CGUIWindowPVRBase::ShowEPGInfo(CFileItem *item)
   if (tag && (!bHasChannel || g_PVRManager.CheckParentalLock(channel)) && pDlgInfo)
   {
     pDlgInfo->SetProgInfo(tag);
-    pDlgInfo->DoModal();
+    pDlgInfo->Open();
   }
 
   delete tag;
@@ -631,9 +741,21 @@ bool CGUIWindowPVRBase::ActionInputChannelNumber(int input)
   return false;
 }
 
+bool CGUIWindowPVRBase::ActionToggleTimer(CFileItem *item)
+{
+  if (!item->HasEPGInfoTag())
+    return false;
+
+  CPVRTimerInfoTagPtr timer(item->GetEPGInfoTag()->Timer());
+  if (timer)
+    return DeleteTimer(item, timer->IsRecording());
+  else
+    return AddTimer(item, false);
+}
+
 bool CGUIWindowPVRBase::ActionPlayChannel(CFileItem *item)
 {
-  return PlayFile(item, CSettings::Get().GetBool("pvrplayback.playminimized"));
+  return PlayFile(item, CSettings::GetInstance().GetBool(CSettings::SETTING_PVRPLAYBACK_PLAYMINIMIZED));
 }
 
 bool CGUIWindowPVRBase::ActionPlayEpg(CFileItem *item, bool bPlayRecording)
@@ -660,7 +782,7 @@ bool CGUIWindowPVRBase::ActionPlayEpg(CFileItem *item, bool bPlayRecording)
   {
     // CHANNELNAME could not be played. Check the log for details.
     std::string msg = StringUtils::Format(g_localizeStrings.Get(19035).c_str(), channel->ChannelName().c_str());
-    CGUIDialogOK::ShowAndGetInput(19033, msg);
+    CGUIDialogOK::ShowAndGetInput(CVariant{19033}, CVariant{std::move(msg)});
     return false;
   }
 
@@ -679,11 +801,11 @@ bool CGUIWindowPVRBase::ActionDeleteChannel(CFileItem *item)
   CGUIDialogYesNo* pDialog = (CGUIDialogYesNo*) g_windowManager.GetWindow(WINDOW_DIALOG_YES_NO);
   if (!pDialog)
     return false;
-  pDialog->SetHeading(19039);
-  pDialog->SetLine(0, "");
-  pDialog->SetLine(1, channel->ChannelName());
-  pDialog->SetLine(2, "");
-  pDialog->DoModal();
+  pDialog->SetHeading(CVariant{19039});
+  pDialog->SetLine(0, CVariant{""});
+  pDialog->SetLine(1, CVariant{channel->ChannelName()});
+  pDialog->SetLine(2, CVariant{""});
+  pDialog->Open();
 
   /* prompt for the user's confirmation */
   if (!pDialog->IsConfirmed())
@@ -695,59 +817,11 @@ bool CGUIWindowPVRBase::ActionDeleteChannel(CFileItem *item)
   return true;
 }
 
-bool CGUIWindowPVRBase::ActionRecord(CFileItem *item)
-{
-  bool bReturn = false;
-
-  CEpgInfoTagPtr epgTag(item->GetEPGInfoTag());
-  if (!epgTag)
-    return bReturn;
-
-  CPVRChannelPtr channel = epgTag->ChannelTag();
-  if (!channel || !g_PVRManager.CheckParentalLock(channel))
-    return bReturn;
-
-  if (epgTag->Timer() == NULL)
-  {
-    /* create a confirmation dialog */
-    CGUIDialogYesNo* pDialog = (CGUIDialogYesNo*) g_windowManager.GetWindow(WINDOW_DIALOG_YES_NO);
-    if (!pDialog)
-      return bReturn;
-
-    pDialog->SetHeading(264);
-    pDialog->SetLine(0, "");
-    pDialog->SetLine(1, epgTag->Title());
-    pDialog->SetLine(2, "");
-    pDialog->DoModal();
-
-    /* prompt for the user's confirmation */
-    if (!pDialog->IsConfirmed())
-      return bReturn;
-
-    CPVRTimerInfoTagPtr newTimer = CPVRTimerInfoTag::CreateFromEpg(epgTag);
-    if (newTimer)
-    {
-      bReturn = g_PVRTimers->AddTimer(newTimer);
-    }
-    else
-    {
-      bReturn = false;
-    }
-  }
-  else
-  {
-    CGUIDialogOK::ShowAndGetInput(19033, 19034);
-    bReturn = true;
-  }
-
-  return bReturn;
-}
-
 bool CGUIWindowPVRBase::UpdateEpgForChannel(CFileItem *item)
 {
   CPVRChannelPtr channel(item->GetPVRChannelInfoTag());
 
-  CEpg *epg = channel->GetEPG();
+  CEpgPtr epg = channel->GetEPG();
   if (!epg)
     return false;
 
@@ -763,5 +837,53 @@ void CGUIWindowPVRBase::UpdateButtons(void)
 
 void CGUIWindowPVRBase::UpdateSelectedItemPath()
 {
-  m_selectedItemPaths.at(m_bRadio) = m_viewControl.GetSelectedItemPath();
+  if (!m_viewControl.GetSelectedItemPath().empty()) {
+    CSingleLock lock(m_selectedItemPathsLock);
+    m_selectedItemPaths[m_bRadio] = m_viewControl.GetSelectedItemPath();
+  }
+}
+
+bool CGUIWindowPVRBase::ConfirmDeleteTimer(CFileItem *item, bool &bDeleteSchedule)
+{
+  bool bConfirmed(false);
+
+  if (item->GetPVRTimerInfoTag()->GetTimerScheduleId() != PVR_TIMER_NO_PARENT)
+  {
+    // timer was scheduled by a repeating timer. prompt user for confirmation for deleting the complete repeating timer, including scheduled timers.
+    bool bCancel(false);
+    bDeleteSchedule = CGUIDialogYesNo::ShowAndGetInput(
+                        CVariant{122}, // "Confirm delete"
+                        CVariant{840}, // "Do you only want to delete this timer or also the repeating timer that has scheduled it?"
+                        CVariant{""},
+                        CVariant{item->GetPVRTimerInfoTag()->Title()},
+                        bCancel,
+                        CVariant{841}, // "Only this"
+                        CVariant{593}, // "All"
+                        0); // no autoclose
+    bConfirmed = !bCancel;
+  }
+  else
+  {
+    bDeleteSchedule = false;
+
+    // prompt user for confirmation for deleting the timer
+    bConfirmed = CGUIDialogYesNo::ShowAndGetInput(
+                        CVariant{122}, // "Confirm delete"
+                        item->GetPVRTimerInfoTag()->IsRepeating()
+                          ? CVariant{845}  // "Are you sure you want to delete this repeating timer and all timers it has scheduled?"
+                          : CVariant{846}, // "Are you sure you want to delete this timer?"
+                        CVariant{""},
+                        CVariant{item->GetPVRTimerInfoTag()->Title()});
+  }
+
+  return bConfirmed;
+}
+
+bool CGUIWindowPVRBase::ConfirmStopRecording(CFileItem *item)
+{
+  return CGUIDialogYesNo::ShowAndGetInput(
+                         CVariant{847}, // "Confirm stop recording"
+                         CVariant{848}, // "Are you sure you want to stop this recording?"
+                         CVariant{""},
+                         CVariant{item->GetPVRTimerInfoTag()->Title()});
 }

@@ -21,6 +21,7 @@
 
 class CSong;
 class CArtist;
+class CVariant;
 
 #include <stdint.h>
 #include <string>
@@ -49,9 +50,11 @@ public:
   const std::string& GetTitle() const;
   const std::string& GetURL() const;
   const std::vector<std::string>& GetArtist() const;
+  const std::string GetArtistString() const;
   const std::string& GetAlbum() const;
   int GetAlbumId() const;
   const std::vector<std::string>& GetAlbumArtist() const;
+  const std::string GetAlbumArtistString() const;
   const std::vector<std::string>& GetGenre() const;
   int GetTrackNumber() const;
   int GetDiscNumber() const;
@@ -65,16 +68,19 @@ public:
   std::string GetYearString() const;
   const std::string& GetMusicBrainzTrackID() const;
   const std::vector<std::string>& GetMusicBrainzArtistID() const;
+  const std::vector<std::string>& GetMusicBrainzArtistHints() const;
   const std::string& GetMusicBrainzAlbumID() const;
   const std::vector<std::string>& GetMusicBrainzAlbumArtistID() const;
+  const std::vector<std::string>& GetMusicBrainzAlbumArtistHints() const;
   const std::string& GetMusicBrainzTRMID() const;
   const std::string& GetComment() const;
   const std::string& GetMood() const;
   const std::string& GetLyrics() const;
   const std::string& GetCueSheet() const;
   const CDateTime& GetLastPlayed() const;
+  const CDateTime& GetDateAdded() const;
   bool  GetCompilation() const;
-  char  GetRating() const;
+  char  GetUserrating() const;
   int  GetListeners() const;
   int  GetPlayCount() const;
   const EmbeddedArtInfo &GetCoverArtInfo() const;
@@ -84,11 +90,13 @@ public:
   void SetURL(const std::string& strURL);
   void SetTitle(const std::string& strTitle);
   void SetArtist(const std::string& strArtist);
-  void SetArtist(const std::vector<std::string>& artists);
+  void SetArtist(const std::vector<std::string>& artists, bool FillDesc = false);
+  void SetArtistDesc(const std::string& strArtistDesc);
   void SetAlbum(const std::string& strAlbum);
   void SetAlbumId(const int iAlbumId);
   void SetAlbumArtist(const std::string& strAlbumArtist);
-  void SetAlbumArtist(const std::vector<std::string>& albumArtists);
+  void SetAlbumArtist(const std::vector<std::string>& albumArtists, bool FillDesc = false);
+  void SetAlbumArtistDesc(const std::string& strAlbumArtistDesc);
   void SetGenre(const std::string& strGenre);
   void SetGenre(const std::vector<std::string>& genres);
   void SetYear(int year);
@@ -104,18 +112,22 @@ public:
   void SetSong(const CSong& song);
   void SetMusicBrainzTrackID(const std::string& strTrackID);
   void SetMusicBrainzArtistID(const std::vector<std::string>& musicBrainzArtistId);
+  void SetMusicBrainzArtistHints(const std::vector<std::string>& musicBrainzArtistHints);
   void SetMusicBrainzAlbumID(const std::string& strAlbumID);
   void SetMusicBrainzAlbumArtistID(const std::vector<std::string>& musicBrainzAlbumArtistId);
+  void SetMusicBrainzAlbumArtistHints(const std::vector<std::string>& musicBrainzAlbumArtistHints);
   void SetMusicBrainzTRMID(const std::string& strTRMID);
   void SetComment(const std::string& comment);
   void SetMood(const std::string& mood);
   void SetLyrics(const std::string& lyrics);
   void SetCueSheet(const std::string& cueSheet);
-  void SetRating(char rating);
+  void SetUserrating(char rating);
   void SetListeners(int listeners);
   void SetPlayCount(int playcount);
   void SetLastPlayed(const std::string& strLastPlayed);
   void SetLastPlayed(const CDateTime& strLastPlayed);
+  void SetDateAdded(const std::string& strDateAdded);
+  void SetDateAdded(const CDateTime& strDateAdded);
   void SetCompilation(bool compilation);
   void SetCoverArtInfo(size_t size, const std::string &mimeType);
   void SetReplayGain(const ReplayGain& aGain);
@@ -154,19 +166,24 @@ protected:
   std::string m_strURL;
   std::string m_strTitle;
   std::vector<std::string> m_artist;
+  std::string m_strArtistDesc;
   std::string m_strAlbum;
   std::vector<std::string> m_albumArtist;
+  std::string m_strAlbumArtistDesc;
   std::vector<std::string> m_genre;
   std::string m_strMusicBrainzTrackID;
   std::vector<std::string> m_musicBrainzArtistID;
+  std::vector<std::string> m_musicBrainzArtistHints;
   std::string m_strMusicBrainzAlbumID;
   std::vector<std::string> m_musicBrainzAlbumArtistID;
+  std::vector<std::string> m_musicBrainzAlbumArtistHints;
   std::string m_strMusicBrainzTRMID;
   std::string m_strComment;
   std::string m_strMood;
   std::string m_strLyrics;
   std::string m_cuesheet;
   CDateTime m_lastPlayed;
+  CDateTime m_dateAdded;
   bool m_bCompilation;
   int m_iDuration;
   int m_iTrack;     // consists of the disk number in the high 16 bits, the track number in the low 16bits

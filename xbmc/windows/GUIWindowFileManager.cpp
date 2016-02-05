@@ -21,7 +21,7 @@
 #include "system.h"
 #include "GUIWindowFileManager.h"
 #include "Application.h"
-#include "ApplicationMessenger.h"
+#include "messaging/ApplicationMessenger.h"
 #include "Util.h"
 #include "filesystem/Directory.h"
 #include "filesystem/ZipManager.h"
@@ -54,12 +54,13 @@
 #include "utils/FileOperationJob.h"
 #include "utils/FileUtils.h"
 #include "utils/URIUtils.h"
+#include "utils/Variant.h"
 #include "Autorun.h"
 #include "URL.h"
 
-using namespace std;
 using namespace XFILE;
 using namespace PLAYLIST;
+using namespace KODI::MESSAGING;
 
 #define ACTION_COPY                     1
 #define ACTION_MOVE                     2
@@ -290,7 +291,7 @@ bool CGUIWindowFileManager::OnMessage(CGUIMessage& message)
         if (iAction == ACTION_HIGHLIGHT_ITEM || iAction == ACTION_MOUSE_LEFT_CLICK)
         {
           OnMark(list, iItem);
-          if (!CInputManager::Get().IsMouseActive())
+          if (!CInputManager::GetInstance().IsMouseActive())
           {
             //move to next item
             CGUIMessage msg(GUI_MSG_ITEM_SELECT, GetID(), iControl, iItem + 1);
@@ -308,6 +309,10 @@ bool CGUIWindowFileManager::OnMessage(CGUIMessage& message)
       }
     }
     break;
+  // prevent touch/gesture unfocussing ..
+  case GUI_MSG_GESTURE_NOTIFY:
+  case GUI_MSG_UNFOCUS_ALL:
+    return true;
   }
   return CGUIWindow::OnMessage(message);
 }
@@ -453,7 +458,7 @@ bool CGUIWindowFileManager::Update(int iList, const std::string &strDirectory)
 
   std::string strParentPath;
   URIUtils::GetParentPath(strDirectory, strParentPath);
-  if (strDirectory.empty() && (m_vecItems[iList]->Size() == 0 || CSettings::Get().GetBool("filelists.showaddsourcebuttons")))
+  if (strDirectory.empty() && (m_vecItems[iList]->Size() == 0 || CSettings::GetInstance().GetBool(CSettings::SETTING_FILELISTS_SHOWADDSOURCEBUTTONS)))
   { // add 'add source button'
     std::string strLabel = g_localizeStrings.Get(1026);
     CFileItemPtr pItem(new CFileItem(strLabel));
@@ -465,7 +470,7 @@ bool CGUIWindowFileManager::Update(int iList, const std::string &strDirectory)
     pItem->SetSpecialSort(SortSpecialOnBottom);
     m_vecItems[iList]->Add(pItem);
   }
-  else if (items.IsEmpty() || CSettings::Get().GetBool("filelists.showparentdiritems"))
+  else if (items.IsEmpty() || CSettings::GetInstance().GetBool(CSettings::SETTING_FILELISTS_SHOWPARENTDIRITEMS))
   {
     CFileItemPtr pItem(new CFileItem(".."));
     pItem->SetPath(m_rootDir.IsSource(strDirectory) ? "" : strParentPath);
@@ -528,7 +533,7 @@ void CGUIWindowFileManager::OnClick(int iList, int iItem)
   {
     if (CGUIDialogMediaSource::ShowAndAddMediaSource("files"))
     {
-      m_rootDir.SetSources(*CMediaSourceSettings::Get().GetSources("files"));
+      m_rootDir.SetSources(*CMediaSourceSettings::GetInstance().GetSources("files"));
       Update(0,m_Directory[0]->GetPath());
       Update(1,m_Directory[1]->GetPath());
     }
@@ -591,12 +596,12 @@ void CGUIWindowFileManager::OnStart(CFileItem *pItem)
   if (pItem->IsPlayList())
   {
     std::string strPlayList = pItem->GetPath();
-    unique_ptr<CPlayList> pPlayList (CPlayListFactory::Create(strPlayList));
+    std::unique_ptr<CPlayList> pPlayList (CPlayListFactory::Create(strPlayList));
     if (NULL != pPlayList.get())
     {
       if (!pPlayList->Load(strPlayList))
       {
-        CGUIDialogOK::ShowAndGetInput(6, 477);
+        CGUIDialogOK::ShowAndGetInput(CVariant{6}, CVariant{477});
         return;
       }
     }
@@ -611,7 +616,7 @@ void CGUIWindowFileManager::OnStart(CFileItem *pItem)
 #ifdef HAS_PYTHON
   if (pItem->IsPythonScript())
   {
-    CScriptInvocationManager::Get().ExecuteAsync(pItem->GetPath());
+    CScriptInvocationManager::GetInstance().ExecuteAsync(pItem->GetPath());
     return ;
   }
 #endif
@@ -637,7 +642,7 @@ bool CGUIWindowFileManager::HaveDiscOrConnection( std::string& strPath, int iDri
   {
     if ( !g_mediaManager.IsDiscInDrive(strPath) )
     {
-      CGUIDialogOK::ShowAndGetInput(218, 219);
+      CGUIDialogOK::ShowAndGetInput(CVariant{218}, CVariant{219});
       int iList = GetFocusedList();
       int iItem = GetSelectedItem(iList);
       Update(iList, "");
@@ -650,7 +655,7 @@ bool CGUIWindowFileManager::HaveDiscOrConnection( std::string& strPath, int iDri
     // TODO: Handle not connected to a remote share
     if ( !g_application.getNetwork().IsConnected() )
     {
-      CGUIDialogOK::ShowAndGetInput(220, 221);
+      CGUIDialogOK::ShowAndGetInput(CVariant{220}, CVariant{221});
       return false;
     }
   }
@@ -684,7 +689,7 @@ void CGUIWindowFileManager::OnMark(int iList, int iItem)
 
 void CGUIWindowFileManager::OnCopy(int iList)
 {
-  if (!CGUIDialogYesNo::ShowAndGetInput(120, 123))
+  if (!CGUIDialogYesNo::ShowAndGetInput(CVariant{120}, CVariant{123}))
     return;
 
   AddJob(new CFileOperationJob(CFileOperationJob::ActionCopy, 
@@ -695,7 +700,7 @@ void CGUIWindowFileManager::OnCopy(int iList)
 
 void CGUIWindowFileManager::OnMove(int iList)
 {
-  if (!CGUIDialogYesNo::ShowAndGetInput(121, 124))
+  if (!CGUIDialogYesNo::ShowAndGetInput(CVariant{121}, CVariant{124}))
     return;
 
   AddJob(new CFileOperationJob(CFileOperationJob::ActionMove,
@@ -706,7 +711,7 @@ void CGUIWindowFileManager::OnMove(int iList)
 
 void CGUIWindowFileManager::OnDelete(int iList)
 {
-  if (!CGUIDialogYesNo::ShowAndGetInput(122, 125))
+  if (!CGUIDialogYesNo::ShowAndGetInput(CVariant{122}, CVariant{125}))
     return;
 
   AddJob(new CFileOperationJob(CFileOperationJob::ActionDelete,
@@ -748,7 +753,7 @@ void CGUIWindowFileManager::OnSelectAll(int iList)
 void CGUIWindowFileManager::OnNewFolder(int iList)
 {
   std::string strNewFolder = "";
-  if (CGUIKeyboardFactory::ShowAndGetInput(strNewFolder, g_localizeStrings.Get(16014), false))
+  if (CGUIKeyboardFactory::ShowAndGetInput(strNewFolder, CVariant{g_localizeStrings.Get(16014)}, false))
   {
     std::string strNewPath = m_Directory[iList]->GetPath();
     URIUtils::AddSlashAtEnd(strNewPath);
@@ -961,7 +966,7 @@ void CGUIWindowFileManager::OnPopupMenu(int list, int item, bool bContextDriven 
     // and do the popup menu
     if (CGUIDialogContextMenu::SourcesMenu("files", pItem, posX, posY))
     {
-      m_rootDir.SetSources(*CMediaSourceSettings::Get().GetSources("files"));
+      m_rootDir.SetSources(*CMediaSourceSettings::GetInstance().GetSources("files"));
       if (m_Directory[1 - list]->IsVirtualDirectoryRoot())
         Refresh();
       else
@@ -980,14 +985,14 @@ void CGUIWindowFileManager::OnPopupMenu(int list, int item, bool bContextDriven 
 
   // determine available players
   VECPLAYERCORES vecCores;
-  CPlayerCoreFactory::Get().GetPlayers(*pItem, vecCores);
+  CPlayerCoreFactory::GetInstance().GetPlayers(*pItem, vecCores);
 
   // add the needed buttons
   CContextButtons choices;
   if (item >= 0)
   {
     //The ".." item is not selectable. Take that into account when figuring out if all items are selected
-    int notSelectable = CSettings::Get().GetBool("filelists.showparentdiritems") ? 1 : 0;
+    int notSelectable = CSettings::GetInstance().GetBool(CSettings::SETTING_FILELISTS_SHOWPARENTDIRITEMS) ? 1 : 0;
     if (NumSelected(list) <  m_vecItems[list]->Size() - notSelectable)
       choices.Add(1, 188); // SelectAll
     if (!pItem->IsParentFolder())
@@ -1026,8 +1031,8 @@ void CGUIWindowFileManager::OnPopupMenu(int list, int item, bool bContextDriven 
   if (btnid == 3)
   {
     VECPLAYERCORES vecCores;
-    CPlayerCoreFactory::Get().GetPlayers(*pItem, vecCores);
-    g_application.m_eForcedNextPlayer = CPlayerCoreFactory::Get().SelectPlayerDialog(vecCores);
+    CPlayerCoreFactory::GetInstance().GetPlayers(*pItem, vecCores);
+    g_application.m_eForcedNextPlayer = CPlayerCoreFactory::GetInstance().SelectPlayerDialog(vecCores);
     if (g_application.m_eForcedNextPlayer != EPC_NONE)
       OnStart(pItem.get());
   }
@@ -1047,10 +1052,10 @@ void CGUIWindowFileManager::OnPopupMenu(int list, int item, bool bContextDriven 
     CGUIDialogProgress *progress = (CGUIDialogProgress *)g_windowManager.GetWindow(WINDOW_DIALOG_PROGRESS);
     if (progress)
     {
-      progress->SetHeading(13394);
+      progress->SetHeading(CVariant{13394});
       for (int i=0; i < 3; i++)
-        progress->SetLine(i, "");
-      progress->StartModal();
+        progress->SetLine(i, CVariant{""});
+      progress->Open();
     }
 
     //  Calculate folder size for each selected item
@@ -1123,7 +1128,7 @@ int64_t CGUIWindowFileManager::CalculateFolderSize(const std::string &strDirecto
   int64_t totalSize = 0;
   CFileItemList items;
   CVirtualDirectory rootDir;
-  rootDir.SetSources(*CMediaSourceSettings::Get().GetSources("files"));
+  rootDir.SetSources(*CMediaSourceSettings::GetInstance().GetSources("files"));
   rootDir.GetDirectory(pathToUrl, items, false);
   for (int i=0; i < items.Size(); i++)
   {
@@ -1144,14 +1149,14 @@ void CGUIWindowFileManager::OnJobComplete(unsigned int jobID, bool success, CJob
   if(!success)
   {
     CFileOperationJob* fileJob = (CFileOperationJob*)job;
-    CGUIDialogOK::ShowAndGetInput(fileJob->GetHeading(),
-                                  fileJob->GetLine(), 16200, 0);
+    CGUIDialogOK::ShowAndGetInput(CVariant{fileJob->GetHeading()},
+                                  CVariant{fileJob->GetLine()}, CVariant{16200}, CVariant{0});
   }
 
   if (IsActive())
   {
     CGUIMessage msg(GUI_MSG_NOTIFY_ALL, GetID(), 0, GUI_MSG_UPDATE);
-    CApplicationMessenger::Get().SendGUIMessage(msg, GetID(), false);
+    CApplicationMessenger::GetInstance().SendGUIMessage(msg, GetID(), false);
   }
 
   CJobQueue::OnJobComplete(jobID, success, job);
@@ -1169,7 +1174,7 @@ void CGUIWindowFileManager::ShowShareErrorMessage(CFileItem* pItem)
   else
     idMessageText = 15300; // Path not found or invalid
 
-  CGUIDialogOK::ShowAndGetInput(220, idMessageText);
+  CGUIDialogOK::ShowAndGetInput(CVariant{220}, CVariant{idMessageText});
 }
 
 void CGUIWindowFileManager::OnInitWindow()
@@ -1201,7 +1206,7 @@ void CGUIWindowFileManager::SetInitialPath(const std::string &path)
 {
   // check for a passed destination path
   std::string strDestination = path;
-  m_rootDir.SetSources(*CMediaSourceSettings::Get().GetSources("files"));
+  m_rootDir.SetSources(*CMediaSourceSettings::GetInstance().GetSources("files"));
   if (!strDestination.empty())
   {
     CLog::Log(LOGINFO, "Attempting to quickpath to: %s", strDestination.c_str());
@@ -1209,7 +1214,7 @@ void CGUIWindowFileManager::SetInitialPath(const std::string &path)
   // otherwise, is this the first time accessing this window?
   else if (m_Directory[0]->GetPath() == "?")
   {
-    m_Directory[0]->SetPath(strDestination = CMediaSourceSettings::Get().GetDefaultSource("files"));
+    m_Directory[0]->SetPath(strDestination = CMediaSourceSettings::GetInstance().GetDefaultSource("files"));
     CLog::Log(LOGINFO, "Attempting to default to: %s", strDestination.c_str());
   }
   // try to open the destination path

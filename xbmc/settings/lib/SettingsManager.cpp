@@ -19,14 +19,16 @@
  */
 
 #include "SettingsManager.h"
+
+#include <algorithm>
+#include <utility>
+
 #include "SettingDefinitions.h"
 #include "SettingSection.h"
 #include "Setting.h"
 #include "utils/log.h"
 #include "utils/StringUtils.h"
 #include "utils/XBMCTinyXML.h"
-
-#include <algorithm>
 
 CSettingsManager::CSettingsManager()
   : m_initialized(false), m_loaded(false)
@@ -637,13 +639,13 @@ void CSettingsManager::AddCondition(const std::string &condition)
   m_conditions.AddCondition(condition);
 }
 
-void CSettingsManager::AddCondition(const std::string &identifier, SettingConditionCheck condition)
+void CSettingsManager::AddCondition(const std::string &identifier, SettingConditionCheck condition, void *data /*= NULL*/)
 {
   CExclusiveLock lock(m_critical);
   if (identifier.empty() || condition == NULL)
     return;
 
-  m_conditions.AddCondition(identifier, condition);
+  m_conditions.AddCondition(identifier, condition, data);
 }
   
 bool CSettingsManager::Serialize(TiXmlNode *parent) const

@@ -21,8 +21,10 @@
 
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "pictures/PictureScalingAlgorithm.h"
 #include "settings/lib/ISettingCallback.h"
 #include "settings/lib/ISettingsHandler.h"
 #include "utils/GlobalsHandling.h"
@@ -121,10 +123,10 @@ class CAdvancedSettings : public ISettingCallback, public ISettingsHandler
 
     static CAdvancedSettings* getInstance();
 
-    virtual void OnSettingsLoaded();
-    virtual void OnSettingsUnloaded();
+    virtual void OnSettingsLoaded() override;
+    virtual void OnSettingsUnloaded() override;
 
-    virtual void OnSettingChanged(const CSetting *setting);
+    virtual void OnSettingChanged(const CSetting *setting) override;
 
     void Initialize();
     bool Initialized() { return m_initialized; };
@@ -252,6 +254,7 @@ class CAdvancedSettings : public ISettingCallback, public ISettingsHandler
      */
     unsigned int GetThumbSize() const { return m_imageRes / 2; };
     bool m_useDDSFanart;
+    CPictureScalingAlgorithm::Algorithm m_imageScalingAlgorithm;
 
     int m_sambaclienttimeout;
     std::string m_sambadoscodepage;
@@ -265,11 +268,10 @@ class CAdvancedSettings : public ISettingCallback, public ISettingsHandler
     std::string m_fanartImages;
 
     int m_iMusicLibraryRecentlyAddedItems;
+    int m_iMusicLibraryDateAdded;
     bool m_bMusicLibraryAllItemsOnBottom;
-    bool m_bMusicLibraryAlbumsSortByArtistThenYear;
     bool m_bMusicLibraryCleanOnUpdate;
     std::string m_strMusicLibraryAlbumFormat;
-    std::string m_strMusicLibraryAlbumFormatRight;
     bool m_prioritiseAPEv2tags;
     std::string m_musicItemSeparator;
     std::string m_videoItemSeparator;
@@ -277,7 +279,6 @@ class CAdvancedSettings : public ISettingCallback, public ISettingsHandler
 
     bool m_bVideoLibraryAllItemsOnBottom;
     int m_iVideoLibraryRecentlyAddedItems;
-    bool m_bVideoLibraryHideEmptySeries;
     bool m_bVideoLibraryCleanOnUpdate;
     bool m_bVideoLibraryUseFastHash;
     bool m_bVideoLibraryExportAutoThumbs;
@@ -324,22 +325,10 @@ class CAdvancedSettings : public ISettingCallback, public ISettingsHandler
     int m_iSkipLoopFilter;
     float m_ForcedSwapTime; /* if nonzero, set's the explicit time in ms to allocate for buffer swap */
 
-    bool m_AllowD3D9Ex;
-    bool m_ForceD3D9Ex;
-    bool m_AllowDynamicTextures;
     unsigned int m_RestrictCapsMask;
     float m_sleepBeforeFlip; ///< if greather than zero, XBMC waits for raster to be this amount through the frame prior to calling the flip
     bool m_bVirtualShares;
-
-    float m_karaokeSyncDelayCDG; // seems like different delay is needed for CDG and MP3s
-    float m_karaokeSyncDelayLRC;
-    bool m_karaokeChangeGenreForKaraokeSongs;
-    bool m_karaokeKeepDelay; // store user-changed song delay in the database
-    int m_karaokeStartIndex; // auto-assign numbering start from this value
-    bool m_karaokeAlwaysEmptyOnCdgs; // always have empty background on CDG files
-    bool m_karaokeUseSongSpecificBackground; // use song-specific video or image if available instead of default
-    std::string m_karaokeDefaultBackgroundType; // empty string or "vis", "image" or "video"
-    std::string m_karaokeDefaultBackgroundFilePath; // only for "image" or "video" types above
+    bool m_bAllowDeferredRendering;
 
     std::string m_cpuTempCmd;
     std::string m_gpuTempCmd;
@@ -358,6 +347,7 @@ class CAdvancedSettings : public ISettingCallback, public ISettingsHandler
     DatabaseSettings m_databaseVideo; // advanced video database setup
     DatabaseSettings m_databaseTV;    // advanced tv database setup
     DatabaseSettings m_databaseEpg;   /*!< advanced EPG database setup */
+    DatabaseSettings m_databaseADSP;  /*!< advanced audio dsp database setup */
 
     bool m_guiVisualizeDirtyRegions;
     int  m_guiAlgorithmDirtyRegions;
@@ -383,6 +373,9 @@ class CAdvancedSettings : public ISettingCallback, public ISettingsHandler
 
     void SetDebugMode(bool debug);
 
+    //! \brief Toggles dirty-region visualization
+    void ToggleDirtyRegionVisualization() { m_guiVisualizeDirtyRegions = !m_guiVisualizeDirtyRegions; };
+
     // runtime settings which cannot be set from advancedsettings.xml
     std::string m_pictureExtensions;
     std::string m_videoExtensions;
@@ -407,4 +400,5 @@ class CAdvancedSettings : public ISettingCallback, public ISettingsHandler
     void setExtraLogLevel(const std::vector<CVariant> &components);
 };
 
-XBMC_GLOBAL(CAdvancedSettings,g_advancedSettings);
+XBMC_GLOBAL_REF(CAdvancedSettings,g_advancedSettings);
+#define g_advancedSettings XBMC_GLOBAL_USE(CAdvancedSettings)

@@ -18,12 +18,14 @@
  *
  */
 
-#include "utils/URIUtils.h"
-#include "settings/AdvancedSettings.h"
-#include "filesystem/MultiPathDirectory.h"
-#include "URL.h"
+#include <utility>
 
 #include "gtest/gtest.h"
+
+#include "filesystem/MultiPathDirectory.h"
+#include "settings/AdvancedSettings.h"
+#include "URL.h"
+#include "utils/URIUtils.h"
 
 using namespace XFILE;
 
@@ -281,16 +283,6 @@ TEST_F(TestURIUtils, IsHD)
   EXPECT_TRUE(URIUtils::IsHD("rar://path/to/file"));
 }
 
-TEST_F(TestURIUtils, IsHDHomeRun)
-{
-  EXPECT_TRUE(URIUtils::IsHDHomeRun("hdhomerun://path/to/file"));
-}
-
-TEST_F(TestURIUtils, IsSlingbox)
-{
-  EXPECT_TRUE(URIUtils::IsSlingbox("sling://path/to/file"));
-}
-
 TEST_F(TestURIUtils, IsInArchive)
 {
   EXPECT_TRUE(URIUtils::IsInArchive("zip://path/to/file"));
@@ -322,8 +314,6 @@ TEST_F(TestURIUtils, IsISO9660)
 
 TEST_F(TestURIUtils, IsLiveTV)
 {
-  EXPECT_TRUE(URIUtils::IsLiveTV("hdhomerun://path/to/file"));
-  EXPECT_TRUE(URIUtils::IsLiveTV("sling://path/to/file"));
   EXPECT_TRUE(URIUtils::IsLiveTV("sap://path/to/file"));
 }
 

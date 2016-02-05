@@ -95,8 +95,8 @@ public:
   CSysInfo(void);
   virtual ~CSysInfo();
 
-  virtual bool Load(const TiXmlNode *settings);
-  virtual bool Save(TiXmlNode *settings) const;
+  virtual bool Load(const TiXmlNode *settings) override;
+  virtual bool Save(TiXmlNode *settings) const override;
 
   char MD5_Sign[32 + 1];
 
@@ -109,8 +109,12 @@ public:
   static std::string GetOsVersion(void);
   static std::string GetOsPrettyNameWithVersion(void);
   static std::string GetUserAgent();
+  static std::string GetDeviceName();
+  static std::string GetVersion();
+  static std::string GetVersionShort();
+  static std::string GetBuildDate();
+
   bool HasInternet();
-  bool IsAppleTV2();
   bool HasVideoToolBoxDecoder();
   bool IsAeroDisabled();
   bool HasHW3DInterlaced();
@@ -142,9 +146,9 @@ public:
   static std::string GetUsedCompilerNameAndVer(void);
 
 protected:
-  virtual CJob *GetJob() const;
-  virtual std::string TranslateInfo(int info) const;
-  virtual void OnJobComplete(unsigned int jobID, bool success, CJob *job);
+  virtual CJob *GetJob() const override;
+  virtual std::string TranslateInfo(int info) const override;
+  virtual void OnJobComplete(unsigned int jobID, bool success, CJob *job) override;
 
 private:
   CSysData m_info;

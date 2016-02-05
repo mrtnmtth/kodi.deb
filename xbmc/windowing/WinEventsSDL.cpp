@@ -24,7 +24,7 @@
 #include "WinEvents.h"
 #include "WinEventsSDL.h"
 #include "Application.h"
-#include "ApplicationMessenger.h"
+#include "messaging/ApplicationMessenger.h"
 #include "GUIUserMessages.h"
 #include "settings/DisplaySettings.h"
 #include "guilib/GUIWindowManager.h"
@@ -45,6 +45,8 @@
 #include "input/XBMC_keysym.h"
 #include "utils/log.h"
 #endif
+
+using namespace KODI::MESSAGING;
 
 #if defined(TARGET_POSIX) && !defined(TARGET_DARWIN)
 // The following chunk of code is Linux specific. For keys that have
@@ -227,7 +229,7 @@ bool CWinEventsSDL::MessagePump()
     {
       case SDL_QUIT:
         if (!g_application.m_bStop) 
-          CApplicationMessenger::Get().Quit();
+          CApplicationMessenger::GetInstance().PostMsg(TMSG_QUIT);
         break;
 
 #ifdef HAS_SDL_JOYSTICK
@@ -238,7 +240,7 @@ bool CWinEventsSDL::MessagePump()
       case SDL_JOYHATMOTION:
       case SDL_JOYDEVICEADDED:
       case SDL_JOYDEVICEREMOVED:
-        CInputManager::Get().UpdateJoystick(event);
+        CInputManager::GetInstance().UpdateJoystick(event);
         ret = true;
         break;
 #endif
@@ -346,7 +348,7 @@ bool CWinEventsSDL::MessagePump()
       {
         if (0 == (SDL_GetAppState() & SDL_APPMOUSEFOCUS))
         {
-          CInputManager::Get().SetMouseActive(false);
+          CInputManager::GetInstance().SetMouseActive(false);
 #if defined(TARGET_DARWIN_OSX)
           // See CApplication::ProcessSlow() for a description as to why we call Cocoa_HideMouse.
           // this is here to restore the pointer when toggling back to window mode from fullscreen.
@@ -375,8 +377,8 @@ bool CWinEventsSDL::MessagePump()
         if(!g_Windowing.IsFullScreen())
         {
           int RES_SCREEN = g_Windowing.DesktopResolution(g_Windowing.GetCurrentScreen());
-          if((event.resize.w == CDisplaySettings::Get().GetResolutionInfo(RES_SCREEN).iWidth) &&
-              (event.resize.h == CDisplaySettings::Get().GetResolutionInfo(RES_SCREEN).iHeight))
+          if((event.resize.w == CDisplaySettings::GetInstance().GetResolutionInfo(RES_SCREEN).iWidth) &&
+              (event.resize.h == CDisplaySettings::GetInstance().GetResolutionInfo(RES_SCREEN).iHeight))
             break;
         }
         XBMC_Event newEvent;
@@ -439,7 +441,7 @@ bool CWinEventsSDL::ProcessOSXShortcuts(SDL_Event& event)
     {
     case SDLK_q:  // CMD-q to quit
       if (!g_application.m_bStop)
-        CApplicationMessenger::Get().Quit();
+        CApplicationMessenger::GetInstance().PostMsg(TMSG_QUIT);
       return true;
 
     case SDLK_f: // CMD-f to toggle fullscreen
@@ -455,7 +457,7 @@ bool CWinEventsSDL::ProcessOSXShortcuts(SDL_Event& event)
       return true;
 
     case SDLK_m: // CMD-m to minimize
-      CApplicationMessenger::Get().Minimize();
+      CApplicationMessenger::GetInstance().PostMsg(TMSG_MINIMIZE);
       return true;
 
     default:

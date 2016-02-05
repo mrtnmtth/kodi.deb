@@ -37,13 +37,16 @@
  * number of the tag reported by the PVR backend and can not be played!
  */
 
-#include "XBDateTime.h"
-#include "addons/include/xbmc_pvr_types.h"
-#include "utils/ISerializable.h"
-
 #include <memory>
 
+#include "addons/include/xbmc_pvr_types.h"
+#include "pvr/timers/PVRTimerType.h"
+#include "threads/CriticalSection.h"
+#include "utils/ISerializable.h"
+#include "XBDateTime.h"
+
 class CFileItem;
+class CVariant;
 
 namespace EPG
 {
@@ -90,15 +93,21 @@ namespace PVR
     void DisplayError(PVR_ERROR err) const;
 
     std::string GetStatus() const;
+    std::string GetTypeAsString() const;
 
     bool SetDuration(int iDuration);
 
-    static CPVRTimerInfoTagPtr CreateFromEpg(const EPG::CEpgInfoTagPtr &tag);
+    static CPVRTimerInfoTagPtr CreateFromEpg(const EPG::CEpgInfoTagPtr &tag, bool bRepeating = false);
     EPG::CEpgInfoTagPtr GetEpgInfoTag(void) const;
     /*!
      * @return True if this timer has a corresponding epg info tag, false otherwise
      */
     bool HasEpgInfoTag() const;
+
+    /*!
+     * @return True if this timer has corresponding epg info tag with series attributes, false otherwise
+     */
+    bool HasSeriesEpgInfoTag() const;
 
     int ChannelNumber(void) const;
     std::string ChannelName(void) const;
@@ -118,7 +127,46 @@ namespace PVR
         || m_state == PVR_TIMER_STATE_ERROR;
     }
 
+    /*!
+     * @return True if this timer won't result in a recording because it is broken for some reason, false otherwise
+     */
+    bool IsBroken(void) const
+    {
+      return m_state == PVR_TIMER_STATE_CONFLICT_NOK
+        || m_state == PVR_TIMER_STATE_ERROR;
+    }
+
     bool IsRecording(void) const { return m_state == PVR_TIMER_STATE_RECORDING; }
+
+    /*!
+      * @brief Checks whether this timer has a timer type.
+      * @return True if this timer has a timer type, false otherwise
+      */
+    bool HasTimerType(void) const { return m_timerType.get() != NULL; }
+
+    /*!
+      * @brief Gets the type of this timer.
+      * @return the timer type or NULL if this tag has no timer type.
+      */
+    const CPVRTimerTypePtr GetTimerType() const { return m_timerType; }
+
+    /*!
+      * @brief Sets the type of this timer.
+      * @param the new timer type.
+      */
+    void SetTimerType(const CPVRTimerTypePtr &type);
+
+    /*!
+      * @brief Checks whether this is a repeating (vs. one-shot) timer.
+      * @return True if this is a repeating timer, false otherwise.
+      */
+    bool IsRepeating(void) const { return m_timerType && m_timerType->IsRepeating(); }
+
+    /*!
+      * @brief Checks whether this is a manual (vs. epg-based) timer.
+      * @return True if this is a manual timer, false otherwise.
+      */
+    bool IsManual(void) const { return m_timerType && m_timerType->IsManual(); }
 
     CDateTime StartAsUTC(void) const;
     CDateTime StartAsLocalTime(void) const;
@@ -140,8 +188,6 @@ namespace PVR
 
     unsigned int MarginEnd(void) const { return m_iMarginEnd; }
     void SetMarginEnd(unsigned int iMinutes) { m_iMarginEnd = iMinutes; }
-
-    bool SupportsFolders() const;
 
     /*!
      * @brief Show a notification for this timer in the UI
@@ -174,34 +220,59 @@ namespace PVR
 
     void UpdateChannel(void);
 
-    std::string           m_strTitle;           /*!< @brief name of this timer */
-    std::string           m_strDirectory;       /*!< @brief directory where the recording must be stored */
-    std::string           m_strSummary;         /*!< @brief summary string with the time to show inside a GUI list */
-    PVR_TIMER_STATE       m_state;              /*!< @brief the state of this timer */
-    int                   m_iClientId;          /*!< @brief ID of the backend */
-    int                   m_iClientIndex;       /*!< @brief index number of the tag, given by the backend, -1 for new */
-    int                   m_iClientChannelUid;  /*!< @brief channel uid */
-    int                   m_iPriority;          /*!< @brief priority of the timer */
-    int                   m_iLifetime;          /*!< @brief lifetime of the timer in days */
-    bool                  m_bIsRepeating;       /*!< @brief repeating timer if true, use the m_FirstDay and repeat flags */
-    int                   m_iWeekdays;          /*!< @brief bit based store of weekdays to repeat */
-    std::string           m_strFileNameAndPath; /*!< @brief filename is only for reference */
-    int                   m_iChannelNumber;     /*!< @brief integer value of the channel number */
-    bool                  m_bIsRadio;           /*!< @brief is radio channel if set */
-    unsigned int          m_iTimerId;           /*!< @brief id that won't change as long as XBMC is running */
+    /*!
+     * @brief Return string representation for any possible combination of weekdays.
+     * @param iWeekdays weekdays as bit mask (0x01 = Mo, 0x02 = Tu, ...)
+     * @param bEpgBased context is an epg-based timer
+     * @param bLongMultiDaysFormat use long format. ("Mo-__-We-__-Fr-Sa-__" vs. "Mo-We-Fr-Sa")
+     * @return the weekdays string representation
+     */
+    static std::string GetWeekdaysString(unsigned int iWeekdays, bool bEpgBased, bool bLongMultiDaysFormat);
+
+    /*!
+     * @brief For timers scheduled by repeated timers, return the id of the parent.
+     * @return the id of the timer schedule or 0 in case the timer was not scheduled by a repeating timer.
+     */
+    unsigned int GetTimerScheduleId() const { return m_iParentClientIndex; }
+
+    std::string           m_strTitle;            /*!< @brief name of this timer */
+    std::string           m_strEpgSearchString;  /*!< @brief a epg data match string for repeating epg-based timers. Format is backend-dependent, for example regexp */
+    bool                  m_bFullTextEpgSearch;  /*!< @brief indicates whether only epg episode title can be matched by the pvr backend or "more" (backend-dependent") data. */
+    std::string           m_strDirectory;        /*!< @brief directory where the recording must be stored */
+    std::string           m_strSummary;          /*!< @brief summary string with the time to show inside a GUI list */
+    PVR_TIMER_STATE       m_state;               /*!< @brief the state of this timer */
+    int                   m_iClientId;           /*!< @brief ID of the backend */
+    unsigned int          m_iClientIndex;        /*!< @brief index number of the tag, given by the backend, PVR_TIMER_NO_CLIENT_INDEX for new */
+    unsigned int          m_iParentClientIndex;  /*!< @brief for timers scheduled by repeated timers, the index number of the parent, given by the backend, PVR_TIMER_NO_PARENT for no parent */
+    int                   m_iClientChannelUid;   /*!< @brief channel uid */
+    bool                  m_bStartAnyTime;       /*!< @brief Ignore start date and time clock. Record at 'Any Time' */
+    bool                  m_bEndAnyTime;         /*!< @brief Ignore end date and time clock. Record at 'Any Time' */
+    int                   m_iPriority;           /*!< @brief priority of the timer */
+    int                   m_iLifetime;           /*!< @brief lifetime of the timer in days */
+    int                   m_iMaxRecordings;      /*!< @brief (optional) backend setting for maximum number of recordings to keep*/
+    unsigned int          m_iWeekdays;           /*!< @brief bit based store of weekdays for repeating timers */
+    unsigned int          m_iPreventDupEpisodes; /*!< @brief only record new episodes for repeating epg based timers */
+    unsigned int          m_iRecordingGroup;     /*!< @brief (optional) if set, the addon/backend stores the recording to a group (sub-folder) */
+    std::string           m_strFileNameAndPath;  /*!< @brief file name is only for reference */
+    int                   m_iChannelNumber;      /*!< @brief integer value of the channel number */
+    bool                  m_bIsRadio;            /*!< @brief is radio channel if set */
+    unsigned int          m_iTimerId;            /*!< @brief id that won't change as long as XBMC is running */
 
     CPVRChannelPtr        m_channel;
-    unsigned int          m_iMarginStart;       /*!< @brief (optional) if set, the backend starts the recording iMarginStart minutes before startTime. */
-    unsigned int          m_iMarginEnd;         /*!< @brief (optional) if set, the backend ends the recording iMarginEnd minutes after endTime. */
-    std::vector<std::string> m_genre;           /*!< @brief genre of the timer */
-    int                   m_iGenreType;         /*!< @brief genre type of the timer */
-    int                   m_iGenreSubType;      /*!< @brief genre subtype of the timer */
+    unsigned int          m_iMarginStart;        /*!< @brief (optional) if set, the backend starts the recording iMarginStart minutes before startTime. */
+    unsigned int          m_iMarginEnd;          /*!< @brief (optional) if set, the backend ends the recording iMarginEnd minutes after endTime. */
+    std::vector<std::string> m_genre;            /*!< @brief genre of the timer */
+    int                   m_iGenreType;          /*!< @brief genre type of the timer */
+    int                   m_iGenreSubType;       /*!< @brief genre subtype of the timer */
 
   private:
+    std::string GetWeekdaysString() const;
+
     CCriticalSection      m_critSection;
     EPG::CEpgInfoTagPtr   m_epgTag;
     CDateTime             m_StartTime; /*!< start time */
     CDateTime             m_StopTime;  /*!< stop time */
-    CDateTime             m_FirstDay;  /*!< if it is a repeating timer the first date it starts */
+    CDateTime             m_FirstDay;  /*!< if it is a manual repeating timer the first date it starts */
+    CPVRTimerTypePtr      m_timerType; /*!< the type of this timer */
   };
 }

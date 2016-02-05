@@ -30,6 +30,7 @@
 using namespace XFILE;
 
 CSplash::CSplash()
+  : m_image(nullptr)
 {
 }
 
@@ -38,7 +39,7 @@ CSplash::~CSplash()
   delete m_image;
 }
 
-CSplash& CSplash::Get()
+CSplash& CSplash::GetInstance()
 {
   static CSplash instance;
   return instance;
@@ -53,7 +54,7 @@ void CSplash::Show()
       splashImage = "special://xbmc/media/Splash.png";
 
     m_image = new CGUIImage(0, 0, 0, 0, g_graphicsContext.GetWidth(), g_graphicsContext.GetHeight(), CTextureInfo(splashImage));
-    m_image->SetAspectRatio(CAspectRatio::AR_CENTER);
+    m_image->SetAspectRatio(CAspectRatio::AR_SCALE);
   }
 
   g_graphicsContext.Lock();

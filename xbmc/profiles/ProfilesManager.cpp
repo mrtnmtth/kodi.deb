@@ -18,6 +18,10 @@
  *
  */
 
+#include <algorithm>
+#include <string>
+#include <vector>
+
 #include "system.h"
 #include "ProfilesManager.h"
 #include "Application.h"
@@ -26,6 +30,7 @@
 #include "GUIInfoManager.h"
 #include "PasswordManager.h"
 #include "Util.h"
+#include "addons/Skin.h"
 #include "dialogs/GUIDialogOK.h"
 #include "dialogs/GUIDialogYesNo.h"
 #include "filesystem/Directory.h"
@@ -45,6 +50,7 @@
 #include "utils/log.h"
 #include "utils/StringUtils.h"
 #include "utils/URIUtils.h"
+#include "utils/Variant.h"
 #include "utils/XMLUtils.h"
 
 // TODO
@@ -60,20 +66,23 @@
 #define XML_NEXTID        "nextIdProfile"
 #define XML_PROFILE       "profile"
 
-using namespace std;
 using namespace XFILE;
 
 static CProfile EmptyProfile;
 
 CProfilesManager::CProfilesManager()
-  : m_usingLoginScreen(false), m_autoLoginProfile(-1), m_lastUsedProfile(0),
-    m_currentProfile(0), m_nextProfileId(0)
+  : m_usingLoginScreen(false),
+    m_profileLoadedForLogin(false),
+    m_autoLoginProfile(-1),
+    m_lastUsedProfile(0),
+    m_currentProfile(0),
+    m_nextProfileId(0)
 { }
 
 CProfilesManager::~CProfilesManager()
 { }
 
-CProfilesManager& CProfilesManager::Get()
+CProfilesManager& CProfilesManager::GetInstance()
 {
   static CProfilesManager sProfilesManager;
   return sProfilesManager;
@@ -82,11 +91,11 @@ CProfilesManager& CProfilesManager::Get()
 void CProfilesManager::OnSettingsLoaded()
 {
   // check them all
-  string strDir = CSettings::Get().GetString("system.playlistspath");
+  std::string strDir = CSettings::GetInstance().GetString(CSettings::SETTING_SYSTEM_PLAYLISTSPATH);
   if (strDir == "set default" || strDir.empty())
   {
     strDir = "special://profile/playlists/";
-    CSettings::Get().SetString("system.playlistspath", strDir.c_str());
+    CSettings::GetInstance().SetString(CSettings::SETTING_SYSTEM_PLAYLISTSPATH, strDir.c_str());
   }
 
   CDirectory::Create(strDir);
@@ -95,7 +104,7 @@ void CProfilesManager::OnSettingsLoaded()
   CDirectory::Create(URIUtils::AddFileToFolder(strDir,"mixed"));
 }
 
-void CProfilesManager::OnSettingsSaved()
+void CProfilesManager::OnSettingsSaved() const
 {
   // save mastercode
   Save();
@@ -185,7 +194,7 @@ bool CProfilesManager::Load(const std::string &file)
   return ret;
 }
 
-bool CProfilesManager::Save()
+bool CProfilesManager::Save() const
 {
   return Save(PROFILES_FILE);
 }
@@ -205,7 +214,7 @@ bool CProfilesManager::Save(const std::string &file) const
   XMLUtils::SetInt(pRoot, XML_AUTO_LOGIN, m_autoLoginProfile);
   XMLUtils::SetInt(pRoot, XML_NEXTID, m_nextProfileId);      
 
-  for (vector<CProfile>::const_iterator profile = m_profiles.begin(); profile != m_profiles.end(); ++profile)
+  for (std::vector<CProfile>::const_iterator profile = m_profiles.begin(); profile != m_profiles.end(); ++profile)
     profile->Save(pRoot);
 
   // save the file
@@ -216,6 +225,7 @@ void CProfilesManager::Clear()
 {
   CSingleLock lock(m_critical);
   m_usingLoginScreen = false;
+  m_profileLoadedForLogin = false;
   m_lastUsedProfile = 0;
   m_nextProfileId = 0;
   SetCurrentProfileId(0);
@@ -233,25 +243,31 @@ bool CProfilesManager::LoadProfile(size_t index)
   if (m_currentProfile == index)
     return true;
 
+  // save any settings of the currently used skin but only if the (master)
+  // profile hasn't just been loaded as a temporary profile for login
+  if (g_SkinInfo != nullptr && !m_profileLoadedForLogin)
+    g_SkinInfo->SaveSettings();
+
   // unload any old settings
-  CSettings::Get().Unload();
+  CSettings::GetInstance().Unload();
 
   SetCurrentProfileId(index);
+  m_profileLoadedForLogin = false;
 
   // load the new settings
-  if (!CSettings::Get().Load())
+  if (!CSettings::GetInstance().Load())
   {
     CLog::Log(LOGFATAL, "CProfilesManager: unable to load settings for profile \"%s\"", m_profiles.at(index).getName().c_str());
     return false;
   }
-  CSettings::Get().SetLoaded();
+  CSettings::GetInstance().SetLoaded();
 
   CreateProfileFolders();
 
-  CDatabaseManager::Get().Initialize();
+  CDatabaseManager::GetInstance().Initialize();
   CButtonTranslator::GetInstance().Load(true);
 
-  CInputManager::Get().SetMouseEnabled(CSettings::Get().GetBool("input.enablemouse"));
+  CInputManager::GetInstance().SetMouseEnabled(CSettings::GetInstance().GetBool(CSettings::SETTING_INPUT_ENABLEMOUSE));
 
   g_infoManager.ResetCache();
   g_infoManager.ResetLibraryBools();
@@ -261,8 +277,8 @@ bool CProfilesManager::LoadProfile(size_t index)
     CXBMCTinyXML doc;
     if (doc.LoadFile(URIUtils::AddFileToFolder(GetUserDataFolder(), "guisettings.xml")))
     {
-      CSettings::Get().LoadSetting(doc.RootElement(), "masterlock.maxretries");
-      CSettings::Get().LoadSetting(doc.RootElement(), "masterlock.startuplock");
+      CSettings::GetInstance().LoadSetting(doc.RootElement(), CSettings::SETTING_MASTERLOCK_MAXRETRIES);
+      CSettings::GetInstance().LoadSetting(doc.RootElement(), CSettings::SETTING_MASTERLOCK_STARTUPLOCK);
     }
   }
 
@@ -294,14 +310,12 @@ bool CProfilesManager::DeleteProfile(size_t index)
   if (dlgYesNo == NULL)
     return false;
 
-  string message;
-  string str = g_localizeStrings.Get(13201);
-  message = StringUtils::Format(str.c_str(), profile->getName().c_str());
-  dlgYesNo->SetHeading(13200);
-  dlgYesNo->SetLine(0, message);
-  dlgYesNo->SetLine(1, "");
-  dlgYesNo->SetLine(2, "");
-  dlgYesNo->DoModal();
+  std::string str = g_localizeStrings.Get(13201);
+  dlgYesNo->SetHeading(CVariant{13200});
+  dlgYesNo->SetLine(0, CVariant{StringUtils::Format(str.c_str(), profile->getName().c_str())});
+  dlgYesNo->SetLine(1, CVariant{""});
+  dlgYesNo->SetLine(2, CVariant{""});
+  dlgYesNo->Open();
 
   if (!dlgYesNo->IsConfirmed())
     return false;
@@ -311,14 +325,14 @@ bool CProfilesManager::DeleteProfile(size_t index)
     m_autoLoginProfile = 0;
 
   // delete profile
-  string strDirectory = profile->getDirectory();
+  std::string strDirectory = profile->getDirectory();
   m_profiles.erase(m_profiles.begin() + index);
 
   // fall back to master profile if necessary
   if (index == m_currentProfile)
   {
     LoadProfile(0);
-    CSettings::Get().Save();
+    CSettings::GetInstance().Save();
   }
 
   CFileItemPtr item = CFileItemPtr(new CFileItem(URIUtils::AddFileToFolder(GetUserDataFolder(), strDirectory)));
@@ -402,7 +416,7 @@ void CProfilesManager::AddProfile(const CProfile &profile)
   CSingleLock lock(m_critical);
   // data integrity check - covers off migration from old profiles.xml,
   // incrementing of the m_nextIdProfile,and bad data coming in
-  m_nextProfileId = max(m_nextProfileId, profile.getId() + 1);
+  m_nextProfileId = std::max(m_nextProfileId, profile.getId() + 1);
 
   m_profiles.push_back(profile);
 }
@@ -420,7 +434,12 @@ void CProfilesManager::LoadMasterProfileForLogin()
   // save the previous user
   m_lastUsedProfile = m_currentProfile;
   if (m_currentProfile != 0)
+  {
     LoadProfile(0);
+
+    // remember that the (master) profile has only been loaded for login
+    m_profileLoadedForLogin = true;
+  }
 }
 
 bool CProfilesManager::GetProfileName(const size_t profileId, std::string& name) const

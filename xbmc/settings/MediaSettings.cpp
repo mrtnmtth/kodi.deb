@@ -18,6 +18,8 @@
  *
  */
 
+#include <string>
+
 #include <limits.h>
 
 #include "MediaSettings.h"
@@ -25,19 +27,26 @@
 #include "PlayListPlayer.h"
 #include "dialogs/GUIDialogContextMenu.h"
 #include "dialogs/GUIDialogFileBrowser.h"
-#include "dialogs/GUIDialogYesNo.h"
-#include "interfaces/Builtins.h"
+#include "interfaces/builtins/Builtins.h"
 #include "music/MusicDatabase.h"
+#include "messaging/ApplicationMessenger.h"
+#include "messaging/helpers/DialogHelper.h"
 #include "profiles/ProfilesManager.h"
 #include "settings/lib/Setting.h"
+#include "settings/Settings.h"
 #include "storage/MediaManager.h"
 #include "threads/SingleLock.h"
+#include "utils/StringUtils.h"
 #include "utils/URIUtils.h"
 #include "utils/XBMCTinyXML.h"
 #include "utils/XMLUtils.h"
+#include "utils/Variant.h"
 #include "video/VideoDatabase.h"
+#include "cores/AudioEngine/DSPAddons/ActiveAEDSP.h"
 
-using namespace std;
+using namespace KODI::MESSAGING;
+
+using KODI::MESSAGING::HELPERS::DialogResponse;
 
 CMediaSettings::CMediaSettings()
 {
@@ -61,7 +70,7 @@ CMediaSettings::CMediaSettings()
 CMediaSettings::~CMediaSettings()
 { }
 
-CMediaSettings& CMediaSettings::Get()
+CMediaSettings& CMediaSettings::GetInstance()
 {
   static CMediaSettings sMediaSettings;
   return sMediaSettings;
@@ -131,6 +140,31 @@ bool CMediaSettings::Load(const TiXmlNode *settings)
       m_defaultVideoSettings.m_StereoMode = 0;
 
     m_defaultVideoSettings.m_SubtitleCached = false;
+  }
+
+  pElement = settings->FirstChildElement("defaultaudiosettings");
+  if (pElement != NULL)
+  {
+    if (!XMLUtils::GetInt(pElement, "masterstreamtype", m_defaultAudioSettings.m_MasterStreamType))
+      m_defaultAudioSettings.m_MasterStreamType = AE_DSP_ASTREAM_AUTO;
+    if (!XMLUtils::GetInt(pElement, "masterstreamtypesel", m_defaultAudioSettings.m_MasterStreamTypeSel))
+      m_defaultAudioSettings.m_MasterStreamTypeSel = AE_DSP_ASTREAM_AUTO;
+    if (!XMLUtils::GetInt(pElement, "masterstreambase", m_defaultAudioSettings.m_MasterStreamBase))
+      m_defaultAudioSettings.m_MasterStreamBase = AE_DSP_ABASE_STEREO;
+
+    std::string strTag;
+    for (int type = AE_DSP_ASTREAM_BASIC; type < AE_DSP_ASTREAM_MAX; type++)
+    {
+      for (int base = AE_DSP_ABASE_STEREO; base < AE_DSP_ABASE_MAX; base++)
+      {
+        int tmp;
+        strTag = StringUtils::Format("masterprocess_%i_%i", type, base);
+        if (XMLUtils::GetInt(pElement, strTag.c_str(), tmp))
+          m_defaultAudioSettings.m_MasterModes[type][base] = tmp;
+        else
+          m_defaultAudioSettings.m_MasterModes[type][base] = 0;
+      }
+    }
   }
 
   // mymusic settings
@@ -213,6 +247,26 @@ bool CMediaSettings::Save(TiXmlNode *settings) const
   XMLUtils::SetBoolean(pNode, "nonlinstretch", m_defaultVideoSettings.m_CustomNonLinStretch);
   XMLUtils::SetInt(pNode, "stereomode", m_defaultVideoSettings.m_StereoMode);
 
+  // default audio settings for dsp addons
+  TiXmlElement audioSettingsNode("defaultaudiosettings");
+  pNode = settings->InsertEndChild(audioSettingsNode);
+  if (pNode == NULL)
+    return false;
+
+  XMLUtils::SetInt(pNode, "masterstreamtype", m_defaultAudioSettings.m_MasterStreamType);
+  XMLUtils::SetInt(pNode, "masterstreamtypesel", m_defaultAudioSettings.m_MasterStreamTypeSel);
+  XMLUtils::SetInt(pNode, "masterstreambase", m_defaultAudioSettings.m_MasterStreamBase);
+
+  std::string strTag;
+  for (int type = AE_DSP_ASTREAM_BASIC; type < AE_DSP_ASTREAM_MAX; type++)
+  {
+    for (int base = AE_DSP_ABASE_STEREO; base < AE_DSP_ABASE_MAX; base++)
+    {
+      strTag = StringUtils::Format("masterprocess_%i_%i", type, base);
+      XMLUtils::SetInt(pNode, strTag.c_str(), m_defaultAudioSettings.m_MasterModes[type][base]);
+    }
+  }
+
   // mymusic
   pNode = settings->FirstChild("mymusic");
   if (pNode == NULL)
@@ -264,62 +318,21 @@ void CMediaSettings::OnSettingAction(const CSetting *setting)
     return;
 
   const std::string &settingId = setting->GetId();
-  if (settingId == "karaoke.export")
+  if (settingId == CSettings::SETTING_MUSICLIBRARY_CLEANUP)
   {
-    CContextButtons choices;
-    choices.Add(1, g_localizeStrings.Get(22034));
-    choices.Add(2, g_localizeStrings.Get(22035));
-
-    int retVal = CGUIDialogContextMenu::ShowAndGetChoice(choices);
-    if ( retVal > 0 )
-    {
-      std::string path(CProfilesManager::Get().GetDatabaseFolder());
-      VECSOURCES shares;
-      g_mediaManager.GetLocalDrives(shares);
-      if (CGUIDialogFileBrowser::ShowAndGetDirectory(shares, g_localizeStrings.Get(661), path, true))
-      {
-        CMusicDatabase musicdatabase;
-        musicdatabase.Open();
-
-        if ( retVal == 1 )
-        {
-          path = URIUtils::AddFileToFolder(path, "karaoke.html");
-          musicdatabase.ExportKaraokeInfo( path, true );
-        }
-        else
-        {
-          path = URIUtils::AddFileToFolder(path, "karaoke.csv");
-          musicdatabase.ExportKaraokeInfo( path, false );
-        }
-        musicdatabase.Close();
-      }
-    }
-  }
-  else if (settingId == "karaoke.importcsv")
-  {
-    std::string path(CProfilesManager::Get().GetDatabaseFolder());
-    VECSOURCES shares;
-    g_mediaManager.GetLocalDrives(shares);
-    if (CGUIDialogFileBrowser::ShowAndGetFile(shares, "karaoke.csv", g_localizeStrings.Get(651) , path))
-    {
-      CMusicDatabase musicdatabase;
-      musicdatabase.Open();
-      musicdatabase.ImportKaraokeInfo(path);
-      musicdatabase.Close();
-    }
-  }
-  else if (settingId == "musiclibrary.cleanup")
-  {
-    if (CGUIDialogYesNo::ShowAndGetInput(313, 333))
+    if (HELPERS::ShowYesNoDialogText(CVariant{313}, CVariant{333}) == DialogResponse::YES)
       g_application.StartMusicCleanup(true);
   }
-  else if (settingId == "musiclibrary.export")
-    CBuiltins::Execute("exportlibrary(music)");
-  else if (settingId == "musiclibrary.import")
+  else if (settingId == CSettings::SETTING_MUSICLIBRARY_EXPORT)
+    CBuiltins::GetInstance().Execute("exportlibrary(music)");
+  else if (settingId == CSettings::SETTING_MUSICLIBRARY_IMPORT)
   {
     std::string path;
     VECSOURCES shares;
     g_mediaManager.GetLocalDrives(shares);
+    g_mediaManager.GetNetworkLocations(shares);
+    g_mediaManager.GetRemovableDrives(shares);
+
     if (CGUIDialogFileBrowser::ShowAndGetFile(shares, "musicdb.xml", g_localizeStrings.Get(651) , path))
     {
       CMusicDatabase musicdatabase;
@@ -328,18 +341,21 @@ void CMediaSettings::OnSettingAction(const CSetting *setting)
       musicdatabase.Close();
     }
   }
-  else if (settingId == "videolibrary.cleanup")
+  else if (settingId == CSettings::SETTING_VIDEOLIBRARY_CLEANUP)
   {
-    if (CGUIDialogYesNo::ShowAndGetInput(313, 333))
+    if (HELPERS::ShowYesNoDialogText(CVariant{313}, CVariant{333}) == DialogResponse::YES)
       g_application.StartVideoCleanup(true);
   }
-  else if (settingId == "videolibrary.export")
-    CBuiltins::Execute("exportlibrary(video)");
-  else if (settingId == "videolibrary.import")
+  else if (settingId == CSettings::SETTING_VIDEOLIBRARY_EXPORT)
+    CBuiltins::GetInstance().Execute("exportlibrary(video)");
+  else if (settingId == CSettings::SETTING_VIDEOLIBRARY_IMPORT)
   {
     std::string path;
     VECSOURCES shares;
     g_mediaManager.GetLocalDrives(shares);
+    g_mediaManager.GetNetworkLocations(shares);
+    g_mediaManager.GetRemovableDrives(shares);
+
     if (CGUIDialogFileBrowser::ShowAndGetDirectory(shares, g_localizeStrings.Get(651) , path))
     {
       CVideoDatabase videodatabase;

@@ -35,7 +35,6 @@
 #include "utils/URIUtils.h"
 #include "URL.h"
 
-using namespace std;
 using namespace XFILE;
 
 #define TIME_TO_BUSY_DIALOG 500
@@ -172,29 +171,32 @@ bool CDirectory::GetDirectory(const CURL& url, CFileItemList &items, const CHint
           if(!get.Wait(TIME_TO_BUSY_DIALOG))
           {
             CGUIDialogBusy* dialog = (CGUIDialogBusy*)g_windowManager.GetWindow(WINDOW_DIALOG_BUSY);
-            dialog->Show();
-
-            while(!get.Wait(10))
+            if (dialog)
             {
-              CSingleLock lock(g_graphicsContext);
+              dialog->Open();
 
-              // update progress
-              float progress = pDirectory->GetProgress();
-              if (progress > 0)
-                dialog->SetProgress(progress);
-
-              if(dialog->IsCanceled())
+              while(!get.Wait(10))
               {
-                cancel = true;
-                pDirectory->CancelDirectory();
-                break;
+                CSingleLock lock(g_graphicsContext);
+
+                // update progress
+                float progress = pDirectory->GetProgress();
+                if (progress > 0)
+                  dialog->SetProgress(progress);
+
+                if (dialog->IsCanceled())
+                {
+                  cancel = true;
+                  pDirectory->CancelDirectory();
+                  break;
+                }
+
+                lock.Leave(); // prevent an occasional deadlock on exit
+                g_windowManager.ProcessRenderLoop(false);
               }
 
-              lock.Leave(); // prevent an occasional deadlock on exit
-              g_windowManager.ProcessRenderLoop(false);
-            }
-            if(dialog)
               dialog->Close();
+            }
           }
           result = get.GetDirectory(items);
         }
@@ -234,7 +236,7 @@ bool CDirectory::GetDirectory(const CURL& url, CFileItemList &items, const CHint
     }
     // filter hidden files
     // TODO: we shouldn't be checking the gui setting here, callers should use getHidden instead
-    if (!CSettings::Get().GetBool("filelists.showhidden") && !(hints.flags & DIR_FLAG_GET_HIDDEN))
+    if (!CSettings::GetInstance().GetBool(CSettings::SETTING_FILELISTS_SHOWHIDDEN) && !(hints.flags & DIR_FLAG_GET_HIDDEN))
     {
       for (int i = 0; i < items.Size(); ++i)
       {
@@ -285,7 +287,7 @@ bool CDirectory::Create(const CURL& url)
   try
   {
     CURL realURL = URIUtils::SubstitutePath(url);
-    unique_ptr<IDirectory> pDirectory(CDirectoryFactory::Create(realURL));
+    std::unique_ptr<IDirectory> pDirectory(CDirectoryFactory::Create(realURL));
     if (pDirectory.get())
       if(pDirectory->Create(realURL))
         return true;
@@ -320,7 +322,7 @@ bool CDirectory::Exists(const CURL& url, bool bUseCache /* = true */)
       if (bPathInCache)
         return false;
     }
-    unique_ptr<IDirectory> pDirectory(CDirectoryFactory::Create(realURL));
+    std::unique_ptr<IDirectory> pDirectory(CDirectoryFactory::Create(realURL));
     if (pDirectory.get())
       return pDirectory->Exists(realURL);
   }
@@ -344,7 +346,7 @@ bool CDirectory::Remove(const CURL& url)
   try
   {
     CURL realURL = URIUtils::SubstitutePath(url);
-    unique_ptr<IDirectory> pDirectory(CDirectoryFactory::Create(realURL));
+    std::unique_ptr<IDirectory> pDirectory(CDirectoryFactory::Create(realURL));
     if (pDirectory.get())
       if(pDirectory->Remove(realURL))
       {
@@ -368,7 +370,7 @@ void CDirectory::FilterFileDirectories(CFileItemList &items, const std::string &
     CFileItemPtr pItem=items[i];
     if (!pItem->m_bIsFolder && pItem->IsFileFolder(EFILEFOLDER_TYPE_ALWAYS))
     {
-      unique_ptr<IFileDirectory> pDirectory(CFileDirectoryFactory::Create(pItem->GetURL(),pItem.get(),mask));
+      std::unique_ptr<IFileDirectory> pDirectory(CFileDirectoryFactory::Create(pItem->GetURL(),pItem.get(),mask));
       if (pDirectory.get())
         pItem->m_bIsFolder = true;
       else

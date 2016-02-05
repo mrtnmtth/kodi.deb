@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/xbmc/xbmc.svg?branch=Jarvis)](https://travis-ci.org/xbmc/xbmc)
+
 #### About
 
 Kodi is an award-winning free and open source (GPL) software media player and
@@ -43,6 +45,7 @@ See [docs/README.xxx] (https://github.com/xbmc/xbmc/tree/master/docs) for specif
 ##### Useful links
 
 * [Kodi wiki] (http://kodi.wiki/)
+* [Kodi bug tracker] (http://trac.kodi.tv)
 * [Kodi community forums] (http://forum.kodi.tv/)
 * [Kodi website] (http://kodi.tv)
 

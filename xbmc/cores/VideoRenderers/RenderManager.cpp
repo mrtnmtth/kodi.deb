@@ -32,7 +32,7 @@
 #include "utils/StringUtils.h"
 
 #include "Application.h"
-#include "ApplicationMessenger.h"
+#include "messaging/ApplicationMessenger.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/MediaSettings.h"
 #include "settings/Settings.h"
@@ -62,7 +62,10 @@
   #include "../dvdplayer/DVDCodecs/Video/VAAPI.h"
 #endif
 
+using namespace KODI::MESSAGING;
+
 #define MAXPRESENTDELAY 0.500
+
 
 /* at any point we want an exclusive lock on rendermanager */
 /* we must make sure we don't have a graphiccontext lock */
@@ -267,7 +270,7 @@ bool CXBMCRenderManager::Configure(unsigned int width, unsigned int height, unsi
     if( flags & CONF_FLAGS_FULLSCREEN )
     {
       lock.Leave();
-      CApplicationMessenger::Get().SwitchToFullscreen();
+      CApplicationMessenger::GetInstance().PostMsg(TMSG_SWITCHTOFULLSCREEN);
       lock.Enter();
     }
     lock2.Enter();
@@ -499,9 +502,8 @@ bool CXBMCRenderManager::Flush()
   }
   else
   {
-    ThreadMessage msg = {TMSG_RENDERER_FLUSH};
     m_flushEvent.Reset();
-    CApplicationMessenger::Get().SendMessage(msg, false);
+    CApplicationMessenger::GetInstance().PostMsg(TMSG_RENDERER_FLUSH);
     if (!m_flushEvent.WaitMSec(1000))
     {
       CLog::Log(LOGERROR, "%s - timed out waiting for renderer to flush", __FUNCTION__);
@@ -683,8 +685,8 @@ void CXBMCRenderManager::FlipPage(volatile bool& bStop, double timestamp /* = 0L
 
     EPRESENTMETHOD presentmethod;
 
-    EDEINTERLACEMODE deinterlacemode = CMediaSettings::Get().GetCurrentVideoSettings().m_DeinterlaceMode;
-    EINTERLACEMETHOD interlacemethod = AutoInterlaceMethodInternal(CMediaSettings::Get().GetCurrentVideoSettings().m_InterlaceMethod);
+    EDEINTERLACEMODE deinterlacemode = CMediaSettings::GetInstance().GetCurrentVideoSettings().m_DeinterlaceMode;
+    EINTERLACEMETHOD interlacemethod = AutoInterlaceMethodInternal(CMediaSettings::GetInstance().GetCurrentVideoSettings().m_InterlaceMethod);
 
     if(g_advancedSettings.m_videoDisableBackgroundDeinterlace && !g_graphicsContext.IsFullScreenVideo())
       deinterlacemode = VS_DEINTERLACEMODE_OFF;
@@ -774,7 +776,7 @@ float CXBMCRenderManager::GetMaximumFPS()
 {
   float fps;
 
-  if (CSettings::Get().GetInt("videoscreen.vsync") != VSYNC_DISABLED)
+  if (CSettings::GetInstance().GetInt(CSettings::SETTING_VIDEOSCREEN_VSYNC) != VSYNC_DISABLED)
   {
     fps = (float)g_VideoReferenceClock.GetRefreshRate();
     if (fps <= 0) fps = g_graphicsContext.GetFPS();
@@ -989,10 +991,6 @@ int CXBMCRenderManager::AddVideoPicture(DVDVideoPicture& pic)
   {
     CDVDCodecUtils::CopyYUV422PackedPicture(&image, &pic);
   }
-  else if(pic.format == RENDER_FMT_DXVA)
-  {
-    CDVDCodecUtils::CopyDXVA2Picture(&image, &pic);
-  }
 #ifdef HAVE_LIBVDPAU
   else if(pic.format == RENDER_FMT_VDPAU
        || pic.format == RENDER_FMT_VDPAU_420)
@@ -1020,7 +1018,7 @@ int CXBMCRenderManager::AddVideoPicture(DVDVideoPicture& pic)
     m_pRenderer->AddProcessor(pic.stf, pic.eglimg, index);
 #endif
 #if defined(TARGET_ANDROID)
-  else if(pic.format == RENDER_FMT_MEDIACODEC)
+  else if(pic.format == RENDER_FMT_MEDIACODEC || pic.format == RENDER_FMT_MEDIACODECSURFACE)
     m_pRenderer->AddProcessor(pic.mediacodec, index);
 #endif
 #ifdef HAS_IMXVPU
@@ -1146,7 +1144,7 @@ int CXBMCRenderManager::WaitForBuffer(volatile bool& bStop, int timeout)
   m_overlays.Release(m_free.front());
 
   // return buffer level
-  return m_queued.size() + m_discard.size();;
+  return m_queued.size() + m_discard.size();
 }
 
 void CXBMCRenderManager::PrepareNextRender()

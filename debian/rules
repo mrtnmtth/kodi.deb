@@ -93,7 +93,7 @@ DEJAVUSANS=/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf
 endif
 
 override_dh_auto_configure: configure
-	sed -i 's/DEB_VERSION/"'$(VERSION)'"/' xbmc/GUIInfoManager.cpp xbmc/Application.cpp
+	sed -i 's/DEB_VERSION/"'$(VERSION)'"/' xbmc/utils/SystemInfo.cpp
 	mkdir -p xbmc/visualizations/XBMCProjectM/libprojectM/fonts
 	-ln -s /usr/share/fonts/truetype/ttf-bitstream-vera/Vera.ttf xbmc/visualizations/XBMCProjectM/libprojectM/fonts/
 	-ln -s /usr/share/fonts/truetype/ttf-bitstream-vera/VeraMono.ttf xbmc/visualizations/XBMCProjectM/libprojectM/fonts/

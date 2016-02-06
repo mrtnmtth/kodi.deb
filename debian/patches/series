@@ -1,5 +1,4 @@
 0001-arm64-Fix-build-breakages-due-to-architecture-specif.patch
-01_reproducible_build.patch
 02_allow_all_arches.patch
 03-privacy.patch
 04-differentiate-from-vanilla-Kodi.patch
@@ -7,6 +6,5 @@
 06-use-external-libraries.patch
 07-use-system-groovy.patch
 08-fix-s390x-build.patch
-09-use-correct-ftgl.h.patch
 10-dont-use-omitted-files.patch
 11-build-with-ffmpeg-2.9.patch

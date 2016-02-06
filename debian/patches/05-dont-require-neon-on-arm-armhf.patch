@@ -5,11 +5,9 @@ Description: Don't use NEON on arm and armhf architectures
 Author: Balint Reczey <balint@balintreczey.hu>
 Forwarded: not-needed
 
-diff --git a/configure.ac b/configure.ac
-index 1f94a25..377cc1a 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -685,7 +685,7 @@ case $host in
+@@ -650,7 +650,7 @@
       ARCH="arm"
       use_arch="arm"
       use_joystick=no

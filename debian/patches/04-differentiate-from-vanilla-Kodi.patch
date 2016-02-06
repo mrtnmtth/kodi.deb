@@ -1,8 +1,8 @@
 --- a/addons/skin.confluence/720p/Home.xml
 +++ b/addons/skin.confluence/720p/Home.xml
-@@ -27,6 +27,18 @@
- 			<include>Window_OpenClose_Animation</include>
- 			<visible>!Skin.HasSetting(homepageWeatherinfo)</visible>
+@@ -19,6 +19,18 @@
+ 			<animation effect="slide" time="200" condition="Window.Previous(Home)">WindowOpen</animation>
+ 			<animation effect="slide" time="200" condition="Window.Next(Home)">WindowClose</animation>
  		</control>
 +		<control type="image">
 +			<description>LOGO2</description>
@@ -18,10 +18,21 @@
 +		</control>
  		<!-- Music Info -->
  		<control type="group">
- 			<left>0</left>
---- a/xbmc/GUIInfoManager.cpp
-+++ b/xbmc/GUIInfoManager.cpp
-@@ -4348,12 +4348,12 @@
+ 			<depth>DepthMenu</depth>
+diff --git a/xbmc/utils/SystemInfo.cpp b/xbmc/utils/SystemInfo.cpp
+index d38502c..e5f7597 100644
+--- a/xbmc/utils/SystemInfo.cpp
++++ b/xbmc/utils/SystemInfo.cpp
+@@ -436,7 +436,7 @@ bool CSysInfo::Save(TiXmlNode *settings) const
+ const std::string& CSysInfo::GetAppName(void)
+ {
+   assert(CCompileInfo::GetAppName() != NULL);
+-  static const std::string appName(CCompileInfo::GetAppName());
++  static const std::string appName(StringUtils::Format("%s from Debian", CCompileInfo::GetAppName()));
+ 
+   return appName;
+ }
+@@ -1244,12 +1244,12 @@ std::string CSysInfo::GetVersionShort()
    if (strlen(CCompileInfo::GetSuffix()) == 0)
      return StringUtils::Format("%d.%d", CCompileInfo::GetMajor(), CCompileInfo::GetMinor());
    else
@@ -29,19 +40,10 @@
 +    return StringUtils::Format("%d.%d-%s Debian package version:%s", CCompileInfo::GetMajor(), CCompileInfo::GetMinor(), CCompileInfo::GetSuffix(), DEB_VERSION);
  }
  
- std::string CGUIInfoManager::GetVersion()
+ std::string CSysInfo::GetVersion()
  {
 -  return GetVersionShort() + " Git:" + CCompileInfo::GetSCMID();
-+  return GetVersionShort() + " Git: (unknown)";
++  return GetVersionShort() + " Git:unknown)";
  }
  
- std::string CGUIInfoManager::GetBuild()
-@@ -4363,7 +4363,7 @@
- 
- std::string CGUIInfoManager::GetAppName()
- {
--  return CCompileInfo::GetAppName();
-+  return StringUtils::Format("%s from Debian", CCompileInfo::GetAppName());
- }
- 
- void CGUIInfoManager::SetDisplayAfterSeek(unsigned int timeOut, int seekOffset)
+ std::string CSysInfo::GetBuildDate()

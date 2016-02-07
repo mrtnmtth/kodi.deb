@@ -21,7 +21,6 @@ Files-Excluded: addons/service.xbmc.versioncheck
  lib/libdvd/libdvdcss
  lib/libdvd/libdvdnav/msvc
  lib/libdvd/libdvdread/msvc
- lib/libhdhomerun
  lib/libmpeg2
  lib/librtmp
  lib/libUPnP/Neptune/ThirdParty/zlib-*

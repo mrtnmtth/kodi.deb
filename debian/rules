@@ -35,11 +35,6 @@ ARCH_SPECIFIC_LIB_RECOMMENDS += $(ARCH_SPECIFIC_LIB_RECOMMENDS_ADD)
 # Various environment variables to set
 export DEB_LDFLAGS_MAINT_APPEND = $(shell pkg-config --libs ftgl) -latomic
 
-# fall back to old location of libhdhomerun includes if needed
-ifneq ("$(wildcard /usr/lib/libhdhomerun/hdhomerun.h)","")
-export DEB_CXXFLAGS_MAINT_APPEND = -I/usr/lib/
-endif
-
 # List of options to pass to configure. Can be overridden.
 # Extra options can simply be passed using KODI_CONFIG_EXTRA_OPTIONS env
 # variable.
@@ -146,7 +141,6 @@ debian/tmp/kodi-bin-recommends-dummy.so:
 		-lbluray \
 		-lcec \
 		-lFLAC \
-		-lhdhomerun \
 		-lmad \
 		-lmodplug \
 		-lmp3lame \

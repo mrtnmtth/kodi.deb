@@ -33,7 +33,7 @@ endif
 ARCH_SPECIFIC_LIB_RECOMMENDS += $(ARCH_SPECIFIC_LIB_RECOMMENDS_ADD)
 
 # Various environment variables to set
-export DEB_LDFLAGS_MAINT_APPEND = $(shell pkg-config --libs ftgl) -latomic
+export DEB_LDFLAGS_MAINT_APPEND = -latomic
 
 # List of options to pass to configure. Can be overridden.
 # Extra options can simply be passed using KODI_CONFIG_EXTRA_OPTIONS env
@@ -89,9 +89,6 @@ endif
 
 override_dh_auto_configure: configure
 	sed -i 's/DEB_VERSION/"'$(VERSION)'"/' xbmc/utils/SystemInfo.cpp
-	mkdir -p xbmc/visualizations/XBMCProjectM/libprojectM/fonts
-	-ln -s /usr/share/fonts/truetype/ttf-bitstream-vera/Vera.ttf xbmc/visualizations/XBMCProjectM/libprojectM/fonts/
-	-ln -s /usr/share/fonts/truetype/ttf-bitstream-vera/VeraMono.ttf xbmc/visualizations/XBMCProjectM/libprojectM/fonts/
 	fontforge -script $(CURDIR)/debian/mergefonts.ff \
 		/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf \
 		$(DEJAVUSANS) \
@@ -114,13 +111,6 @@ override_dh_install:
 		-XDejaVuSans.ttf -XDejaVuSans-Bold.ttf -XLICENSE.txt \
 		-XRoboto-Bold.ttf -XRoboto-Regular.ttf -XNOTICE.txt \
 		-Xjquery-1.8.2.min.js -Xiscroll-min.js
-
-override_dh_makeshlibs:
-	# We don't install shared libraries in standard locations so don't run
-	# dh_makeshlibs
-	# OTOH we need to remove exec flag after dh_strip
-	chmod -x $(CURDIR)/debian/tmp/usr/lib/*/kodi/addons/visualization.*/*.vis
-	-chmod -x $(CURDIR)/debian/tmp/usr/lib/*/kodi/addons/screensaver.rsxs.*/*.xbs
 
 override_dh_shlibdeps: debian/tmp/kodi-bin-depends-dummy.so debian/tmp/kodi-bin-recommends-dummy.so
 	dh_shlibdeps -a -O--parallel \

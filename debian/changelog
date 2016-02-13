@@ -1,9 +1,18 @@
 kodi (16.0~rc3+dfsg1-1) UNRELEASED; urgency=medium
 
   * New upstream release candidate 16.0 RC3
+    (Closes: #792299) (CVE-2015-3885)
     See http://kodi.tv/kodi-16-0-jarvis-release-candidate-3/
+  * Refresh patches
+  * Don't use libcadec, wait for the codec to be included in FFmpeg instead
+  * Drop libhdhomerun-dev build dependency
+  * Add libcrossguid-dev and uuid-dev as build-dependencies
+  * Drop workarounds for screensavers dropped by upstream
+  * Use hinted Roboto fonts adapting to their new location in filesystem
+  * Enable PIE
+  * Make C-Pluff build with PIC only enabling PIE-enabled build to succeed
 
- -- Balint Reczey <balint@balintreczey.hu>  Fri, 05 Feb 2016 22:54:06 +0100
+ -- Balint Reczey <balint@balintreczey.hu>  Sat, 13 Feb 2016 17:53:08 +0100
 
 kodi (15.2+dfsg1-3) unstable; urgency=medium
 

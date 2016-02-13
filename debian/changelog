@@ -1,4 +1,4 @@
-kodi (16.0~rc3+dfsg1-1) UNRELEASED; urgency=medium
+kodi (16.0~rc3+dfsg2-1) experimental; urgency=medium
 
   * New upstream release candidate 16.0 RC3
     (Closes: #792299) (CVE-2015-3885)
@@ -11,8 +11,9 @@ kodi (16.0~rc3+dfsg1-1) UNRELEASED; urgency=medium
   * Use hinted Roboto fonts adapting to their new location in filesystem
   * Enable PIE
   * Make C-Pluff build with PIC only enabling PIE-enabled build to succeed
+  * Update debian/copyright for 16.0 RC3 changes
 
- -- Balint Reczey <balint@balintreczey.hu>  Sat, 13 Feb 2016 17:53:08 +0100
+ -- Balint Reczey <balint@balintreczey.hu>  Sat, 13 Feb 2016 22:53:08 +0100
 
 kodi (15.2+dfsg1-3) unstable; urgency=medium
 

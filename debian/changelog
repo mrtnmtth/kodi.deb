@@ -1,3 +1,10 @@
+kodi (16.0+dfsg1-1) UNRELEASED; urgency=medium
+
+  * New upstream version 16.0
+    See https://kodi.tv/kodi-16-0-jarvis-mark-xvi/
+
+ -- Balint Reczey <balint@balintreczey.hu>  Mon, 22 Feb 2016 23:08:18 +0100
+
 kodi (16.0~rc3+dfsg2-1) experimental; urgency=medium
 
   * New upstream release candidate 16.0 RC3

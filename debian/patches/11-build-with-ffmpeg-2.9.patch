@@ -129,7 +129,7 @@ Forwarded: https://github.com/xbmc/xbmc/pull/8112
        uint8_t *src[]  = { im->plane[0], im->plane[1], im->plane[2], 0 };
 --- a/xbmc/cores/VideoRenderers/WinRenderer.cpp
 +++ b/xbmc/cores/VideoRenderers/WinRenderer.cpp
-@@ -95,14 +95,14 @@
+@@ -96,14 +96,14 @@
  
  static enum PixelFormat PixelFormatFromFormat(ERenderFormat format)
  {
@@ -152,7 +152,7 @@ Forwarded: https://github.com/xbmc/xbmc/pull/8112
  }
  
  void CWinRenderer::ManageTextures()
-@@ -721,8 +721,8 @@
+@@ -724,8 +724,8 @@
    // 1. convert yuv to rgb
    m_sw_scale_ctx = sws_getCachedContext(m_sw_scale_ctx,
                                          m_sourceWidth, m_sourceHeight, format,

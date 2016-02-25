@@ -1,7 +1,13 @@
-kodi (16.0+dfsg1-1) UNRELEASED; urgency=medium
+kodi (16.0+dfsg1-1) unstable; urgency=medium
 
   * New upstream version 16.0
     See https://kodi.tv/kodi-16-0-jarvis-mark-xvi/
+  * Refresh patches
+  * Change build-dependency on libcec-platform-dev to libp8-platform-dev.
+    The library has been renamed
+  * Build-depend on libcec-dev (>= 3.1) which is built with p8-platform
+  * Stop shipping menu file
+  * Override false positive lintian warning about missing JavaScript source
 
  -- Balint Reczey <balint@balintreczey.hu>  Mon, 22 Feb 2016 23:08:18 +0100
 

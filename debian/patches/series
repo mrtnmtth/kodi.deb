@@ -9,3 +9,4 @@
 10-dont-use-omitted-files.patch
 11-build-with-ffmpeg-2.9.patch
 12-build-cpluff-pic-only.patch
+13-fix-tests.patch

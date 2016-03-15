@@ -34,6 +34,26 @@ Forwarded: not-needed
  
  if test "$use_optical_drive" = "yes"; then
    PKG_CHECK_MODULES([CDIO],       [libcdio],
+@@ -2642,18 +2645,11 @@
+ ], [0])
+ 
+ XB_CONFIG_MODULE([lib/gtest], [
+-  ./configure \
+     CC="$CC" \
+     CXX="$CXX" \
+     CFLAGS="$CFLAGS" \
+     CXXFLAGS="$CXXFLAGS" \
+-    --prefix="${prefix}" --includedir="${includedir}" --libdir="${libdir}" --datadir="${datadir}" \
+-    --host=$host_alias \
+-    --build=$build_alias \
+-    --target=$target_alias \
+-    --disable-shared \
+-    --enable-static \
+-    --with-pthreads
++    cmake .
+ ], [$SKIP_CONFIG_GTEST])
+ 
+ AC_OUTPUT
 --- a/lib/cximage-6.0/Makefile.in
 +++ b/lib/cximage-6.0/Makefile.in
 @@ -4,8 +4,8 @@
@@ -56,6 +76,17 @@ Forwarded: not-needed
  endif
  
  $(SLIBS): compile 
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -232,7 +232,7 @@
+ 
+ GTEST_DIR = lib/gtest
+ GTEST_INCLUDES = -I$(GTEST_DIR)/include
+-GTEST_LIBS = $(GTEST_DIR)/lib/.libs/libgtest.a
++GTEST_LIBS = $(GTEST_DIR)/libgtest.a
+ 
+ CHECK_DIRS = xbmc/addons/test \
+              xbmc/filesystem/test \
 --- a/xbmc/cores/dvdplayer/DVDInputStreams/DllDvdNav.h
 +++ b/xbmc/cores/dvdplayer/DVDInputStreams/DllDvdNav.h
 @@ -34,6 +34,8 @@

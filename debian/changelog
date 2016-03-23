@@ -1,6 +1,8 @@
-kodi (16.0+dfsg1-2) UNRELEASED; urgency=medium
+kodi (16.0+dfsg1-2) unstable; urgency=medium
 
-  *
+  * Enable Google Tests at build-time
+  * Fix user agent string and related test
+  * Disable bindnow hardening option because it breaks playing DVDs
 
  -- Balint Reczey <balint@balintreczey.hu>  Tue, 15 Mar 2016 15:08:54 +0100
 

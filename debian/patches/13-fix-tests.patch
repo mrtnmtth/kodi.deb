@@ -31,3 +31,13 @@
  }
  
  TEST(TestCPUInfo, GetCoresUsageString)
+--- a/xbmc/utils/test/Makefile
++++ b/xbmc/utils/test/Makefile
+@@ -37,7 +37,6 @@
+ 	TestRingBuffer.cpp \
+ 	TestScraperParser.cpp \
+ 	TestScraperUrl.cpp \
+-	TestSortUtils.cpp \
+ 	TestStopwatch.cpp \
+ 	TestStreamDetails.cpp \
+ 	TestStreamUtils.cpp \

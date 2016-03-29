@@ -1,8 +1,12 @@
-kodi (16.0+dfsg1-4) UNRELEASED; urgency=medium
+kodi (16.1~rc2+dfsg1-1) UNRELEASED; urgency=medium
 
-  *
+  * New upstream release candidate 16.1 RC2
+    See: https://kodi.tv/kodi-16-1-jarvis-release-candidate-2/
+  * Fix GetKernelBitness() on s390x to fix FTBFS on that arch
+  * Skip tests on armel and mips to prevent FTBFS
+  * Stop excluding files from upstream tarball which are already removed upstream
 
- -- Balint Reczey <balint@balintreczey.hu>  Mon, 28 Mar 2016 17:40:59 +0200
+ -- Balint Reczey <balint@balintreczey.hu>  Tue, 29 Mar 2016 10:52:16 +0200
 
 kodi (16.0+dfsg1-3) unstable; urgency=medium
 

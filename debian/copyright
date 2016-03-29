@@ -15,7 +15,6 @@ Files-Excluded: addons/service.xbmc.versioncheck
  lib/cximage-6.0/png
  lib/cximage-6.0/tiff
  lib/cximage-6.0/zlib
- lib/groovy
  lib/gtest
  lib/libbluray
  lib/libdvd/includes/dvdcss
@@ -32,7 +31,6 @@ Files-Excluded: addons/service.xbmc.versioncheck
  lib/UnrarXLib
  lib/win32
  media/Fonts/arial.ttf
- media/weather.zip
  project/BuildDependencies
  project/VS2010Express
  project/Win32BuildSetup
@@ -41,11 +39,6 @@ Files-Excluded: addons/service.xbmc.versioncheck
  tools/EventClients/Clients/OSXRemote
  tools/rbp
  tools/windows
- xbmc/visualizations/Goom/goom2k4-0/mac
- xbmc/visualizations/Vortex/angelscript/angelscript/lib/angelscript.lib
- xbmc/visualizations/XBMCProjectM/libprojectM/fonts/Vera*.ttf
- xbmc/visualizations/XBMCProjectM/libprojectM/win32-dirent.h
- xbmc/visualizations/XBMCProjectM/win32
  xbmc/win32
 
 Files: *

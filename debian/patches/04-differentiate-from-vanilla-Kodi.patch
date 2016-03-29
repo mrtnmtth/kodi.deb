@@ -40,7 +40,7 @@
  
    return appName;
  }
-@@ -1091,7 +1094,9 @@
+@@ -1093,7 +1096,9 @@
    if (!result.empty())
      return result;
  
@@ -51,18 +51,12 @@
  #if defined(TARGET_WINDOWS)
    result += GetKernelName() + " " + GetKernelVersion();
    BOOL bIsWow = FALSE;
-@@ -1244,12 +1249,12 @@
-   if (strlen(CCompileInfo::GetSuffix()) == 0)
-     return StringUtils::Format("%d.%d", CCompileInfo::GetMajor(), CCompileInfo::GetMinor());
-   else
--    return StringUtils::Format("%d.%d-%s", CCompileInfo::GetMajor(), CCompileInfo::GetMinor(), CCompileInfo::GetSuffix());
-+    return StringUtils::Format("%d.%d-%s Debian package version:%s", CCompileInfo::GetMajor(), CCompileInfo::GetMinor(), CCompileInfo::GetSuffix(), DEB_VERSION);
- }
+@@ -1251,7 +1256,7 @@
  
  std::string CSysInfo::GetVersion()
  {
 -  return GetVersionShort() + " Git:" + CCompileInfo::GetSCMID();
-+  return GetVersionShort() + " Git:unknown)";
++  return GetVersionShort() + StringUtils::Format(" Debian package version: %s", DEB_VERSION);
  }
  
  std::string CSysInfo::GetBuildDate()

@@ -37,7 +37,7 @@
 class CGUIToggleButtonControl : public CGUIButtonControl
 {
 public:
-  CGUIToggleButtonControl(int parentID, int controlID, float posX, float posY, float width, float height, const CTextureInfo& textureFocus, const CTextureInfo& textureNoFocus, const CTextureInfo& altTextureFocus, const CTextureInfo& altTextureNoFocus, const CLabelInfo &labelInfo);
+  CGUIToggleButtonControl(int parentID, int controlID, float posX, float posY, float width, float height, const CTextureInfo& textureFocus, const CTextureInfo& textureNoFocus, const CTextureInfo& altTextureFocus, const CTextureInfo& altTextureNoFocus, const CLabelInfo &labelInfo, bool wrapMultiline = false);
   virtual ~CGUIToggleButtonControl(void);
   virtual CGUIToggleButtonControl *Clone() const { return new CGUIToggleButtonControl(*this); };
 
@@ -51,7 +51,8 @@ public:
   virtual void SetPosition(float posX, float posY);
   virtual void SetWidth(float width);
   virtual void SetHeight(float height);
-  void SetLabel(const std::string& strLabel);
+  virtual void SetMinWidth(float minWidth);
+  virtual void SetLabel(const std::string& label);
   void SetAltLabel(const std::string& label);
   virtual std::string GetDescription() const;
   void SetToggleSelect(const std::string &toggleSelect);
@@ -62,5 +63,9 @@ protected:
   virtual void OnClick();
   CGUIButtonControl m_selectButton;
   INFO::InfoPtr m_toggleSelect;
+
+private:
+  void ProcessToggle(unsigned int currentTime);
+  std::string m_altLabel;
 };
 #endif

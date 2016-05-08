@@ -6,6 +6,7 @@ Files-Excluded: addons/service.xbmc.versioncheck
  addons/webinterface.default/js/iscroll-min.js
  addons/webinterface.default/js/jquery-1.8.2.min.js
  lib/boost
+ lib/cpluff/doc/reference
  lib/cpluff/libcpluff/win32
  lib/cximage-6.0/jasper
  lib/cximage-6.0/jbig
@@ -14,14 +15,12 @@ Files-Excluded: addons/service.xbmc.versioncheck
  lib/cximage-6.0/png
  lib/cximage-6.0/tiff
  lib/cximage-6.0/zlib
- lib/groovy
  lib/gtest
  lib/libbluray
  lib/libdvd/includes/dvdcss
  lib/libdvd/libdvdcss
  lib/libdvd/libdvdnav/msvc
  lib/libdvd/libdvdread/msvc
- lib/libhdhomerun
  lib/libmpeg2
  lib/librtmp
  lib/libUPnP/Neptune/ThirdParty/zlib-*
@@ -32,19 +31,14 @@ Files-Excluded: addons/service.xbmc.versioncheck
  lib/UnrarXLib
  lib/win32
  media/Fonts/arial.ttf
- media/weather.zip
  project/BuildDependencies
  project/VS2010Express
  project/Win32BuildSetup
+ tools/codegenerator/groovy
  tools/depends/target
  tools/EventClients/Clients/OSXRemote
  tools/rbp
  tools/windows
- xbmc/visualizations/Goom/goom2k4-0/mac
- xbmc/visualizations/Vortex/angelscript/angelscript/lib/angelscript.lib
- xbmc/visualizations/XBMCProjectM/libprojectM/fonts/Vera*.ttf
- xbmc/visualizations/XBMCProjectM/libprojectM/win32-dirent.h
- xbmc/visualizations/XBMCProjectM/win32
  xbmc/win32
 
 Files: *
@@ -93,9 +87,6 @@ Files: lib/*
 Copyright: 2005-2013, Team XBMC
 License: GPL-2+
 
-Files: lib/SlingboxLib/*
-Copyright: 2010, 2011, Stonyx
-License: GPL-2+
 
 Files: lib/addons/*
 Copyright: 2012, 2013, Team XBMC
@@ -572,20 +563,6 @@ Files: xbmc/freebsd/FreeBSDGNUReplacements.h
 Copyright: 2009, David Schultz <das@FreeBSD.org>
 License: BSD-2-clause
 
-Files: xbmc/guilib/AnimatedGif.cpp
- xbmc/guilib/AnimatedGif.h
-Copyright: 2000, Juan Soulie <jsoulie@cplusplus.com>
-License: AnimGif
- Permission to use, copy, modify, distribute and sell this software or any
- part thereof and/or its documentation for any purpose is granted without fee
- provided that the above copyright notice and this permission notice appear
- in all copies.
- .
- This software is provided "as is" without express or implied warranty of
- any kind. The author shall have no liability with respect to the
- infringement of copyrights or patents that any modification to the content
- of this file or this file itself may incur.
-
 Files: xbmc/input/XBMC_keyboard.h
  xbmc/input/XBMC_keysym.h
  xbmc/input/XBMC_mouse.h
@@ -624,17 +601,6 @@ Copyright: 2006-2013, Team XBMC
   2006, elupus (Joakim Plate)
 License: GPL-2+
 
-Files: xbmc/osx/atv2/XBMCDebugHelpers.h
-Copyright: 2008-2013, Team XBMC
-  2008, University Heidelberg. All rights reserved
-  2007, 2008, Eric Steil III
-License: GPL-2+
-
-Files: xbmc/osx/atv2/kodiclientwrapper.h
-Copyright: 2008-2013, Team XBMC
-  2008, Stephan Diederich. All rights reserved
-License: GPL-2+
-
 Files: xbmc/osx/ios/XBMCDebugHelpers.h
 Copyright: 2008-2013, Team XBMC
   2008, University Heidelberg. All rights reserved
@@ -651,32 +617,6 @@ Files: xbmc/powermanagement/linux/LogindUPowerSyscall.cpp
 Copyright: 2012, Denis Yantarev
   2005-2013, Team XBMC
 License: GPL-2+
-
-Files: xbmc/screensavers/*
-Copyright: 1989-2006, Free Software Foundation, Inc
-License: GPL-2+
-
-Files: xbmc/screensavers/rsxs-0.9/src/*
-Copyright: 2002-2006, Michael Chapman
-  2002, Terence M. Welsh, available from www.reallyslick.com
-License: GPL-2
-
-Files: xbmc/screensavers/rsxs-0.9/src/hyperspace/*
-Copyright: 2005, Terence M. Welsh
-  2002-2006, Michael Chapman
-License: GPL-2
-
-Files: xbmc/screensavers/rsxs-0.9/src/hyperspace/caustic.cc
-Copyright: 2005, Terence M. Welsh
-  2002-2006, Michael Chapman
-License: GPL-2
-
-Files: xbmc/screensavers/rsxs-0.9/src/vroot.hh
-Copyright: 1990, by Solbourne Computer Inc.
- 1991, by Andreas Stolcke
- 2002, Terence M. Welsh
- 2002-2006, Michael Chapman
-License: GPL-2
 
 Files: xbmc/storage/IoSupport.cpp
  xbmc/storage/IoSupport.h
@@ -722,115 +662,6 @@ License: PHP-3.01
 
 Files: xbmc/utils/fstrcmp.h
 Copyright: 1995, Free Software Foundation, Inc
-License: GPL-2+
-
-Files: xbmc/visualizations/DirectXSpectrum/*
-Copyright: 1998-2000, Peter Alm, Mikael Alm, Olle Hallnas, Thomas Nilsson and 4Front Technologies
-License: GPL-2+
-
-Files: xbmc/visualizations/Goom/goom2k4-0/gtk-gui-devel/intl/*
-Copyright: 1995-1998, Free Software Foundation, Inc
-License: GPL-2+
-
-Files: xbmc/visualizations/Goom/goom2k4-0/sdl-goom/pixeldoubler.h
-Copyright: 2001, JC Hoelt for iOS software
-License: LGPL
-
-Files: xbmc/visualizations/Goom/goom2k4-0/src/config_param.c
- xbmc/visualizations/Goom/goom2k4-0/src/cpu_info.c
- xbmc/visualizations/Goom/goom2k4-0/src/cpu_info.h
- xbmc/visualizations/Goom/goom2k4-0/src/mathtools.c
- xbmc/visualizations/Goom/goom2k4-0/src/ppc_drawings.h
- xbmc/visualizations/Goom/goom2k4-0/src/ppc_zoom_ultimate.h
-Copyright: 2003, iOS
-License: LGPL
-
-Files: xbmc/visualizations/Goom/goom2k4-0/src/goomsl_yacc.c
- xbmc/visualizations/Goom/goom2k4-0/src/goomsl_yacc.h
-Copyright: 1984, 1989, 1990, 2000-2002, Free Software Foundation, Inc
-License: GPL-2+
-
-Files: xbmc/visualizations/Goom/goom2k4-0/src/ifs.c
-Copyright: 1997, by Massimino Pascal <Pascal.Massimon@ens.fr>
-License: ifs
- Permission to use, copy, modify, and distribute this software and its
- documentation for any purpose and without fee is hereby granted,
- provided that the above copyright notice appear in all copies and that
- both that copyright notice and this permission notice appear in
- supporting documentation.
- .
- This file is provided AS IS with no warranties of any kind.  The author
- shall have no liability with respect to the infringement of copyrights,
- trade secrets or any patents by this file or any part thereof.  In no
- event will the author be liable for any lost revenue or profits or
- other special, indirect and consequential damages.
-
-Files: xbmc/visualizations/Goom/goom2k4-0/src/jitc_x86.h
-Copyright: 2004, Jean-Christophe Hoelt <jeko@ios-software.com>
-License: LGPL
-
-Files: xbmc/visualizations/Goom/goom2k4-0/src/lines.h
-Copyright: 2000-2003, iOS-software
-License: LGPL
-
-Files: xbmc/visualizations/Milkdrop/vis_milkdrop/*
-Copyright: 2005, Nullsoft, Inc
-License: BSD-3-clause
-
-Files: xbmc/visualizations/OpenGLSpectrum/opengl_spectrum.cpp
-Copyright: 1998-2000, Peter Alm, Mikael Alm, Olle Hallnas, Thomas Nilsson and 4Front Technologies
-License: GPL-2+
-
-Files: xbmc/visualizations/Vortex/*
-Copyright: 2010-2013, Team XBMC
-License: GPL-2+
-
-Files: xbmc/visualizations/Vortex/VortexVis/Core/fft.cpp
- xbmc/visualizations/Vortex/VortexVis/Core/fft.h
-Copyright: 2005, Nullsoft, Inc
-License: BSD-3-clause
-
-Files: xbmc/visualizations/Vortex/angelscript/add_on/clib/*
-Copyright: 2003-2009, Andreas Jonsson
-License: Zlib
-
-Files: xbmc/visualizations/Vortex/angelscript/angelscript/*
-Copyright: 2003-2009, Andreas Jonsson
-License: Zlib
-
-Files: xbmc/visualizations/WaveForm/Main_gles.cpp
-Copyright: 1998-2000, Peter Alm, Mikael Alm, Olle Hallnas, Thomas Nilsson and 4Front Technologies
-License: GPL-2+
-
-Files: xbmc/visualizations/XBMCProjectM/libprojectM/*
-Copyright: 2003-2007, projectM Team
-License: LGPL-2.1+
-
-Files: xbmc/visualizations/XBMCProjectM/libprojectM/ConfigFile.h
-Copyright: 2004, Richard J. Wagner
-License: Expat
-
-Files: xbmc/visualizations/XBMCProjectM/libprojectM/RandomNumberGenerators.hpp
-Copyright: 1997, Tao Pang
-License: LGPL-2.1+
-
-Files: xbmc/visualizations/XBMCProjectM/libprojectM/glew.c
-Copyright: 2002-2008, Milan Ikits <milan ikits[]ieee org>
-  2002-2008, Marcelo E. Magallon <mmagallo[]debian org>
-  2002, Lev Povalahev
-License: BSD-3-clause
-
-Files: xbmc/visualizations/XBMCProjectM/libprojectM/glew.h
- xbmc/visualizations/XBMCProjectM/libprojectM/glxew.h
-Copyright: 2007, The Khronos Group Inc
-  2002-2008, Milan Ikits <milan ikits[]ieee org>
-  2002-2008, Marcelo E. Magallon <mmagallo[]debian org>
-  2002, Lev Povalahev
-  1999-2007, Brian Paul All Rights Reserved
-License: BSD-3-clause and Expat
-
-Files: xbmc/visualizations/fishBMC/fishbmc_addon.cpp
-Copyright: 2012, Marcel Ebmer
 License: GPL-2+
 
 Files: xbmc/windowing/XBMC_events.h
@@ -960,11 +791,6 @@ License: Expat
  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  IN THE SOFTWARE.
-
-License: LGPL
- This program is under the LGPL.
- You can find the terms of this licence somewhere on the internet.
- (for exemple, search "LGPL" on your favorite search engine).
 
 License: ximaiter
  Permission is given by the author to freely redistribute and include

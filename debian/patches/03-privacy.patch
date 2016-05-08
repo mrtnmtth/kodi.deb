@@ -1,11 +1,11 @@
 --- a/system/settings/settings.xml
 +++ b/system/settings/settings.xml
-@@ -260,7 +260,7 @@
-       <group id="1">
-         <setting id="filelists.showparentdiritems" type="boolean" label="13306" help="36122">
-           <level>1</level>
+@@ -110,7 +110,7 @@
+       <group id="2">
+         <setting id="lookandfeel.enablerssfeeds" type="boolean" label="13305" help="36111">
+           <level>0</level>
 -          <default>true</default>
 +          <default>false</default>
            <control type="toggle" />
          </setting>
-         <setting id="filelists.showextensions" type="boolean" label="497" help="36123">
+         <setting id="lookandfeel.rssedit" type="string" parent="lookandfeel.enablerssfeeds" label="21450" help="36112">

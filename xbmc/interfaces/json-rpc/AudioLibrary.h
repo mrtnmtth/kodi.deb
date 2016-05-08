@@ -25,6 +25,7 @@
 #include "FileItemHandler.h"
 
 class CMusicDatabase;
+class CVariant;
 
 namespace JSONRPC
 {
@@ -61,6 +62,7 @@ namespace JSONRPC
 
   private:
     static void FillAlbumItem(const CAlbum &album, const std::string &path, CFileItemPtr &item);
+    static void FillItemArtistIDs(const std::vector<int> artistids, CFileItemPtr &item);
     
     static bool CheckForAdditionalProperties(const CVariant &properties, const std::set<std::string> &checkProperties, std::set<std::string> &foundProperties);
   };

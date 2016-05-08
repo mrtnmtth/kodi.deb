@@ -20,7 +20,7 @@
 #include "AddonStatusHandler.h"
 #include "AddonManager.h"
 #include "threads/SingleLock.h"
-#include "ApplicationMessenger.h"
+#include "messaging/ApplicationMessenger.h"
 #include "guilib/GUIWindowManager.h"
 #include "GUIDialogAddonSettings.h"
 #include "dialogs/GUIDialogYesNo.h"
@@ -29,6 +29,9 @@
 #include "settings/Settings.h"
 #include "utils/log.h"
 #include "utils/StringUtils.h"
+#include "utils/Variant.h"
+
+using namespace KODI::MESSAGING;
 
 namespace ADDON
 {
@@ -46,7 +49,7 @@ CCriticalSection CAddonStatusHandler::m_critSection;
 CAddonStatusHandler::CAddonStatusHandler(const std::string &addonID, ADDON_STATUS status, std::string message, bool sameThread)
   : CThread(("AddonStatus " + addonID).c_str())
 {
-  if (!CAddonMgr::Get().GetAddon(addonID, m_addon))
+  if (!CAddonMgr::GetInstance().GetAddon(addonID, m_addon))
     return;
 
   CLog::Log(LOGINFO, "Called Add-on status handler for '%u' of clientName:%s, clientID:%s (same Thread=%s)", status, m_addon->Name().c_str(), m_addon->ID().c_str(), sameThread ? "yes" : "no");
@@ -89,7 +92,7 @@ void CAddonStatusHandler::Process()
   {
     if (m_addon->Type() == ADDON_PVRDLL)
     {
-      if (!CSettings::Get().GetBool("pvrmanager.hideconnectionlostwarning"))
+      if (!CSettings::GetInstance().GetBool(CSettings::SETTING_PVRMANAGER_HIDECONNECTIONLOSTWARNING))
         CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Info, m_addon->Name().c_str(), g_localizeStrings.Get(36030)); // connection lost
       // TODO handle disconnects after the add-on's been initialised
     }
@@ -98,16 +101,13 @@ void CAddonStatusHandler::Process()
       CGUIDialogYesNo* pDialog = (CGUIDialogYesNo*)g_windowManager.GetWindow(WINDOW_DIALOG_YES_NO);
       if (!pDialog) return;
 
-      pDialog->SetHeading(heading);
-      pDialog->SetLine(1, 24070);
-      pDialog->SetLine(2, 24073);
-
-      //send message and wait for user input
-      ThreadMessage tMsg = {TMSG_DIALOG_DOMODAL, WINDOW_DIALOG_YES_NO, g_windowManager.GetActiveWindow()};
-      CApplicationMessenger::Get().SendMessage(tMsg, true);
+      pDialog->SetHeading(CVariant{heading});
+      pDialog->SetLine(1, CVariant{24070});
+      pDialog->SetLine(2, CVariant{24073});
+      pDialog->Open();
 
       if (pDialog->IsConfirmed())
-        CAddonMgr::Get().GetCallbackForType(m_addon->Type())->RequestRestart(m_addon, false);
+        CAddonMgr::GetInstance().GetCallbackForType(m_addon->Type())->RequestRestart(m_addon, false);
     }
   }
   /* Request to restart the AddOn and data structures need updated */
@@ -116,14 +116,11 @@ void CAddonStatusHandler::Process()
     CGUIDialogOK* pDialog = (CGUIDialogOK*)g_windowManager.GetWindow(WINDOW_DIALOG_OK);
     if (!pDialog) return;
 
-    pDialog->SetHeading(heading);
-    pDialog->SetLine(1, 24074);
+    pDialog->SetHeading(CVariant{heading});
+    pDialog->SetLine(1, CVariant{24074});
+    pDialog->Open();
 
-    //send message and wait for user input
-    ThreadMessage tMsg = {TMSG_DIALOG_DOMODAL, WINDOW_DIALOG_OK, g_windowManager.GetActiveWindow()};
-    CApplicationMessenger::Get().SendMessage(tMsg, true);
-
-    CAddonMgr::Get().GetCallbackForType(m_addon->Type())->RequestRestart(m_addon, true);
+    CAddonMgr::GetInstance().GetCallbackForType(m_addon->Type())->RequestRestart(m_addon, true);
   }
   /* Some required settings are missing/invalid */
   else if ((m_status == ADDON_STATUS_NEED_SETTINGS) || (m_status == ADDON_STATUS_NEED_SAVEDSETTINGS))
@@ -131,14 +128,11 @@ void CAddonStatusHandler::Process()
     CGUIDialogYesNo* pDialogYesNo = (CGUIDialogYesNo*)g_windowManager.GetWindow(WINDOW_DIALOG_YES_NO);
     if (!pDialogYesNo) return;
 
-    pDialogYesNo->SetHeading(heading);
-    pDialogYesNo->SetLine(1, 24070);
-    pDialogYesNo->SetLine(2, 24072);
-    pDialogYesNo->SetLine(3, m_message);
-
-    //send message and wait for user input
-    ThreadMessage tMsg = {TMSG_DIALOG_DOMODAL, WINDOW_DIALOG_YES_NO, g_windowManager.GetActiveWindow()};
-    CApplicationMessenger::Get().SendMessage(tMsg, true);
+    pDialogYesNo->SetHeading(CVariant{heading});
+    pDialogYesNo->SetLine(1, CVariant{24070});
+    pDialogYesNo->SetLine(2, CVariant{24072});
+    pDialogYesNo->SetLine(3, CVariant{m_message});
+    pDialogYesNo->Open();
 
     if (!pDialogYesNo->IsConfirmed()) return;
 
@@ -149,7 +143,7 @@ void CAddonStatusHandler::Process()
     {
       //todo doesn't dialogaddonsettings save these automatically? should do
       m_addon->SaveSettings();
-      CAddonMgr::Get().GetCallbackForType(m_addon->Type())->RequestRestart(m_addon, true);
+      CAddonMgr::GetInstance().GetCallbackForType(m_addon->Type())->RequestRestart(m_addon, true);
     }
   }
   /* A unknown event has occurred */
@@ -158,14 +152,11 @@ void CAddonStatusHandler::Process()
     CGUIDialogOK* pDialog = (CGUIDialogOK*)g_windowManager.GetWindow(WINDOW_DIALOG_OK);
     if (!pDialog) return;
 
-    pDialog->SetHeading(heading);
-    pDialog->SetLine(1, 24070);
-    pDialog->SetLine(2, 24071);
-    pDialog->SetLine(3, m_message);
-
-    //send message and wait for user input
-    ThreadMessage tMsg = {TMSG_DIALOG_DOMODAL, WINDOW_DIALOG_OK, g_windowManager.GetActiveWindow()};
-    CApplicationMessenger::Get().SendMessage(tMsg, true);
+    pDialog->SetHeading(CVariant{heading});
+    pDialog->SetLine(1, CVariant{24070});
+    pDialog->SetLine(2, CVariant{24071});
+    pDialog->SetLine(3, CVariant{m_message});
+    pDialog->Open();
   }
 }
 

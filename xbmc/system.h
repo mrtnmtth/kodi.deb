@@ -31,13 +31,12 @@
 #define HAS_DVD_SWSCALE
 #define HAS_DVDPLAYER
 #define HAS_EVENT_SERVER
-#define HAS_KARAOKE
 #define HAS_SCREENSAVER
 #define HAS_PYTHON
-#define HAS_SYSINFO
 #define HAS_VIDEO_PLAYBACK
 #define HAS_VISUALISATION
 #define HAS_PVRCLIENTS
+#define HAS_ADSPADDONS
 
 #ifdef HAVE_LIBMICROHTTPD
 #define HAS_WEB_SERVER
@@ -84,6 +83,10 @@
   #define HAS_MDNS_EMBEDDED
 #endif
 
+#if defined(HAVE_LIBGIF)
+  #define HAS_GIFLIB
+#endif
+
 /**********************
  * Non-free Components
  **********************/
@@ -124,6 +127,7 @@
 #define HAVE_LIBVORBISENC
 #define HAS_MYSQL
 #define HAS_UPNP
+#define HAS_GIFLIB
 
 #define DECLARE_UNUSED(a,b) a b;
 #endif
@@ -200,8 +204,11 @@
 #undef GetFreeSpace
 #include "PlatformInclude.h"
 #ifdef HAS_DX
-#include "D3D9.h"   // On Win32, we're always using DirectX for something, whether it be the actual rendering
-#include "D3DX9.h"  // or the reference video clock.
+#include "d3d9.h"   // On Win32, we're always using DirectX for something, whether it be the actual rendering
+#include "d3d11_1.h"
+#include "dxgi.h"
+#include "d3dcompiler.h"
+#include "directxmath.h"
 #else
 #include <d3d9types.h>
 #endif
@@ -258,7 +265,7 @@
 /****************
  * default skin
  ****************/
-#if defined(HAS_TOUCH_SKIN) && defined(TARGET_DARWIN_IOS) && !defined(TARGET_DARWIN_IOS_ATV2)
+#if defined(HAS_TOUCH_SKIN) && defined(TARGET_DARWIN_IOS)
 #define DEFAULT_SKIN          "skin.re-touched"
 #else
 #define DEFAULT_SKIN          "skin.confluence"

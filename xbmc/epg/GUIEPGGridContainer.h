@@ -32,7 +32,7 @@ namespace EPG
 
   struct GridItemsPtr
   {
-    CGUIListItemPtr item;
+    CFileItemPtr item;
     float originWidth;
     float originHeight;
     float width;
@@ -67,6 +67,7 @@ namespace EPG
     virtual int GetSelectedItem() const;
     const int GetSelectedChannel() const;
     void SetSelectedChannel(int channelIndex);
+    CFileItemPtr GetSelectedChannelItem() const;
     PVR::CPVRChannelPtr GetChannel(int iIndex);
     void SetSelectedBlock(int blockIndex);
     virtual EVENT_RESULT OnMouseEvent(const CPoint &point, const CMouseEvent &event);
@@ -93,6 +94,7 @@ namespace EPG
     void SetStartEnd(CDateTime start, CDateTime end);
     void SetChannel(const PVR::CPVRChannelPtr &channel);
     void SetChannel(const std::string &channel);
+    void ResetCoordinates();
 
   protected:
     bool OnClick(int actionID);
@@ -143,9 +145,9 @@ namespace EPG
       long stop;
     };
     std::vector<ItemsPtr> m_epgItemsPtr;
-    std::vector<CGUIListItemPtr> m_channelItems;
-    std::vector<CGUIListItemPtr> m_rulerItems;
-    std::vector<CGUIListItemPtr> m_programmeItems;
+    std::vector<CFileItemPtr> m_channelItems;
+    std::vector<CFileItemPtr> m_rulerItems;
+    std::vector<CFileItemPtr> m_programmeItems;
     std::vector<CGUIListItemLayout> m_channelLayouts;
     std::vector<CGUIListItemLayout> m_focusedChannelLayouts;
     std::vector<CGUIListItemLayout> m_focusedProgrammeLayouts;
@@ -172,7 +174,7 @@ namespace EPG
     void GetProgrammeCacheOffsets(int &cacheBefore, int &cacheAfter);
 
   private:
-    void UpdateItems();
+    void UpdateItems(CFileItemList *items);
 
     EPG::CEpgInfoTagPtr GetSelectedEpgInfoTag() const;
     int GetBlock(const EPG::CEpgInfoTagPtr &tag, int channel) const;

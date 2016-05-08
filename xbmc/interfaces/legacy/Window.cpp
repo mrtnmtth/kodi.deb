@@ -26,9 +26,11 @@
 #include "guilib/GUIRadioButtonControl.h"
 #include "guilib/GUIWindowManager.h"
 #include "Application.h"
-#include "ApplicationMessenger.h"
+#include "messaging/ApplicationMessenger.h"
 #include "utils/Variant.h"
 #include "WindowException.h"
+
+using namespace KODI::MESSAGING;
 
 #define ACTIVE_WINDOW g_windowManager.GetActiveWindow()
 
@@ -110,7 +112,7 @@ namespace XBMCAddon
         canPulse = true;
         existingWindow = false;
 
-        setWindow(new Interceptor<CGUIWindow>("CGUIWindow",this,getNextAvailalbeWindowId()));
+        setWindow(new Interceptor<CGUIWindow>("CGUIWindow",this,getNextAvailableWindowId()));
       }
       else
       {
@@ -216,7 +218,7 @@ namespace XBMCAddon
         g_windowManager.Add(window->get());
     }
 
-    int Window::getNextAvailalbeWindowId()
+    int Window::getNextAvailableWindowId()
     {
       XBMC_TRACE;
       // window id's 13000 - 13100 are reserved for python
@@ -375,10 +377,10 @@ namespace XBMCAddon
       pControl->dwWidth = (int)pGUIControl->GetWidth();
       pControl->dwPosX = (int)pGUIControl->GetXPosition();
       pControl->dwPosY = (int)pGUIControl->GetYPosition();
-      pControl->iControlUp = pGUIControl->GetNavigateAction(ACTION_MOVE_UP).GetNavigation();
-      pControl->iControlDown = pGUIControl->GetNavigateAction(ACTION_MOVE_DOWN).GetNavigation();
-      pControl->iControlLeft = pGUIControl->GetNavigateAction(ACTION_MOVE_LEFT).GetNavigation();
-      pControl->iControlRight = pGUIControl->GetNavigateAction(ACTION_MOVE_RIGHT).GetNavigation();
+      pControl->iControlUp = pGUIControl->GetAction(ACTION_MOVE_UP).GetNavigation();
+      pControl->iControlDown = pGUIControl->GetAction(ACTION_MOVE_DOWN).GetNavigation();
+      pControl->iControlLeft = pGUIControl->GetAction(ACTION_MOVE_LEFT).GetNavigation();
+      pControl->iControlRight = pGUIControl->GetAction(ACTION_MOVE_RIGHT).GetNavigation();
 
       // It got this far so means the control isn't actually in the vector of controls
       // so lets add it to save doing all that next time
@@ -453,20 +455,6 @@ namespace XBMCAddon
       XBMC_TRACE;
       switch (message.GetMessage())
       {
-      case GUI_MSG_WINDOW_DEINIT:
-        {
-          g_windowManager.ShowOverlay(ref(window)->OVERLAY_STATE_SHOWN);
-        }
-        break;
-
-      case GUI_MSG_WINDOW_INIT:
-        {
-          ref(window)->OnMessage(message);
-          g_windowManager.ShowOverlay(ref(window)->OVERLAY_STATE_HIDDEN);
-          return true;
-        }
-        break;
-
       case GUI_MSG_CLICKED:
         {
           int iControl=message.GetSenderId();
@@ -517,8 +505,7 @@ namespace XBMCAddon
       DelayedCallGuard dcguard(languageHook);
       popActiveWindowId();
 
-      std::vector<std::string> params;
-      CApplicationMessenger::Get().ActivateWindow(iWindowId, params, false);
+      CApplicationMessenger::GetInstance().SendMsg(TMSG_GUI_ACTIVATE_WINDOW, iWindowId, 0);
     }
 
     void Window::setFocus(Control* pControl)
@@ -593,7 +580,7 @@ namespace XBMCAddon
 
       CGUIMessage msg(GUI_MSG_REMOVE_CONTROL, 0, 0);
       msg.SetPointer(pControl->pGUIControl);
-      CApplicationMessenger::Get().SendGUIMessage(msg, iWindowId, wait);
+      CApplicationMessenger::GetInstance().SendGUIMessage(msg, iWindowId, wait);
 
       // initialize control to zero
       pControl->pGUIControl = NULL;
@@ -684,10 +671,9 @@ namespace XBMCAddon
       if (!existingWindow)
         PulseActionEvent();
 
-      std::vector<std::string> params;
       {
         DelayedCallGuard dcguard(languageHook);
-        CApplicationMessenger::Get().ActivateWindow(iOldWindowId, params, false);
+        CApplicationMessenger::GetInstance().SendMsg(TMSG_GUI_ACTIVATE_WINDOW, iOldWindowId, 0);
       }
 
       iOldWindowId = 0;
@@ -764,10 +750,10 @@ namespace XBMCAddon
       pControl->iControlLeft = pControl->iControlId;
       pControl->iControlRight = pControl->iControlId;
 
-      pControl->pGUIControl->SetNavigationAction(ACTION_MOVE_UP,    pControl->iControlUp);
-      pControl->pGUIControl->SetNavigationAction(ACTION_MOVE_DOWN,  pControl->iControlDown);
-      pControl->pGUIControl->SetNavigationAction(ACTION_MOVE_LEFT,  pControl->iControlLeft);
-      pControl->pGUIControl->SetNavigationAction(ACTION_MOVE_RIGHT, pControl->iControlRight);
+      pControl->pGUIControl->SetAction(ACTION_MOVE_UP,    pControl->iControlUp);
+      pControl->pGUIControl->SetAction(ACTION_MOVE_DOWN,  pControl->iControlDown);
+      pControl->pGUIControl->SetAction(ACTION_MOVE_LEFT,  pControl->iControlLeft);
+      pControl->pGUIControl->SetAction(ACTION_MOVE_RIGHT, pControl->iControlRight);
 
       // add control to list and allocate recources for the control
       vecControls.push_back(AddonClass::Ref<Control>(pControl));
@@ -776,7 +762,7 @@ namespace XBMCAddon
       // This calls the CGUIWindow parent class to do the final add
       CGUIMessage msg(GUI_MSG_ADD_CONTROL, 0, 0);
       msg.SetPointer(pControl->pGUIControl);
-      CApplicationMessenger::Get().SendGUIMessage(msg, iWindowId, wait);
+      CApplicationMessenger::GetInstance().SendGUIMessage(msg, iWindowId, wait);
     }
 
     void Window::addControls(std::vector<Control*> pControls)

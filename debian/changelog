@@ -1,8 +1,91 @@
-kodi (15.2+dfsg1-1~bpo8+1) jessie-backports; urgency=medium
+kodi (16.1+dfsg1-1~bpo8+1) jessie-backports; urgency=medium
 
   * Rebuild for jessie-backports.
 
- -- Balint Reczey <balint@balintreczey.hu>  Fri, 06 Nov 2015 20:05:13 +0400
+ -- Balint Reczey <balint@balintreczey.hu>  Sun, 08 May 2016 22:29:05 +0200
+
+kodi (16.1+dfsg1-1) unstable; urgency=medium
+
+  * New upstream version 16.1
+    See https://kodi.tv/kodi-16-1-jarvis-mark-xvi
+
+ -- Balint Reczey <balint@balintreczey.hu>  Sun, 24 Apr 2016 15:51:42 +0200
+
+kodi (16.1~rc2+dfsg1-1) unstable; urgency=medium
+
+  * New upstream release candidate 16.1 RC2
+    See: https://kodi.tv/kodi-16-1-jarvis-release-candidate-2/
+  * Fix GetKernelBitness() on s390x to fix FTBFS on that arch
+  * Skip tests on armel and mips to prevent FTBFS
+  * Stop excluding files from upstream tarball which are already removed
+    upstream
+  * Don't modify GetVersionShort(), return package version in GetVersion()
+    instead
+
+ -- Balint Reczey <balint@balintreczey.hu>  Tue, 29 Mar 2016 10:52:16 +0200
+
+kodi (16.0+dfsg1-3) unstable; urgency=medium
+
+  * Fix system info for s390x and arm64 architectures
+  * Skip tests failing on buildds to fix FTBFS on most ports
+  * Skip sorting test failing in the test code on armhf and armel
+
+ -- Balint Reczey <balint@balintreczey.hu>  Fri, 25 Mar 2016 10:49:06 +0100
+
+kodi (16.0+dfsg1-2) unstable; urgency=medium
+
+  * Enable Google Tests at build-time
+  * Fix user agent string and related test
+  * Disable bindnow hardening option because it breaks playing DVDs
+
+ -- Balint Reczey <balint@balintreczey.hu>  Tue, 15 Mar 2016 15:08:54 +0100
+
+kodi (16.0+dfsg1-1) unstable; urgency=medium
+
+  * New upstream version 16.0
+    See https://kodi.tv/kodi-16-0-jarvis-mark-xvi/
+  * Refresh patches
+  * Change build-dependency on libcec-platform-dev to libp8-platform-dev.
+    The library has been renamed
+  * Build-depend on libcec-dev (>= 3.1) which is built with p8-platform
+  * Stop shipping menu file
+  * Override false positive lintian warning about missing JavaScript source
+
+ -- Balint Reczey <balint@balintreczey.hu>  Mon, 22 Feb 2016 23:08:18 +0100
+
+kodi (16.0~rc3+dfsg2-1) experimental; urgency=medium
+
+  * New upstream release candidate 16.0 RC3
+    (Closes: #792299) (CVE-2015-3885)
+    See http://kodi.tv/kodi-16-0-jarvis-release-candidate-3/
+  * Refresh patches
+  * Don't use libcadec, wait for the codec to be included in FFmpeg instead
+  * Drop libhdhomerun-dev build dependency
+  * Add libcrossguid-dev and uuid-dev as build-dependencies
+  * Drop workarounds for screensavers dropped by upstream
+  * Use hinted Roboto fonts adapting to their new location in filesystem
+  * Enable PIE
+  * Make C-Pluff build with PIC only enabling PIE-enabled build to succeed
+  * Update debian/copyright for 16.0 RC3 changes
+
+ -- Balint Reczey <balint@balintreczey.hu>  Sat, 13 Feb 2016 22:53:08 +0100
+
+kodi (15.2+dfsg1-3) unstable; urgency=medium
+
+  * Disable PIE due to build failure on amd64
+
+ -- Balint Reczey <balint@balintreczey.hu>  Mon, 25 Jan 2016 10:35:02 +0100
+
+kodi (15.2+dfsg1-2) unstable; urgency=medium
+
+  * Fix 03-privacy.patch to disable rss feed
+  * Disable debugging by default (Closes: #777041)
+  * Build-depend on fonts-droid-fallback instead of obsoleted fonts-droid
+    (Closes: #804695)
+  * Enable all hardening options during build
+  * Migrate to libpng-dev build-dependency (Closes: #810186)
+
+ -- Balint Reczey <balint@balintreczey.hu>  Sun, 24 Jan 2016 10:55:08 +0100
 
 kodi (15.2+dfsg1-1) unstable; urgency=medium
 

@@ -28,8 +28,6 @@
 #include "utils/StringUtils.h"
 #include "utils/Archive.h"
 
-using namespace std;
-
 void CPictureInfoTag::Reset()
 {
   memset(&m_exifInfo, 0, sizeof(m_exifInfo));
@@ -283,7 +281,7 @@ void CPictureInfoTag::GetStringFromArchive(CArchive &ar, char *string, size_t le
 {
   std::string temp;
   ar >> temp;
-  length = min((size_t)temp.size(), length - 1);
+  length = std::min((size_t)temp.size(), length - 1);
   if (!temp.empty())
     memcpy(string, temp.c_str(), length);
   string[length] = 0;
@@ -327,6 +325,8 @@ const std::string CPictureInfoTag::GetInfo(int info) const
     }
     break;
   case SLIDE_COMMENT:
+    g_charsetConverter.unknownToUTF8(m_exifInfo.FileComment, value);
+    break;
   case SLIDE_EXIF_COMMENT:
     // The charset used for the UserComment is stored in CommentsCharset:
     // Ascii, Unicode (UCS2), JIS (X208-1990), Unknown (application specific)
@@ -341,6 +341,16 @@ const std::string CPictureInfoTag::GetInfo(int info) const
       // Unknown data can't be converted as it could be any codec (EXIF_COMMENT_CHARSET_UNKNOWN)
       // JIS data can't be converted as CharsetConverter and iconv lacks support (EXIF_COMMENT_CHARSET_JIS)
       g_charsetConverter.unknownToUTF8(m_exifInfo.Comments, value);
+    }
+    break;
+  case SLIDE_EXIF_XPCOMMENT:
+    if (m_exifInfo.XPCommentsCharset == EXIF_COMMENT_CHARSET_UNICODE)
+    {
+      g_charsetConverter.ucs2ToUTF8(std::u16string((char16_t*)m_exifInfo.XPComment), value);
+    }
+    else
+    {
+      value = "Illegal charset used.";
     }
     break;
   case SLIDE_EXIF_LONG_DATE_TIME:
@@ -614,7 +624,7 @@ void CPictureInfoTag::SetInfo(int info, const std::string& value)
   {
   case SLIDE_RESOLUTION:
     {
-      vector<std::string> dimension;
+      std::vector<std::string> dimension;
       StringUtils::Tokenize(value, dimension, ",");
       if (dimension.size() == 2)
       {

@@ -45,7 +45,7 @@ void CGUIWindowSplash::OnInitWindow()
   CLog::Log(LOGINFO, "load splash image: %s", CSpecialProtocol::TranslatePath(splashImage).c_str());
 
   m_image = new CGUIImage(0, 0, 0, 0, g_graphicsContext.GetWidth(), g_graphicsContext.GetHeight(), CTextureInfo(splashImage));
-  m_image->SetAspectRatio(CAspectRatio::AR_CENTER);
+  m_image->SetAspectRatio(CAspectRatio::AR_SCALE);
 }
 
 void CGUIWindowSplash::Render()

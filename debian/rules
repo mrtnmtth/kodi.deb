@@ -3,10 +3,20 @@
 # This has to be exported to make some magic below work.
 export DH_OPTIONS
 
+# bindnow breaks wrappers used in with libdvdread
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all-bindnow
+
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
 GL_CONFIG_OPTIONS = --enable-gl --disable-gles --enable-vdpau
 ARCH_SPECIFIC_LIB_RECOMMENDS_ADD = -lvdpau
+
+# Disable debugging by default
+ifneq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
+DEBUG_CONFIG_OPTIONS += --enable-debug
+else
+DEBUG_CONFIG_OPTIONS += --disable-debug
+endif
 
 # Enable gles for armel, armhf
 # Also disable VDPAU and VAAPI there since they break the build with gles
@@ -21,15 +31,17 @@ ARCH_SPECIFIC_LIB_RECOMMENDS_ADD =
 endif
 endif
 
+# The following tests are failing:
+# TestArchive.CharArchive crashes on armel
+# TestAsyncFileCopy.General crashes on mips
+ifneq (,$(filter armel mips,$(DEB_HOST_ARCH)))
+ARCH_SPECIFIC_OPTIONS = --disable-gtest
+endif
+
 ARCH_SPECIFIC_LIB_RECOMMENDS += $(ARCH_SPECIFIC_LIB_RECOMMENDS_ADD)
 
 # Various environment variables to set
-export DEB_LDFLAGS_MAINT_APPEND = $(shell pkg-config --libs ftgl) -latomic
-
-# fall back to old location of libhdhomerun includes if needed
-ifneq ("$(wildcard /usr/lib/libhdhomerun/hdhomerun.h)","")
-export DEB_CXXFLAGS_MAINT_APPEND = -I/usr/lib/
-endif
+export DEB_LDFLAGS_MAINT_APPEND = -latomic
 
 # List of options to pass to configure. Can be overridden.
 # Extra options can simply be passed using KODI_CONFIG_EXTRA_OPTIONS env
@@ -39,6 +51,7 @@ KODI_CONFIG_OPTIONS ?= --host=$(DEB_HOST_GNU_TYPE) \
   --disable-vtbdecoder \
   --disable-openmax \
   --disable-tegra \
+  $(DEBUG_CONFIG_OPTIONS) \
   --disable-profiling \
   --enable-joystick \
   --enable-pulse \
@@ -56,7 +69,7 @@ KODI_CONFIG_OPTIONS ?= --host=$(DEB_HOST_GNU_TYPE) \
   --disable-dependency-tracking \
   --disable-dvdcss \
   --disable-non-free \
-  --disable-gtest \
+  --enable-gtest \
   $(ARCH_SPECIFIC_OPTIONS) \
   $(KODI_CONFIG_EXTRA_OPTIONS)
 
@@ -83,14 +96,12 @@ DEJAVUSANS=/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf
 endif
 
 override_dh_auto_configure: configure
-	sed -i 's/DEB_VERSION/"'$(VERSION)'"/' xbmc/GUIInfoManager.cpp xbmc/Application.cpp
-	mkdir -p xbmc/visualizations/XBMCProjectM/libprojectM/fonts
-	-ln -s /usr/share/fonts/truetype/ttf-bitstream-vera/Vera.ttf xbmc/visualizations/XBMCProjectM/libprojectM/fonts/
-	-ln -s /usr/share/fonts/truetype/ttf-bitstream-vera/VeraMono.ttf xbmc/visualizations/XBMCProjectM/libprojectM/fonts/
+	sed -i 's/DEB_VERSION/"'$(VERSION)'"/' xbmc/utils/SystemInfo.cpp
 	fontforge -script $(CURDIR)/debian/mergefonts.ff \
 		/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf \
 		$(DEJAVUSANS) \
 		$(CURDIR)/media/Fonts/arial.ttf
+	cp -r /usr/src/gtest ./lib/
 	./bootstrap
 	dh_auto_configure -- $(KODI_CONFIG_OPTIONS)
 	# Add "from Debian" next to Kodi's original logo
@@ -109,13 +120,6 @@ override_dh_install:
 		-XDejaVuSans.ttf -XDejaVuSans-Bold.ttf -XLICENSE.txt \
 		-XRoboto-Bold.ttf -XRoboto-Regular.ttf -XNOTICE.txt \
 		-Xjquery-1.8.2.min.js -Xiscroll-min.js
-
-override_dh_makeshlibs:
-	# We don't install shared libraries in standard locations so don't run
-	# dh_makeshlibs
-	# OTOH we need to remove exec flag after dh_strip
-	chmod -x $(CURDIR)/debian/tmp/usr/lib/*/kodi/addons/visualization.*/*.vis
-	-chmod -x $(CURDIR)/debian/tmp/usr/lib/*/kodi/addons/screensaver.rsxs.*/*.xbs
 
 override_dh_shlibdeps: debian/tmp/kodi-bin-depends-dummy.so debian/tmp/kodi-bin-recommends-dummy.so
 	dh_shlibdeps -a -O--parallel \
@@ -136,7 +140,6 @@ debian/tmp/kodi-bin-recommends-dummy.so:
 		-lbluray \
 		-lcec \
 		-lFLAC \
-		-lhdhomerun \
 		-lmad \
 		-lmodplug \
 		-lmp3lame \

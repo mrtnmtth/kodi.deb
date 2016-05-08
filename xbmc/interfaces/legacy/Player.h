@@ -28,6 +28,7 @@
 #include "Exception.h"
 #include "AddonString.h"
 #include "InfoTagMusic.h"
+#include "InfoTagRadioRDS.h"
 #include "AddonCallback.h"
 #include "Alternative.h"
 
@@ -218,6 +219,12 @@ namespace XBMCAddon
       bool isPlayingVideo();
 
       /**
+       * isPlayingRDS() -- returns True if xbmc is playing a radio data system (RDS).
+       */
+      // Player_IsPlayingRDS
+      bool isPlayingRDS();
+
+      /**
        * getPlayingFile() -- returns the current playing file as a string.\n
        * Note: For LiveTV, returns a pvr:// url which is not translatable to an OS specific file or external url\n
        * \n
@@ -277,7 +284,7 @@ namespace XBMCAddon
       /**
        * getAvailableSubtitleStreams() -- get Subtitle stream names
        */
-      std::vector<String>* getAvailableSubtitleStreams();
+      std::vector<String> getAvailableSubtitleStreams();
 
       // Player_setSubtitleStream
       /**
@@ -306,6 +313,14 @@ namespace XBMCAddon
       InfoTagMusic* getMusicInfoTag();
 
       /**
+       * getRadioRDSInfoTag() -- returns the RadioRDSInfoTag of the current playing 'Radio Song if present'.
+       *
+       * Throws: Exception, if player is not playing a file or current file is not a rds file.
+       */
+      // Player_GetRadioRDSInfoTag
+      InfoTagRadioRDS* getRadioRDSInfoTag() throw (PlayerException);
+
+      /**
        * getTotalTime() -- Returns the total time of the current playing media in
        *                   seconds.  This is only accurate to the full second.
        *
@@ -317,7 +332,7 @@ namespace XBMCAddon
       /**
        * getAvailableAudioStreams() -- get Audio stream names
        */
-      std::vector<String>* getAvailableAudioStreams();
+      std::vector<String> getAvailableAudioStreams();
 
       /**
        * setAudioStream(stream) -- set Audio Stream.

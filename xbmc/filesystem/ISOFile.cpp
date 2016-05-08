@@ -24,9 +24,9 @@
 #include "URL.h"
 #include "iso9660.h"
 
+#include <algorithm>
 #include <sys/stat.h>
 
-using namespace std;
 using namespace XFILE;
 
 //////////////////////////////////////////////////////////////////////
@@ -50,7 +50,7 @@ CISOFile::~CISOFile()
 //*********************************************************************************************
 bool CISOFile::Open(const CURL& url)
 {
-  string strFName = "\\";
+  std::string strFName = "\\";
   strFName += url.GetFileName();
   for (int i = 0; i < (int)strFName.size(); ++i )
   {
@@ -84,10 +84,7 @@ ssize_t CISOFile::Read(void *lpBuf, size_t uiBufSize)
     {
       if (m_cache.getMaxReadSize() )
       {
-        long lBytes2Read = m_cache.getMaxReadSize();
-        if (lBytes2Read > static_cast<long>(uiBufSize))
-          lBytes2Read = static_cast<long>(uiBufSize);
-
+        unsigned int lBytes2Read = std::min(m_cache.getMaxReadSize(), static_cast<unsigned int>(uiBufSize));
         m_cache.ReadData(pData, lBytes2Read );
         uiBufSize -= lBytes2Read ;
         pData += lBytes2Read;
@@ -107,7 +104,7 @@ ssize_t CISOFile::Read(void *lpBuf, size_t uiBufSize)
     return lTotalBytesRead;
   }
 
-  return m_isoReader.ReadFile( m_hFile, (uint8_t*)pData, (long)uiBufSize);;
+  return m_isoReader.ReadFile( m_hFile, (uint8_t*)pData, (long)uiBufSize);
 }
 
 //*********************************************************************************************
@@ -143,7 +140,7 @@ int64_t CISOFile::GetPosition()
 
 bool CISOFile::Exists(const CURL& url)
 {
-  string strFName = "\\";
+  std::string strFName = "\\";
   strFName += url.GetFileName();
   for (int i = 0; i < (int)strFName.size(); ++i )
   {
@@ -159,7 +156,7 @@ bool CISOFile::Exists(const CURL& url)
 
 int CISOFile::Stat(const CURL& url, struct __stat64* buffer)
 {
-  string strFName = "\\";
+  std::string strFName = "\\";
   strFName += url.GetFileName();
   for (int i = 0; i < (int)strFName.size(); ++i )
   {

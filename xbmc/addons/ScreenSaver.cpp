@@ -20,13 +20,14 @@
 #include "ScreenSaver.h"
 #include "guilib/GraphicContext.h"
 #include "interfaces/generic/ScriptInvocationManager.h"
+#include "settings/Settings.h"
 #include "utils/AlarmClock.h"
 #include "windowing/WindowingFactory.h"
 
 // What sound does a python screensaver make?
 #define SCRIPT_ALARM "sssssscreensaver"
 
-#define SCRIPT_TIMEOUT 5 // seconds
+#define SCRIPT_TIMEOUT 15 // seconds
 
 namespace ADDON
 {
@@ -42,15 +43,20 @@ AddonPtr CScreenSaver::Clone() const
   return AddonPtr(new CScreenSaver(*this));
 }
 
+bool CScreenSaver::IsInUse() const
+{
+  return CSettings::GetInstance().GetString(CSettings::SETTING_SCREENSAVER_MODE) == ID();
+}
+
 bool CScreenSaver::CreateScreenSaver()
 {
-  if (CScriptInvocationManager::Get().HasLanguageInvoker(LibPath()))
+  if (CScriptInvocationManager::GetInstance().HasLanguageInvoker(LibPath()))
   {
     // Don't allow a previously-scheduled alarm to kill our new screensaver
     g_alarmClock.Stop(SCRIPT_ALARM, true);
 
-    if (!CScriptInvocationManager::Get().Stop(LibPath()))
-      CScriptInvocationManager::Get().ExecuteAsync(LibPath(), Clone());
+    if (!CScriptInvocationManager::GetInstance().Stop(LibPath()))
+      CScriptInvocationManager::GetInstance().ExecuteAsync(LibPath(), Clone());
     return true;
   }
  // pass it the screen width,height
@@ -60,7 +66,7 @@ bool CScreenSaver::CreateScreenSaver()
 
   m_pInfo = new SCR_PROPS;
 #ifdef HAS_DX
-  m_pInfo->device     = g_Windowing.Get3DDevice();
+  m_pInfo->device     = g_Windowing.Get3D11Context();
 #else
   m_pInfo->device     = NULL;
 #endif
@@ -102,6 +108,10 @@ void CScreenSaver::Destroy()
 #ifdef HAS_PYTHON
   if (URIUtils::HasExtension(LibPath(), ".py"))
   {
+    /* FIXME: This is a hack but a proper fix is non-trivial. Basically this code
+     * makes sure the addon gets terminated after we've moved out of the screensaver window.
+     * If we don't do this, we may simply lockup.
+     */
     g_alarmClock.Start(SCRIPT_ALARM, SCRIPT_TIMEOUT, "StopScript(" + LibPath() + ")", true, false);
     return;
   }

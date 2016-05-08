@@ -18,6 +18,12 @@
  *
  */
 
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include <limits.h>
 
 #include "GUIDialogContentSettings.h"
@@ -28,7 +34,7 @@
 #include "dialogs/GUIDialogKaiToast.h"
 #include "guilib/GUIWindowManager.h"
 #include "input/Key.h"
-#include "interfaces/Builtins.h"
+#include "interfaces/builtins/Builtins.h"
 #include "settings/lib/Setting.h"
 #include "settings/lib/SettingDependency.h"
 #include "settings/lib/SettingsManager.h"
@@ -46,7 +52,6 @@
 #define SETTING_EXCLUDE               "exclude"
 #define SETTING_NO_UPDATING           "noupdating"
 
-using namespace std;
 using namespace ADDON;
 
 CGUIDialogContentSettings::CGUIDialogContentSettings()
@@ -109,7 +114,7 @@ bool CGUIDialogContentSettings::OnMessage(CGUIMessage &message)
           std::string content = m_vecItems->Get(iSelected)->GetPath().substr(14);
           OnCancel();
           Close();
-          CBuiltins::Execute("ActivateWindow(AddonBrowser,addons://all/xbmc.metadata.scraper." + content + ",return)");
+          CBuiltins::GetInstance().Execute("ActivateWindow(AddonBrowser,addons://all/xbmc.metadata.scraper." + content + ",return)");
           return true;
         }
 
@@ -206,7 +211,7 @@ bool CGUIDialogContentSettings::Show(ADDON::ScraperPtr& scraper, VIDEO::SScanSet
   }
 
   dialog->SetScanSettings(settings);
-  dialog->DoModal();
+  dialog->Open();
 
   bool confirmed = dialog->IsConfirmed();
   if (confirmed)
@@ -433,7 +438,7 @@ void CGUIDialogContentSettings::FillContentTypes()
   if (m_content == CONTENT_ALBUMS || m_content == CONTENT_ARTISTS)
   {
     FillContentTypes(m_content);
-    labels.push_back(make_pair(ADDON::TranslateContent(m_content, true), m_content));
+    labels.push_back(std::make_pair(ADDON::TranslateContent(m_content, true), m_content));
   }
   else
   {
@@ -441,10 +446,10 @@ void CGUIDialogContentSettings::FillContentTypes()
     FillContentTypes(CONTENT_TVSHOWS);
     FillContentTypes(CONTENT_MUSICVIDEOS);
 
-    labels.push_back(make_pair(ADDON::TranslateContent(CONTENT_MOVIES, true), CONTENT_MOVIES));
-    labels.push_back(make_pair(ADDON::TranslateContent(CONTENT_TVSHOWS, true), CONTENT_TVSHOWS));
-    labels.push_back(make_pair(ADDON::TranslateContent(CONTENT_MUSICVIDEOS, true), CONTENT_MUSICVIDEOS));
-    labels.push_back(make_pair(ADDON::TranslateContent(CONTENT_NONE, true), CONTENT_NONE));
+    labels.push_back(std::make_pair(ADDON::TranslateContent(CONTENT_MOVIES, true), CONTENT_MOVIES));
+    labels.push_back(std::make_pair(ADDON::TranslateContent(CONTENT_TVSHOWS, true), CONTENT_TVSHOWS));
+    labels.push_back(std::make_pair(ADDON::TranslateContent(CONTENT_MUSICVIDEOS, true), CONTENT_MUSICVIDEOS));
+    labels.push_back(std::make_pair(ADDON::TranslateContent(CONTENT_NONE, true), CONTENT_NONE));
   }
 
   SET_CONTROL_LABELS(CONTROL_CONTENT_TYPE, m_content, &labels);
@@ -455,18 +460,18 @@ void CGUIDialogContentSettings::FillContentTypes(CONTENT_TYPE content)
   // grab all scrapers which support this content-type
   VECADDONS addons;
   TYPE type = ADDON::ScraperTypeFromContent(content);
-  if (!CAddonMgr::Get().GetAddons(type, addons))
+  if (!CAddonMgr::GetInstance().GetAddons(type, addons))
     return;
 
   AddonPtr addon;
   std::string defaultID;
-  if (CAddonMgr::Get().GetDefault(type, addon))
+  if (CAddonMgr::GetInstance().GetDefault(type, addon))
     defaultID = addon->ID();
 
   for (IVECADDONS it = addons.begin(); it != addons.end(); ++it)
   {
     bool isDefault = ((*it)->ID() == defaultID);
-    map<CONTENT_TYPE, VECADDONS>::iterator iter = m_scrapers.find(content);
+    std::map<CONTENT_TYPE, VECADDONS>::iterator iter = m_scrapers.find(content);
 
     AddonPtr scraper = (*it)->Clone();
 
@@ -486,7 +491,7 @@ void CGUIDialogContentSettings::FillContentTypes(CONTENT_TYPE content)
     {
       VECADDONS vec;
       vec.push_back(scraper);
-      m_scrapers.insert(make_pair(content,vec));
+      m_scrapers.insert(std::make_pair(content,vec));
     }
   }
 }
@@ -501,7 +506,7 @@ void CGUIDialogContentSettings::FillScraperList()
   else
   {
     AddonPtr scraperAddon;
-    CAddonMgr::Get().GetDefault(ADDON::ScraperTypeFromContent(m_content), scraperAddon);
+    CAddonMgr::GetInstance().GetDefault(ADDON::ScraperTypeFromContent(m_content), scraperAddon);
     m_scraper = std::dynamic_pointer_cast<CScraper>(scraperAddon);
   }
 

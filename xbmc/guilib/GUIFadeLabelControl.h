@@ -38,7 +38,7 @@
 class CGUIFadeLabelControl : public CGUIControl
 {
 public:
-  CGUIFadeLabelControl(int parentID, int controlID, float posX, float posY, float width, float height, const CLabelInfo& labelInfo, bool scrollOut, unsigned int timeToDelayAtEnd, bool resetOnLabelChange);
+  CGUIFadeLabelControl(int parentID, int controlID, float posX, float posY, float width, float height, const CLabelInfo& labelInfo, bool scrollOut, unsigned int timeToDelayAtEnd, bool resetOnLabelChange, bool randomized);
   CGUIFadeLabelControl(const CGUIFadeLabelControl &from);
   virtual ~CGUIFadeLabelControl(void);
   virtual CGUIFadeLabelControl *Clone() const { return new CGUIFadeLabelControl(*this); };
@@ -49,6 +49,7 @@ public:
   virtual bool OnMessage(CGUIMessage& message);
 
   void SetInfo(const std::vector<CGUIInfoLabel> &vecInfo);
+  void SetScrolling(bool scroll) { m_scroll = scroll; }
 
 protected:
   virtual bool UpdateColors();
@@ -71,6 +72,7 @@ protected:
 
   CLabelInfo m_label;
 
+  bool m_scroll;      // true if we scroll the text
   bool m_scrollOut;   // true if we scroll the text all the way to the left before fading in the next label
   bool m_shortText;   // true if the text we have is shorter than the width of the control
 
@@ -80,5 +82,6 @@ protected:
   TransformMatrix m_fadeMatrix;
   unsigned int m_scrollSpeed;
   bool m_resetOnLabelChange;
+  bool m_randomized;
 };
 #endif

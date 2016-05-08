@@ -29,7 +29,7 @@
 #include "AdvancedSettings.h"
 #include "FileItem.h"
 #include "Application.h"
-#include "ApplicationMessenger.h"
+#include "messaging/ApplicationMessenger.h"
 #include "WindowingFactory.h"
 #include "VideoReferenceClock.h"
 #include "utils/log.h"
@@ -44,15 +44,15 @@
 #import <OpenGLES/ES2/gl.h>
 #import <OpenGLES/ES2/glext.h>
 #import "IOSEAGLView.h"
-#if defined(TARGET_DARWIN_IOS_ATV2)
-#import "xbmc/osx/atv2/KodiController.h"
-#elif defined(TARGET_DARWIN_IOS)
+#if defined(TARGET_DARWIN_IOS)
 #import "xbmc/osx/ios/XBMCController.h"
 #endif
 #import "IOSScreenManager.h"
 #import "AutoPool.h"
 #import "DarwinUtils.h"
 #import "XBMCDebugHelpers.h"
+
+using namespace KODI::MESSAGING;
 
 //--------------------------------------------------------------
 @interface IOSEAGLView (PrivateMethods)
@@ -111,7 +111,6 @@
   CGFloat ret = 1.0;
   if ([screen respondsToSelector:@selector(scale)])
   {    
-    // atv2 reports 0.0 for scale - thats why we check this here
     // normal other iDevices report 1.0 here
     // retina devices report 2.0 here
     // this info is true as of 19.3.2012.
@@ -359,8 +358,7 @@
     xbmcAlive = FALSE;
     if (!g_application.m_bStop)
     {
-      ThreadMessage tMsg = {TMSG_QUIT};
-      CApplicationMessenger::Get().SendMessage(tMsg);
+      CApplicationMessenger::GetInstance().PostMsg(TMSG_QUIT);
     }
     // wait for animation thread to die
     if ([animationThread isFinished] == NO)
@@ -371,6 +369,9 @@
 - (void) runAnimation:(id) arg
 {
   CCocoaAutoPool outerpool;
+  
+  [[NSThread currentThread] setName:@"XBMC_Run"]; 
+  
   // set up some xbmc specific relationships
   XBMC::Context context;
   readyToRun = true;

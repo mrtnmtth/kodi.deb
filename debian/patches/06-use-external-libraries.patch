@@ -3,30 +3,10 @@ Description: Use system's libraries instead of the embedded ones
 Author: Balint Reczey <balint@balintreczey.hu>
 Forwarded: not-needed
 
---- a/Makefile.in
-+++ b/Makefile.in
-@@ -187,7 +187,6 @@
- LIB_DIRS=\
- 	lib/cximage-6.0 \
- 	lib/libexif \
--	lib/libhdhomerun \
- 	lib/cpluff \
- 	lib/xbmc-dll-symbols
- 
-@@ -411,7 +410,7 @@
- 
- codecs: dvdpcodecs dvdpextcodecs
- 
--libs: $(LIBSSE4) libhdhomerun imagelib libexif system/libcpluff-@ARCH@.so
-+libs: $(LIBSSE4) imagelib libexif system/libcpluff-@ARCH@.so
- 
- externals: codecs libs visualizations screensavers libaddon
- 
 --- a/bootstrap.mk
 +++ b/bootstrap.mk
-@@ -2,7 +2,7 @@
- BOOTSTRAP_SUBDIRS += xbmc/screensavers/rsxs-0.9/configure.ac
- BOOTSTRAP_SUBDIRS += xbmc/visualizations/Goom/goom2k4-0/configure.ac
+@@ -1,6 +1,6 @@
+ BOOTSTRAP_SUBDIRS += configure.ac
  BOOTSTRAP_SUBDIRS += lib/cpluff/configure.ac
 -BOOTSTRAP_SUBDIRS += lib/gtest/configure.ac
 +#BOOTSTRAP_SUBDIRS += lib/gtest/configure.ac
@@ -35,7 +15,16 @@ Forwarded: not-needed
  BOOTSTRAP_SUBDIRS += lib/libdvd/libdvdcss/configure.ac
 --- a/configure.ac
 +++ b/configure.ac
-@@ -1219,6 +1219,9 @@
+@@ -1053,7 +1053,7 @@
+ AC_CHECK_HEADER([jpeglib.h],,        AC_MSG_ERROR($missing_library))
+ AC_CHECK_HEADER([ogg/ogg.h],,        AC_MSG_ERROR($missing_library))
+ AC_CHECK_HEADER([vorbis/vorbisfile.h],, AC_MSG_ERROR($missing_library))
+-PKG_CHECK_MODULES([LIBDCADEC], [dcadec],, AC_MSG_ERROR([libdcadec not found]))
++#PKG_CHECK_MODULES([LIBDCADEC], [dcadec],, AC_MSG_ERROR([libdcadec not found]))
+ 
+ PKG_CHECK_MODULES([LIBCURL], [libcurl],, AC_MSG_ERROR([libcurl not found]))
+ XB_FIND_SONAME([CURL], [curl])
+@@ -1190,6 +1190,9 @@
  PKG_CHECK_MODULES([TAGLIB],  [taglib >= 1.8],
    [INCLUDES="$INCLUDES $TAGLIB_CFLAGS"; LIBS="$LIBS $TAGLIB_LIBS"],
    AC_MSG_ERROR($missing_library))
@@ -45,22 +34,26 @@ Forwarded: not-needed
  
  if test "$use_optical_drive" = "yes"; then
    PKG_CHECK_MODULES([CDIO],       [libcdio],
-@@ -1313,6 +1316,7 @@
- XB_FIND_SONAME([VORBISFILE],  [vorbisfile])
- XB_FIND_SONAME([ASS],         [ass])
- XB_FIND_SONAME([MPEG2],       [mpeg2])
-+XB_FIND_SONAME([HDHOMERUN],   [hdhomerun])
+@@ -2642,18 +2645,11 @@
+ ], [0])
  
- # WebServer
- if test "$use_webserver" = "yes"; then
-@@ -2478,7 +2482,6 @@
-     xbmc/network/Makefile \
-     xbmc/network/upnp/Makefile \
-     lib/libexif/Makefile \
--    lib/libhdhomerun/Makefile \
-     lib/cximage-6.0/Makefile \
-     lib/libUPnP/Makefile \
-     xbmc/DllPaths_generated.h \
+ XB_CONFIG_MODULE([lib/gtest], [
+-  ./configure \
+     CC="$CC" \
+     CXX="$CXX" \
+     CFLAGS="$CFLAGS" \
+     CXXFLAGS="$CXXFLAGS" \
+-    --prefix="${prefix}" --includedir="${includedir}" --libdir="${libdir}" --datadir="${datadir}" \
+-    --host=$host_alias \
+-    --build=$build_alias \
+-    --target=$target_alias \
+-    --disable-shared \
+-    --enable-static \
+-    --with-pthreads
++    cmake .
+ ], [$SKIP_CONFIG_GTEST])
+ 
+ AC_OUTPUT
 --- a/lib/cximage-6.0/Makefile.in
 +++ b/lib/cximage-6.0/Makefile.in
 @@ -4,8 +4,8 @@
@@ -83,28 +76,17 @@ Forwarded: not-needed
  endif
  
  $(SLIBS): compile 
---- a/xbmc/DllPaths_generated.h.in
-+++ b/xbmc/DllPaths_generated.h.in
-@@ -28,7 +28,7 @@
- #define DLL_PATH_CPLUFF        "special://xbmcbin/system/libcpluff-@ARCH@.so"
- #define DLL_PATH_IMAGELIB      "special://xbmcbin/system/ImageLib-@ARCH@.so"
- #define DLL_PATH_LIBEXIF       "special://xbmcbin/system/libexif-@ARCH@.so"
--#define DLL_PATH_LIBHDHOMERUN  "special://xbmcbin/system/hdhomerun-@ARCH@.so"
-+#define DLL_PATH_LIBHDHOMERUN  "@HDHOMERUN_SONAME@"
- #define DLL_PATH_MEDIAINFO     "special://xbmcbin/system/mediainfo-@ARCH@.so"
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -232,7 +232,7 @@
  
- #define DLL_PATH_LIBRTMP       "@RTMP_SONAME@"
---- a/xbmc/filesystem/DllHDHomeRun.h
-+++ b/xbmc/filesystem/DllHDHomeRun.h
-@@ -20,7 +20,7 @@
-  */
+ GTEST_DIR = lib/gtest
+ GTEST_INCLUDES = -I$(GTEST_DIR)/include
+-GTEST_LIBS = $(GTEST_DIR)/lib/.libs/libgtest.a
++GTEST_LIBS = $(GTEST_DIR)/libgtest.a
  
- #include "DynamicDll.h"
--#include "lib/libhdhomerun/hdhomerun.h"
-+#include "libhdhomerun/hdhomerun.h"
- 
- class DllHdHomeRunInterface
- {
+ CHECK_DIRS = xbmc/addons/test \
+              xbmc/filesystem/test \
 --- a/xbmc/cores/dvdplayer/DVDInputStreams/DllDvdNav.h
 +++ b/xbmc/cores/dvdplayer/DVDInputStreams/DllDvdNav.h
 @@ -34,6 +34,8 @@
@@ -116,180 +98,6 @@ Forwarded: not-needed
   #include "dvdnav/dvdnav_internal.h"
   #include "dvdnav/vm.h"
   #include "dvdnav/dvd_types.h"
---- a/xbmc/screensavers/rsxs-0.9/lib/Makefile.am
-+++ b/xbmc/screensavers/rsxs-0.9/lib/Makefile.am
-@@ -31,20 +31,20 @@
- ## begin gnulib module alloca
- 
- 
--libmisc_a_LIBADD += @ALLOCA@
-+#libmisc_a_LIBADD += @ALLOCA@
- ## end   gnulib module alloca
- 
- ## begin gnulib module alloca-opt
- 
--BUILT_SOURCES += $(ALLOCA_H)
--EXTRA_DIST += alloca_.h
-+#BUILT_SOURCES += $(ALLOCA_H)
-+#EXTRA_DIST += alloca_.h
- 
- # We need the following in order to create <alloca.h> when the system
- # doesn't have one that works with the given compiler.
--alloca.h: alloca_.h
--	cp $(srcdir)/alloca_.h $@-t
--	mv $@-t $@
--MOSTLYCLEANFILES += alloca.h alloca.h-t
-+#alloca.h: alloca_.h
-+#	cp $(srcdir)/alloca_.h $@-t
-+#	mv $@-t $@
-+#MOSTLYCLEANFILES += alloca.h alloca.h-t
- 
- ## end   gnulib module alloca-opt
- 
-@@ -59,15 +59,15 @@
- 
- ## begin gnulib module argz
- 
--BUILT_SOURCES += $(ARGZ_H)
--EXTRA_DIST += argz_.h
-+#BUILT_SOURCES += $(ARGZ_H)
-+#EXTRA_DIST += argz_.h
- 
- # We need the following in order to create <argz.h> when the system
- # doesn't have one that works with the given compiler.
--argz.h: argz_.h
--	cp $(srcdir)/argz_.h $@-t
--	mv $@-t $@
--MOSTLYCLEANFILES += argz.h argz.h-t
-+#argz.h: argz_.h
-+#	cp $(srcdir)/argz_.h $@-t
-+#	mv $@-t $@
-+#MOSTLYCLEANFILES += argz.h argz.h-t
- 
- ## end   gnulib module argz
- 
-@@ -85,15 +85,15 @@
- 
- ## begin gnulib module getopt
- 
--BUILT_SOURCES += $(GETOPT_H)
--EXTRA_DIST += getopt_.h getopt_int.h
-+#BUILT_SOURCES += $(GETOPT_H)
-+#EXTRA_DIST += getopt_.h getopt_int.h
- 
- # We need the following in order to create <getopt.h> when the system
- # doesn't have one that works with the given compiler.
--getopt.h: getopt_.h
--	cp $(srcdir)/getopt_.h $@-t
--	mv $@-t $@
--MOSTLYCLEANFILES += getopt.h getopt.h-t
-+#getopt.h: getopt_.h
-+#	cp $(srcdir)/getopt_.h $@-t
-+#	mv $@-t $@
-+#MOSTLYCLEANFILES += getopt.h getopt.h-t
- 
- ## end   gnulib module getopt
- 
-@@ -129,15 +129,15 @@
- 
- ## begin gnulib module stdbool
- 
--BUILT_SOURCES += $(STDBOOL_H)
--EXTRA_DIST += stdbool_.h
-+#BUILT_SOURCES += $(STDBOOL_H)
-+#EXTRA_DIST += stdbool_.h
- 
- # We need the following in order to create <stdbool.h> when the system
- # doesn't have one that works.
--stdbool.h: stdbool_.h
--	sed -e 's/@''HAVE__BOOL''@/$(HAVE__BOOL)/g' < $(srcdir)/stdbool_.h > $@-t
--	mv $@-t $@
--MOSTLYCLEANFILES += stdbool.h stdbool.h-t
-+#stdbool.h: stdbool_.h
-+#	sed -e 's/@''HAVE__BOOL''@/$(HAVE__BOOL)/g' < $(srcdir)/stdbool_.h > $@-t
-+#	mv $@-t $@
-+# MOSTLYCLEANFILES += stdbool.h stdbool.h-t
- 
- ## end   gnulib module stdbool
- 
-@@ -175,13 +175,13 @@
- 
- ## begin gnulib module unistd
- 
--BUILT_SOURCES += $(UNISTD_H)
-+#BUILT_SOURCES += $(UNISTD_H)
- 
- # We need the following in order to create an empty placeholder for
- # <unistd.h> when the system doesn't have one.
--unistd.h:
--	echo '/* Empty placeholder for $@.  */' >$@
--MOSTLYCLEANFILES += unistd.h
-+#unistd.h:
-+#	echo '/* Empty placeholder for $@.  */' >$@
-+#MOSTLYCLEANFILES += unistd.h
- 
- ## end   gnulib module unistd
- 
---- a/xbmc/screensavers/rsxs-0.9/Makefile.am
-+++ b/xbmc/screensavers/rsxs-0.9/Makefile.am
-@@ -1,6 +1,6 @@
- ## Process this file with automake to produce Makefile.in
- 
--SUBDIRS = lib libltdl src config
-+SUBDIRS = src config
- EXTRA_DIST = scripts THANKS
- DISTCHECK_CONFIGURE_FLAGS = --without-xscreensaver
- ACLOCAL_AMFLAGS = -I m4
---- a/xbmc/screensavers/rsxs-0.9/configure.ac
-+++ b/xbmc/screensavers/rsxs-0.9/configure.ac
-@@ -8,7 +8,7 @@
- AC_SUBST(RELEASE, 1)
- 
- AC_CONFIG_MACRO_DIR(m4)
--AC_CONFIG_LIBOBJ_DIR(lib)
-+#AC_CONFIG_LIBOBJ_DIR(lib)
- 
- AC_GNU_SOURCE
- 
---- a/xbmc/screensavers/rsxs-0.9/src/Makefile.common
-+++ b/xbmc/screensavers/rsxs-0.9/src/Makefile.common
-@@ -10,13 +10,13 @@
- SOUND = ../sound.hh ../sound.cc ../oggsound.hh ../oggsound.cc
- DLOPEN = ../dlopen.hh
- 
--LIBMISC = $(top_builddir)/lib/libmisc.a
-+LIBMISC = 
- if DLOPEN
--LIBLTDL = $(top_builddir)/libltdl/libltdl.a
--LIBLTDL_CPPFLAGS = -I$(top_builddir)/libltdl
-+LIBLTDL = 
-+LIBLTDL_CPPFLAGS =
- endif DLOPEN
- 
--AM_CPPFLAGS = -DPKGDATADIR=\"$(pkgdatadir)\" -I$(srcdir)/.. -I$(top_srcdir)/lib $(X_CPPFLAGS) -D_LINUX -DXBMC
-+AM_CPPFLAGS = -DPKGDATADIR=\"$(pkgdatadir)\" -I$(srcdir)/.. $(X_CPPFLAGS) -D_LINUX -DXBMC
- AM_LDFLAGS =
- AM_CXXFLAGS =
- 
---- a/xbmc/screensavers/rsxs-0.9/src/solarwinds/Makefile.xbmc
-+++ b/xbmc/screensavers/rsxs-0.9/src/solarwinds/Makefile.xbmc
-@@ -1,4 +1,4 @@
- plasma.xbs: solarwinds.o wind.o
--	g++ -shared -o SolarWinds.xbs ../common.o solarwinds.o wind.o ../../lib/libmisc.a -lXmu
-+	g++ -shared -o SolarWinds.xbs ../common.o solarwinds.o wind.o -lXmu
- #	cp SolarWinds.xbs /home/yuvalt/XBMC/screensavers/
- 	cp SolarWinds.xbs ../../../../../XBMC/screensavers/
---- a/xbmc/screensavers/rsxs-0.9/xbmc/Makefile.in
-+++ b/xbmc/screensavers/rsxs-0.9/xbmc/Makefile.in
-@@ -8,7 +8,7 @@
- 
- DIRS=$(RSXS)
- 
--RSXS-OBJS=$(RSXS)/src/common.o $(RSXS)/src/color.o $(RSXS)/lib/libmisc.a
-+RSXS-OBJS=$(RSXS)/src/common.o $(RSXS)/src/color.o
- 
- SOLARWINDS-OUT=$(OUTDIR)/screensaver.rsxs.solarwinds/Solarwinds.xbs
- SOLARWINDS-DEP=$(RSXS)/src/solarwinds/rs-solarwinds
 --- a/tools/depends/native/TexturePacker/Makefile
 +++ b/tools/depends/native/TexturePacker/Makefile
 @@ -9,13 +9,13 @@

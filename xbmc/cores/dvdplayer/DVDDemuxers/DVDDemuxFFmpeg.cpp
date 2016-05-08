@@ -18,7 +18,30 @@
  *
  */
 
+#include "DVDDemuxFFmpeg.h"
+
+#include <utility>
+
+#include "commons/Exception.h"
+#include "cores/FFmpeg.h"
+#include "DVDClock.h" // for DVD_TIME_BASE
+#include "DVDDemuxUtils.h"
+#include "DVDInputStreams/DVDInputStream.h"
+#include "DVDInputStreams/DVDInputStreamFFmpeg.h"
+#include "filesystem/CurlFile.h"
+#include "filesystem/Directory.h"
+#include "filesystem/File.h"
+#include "settings/AdvancedSettings.h"
+#include "settings/Settings.h"
 #include "system.h"
+#include "threads/SystemClock.h"
+#include "URL.h"
+#include "utils/log.h"
+#include "utils/StringUtils.h"
+
+#ifdef HAVE_LIBBLURAY
+#include "DVDInputStreams/DVDInputStreamBluray.h"
+#endif
 #ifndef __STDC_CONSTANT_MACROS
 #define __STDC_CONSTANT_MACROS
 #endif
@@ -28,29 +51,11 @@
 #ifdef TARGET_POSIX
 #include "stdint.h"
 #endif
-#include "DVDDemuxFFmpeg.h"
-#include "DVDInputStreams/DVDInputStream.h"
-#ifdef HAVE_LIBBLURAY
-#include "DVDInputStreams/DVDInputStreamBluray.h"
-#endif
-#include "DVDInputStreams/DVDInputStreamFFmpeg.h"
-#include "DVDDemuxUtils.h"
-#include "DVDClock.h" // for DVD_TIME_BASE
-#include "commons/Exception.h"
-#include "settings/AdvancedSettings.h"
-#include "settings/Settings.h"
-#include "filesystem/File.h"
-#include "filesystem/CurlFile.h"
-#include "filesystem/Directory.h"
-#include "utils/log.h"
-#include "threads/SystemClock.h"
-#include "utils/StringUtils.h"
-#include "URL.h"
-#include "cores/FFmpeg.h"
 
 extern "C" {
 #include "libavutil/opt.h"
 }
+
 
 struct StereoModeConversionMap
 {
@@ -439,6 +444,16 @@ bool CDVDDemuxFFmpeg::Open(CDVDInputStream* pInput, bool streaminfo, bool filein
 
   if (m_streaminfo)
   {
+    for (unsigned int i = 0; i < m_pFormatContext->nb_streams; i++)
+    {
+      AVStream *st = m_pFormatContext->streams[i];
+      if (st->codec->codec_type == AVMEDIA_TYPE_AUDIO && st->codec->codec_id == AV_CODEC_ID_DTS)
+      {
+        AVCodec* pCodec = avcodec_find_decoder_by_name("libdcadec");
+        if (pCodec)
+          st->codec->codec = pCodec;
+      }
+    }
     /* to speed up dvd switches, only analyse very short */
     if(m_pInput->IsStreamType(DVDSTREAM_TYPE_DVD))
       av_opt_set_int(m_pFormatContext, "analyzeduration", 500000, 0);
@@ -1014,16 +1029,25 @@ int CDVDDemuxFFmpeg::GetNrOfStreams()
   return m_stream_index.size();
 }
 
-static double SelectAspect(AVStream* st, bool* forced)
+double CDVDDemuxFFmpeg::SelectAspect(AVStream* st, bool& forced)
 {
-  *forced = false;
-  /* if stream aspect is 1:1 or 0:0 use codec aspect */
-  if((st->sample_aspect_ratio.den == 1 || st->sample_aspect_ratio.den == 0)
-  && (st->sample_aspect_ratio.num == 1 || st->sample_aspect_ratio.num == 0)
-  && st->codec->sample_aspect_ratio.num != 0)
-    return av_q2d(st->codec->sample_aspect_ratio);
+  // trust matroshka container
+  if (m_bMatroska && st->sample_aspect_ratio.num != 0)
+  {
+    forced = true;
+    return av_q2d(st->sample_aspect_ratio);
+  }
 
-  *forced = true;
+  forced = false;
+  /* if stream aspect is 1:1 or 0:0 use codec aspect */
+  if((st->sample_aspect_ratio.den == 1 || st->sample_aspect_ratio.den == 0) &&
+     (st->sample_aspect_ratio.num == 1 || st->sample_aspect_ratio.num == 0) &&
+      st->codec->sample_aspect_ratio.num != 0)
+  {
+    return av_q2d(st->codec->sample_aspect_ratio);
+  }
+
+  forced = true;
   if(st->sample_aspect_ratio.num != 0)
     return av_q2d(st->sample_aspect_ratio);
 
@@ -1168,7 +1192,7 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int iId)
 
         st->iWidth = pStream->codec->width;
         st->iHeight = pStream->codec->height;
-        st->fAspect = SelectAspect(pStream, &st->bForcedAspect) * pStream->codec->width / pStream->codec->height;
+        st->fAspect = SelectAspect(pStream, st->bForcedAspect) * pStream->codec->width / pStream->codec->height;
         st->iOrientation = 0;
         st->iBitsPerPixel = pStream->codec->bits_per_coded_sample;
 
@@ -1209,7 +1233,7 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int iId)
       }
     case AVMEDIA_TYPE_SUBTITLE:
       {
-        if (pStream->codec->codec_id == AV_CODEC_ID_DVB_TELETEXT && CSettings::Get().GetBool("videoplayer.teletextenabled"))
+        if (pStream->codec->codec_id == AV_CODEC_ID_DVB_TELETEXT && CSettings::GetInstance().GetBool(CSettings::SETTING_VIDEOPLAYER_TELETEXTENABLED))
         {
           CDemuxStreamTeletext* st = new CDemuxStreamTeletext();
           stream = st;
@@ -1267,9 +1291,6 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int iId)
       }
     }
 
-    // set ffmpeg type
-    stream->orig_type = pStream->codec->codec_type;
-
     // generic stuff
     if (pStream->duration != (int64_t)AV_NOPTS_VALUE)
       stream->iDuration = (int)((pStream->duration / AV_TIME_BASE) & 0xFFFFFFFF);
@@ -1287,7 +1308,7 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int iId)
     if (langTag)
       strncpy(stream->language, langTag->value, 3);
 
-    if( pStream->codec->extradata && pStream->codec->extradata_size > 0 )
+    if( stream->type != STREAM_NONE && pStream->codec->extradata && pStream->codec->extradata_size > 0 )
     {
       stream->ExtraSize = pStream->codec->extradata_size;
       stream->ExtraData = new uint8_t[pStream->codec->extradata_size];
@@ -1536,9 +1557,9 @@ bool CDVDDemuxFFmpeg::IsProgramChange()
   {
     int idx = m_pFormatContext->programs[m_program]->stream_index[i];
     CDemuxStream *stream = GetStreamInternal(idx);
-    if(!stream)
+    if (!stream)
       return true;
-    if(m_pFormatContext->streams[idx]->codec->codec_type != stream->orig_type)
+    if (m_pFormatContext->streams[idx]->codec->codec_id != stream->codec)
       return true;
   }
   return false;

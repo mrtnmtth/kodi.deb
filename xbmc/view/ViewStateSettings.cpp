@@ -18,25 +18,32 @@
  *
  */
 
-#include <string.h>
-
 #include "ViewStateSettings.h"
+
+#include <cstring>
+#include <utility>
+
 #include "threads/SingleLock.h"
 #include "utils/log.h"
+#include "utils/SortUtils.h"
 #include "utils/XBMCTinyXML.h"
 #include "utils/XMLUtils.h"
 
-#define XML_VIEWSTATESETTINGS "viewstates"
-#define XML_VIEWMODE          "viewmode"
-#define XML_SORTMETHOD        "sortmethod"
-#define XML_SORTORDER         "sortorder"
-#define XML_SORTATTRIBUTES    "sortattributes"
-#define XML_GENERAL           "general"
-#define XML_SETTINGLEVEL      "settinglevel"
-
-using namespace std;
+#define XML_VIEWSTATESETTINGS       "viewstates"
+#define XML_VIEWMODE                "viewmode"
+#define XML_SORTMETHOD              "sortmethod"
+#define XML_SORTORDER               "sortorder"
+#define XML_SORTATTRIBUTES          "sortattributes"
+#define XML_GENERAL                 "general"
+#define XML_SETTINGLEVEL            "settinglevel"
+#define XML_EVENTLOG                "eventlog"
+#define XML_EVENTLOG_LEVEL          "level"
+#define XML_EVENTLOG_LEVEL_HIGHER   "showhigherlevels"
 
 CViewStateSettings::CViewStateSettings()
+  : m_settingLevel(SettingLevelStandard),
+    m_eventLevel(EventLevelBasic),
+    m_eventShowHigherLevels(true)
 {
   AddViewState("musicnavartists");
   AddViewState("musicnavalbums");
@@ -61,12 +68,12 @@ CViewStateSettings::CViewStateSettings()
 
 CViewStateSettings::~CViewStateSettings()
 {
-  for (map<string, CViewState*>::const_iterator viewState = m_viewStates.begin(); viewState != m_viewStates.end(); ++viewState)
+  for (std::map<std::string, CViewState*>::const_iterator viewState = m_viewStates.begin(); viewState != m_viewStates.end(); ++viewState)
     delete viewState->second;
   m_viewStates.clear();
 }
 
-CViewStateSettings& CViewStateSettings::Get()
+CViewStateSettings& CViewStateSettings::GetInstance()
 {
   static CViewStateSettings sViewStateSettings;
   return sViewStateSettings;
@@ -85,7 +92,7 @@ bool CViewStateSettings::Load(const TiXmlNode *settings)
     return false;
   }
 
-  for (map<string, CViewState*>::iterator viewState = m_viewStates.begin(); viewState != m_viewStates.end(); ++viewState)
+  for (std::map<std::string, CViewState*>::iterator viewState = m_viewStates.begin(); viewState != m_viewStates.end(); ++viewState)
   {
     const TiXmlNode* pViewState = pElement->FirstChildElement(viewState->first);
     if (pViewState == NULL)
@@ -122,6 +129,19 @@ bool CViewStateSettings::Load(const TiXmlNode *settings)
       m_settingLevel = (SettingLevel)settingLevel;
     else
       m_settingLevel = SettingLevelStandard;
+
+    const TiXmlNode* pEventLogNode = pElement->FirstChild(XML_EVENTLOG);
+    if (pEventLogNode != NULL)
+    {
+      int eventLevel;
+      if (XMLUtils::GetInt(pEventLogNode, XML_EVENTLOG_LEVEL, eventLevel, (const int)EventLevelBasic, (const int)EventLevelError))
+        m_eventLevel = (EventLevel)eventLevel;
+      else
+        m_eventLevel = EventLevelBasic;
+
+      if (!XMLUtils::GetBoolean(pEventLogNode, XML_EVENTLOG_LEVEL_HIGHER, m_eventShowHigherLevels))
+        m_eventShowHigherLevels = true;
+    }
   }
 
   return true;
@@ -142,7 +162,7 @@ bool CViewStateSettings::Save(TiXmlNode *settings) const
     return false;
   }
 
-  for (map<string, CViewState*>::const_iterator viewState = m_viewStates.begin(); viewState != m_viewStates.end(); ++viewState)
+  for (std::map<std::string, CViewState*>::const_iterator viewState = m_viewStates.begin(); viewState != m_viewStates.end(); ++viewState)
   {
     TiXmlElement newElement(viewState->first);
     TiXmlNode *pNewNode = pViewStateNode->InsertEndChild(newElement);
@@ -166,6 +186,18 @@ bool CViewStateSettings::Save(TiXmlNode *settings) const
 
   XMLUtils::SetInt(generalNode, XML_SETTINGLEVEL, (int)m_settingLevel);
 
+  TiXmlNode *eventLogNode = generalNode->FirstChild(XML_EVENTLOG);
+  if (eventLogNode == NULL)
+  {
+    TiXmlElement eventLogElement(XML_EVENTLOG);
+    eventLogNode = generalNode->InsertEndChild(eventLogElement);
+    if (eventLogNode == NULL)
+      return false;
+  }
+
+  XMLUtils::SetInt(eventLogNode, XML_EVENTLOG_LEVEL, (int)m_eventLevel);
+  XMLUtils::SetBoolean(eventLogNode, XML_EVENTLOG_LEVEL_HIGHER, (int)m_eventShowHigherLevels);
+
   return true;
 }
 
@@ -177,7 +209,7 @@ void CViewStateSettings::Clear()
 const CViewState* CViewStateSettings::Get(const std::string &viewState) const
 {
   CSingleLock lock(m_critical);
-  map<string, CViewState*>::const_iterator view = m_viewStates.find(viewState);
+  std::map<std::string, CViewState*>::const_iterator view = m_viewStates.find(viewState);
   if (view != m_viewStates.end())
     return view->second;
 
@@ -187,7 +219,7 @@ const CViewState* CViewStateSettings::Get(const std::string &viewState) const
 CViewState* CViewStateSettings::Get(const std::string &viewState)
 {
   CSingleLock lock(m_critical);
-  map<string, CViewState*>::iterator view = m_viewStates.find(viewState);
+  std::map<std::string, CViewState*>::iterator view = m_viewStates.find(viewState);
   if (view != m_viewStates.end())
     return view->second;
 
@@ -214,6 +246,29 @@ SettingLevel CViewStateSettings::GetNextSettingLevel() const
   SettingLevel level = (SettingLevel)((int)m_settingLevel + 1);
   if (level > SettingLevelExpert)
     level = SettingLevelBasic;
+  return level;
+}
+
+void CViewStateSettings::SetEventLevel(EventLevel eventLevel)
+{
+  if (eventLevel < EventLevelBasic)
+    m_eventLevel = EventLevelBasic;
+  if (eventLevel > EventLevelError)
+    m_eventLevel = EventLevelError;
+  else
+    m_eventLevel = eventLevel;
+}
+
+void CViewStateSettings::CycleEventLevel()
+{
+  m_eventLevel = GetNextEventLevel();
+}
+
+EventLevel CViewStateSettings::GetNextEventLevel() const
+{
+  EventLevel level = (EventLevel)((int)m_eventLevel + 1);
+  if (level > EventLevelError)
+    level = EventLevelBasic;
   return level;
 }
 

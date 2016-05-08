@@ -227,6 +227,7 @@ case $host in
           10.8);;
           10.9);;
           10.10);;
+          10.11);;
           *)
             AC_MSG_ERROR(error in configure of --with-sdk=$use_sdk)
         esac
@@ -277,6 +278,7 @@ case $host in
           6.*);;
           7.*);;
           8.*);;
+          9.*);;
             *)
               AC_MSG_ERROR(error in configure of --with-sdk=$use_sdk)
             ;;
@@ -285,7 +287,7 @@ case $host in
         platform_os="ios"
         tmp_flags="-mcpu=cortex-a8 -mfpu=neon -ftree-vectorize -mfloat-abi=softfp -pipe -Wno-trigraphs -fpascal-strings -O3 -Wreturn-type -Wunused-variable -fmessage-length=0 -gdwarf-2"
         platform_cflags+=" $tmp_flags"
-        platform_ldflags+=" -L$use_sdk_path/usr/lib/system"
+        platform_ldflags+=" -L$use_sdk_path/usr/lib/system -Wl,-segalign,4000"
         platform_cxxflags+=" $tmp_flags"
       ;;
     esac

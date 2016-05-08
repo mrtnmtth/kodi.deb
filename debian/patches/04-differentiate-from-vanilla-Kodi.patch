@@ -1,8 +1,8 @@
 --- a/addons/skin.confluence/720p/Home.xml
 +++ b/addons/skin.confluence/720p/Home.xml
-@@ -27,6 +27,18 @@
- 			<include>Window_OpenClose_Animation</include>
- 			<visible>!Skin.HasSetting(homepageWeatherinfo)</visible>
+@@ -19,6 +19,18 @@
+ 			<animation effect="slide" time="200" condition="Window.Previous(Home)">WindowOpen</animation>
+ 			<animation effect="slide" time="200" condition="Window.Next(Home)">WindowClose</animation>
  		</control>
 +		<control type="image">
 +			<description>LOGO2</description>
@@ -18,30 +18,56 @@
 +		</control>
  		<!-- Music Info -->
  		<control type="group">
- 			<left>0</left>
---- a/xbmc/GUIInfoManager.cpp
-+++ b/xbmc/GUIInfoManager.cpp
-@@ -4348,12 +4348,12 @@
-   if (strlen(CCompileInfo::GetSuffix()) == 0)
-     return StringUtils::Format("%d.%d", CCompileInfo::GetMajor(), CCompileInfo::GetMinor());
-   else
--    return StringUtils::Format("%d.%d-%s", CCompileInfo::GetMajor(), CCompileInfo::GetMinor(), CCompileInfo::GetSuffix());
-+    return StringUtils::Format("%d.%d-%s Debian package version:%s", CCompileInfo::GetMajor(), CCompileInfo::GetMinor(), CCompileInfo::GetSuffix(), DEB_VERSION);
- }
+ 			<depth>DepthMenu</depth>
+--- a/xbmc/utils/SystemInfo.cpp
++++ b/xbmc/utils/SystemInfo.cpp
+@@ -73,6 +73,9 @@
+ #include <linux/version.h>
+ #endif
  
- std::string CGUIInfoManager::GetVersion()
++#include <algorithm>
++#include <cctype>
++
+ /* Expand macro before stringify */
+ #define STR_MACRO(x) #x
+ #define XSTR_MACRO(x) STR_MACRO(x)
+@@ -436,7 +439,7 @@
+ const std::string& CSysInfo::GetAppName(void)
+ {
+   assert(CCompileInfo::GetAppName() != NULL);
+-  static const std::string appName(CCompileInfo::GetAppName());
++  static const std::string appName(StringUtils::Format("%s from Debian", CCompileInfo::GetAppName()));
+ 
+   return appName;
+ }
+@@ -1093,7 +1096,9 @@
+   if (!result.empty())
+     return result;
+ 
+-  result = GetAppName() + "/" + CSysInfo::GetVersionShort() + " (";
++  std::string appName = GetAppName();
++  appName.erase(std::remove_if(appName.begin(), appName.end(), ::isspace), appName.end());
++  result = appName + "/" + CSysInfo::GetVersionShort() + " (";
+ #if defined(TARGET_WINDOWS)
+   result += GetKernelName() + " " + GetKernelVersion();
+   BOOL bIsWow = FALSE;
+@@ -1251,7 +1256,7 @@
+ 
+ std::string CSysInfo::GetVersion()
  {
 -  return GetVersionShort() + " Git:" + CCompileInfo::GetSCMID();
-+  return GetVersionShort() + " Git: (unknown)";
++  return GetVersionShort() + StringUtils::Format(" Debian package version: %s", DEB_VERSION);
  }
  
- std::string CGUIInfoManager::GetBuild()
-@@ -4363,7 +4363,7 @@
+ std::string CSysInfo::GetBuildDate()
+--- a/xbmc/utils/test/TestSystemInfo.cpp
++++ b/xbmc/utils/test/TestSystemInfo.cpp
+@@ -215,7 +215,7 @@
  
- std::string CGUIInfoManager::GetAppName()
+ TEST_F(TestSystemInfo, GetUserAgent)
  {
--  return CCompileInfo::GetAppName();
-+  return StringUtils::Format("%s from Debian", CCompileInfo::GetAppName());
- }
- 
- void CGUIInfoManager::SetDisplayAfterSeek(unsigned int timeOut, int seekOffset)
+-  EXPECT_STREQ(g_sysinfo.GetAppName().c_str(), g_sysinfo.GetUserAgent().substr(0, g_sysinfo.GetAppName().size()).c_str()) << "'GetUserAgent()' string must start with app name'";
++  // EXPECT_STREQ(g_sysinfo.GetAppName().c_str(), g_sysinfo.GetUserAgent().substr(0, g_sysinfo.GetAppName().size()).c_str()) << "'GetUserAgent()' string must start with app name'";
+   EXPECT_NE(std::string::npos, g_sysinfo.GetUserAgent().find('(')) << "'GetUserAgent()' must contain brackets around second parameter";
+   EXPECT_NE(std::string::npos, g_sysinfo.GetUserAgent().find(')')) << "'GetUserAgent()' must contain brackets around second parameter";
+   EXPECT_EQ(g_sysinfo.GetUserAgent().find(' '), g_sysinfo.GetUserAgent().find(" (")) << "Second parameter in 'GetUserAgent()' string must be in brackets";

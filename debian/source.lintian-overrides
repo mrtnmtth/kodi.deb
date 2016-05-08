@@ -1,0 +1,2 @@
+# This is the source, but it happens to contain long lines
+kodi source: source-is-missing addons/webinterface.default/js/MediaLibrary.js *

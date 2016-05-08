@@ -26,8 +26,6 @@
 #include "guilib/LocalizeStrings.h"
 #include "Application.h"
 
-using namespace std;
-
 static const char *ContextStateToString(pa_context_state s)
 {
   switch (s)
@@ -183,7 +181,7 @@ static void SinkInputInfoCallback(pa_context *c, const pa_sink_input_info *i, in
   if (!p || !p->IsInitialized())
     return;
 
-  if(i && i->has_volume)
+  if(i && i->has_volume && !i->corked)
     p->UpdateInternalVolume(&(i->volume));
 }
 
@@ -375,8 +373,8 @@ static void SinkInfoRequestCallback(pa_context *c, const pa_sink_info *i, int eo
   {
     CAEDeviceInfo device;
     bool valid = true;
-    device.m_deviceName = string(i->name);
-    device.m_displayName = string(i->description);
+    device.m_deviceName = std::string(i->name);
+    device.m_displayName = std::string(i->description);
     if (i->active_port && i->active_port->description)
       device.m_displayNameExtra = std::string((i->active_port->description)).append(" (PULSEAUDIO)");
     else
@@ -595,23 +593,27 @@ bool CAESinkPULSE::Initialize(AEAudioFormat &format, std::string &device)
   pa_stream_set_write_callback(m_Stream, StreamRequestCallback, m_MainLoop);
   pa_stream_set_latency_update_callback(m_Stream, StreamLatencyUpdateCallback, m_MainLoop);
 
-  pa_buffer_attr buffer_attr;
-
-  // 200ms max latency
-  // 50ms min packet size
-  if(sinkStruct.isHWDevice || isDefaultDevice)
+  // default buffer construction
+  // align with AE's max buffer
+  unsigned int latency = m_BytesPerSecond / 2.5; // 400 ms
+  unsigned int process_time = latency / 4; // 100 ms
+  if(sinkStruct.isHWDevice)
   {
-    unsigned int latency = m_BytesPerSecond / 5;
-    unsigned int process_time = latency / 4;
-    memset(&buffer_attr, 0, sizeof(buffer_attr));
-    buffer_attr.tlength = (uint32_t) latency;
-    buffer_attr.minreq = (uint32_t) process_time;
-    buffer_attr.maxlength = (uint32_t) -1;
-    buffer_attr.prebuf = (uint32_t) -1;
-    buffer_attr.fragsize = (uint32_t) latency;
+    // on hw devices buffers can be further reduced
+    // 200ms max latency
+    // 50ms min packet size
+    latency = m_BytesPerSecond / 5;
+    process_time = latency / 4;
   }
 
-  if (pa_stream_connect_playback(m_Stream, isDefaultDevice ? NULL : device.c_str(), sinkStruct.isHWDevice ? &buffer_attr : NULL, ((pa_stream_flags)(PA_STREAM_INTERPOLATE_TIMING | PA_STREAM_AUTO_TIMING_UPDATE | PA_STREAM_ADJUST_LATENCY)), NULL, NULL) < 0)
+  pa_buffer_attr buffer_attr;
+  buffer_attr.fragsize = latency;
+  buffer_attr.maxlength = (uint32_t) -1;
+  buffer_attr.minreq = process_time;
+  buffer_attr.prebuf = (uint32_t) -1;
+  buffer_attr.tlength = latency;
+
+  if (pa_stream_connect_playback(m_Stream, isDefaultDevice ? NULL : device.c_str(), &buffer_attr, ((pa_stream_flags)(PA_STREAM_INTERPOLATE_TIMING | PA_STREAM_AUTO_TIMING_UPDATE | PA_STREAM_ADJUST_LATENCY)), NULL, NULL) < 0)
   {
     CLog::Log(LOGERROR, "PulseAudio: Failed to connect stream to output");
     pa_threaded_mainloop_unlock(m_MainLoop);

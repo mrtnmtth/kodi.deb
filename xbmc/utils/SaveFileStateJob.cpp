@@ -23,7 +23,7 @@
 #include "settings/MediaSettings.h"
 #include "network/upnp/UPnP.h"
 #include "StringUtils.h"
-#include "Variant.h"
+#include "utils/Variant.h"
 #include "URIUtils.h"
 #include "URL.h"
 #include "log.h"
@@ -34,6 +34,7 @@
 #include "guilib/GUIWindowManager.h"
 #include "GUIUserMessages.h"
 #include "music/MusicDatabase.h"
+#include "cores/AudioEngine/DSPAddons/ActiveAEDSP.h"
 
 bool CSaveFileStateJob::DoWork()
 {
@@ -116,14 +117,14 @@ bool CSaveFileStateJob::DoWork()
               CVariant data;
               data["id"] = m_item.GetVideoInfoTag()->m_iDbId;
               data["type"] = m_item.GetVideoInfoTag()->m_type;
-              ANNOUNCEMENT::CAnnouncementManager::Get().Announce(ANNOUNCEMENT::VideoLibrary, "xbmc", "OnUpdate", data);
+              ANNOUNCEMENT::CAnnouncementManager::GetInstance().Announce(ANNOUNCEMENT::VideoLibrary, "xbmc", "OnUpdate", data);
             }
 
             updateListing = true;
           }
         }
 
-        if (m_videoSettings != CMediaSettings::Get().GetDefaultVideoSettings())
+        if (m_videoSettings != CMediaSettings::GetInstance().GetDefaultVideoSettings())
         {
           videodatabase.SetVideoSettings(progressTrackingFile, m_videoSettings);
         }
@@ -187,6 +188,30 @@ bool CSaveFileStateJob::DoWork()
             musicdatabase.Close();
           }
         }
+      }
+    }
+
+    if (ActiveAE::CActiveAEDSP::GetInstance().IsProcessing())
+    {
+      std::string redactPath = CURL::GetRedacted(progressTrackingFile);
+      CLog::Log(LOGDEBUG, "%s - Saving file state for dsp audio item %s", __FUNCTION__, redactPath.c_str());
+
+      ActiveAE::CActiveAEDSPDatabase audiodatabase;
+      if (!audiodatabase.Open())
+      {
+        CLog::Log(LOGWARNING, "%s - Unable to open dsp audio database. Can not save file state!", __FUNCTION__);
+      }
+      else
+      {
+        if (m_audioSettings != CMediaSettings::GetInstance().GetDefaultAudioSettings())
+        {
+          audiodatabase.SetActiveDSPSettings(m_item, m_audioSettings);
+        }
+        else
+        {
+          audiodatabase.DeleteActiveDSPSettings(m_item);
+        }
+        audiodatabase.Close();
       }
     }
   }

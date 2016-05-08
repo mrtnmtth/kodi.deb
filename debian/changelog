@@ -1,6 +1,7 @@
 kodi (16.1+dfsg1-1~bpo8+1) jessie-backports; urgency=medium
 
   * Rebuild for jessie-backports.
+  * Build-depend on fonts-droid which is available in jessie-backports
 
  -- Balint Reczey <balint@balintreczey.hu>  Sun, 08 May 2016 22:29:05 +0200
 

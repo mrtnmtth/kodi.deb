@@ -1,3 +1,9 @@
+kodi (16.1+dfsg1-1~bpo8+2) jessie-backports; urgency=medium
+
+  * Revert to using fonts-roboto which is available in jessie
+
+ -- Balint Reczey <balint@balintreczey.hu>  Tue, 31 May 2016 10:21:52 +0200
+
 kodi (16.1+dfsg1-1~bpo8+1) jessie-backports; urgency=medium
 
   * Rebuild for jessie-backports.

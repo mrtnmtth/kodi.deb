@@ -152,7 +152,7 @@ Multi-Arch: foreign
 Depends: mesa-utils,
          x11-utils,
          fonts-dejavu-core,
-         fonts-roboto-hinted,
+         fonts-roboto,
          libjs-jquery,
          libjs-iscroll,
          python-imaging,

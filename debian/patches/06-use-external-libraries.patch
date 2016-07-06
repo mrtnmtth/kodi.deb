@@ -74,3 +74,14 @@ Forwarded: not-needed
  endif
  ifeq ($(NATIVE_OS), android)
    EXTRA_CONFIGURE = --enable-static
+--- a/lib/libdvd/Makefile.in
++++ b/lib/libdvd/Makefile.in
+@@ -35,7 +35,7 @@
+ ifeq ($(ARCH),arm-osx)
+   BUILD_DVDCSS = 0
+ else
+-  BUILD_DVDCSS = 1
++  BUILD_DVDCSS = 0
+ endif
+ ifeq ($(BUILD_DVDCSS),1)
+   SOS += libdvdcss-$(ARCH).so

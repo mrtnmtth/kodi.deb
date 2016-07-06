@@ -1,7 +1,7 @@
 --- a/system/settings/settings.xml
 +++ b/system/settings/settings.xml
-@@ -110,7 +110,7 @@
-       <group id="2">
+@@ -3184,7 +3184,7 @@
+         </setting>
          <setting id="lookandfeel.enablerssfeeds" type="boolean" label="13305" help="36111">
            <level>0</level>
 -          <default>true</default>

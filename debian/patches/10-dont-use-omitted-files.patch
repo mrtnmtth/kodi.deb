@@ -1,22 +1,10 @@
 --- a/configure.ac
 +++ b/configure.ac
-@@ -2400,7 +2400,6 @@
-     tools/Linux/${APP_NAME_LC}-standalone.sh \
-     tools/Linux/${APP_NAME_LC}-xsession.desktop \
+@@ -2171,7 +2171,6 @@
+     tools/Linux/kodi-standalone.sh \
+     tools/Linux/kodi-xsession.desktop \
      tools/EventClients/Makefile \
 -    tools/EventClients/Clients/OSXRemote/Makefile \
+     xbmc/peripherals/addons/Makefile \
      xbmc/peripherals/bus/Makefile \
      xbmc/peripherals/devices/Makefile \
-     xbmc/android/activity/Makefile \
---- a/xbmc/interfaces/builtins/ApplicationBuiltins.cpp
-+++ b/xbmc/interfaces/builtins/ApplicationBuiltins.cpp
-@@ -21,7 +21,9 @@
- #include "ApplicationBuiltins.h"
- 
- #include "Application.h"
-+#if defined(HAS_FILESYSTEM_RAR)
- #include "filesystem/RarManager.h"
-+#endif
- #include "filesystem/ZipManager.h"
- #include "messaging/ApplicationMessenger.h"
- #include "interfaces/AnnouncementManager.h"

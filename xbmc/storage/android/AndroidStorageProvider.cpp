@@ -24,7 +24,7 @@
 #include <map>
 
 #include "AndroidStorageProvider.h"
-#include "android/activity/XBMCApp.h"
+#include "platform/android/activity/XBMCApp.h"
 #include "guilib/LocalizeStrings.h"
 #include "filesystem/File.h"
 #include "filesystem/Directory.h"
@@ -71,7 +71,7 @@ std::string CAndroidStorageProvider::unescape(const std::string& str)
       i += 1;
       if (str[i] == 'u') // unicode
       {
-        // TODO
+        //! @todo implement
       }
       else if (str[i] >= '0' && str[i] <= '7') // octal
       {

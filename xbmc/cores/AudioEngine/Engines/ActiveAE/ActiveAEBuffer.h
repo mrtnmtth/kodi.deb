@@ -21,7 +21,7 @@
 
 #include "cores/AudioEngine/Utils/AEAudioFormat.h"
 #include "cores/AudioEngine/Interfaces/AE.h"
-#include "cores/AudioEngine/DSPAddons/ActiveAEDSP.h"
+#include "cores/AudioEngine/Engines/ActiveAE/AudioDSPAddons/ActiveAEDSP.h"
 #include <deque>
 
 extern "C" {
@@ -57,6 +57,7 @@ public:
   int planes;                            // 1 for non planar formats, #channels for planar
   int nb_samples;                        // number of frames used
   int max_nb_samples;                    // max number of frames this packet can hold
+  int pause_burst_ms;
 };
 
 class CActiveAEBufferPool;
@@ -71,7 +72,6 @@ public:
   CSoundPacket *pkt;
   CActiveAEBufferPool *pool;
   int64_t timestamp;
-  int clockId;
   int pkt_start_offset;
   int refCount;
 };

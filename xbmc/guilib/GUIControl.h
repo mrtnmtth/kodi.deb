@@ -27,6 +27,8 @@
  *
  */
 
+#include <vector>
+
 #include "GraphicContext.h" // needed by any rendering operation (all controls)
 #include "GUIMessage.h"     // needed by practically all controls
 #include "VisibleEffect.h"  // needed for the CAnimation members
@@ -194,14 +196,14 @@ public:
   /*! \brief Set actions to perform on navigation
    Navigations are set if replace is true or if there is no previously set action
    \param actionID id of the nagivation action
-   \param actions CGUIAction to set
+   \param action CGUIAction to set
    \param replace Actions are set only if replace is true or there is no previously set action.  Defaults to true
    \sa SetNavigationActions
    */
   void SetAction(int actionID, const CGUIAction &action, bool replace = true);
 
   /*! \brief Get an action the control can be perform.
-   \param action the actionID to retrieve.
+   \param actionID The actionID to retrieve.
    */
   CGUIAction GetAction(int actionID) const;
 
@@ -248,17 +250,14 @@ public:
   enum GUICONTROLTYPES {
     GUICONTROL_UNKNOWN,
     GUICONTROL_BUTTON,
-    GUICONTROL_CHECKMARK,
     GUICONTROL_FADELABEL,
     GUICONTROL_IMAGE,
     GUICONTROL_BORDEREDIMAGE,
-    GUICONTROL_LARGE_IMAGE,
     GUICONTROL_LABEL,
     GUICONTROL_LISTGROUP,
     GUICONTROL_PROGRESS,
     GUICONTROL_RADIO,
     GUICONTROL_RSS,
-    GUICONTROL_SELECTBUTTON,
     GUICONTROL_SLIDER,
     GUICONTROL_SETTINGS_SLIDER,
     GUICONTROL_SPIN,
@@ -276,7 +275,7 @@ public:
     GUICONTROL_GROUPLIST,
     GUICONTROL_SCROLLBAR,
     GUICONTROL_LISTLABEL,
-    GUICONTROL_MULTISELECT,
+    GUICONTROL_GAMECONTROLLER,
     GUICONTAINER_LIST,
     GUICONTAINER_WRAPLIST,
     GUICONTAINER_FIXEDLIST,

@@ -18,9 +18,15 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
+
+#include <set>
+#include <string>
+#include <vector>
+
+#include "InfoScanner.h"
+#include "NfoFile.h"
 #include "VideoDatabase.h"
 #include "addons/Scraper.h"
-#include "NfoFile.h"
 
 class CRegExp;
 class CFileItem;
@@ -47,7 +53,7 @@ namespace VIDEO
                   INFO_NOT_FOUND,
                   INFO_ADDED };
 
-  class CVideoInfoScanner
+  class CVideoInfoScanner : public CInfoScanner
   {
   public:
     CVideoInfoScanner();
@@ -122,8 +128,7 @@ namespace VIDEO
 
   protected:
     virtual void Process();
-    bool DoScan(const std::string& strDirectory);
-    bool IsExcluded(const std::string& strDirectory) const;
+    bool DoScan(const std::string& strDirectory) override;
 
     INFO_RET RetrieveInfoForTvShow(CFileItem *pItem, bool bDirNames, ADDON::ScraperPtr &scraper, bool useLocal, CScraperUrl* pURL, bool fetchEpisodes, CGUIDialogProgress* pDlgProgress);
     INFO_RET RetrieveInfoForMovie(CFileItem *pItem, bool bDirNames, ADDON::ScraperPtr &scraper, bool useLocal, CScraperUrl* pURL, CGUIDialogProgress* pDlgProgress);
@@ -148,7 +153,7 @@ namespace VIDEO
     int FindVideo(const std::string &videoName, const ADDON::ScraperPtr &scraper, CScraperUrl &url, CGUIDialogProgress *progress);
 
     /*! \brief Retrieve detailed information for an item from an online source, optionally supplemented with local data
-     TODO: sort out some better return codes.
+     @todo sort out some better return codes.
      \param pItem item to retrieve online details for.
      \param url URL to use to retrieve online details.
      \param scraper Scraper that handles parsing the online data.
@@ -217,7 +222,7 @@ namespace VIDEO
     bool CanFastHash(const CFileItemList &items, const std::vector<std::string> &excludes) const;
 
     /*! \brief Process a series folder, filling in episode details and adding them to the database.
-     TODO: Ideally we would return INFO_HAVE_ALREADY if we don't have to update any episodes
+     @todo Ideally we would return INFO_HAVE_ALREADY if we don't have to update any episodes
      and we should return INFO_NOT_FOUND only if no information is found for any of
      the episodes. INFO_ADDED then indicates we've added one or more episodes.
      \param files the episode files to process.

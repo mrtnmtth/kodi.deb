@@ -19,7 +19,9 @@
  *
  */
 
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "addons/Addon.h"
 #include "addons/Repository.h"
@@ -28,13 +30,6 @@
 #include "utils/Stopwatch.h"
 
 class CAddonDatabase;
-
-enum {
-  AUTO_UPDATES_ON = 0,
-  AUTO_UPDATES_NOTIFY,
-  AUTO_UPDATES_NEVER,
-  AUTO_UPDATES_MAX
-};
 
 class CAddonInstaller : public IJobCallback
 {
@@ -105,7 +100,7 @@ public:
   void OnJobProgress(unsigned int jobID, unsigned int progress, unsigned int total, const CJob *job);
 
   /*! \brief Get the repository which hosts the most recent version of add-on
-   *  \param addon The add-on to find the repository for
+   *  \param addonId The id of the add-on to find the repository for
    *  \param repo [out] The hosting repository
    */
   static bool GetRepoForAddon(const std::string& addonId, ADDON::RepositoryPtr& repo);
@@ -168,6 +163,7 @@ public:
 
   /*! \brief Find the add-on and itshash for the given add-on ID
    *  \param addonID ID of the add-on to find
+   *  \param repoID ID of the repo to use
    *  \param addon Add-on with the given add-on ID
    *  \param hash Hash of the add-on
    *  \return True if the add-on and its hash were found, false otherwise.

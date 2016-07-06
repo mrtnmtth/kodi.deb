@@ -1,9 +1,8 @@
-#ifndef __EVENT_CLIENT_H__
-#define __EVENT_CLIENT_H__
+#pragma once
 
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      Copyright (C) 2005-2015 Team Kodi
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,7 +15,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
+ *  along with kodi; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
@@ -99,6 +98,7 @@ namespace EVENTCLIENT
     float Amount() const  { return m_fAmount; }
     void Load();
     const std::string& JoystickName() const { return m_joystickName; }
+    const std::string& CustomControllerName() const { return m_customControllerName; }
 
     // data
     unsigned int      m_iKeyCode;
@@ -106,6 +106,7 @@ namespace EVENTCLIENT
     std::string       m_buttonName;
     std::string       m_mapName;
     std::string       m_joystickName;
+    std::string       m_customControllerName;
     float             m_fAmount;
     bool              m_bUseAmount;
     bool              m_bRepeat;
@@ -188,7 +189,7 @@ namespace EVENTCLIENT
     void FreePacketQueues();
 
     // return event states
-    unsigned int GetButtonCode(std::string& strMapName, bool& isAxis, float& amount);
+    unsigned int GetButtonCode(std::string& strMapName, bool& isAxis, float& amount, bool &isJoystick);
 
     // update mouse position
     bool GetMousePos(float& x, float& y);
@@ -261,6 +262,5 @@ namespace EVENTCLIENT
     CEventButtonState m_currentButton;
   };
 
-} // EVENTCLIENT
+}
 
-#endif // __EVENT_CLIENT_H__

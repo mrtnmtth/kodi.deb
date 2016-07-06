@@ -65,7 +65,6 @@ SRCS += StringValidation.cpp
 SRCS += SystemInfo.cpp
 SRCS += Temperature.cpp
 SRCS += TextSearch.cpp
-SRCS += TimeSmoother.cpp
 SRCS += TimeUtils.cpp
 SRCS += URIUtils.cpp
 SRCS += UrlOptions.cpp
@@ -75,7 +74,9 @@ SRCS += Weather.cpp
 SRCS += XBMCTinyXML.cpp
 SRCS += XMLUtils.cpp
 SRCS += Utf8Utils.cpp
+ifeq (@HAVE_LIBXSLT@,1)
 SRCS += XSLTUtils.cpp
+endif
 SRCS += ActorProtocol.cpp 
 SRCS += SysfsUtils.cpp
 

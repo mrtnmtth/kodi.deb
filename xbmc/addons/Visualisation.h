@@ -20,8 +20,8 @@
 #pragma once
 
 #include "AddonDll.h"
-#include "cores/IAudioCallback.h"
-#include "include/xbmc_vis_types.h"
+#include "cores/AudioEngine/Interfaces/IAudioCallback.h"
+#include "addons/kodi-addon-dev-kit/include/kodi/xbmc_vis_types.h"
 #include "guilib/IRenderingCallback.h"
 #include "utils/rfft.h"
 
@@ -29,6 +29,7 @@
 #include <map>
 #include <list>
 #include <memory>
+#include <vector>
 
 #define AUDIO_BUFFER_SIZE 512 // MUST BE A POWER OF 2!!!
 #define MAX_AUDIO_BUFFERS 16
@@ -57,8 +58,9 @@ namespace ADDON
                        , public IRenderingCallback
   {
   public:
-    CVisualisation(const ADDON::AddonProps &props) : CAddonDll<DllVisualisation, Visualisation, VIS_PROPS>(props) {}
-    CVisualisation(const cp_extension_t *ext) : CAddonDll<DllVisualisation, Visualisation, VIS_PROPS>(ext) {}
+    explicit CVisualisation(AddonProps props)
+        : CAddonDll<DllVisualisation, Visualisation, VIS_PROPS>(std::move(props)) {}
+
     virtual void OnInitialize(int iChannels, int iSamplesPerSec, int iBitsPerSample);
     virtual void OnAudioData(const float* pAudioData, int iAudioDataLength);
     virtual bool IsInUse() const;
@@ -87,17 +89,10 @@ namespace ADDON
     bool GetPresets();
     bool GetSubModules();
 
-    // attributes of the viewport we render to
-    int m_xPos;
-    int m_yPos;
-    int m_width;
-    int m_height;
-
     // cached preset list
     std::vector<std::string> m_presets;
     // cached submodule list
     std::vector<std::string> m_submodules;
-    int m_currentModule;
 
     // audio properties
     int m_iChannels;
@@ -107,7 +102,6 @@ namespace ADDON
     int m_iNumBuffers;        // Number of Audio buffers
     bool m_bWantsFreq;
     float m_fFreq[AUDIO_BUFFER_SIZE];         // Frequency data
-    bool m_bCalculate_Freq;       // True if the vis wants freq data
     bool m_hasPresets;
     std::unique_ptr<RFFT> m_transform;
 

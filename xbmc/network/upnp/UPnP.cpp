@@ -37,6 +37,7 @@
 #include "network/Network.h"
 #include "utils/log.h"
 #include "URL.h"
+#include "cores/playercorefactory/PlayerCoreFactory.h"
 #include "profiles/ProfilesManager.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/Settings.h"
@@ -274,11 +275,11 @@ public:
         NPT_CHECK_LABEL(FindServer(url.GetHostName().c_str(), device),failed);
         NPT_CHECK_LABEL(device->FindServiceById("urn:upnp-org:serviceId:ContentDirectory", cds),failed);
 
-        NPT_CHECK_SEVERE(m_CtrlPoint->CreateAction(
+        NPT_CHECK_LABEL(m_CtrlPoint->CreateAction(
             device,
             "urn:schemas-upnp-org:service:ContentDirectory:1",
             "UpdateObject",
-            action));
+            action), failed);
 
         NPT_CHECK_LABEL(action->SetArgumentValue("ObjectID", url.GetFileName().c_str()), failed);
         NPT_CHECK_LABEL(action->SetArgumentValue("CurrentTagValue", curr_value), failed);
@@ -383,8 +384,8 @@ public:
       return false;
 
     CPlayerCoreFactory::GetInstance().OnPlayerDiscovered((const char*)device->GetUUID()
-                                          ,(const char*)device->GetFriendlyName()
-                                          , EPC_UPNPPLAYER);
+                                          ,(const char*)device->GetFriendlyName());
+    
     m_registeredRenderers.insert(std::string(device->GetUUID().GetChars()));
     return true;
   }

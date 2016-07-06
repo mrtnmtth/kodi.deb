@@ -20,6 +20,10 @@
  *
  */
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "settings/dialogs/GUIDialogSettingsManualBase.h"
 
 class CGUIDialogVideoSettings : public CGUIDialogSettingsManualBase
@@ -33,6 +37,9 @@ protected:
   virtual void OnSettingChanged(const CSetting *setting);
   virtual void OnSettingAction(const CSetting *setting);
 
+  void AddVideoStreams(CSettingGroup *group, const std::string & settingId);
+  static void VideoStreamsOptionFiller(const CSetting *setting, std::vector< std::pair<std::string, int> > &list, int &current, void *data);
+
   // specialization of CGUIDialogSettingsBase
   virtual bool AllowResettingSettings() const { return false; }
   virtual void Save();
@@ -42,5 +49,6 @@ protected:
   virtual void InitializeSettings();
 
 private:
+  int m_videoStream;
   bool m_viewModeChanged;
 };

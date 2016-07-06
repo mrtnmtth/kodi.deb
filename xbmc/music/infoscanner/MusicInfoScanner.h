@@ -18,10 +18,11 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
-#include "threads/Thread.h"
-#include "music/MusicDatabase.h"
+#include "InfoScanner.h"
 #include "MusicAlbumInfo.h"
 #include "MusicInfoScraper.h"
+#include "music/MusicDatabase.h"
+#include "threads/Thread.h"
 
 class CAlbum;
 class CArtist;
@@ -41,7 +42,7 @@ enum INFO_RET
   INFO_ADDED 
 };
 
-class CMusicInfoScanner : CThread, public IRunnable
+class CMusicInfoScanner : CThread, public IRunnable, public CInfoScanner
 {
 public:
   /*! \brief Flags for controlling the scanning process
@@ -166,7 +167,7 @@ public:
    */
   std::map<std::string, std::string> GetArtistArtwork(const CArtist& artist);
 protected:
-  virtual void Process();
+  virtual void Process() override;
 
   /*! \brief Scan in the ID3/Ogg/FLAC tags for a bunch of FileItems
    Given a list of FileItems, scan in the tags for those FileItems
@@ -188,9 +189,9 @@ protected:
   int GetPathHash(const CFileItemList &items, std::string &hash);
   void GetAlbumArtwork(long id, const CAlbum &artist);
 
-  bool DoScan(const std::string& strDirectory);
+  bool DoScan(const std::string& strDirectory) override;
 
-  virtual void Run();
+  virtual void Run() override;
   int CountFiles(const CFileItemList& items, bool recursive);
   int CountFilesRecursively(const std::string& strPath);
 

@@ -65,7 +65,7 @@
 #define SETTING_AUDIO_MAKE_DEFAULT             "audio.makedefault"
 
 CGUIDialogAudioSubtitleSettings::CGUIDialogAudioSubtitleSettings()
-  : CGUIDialogSettingsManualBase(WINDOW_DIALOG_AUDIO_OSD_SETTINGS, "VideoOSDSettings.xml"),
+  : CGUIDialogSettingsManualBase(WINDOW_DIALOG_AUDIO_OSD_SETTINGS, "DialogSettings.xml"),
     m_passthrough(false),
     m_dspEnabled(false)
 { }
@@ -85,7 +85,7 @@ void CGUIDialogAudioSubtitleSettings::FrameMove()
     const CVideoSettings &videoSettings = CMediaSettings::GetInstance().GetCurrentVideoSettings();
     
     // these settings can change on the fly
-    // TODO (needs special handling): m_settingsManager->SetInt(SETTING_AUDIO_STREAM, g_application.m_pPlayer->GetAudioStream());
+    //! @todo (needs special handling): m_settingsManager->SetInt(SETTING_AUDIO_STREAM, g_application.m_pPlayer->GetAudioStream());
     if (!m_dspEnabled) //< The follow settings are on enabled DSP system separated to them and need no update here.
     {
       m_settingsManager->SetNumber(SETTING_AUDIO_DELAY, videoSettings.m_AudioDelay);
@@ -93,10 +93,10 @@ void CGUIDialogAudioSubtitleSettings::FrameMove()
     }
     m_settingsManager->SetBool(SETTING_AUDIO_PASSTHROUGH, CSettings::GetInstance().GetBool(CSettings::SETTING_AUDIOOUTPUT_PASSTHROUGH));
 
-    // TODO: m_settingsManager->SetBool(SETTING_SUBTITLE_ENABLE, g_application.m_pPlayer->GetSubtitleVisible());
+    //! @todo m_settingsManager->SetBool(SETTING_SUBTITLE_ENABLE, g_application.m_pPlayer->GetSubtitleVisible());
     //   \-> Unless subtitle visibility can change on the fly, while Dialog is up, this code should be removed.
     m_settingsManager->SetNumber(SETTING_SUBTITLE_DELAY, videoSettings.m_SubtitleDelay);
-    // TODO (needs special handling): m_settingsManager->SetInt(SETTING_SUBTITLE_STREAM, g_application.m_pPlayer->GetSubtitle());
+    //! @todo (needs special handling): m_settingsManager->SetInt(SETTING_SUBTITLE_STREAM, g_application.m_pPlayer->GetSubtitle());
   }
 
   CGUIDialogSettingsManualBase::FrameMove();
@@ -204,7 +204,7 @@ void CGUIDialogAudioSubtitleSettings::OnSettingAction(const CSetting *setting)
       strPath = g_application.CurrentFileItem().GetPath();
 
     std::string strMask = ".utf|.utf8|.utf-8|.sub|.srt|.smi|.rt|.txt|.ssa|.aqt|.jss|.ass|.idx|.rar|.zip";
-    if (g_application.GetCurrentPlayer() == EPC_DVDPLAYER)
+    if (g_application.GetCurrentPlayer() == "VideoPlayer")
       strMask = ".srt|.rar|.zip|.ifo|.smi|.sub|.idx|.ass|.ssa|.txt";
     VECSOURCES shares(*CMediaSourceSettings::GetInstance().GetSources("video"));
     if (CMediaSettings::GetInstance().GetAdditionalSubtitleDirectoryChecked() != -1 && !CSettings::GetInstance().GetString(CSettings::SETTING_SUBTITLES_CUSTOMPATH).empty())
@@ -263,6 +263,9 @@ void CGUIDialogAudioSubtitleSettings::SetupView()
   CGUIDialogSettingsManualBase::SetupView();
 
   SetHeading(13396);
+  SET_CONTROL_HIDDEN(CONTROL_SETTINGS_OKAY_BUTTON);
+  SET_CONTROL_HIDDEN(CONTROL_SETTINGS_CUSTOM_BUTTON);
+  SET_CONTROL_LABEL(CONTROL_SETTINGS_CANCEL_BUTTON, 15067);
 }
 
 void CGUIDialogAudioSubtitleSettings::InitializeSettings()
@@ -347,7 +350,7 @@ void CGUIDialogAudioSubtitleSettings::InitializeSettings()
     AddAudioStreams(groupAudio, SETTING_AUDIO_STREAM);
 
   // audio output to all speakers setting
-  // TODO: remove this setting
+  //! @todo remove this setting
   if (SupportsAudioFeature(IPC_AUD_OUTPUT_STEREO) && !m_dspEnabled)
     AddToggle(groupAudio, SETTING_AUDIO_OUTPUT_TO_ALL_SPEAKERS, 252, 0, videoSettings.m_OutputToAllSpeakers);
 

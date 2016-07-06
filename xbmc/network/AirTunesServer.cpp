@@ -31,12 +31,13 @@
 #include <utility>
 
 #include "Application.h"
-#include "cores/dvdplayer/DVDDemuxers/DVDDemuxBXA.h"
+#include "cores/VideoPlayer/DVDDemuxers/DVDDemuxBXA.h"
 #include "FileItem.h"
 #include "filesystem/File.h"
 #include "filesystem/PipeFile.h"
 #include "GUIInfoManager.h"
 #include "guilib/GUIWindowManager.h"
+#include "input/Key.h"
 #include "interfaces/AnnouncementManager.h"
 #include "messaging/ApplicationMessenger.h"
 #include "music/tags/MusicInfoTag.h"
@@ -415,11 +416,8 @@ void CAirTunesServer::AudioOutputFunctions::audio_set_progress(void *cls, void *
   duration /= m_sampleRate;
   position /= m_sampleRate;
 
-  if (g_application.m_pPlayer->GetInternal())
-  {
-    g_application.m_pPlayer->GetInternal()->SetTime(position * 1000);
-    g_application.m_pPlayer->GetInternal()->SetTotalTime(duration * 1000);
-  }
+  g_application.m_pPlayer->SetTime(position * 1000);
+  g_application.m_pPlayer->SetTotalTime(duration * 1000);
 }
 
 void CAirTunesServer::SetupRemoteControl()
@@ -628,7 +626,8 @@ void CAirTunesServer::StopServer(bool bWait)
  }
 
 CAirTunesServer::CAirTunesServer(int port, bool nonlocal)
-: CThread("AirTunesActionThread")
+: CThread("AirTunesActionThread"),
+  m_pRaop(nullptr)
 {
   m_port = port;
   m_pLibShairplay = new DllLibShairplay();

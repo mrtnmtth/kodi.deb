@@ -50,6 +50,7 @@ namespace PERIPHERALS
 #include "threads/Thread.h"
 #include "threads/CriticalSection.h"
 #include <queue>
+#include <vector>
 
 // undefine macro isset, it collides with function in cectypes.h
 #ifdef isset
@@ -68,6 +69,7 @@ namespace CEC
 namespace PERIPHERALS
 {
   class CPeripheralCecAdapterUpdateThread;
+  class CPeripheralCecAdapterReopenJob;
 
   typedef struct
   {
@@ -86,9 +88,10 @@ namespace PERIPHERALS
   class CPeripheralCecAdapter : public CPeripheralHID, public ANNOUNCEMENT::IAnnouncer, private CThread
   {
     friend class CPeripheralCecAdapterUpdateThread;
+    friend class CPeripheralCecAdapterReopenJob;
 
   public:
-    CPeripheralCecAdapter(const PeripheralScanResult& scanResult);
+    CPeripheralCecAdapter(const PeripheralScanResult& scanResult, CPeripheralBus* bus);
     virtual ~CPeripheralCecAdapter(void);
 
     void Announce(ANNOUNCEMENT::AnnouncementFlag flag, const char *sender, const char *message, const CVariant &data);
@@ -121,7 +124,7 @@ namespace PERIPHERALS
     bool IsRunning(void) const;
 
     bool OpenConnection(void);
-    bool ReopenConnection(void);
+    bool ReopenConnection(bool bAsync = false);
 
     void SetConfigurationFromSettings(void);
     void SetConfigurationFromLibCEC(const CEC::libcec_configuration &config);

@@ -8,6 +8,9 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all-bindnow
 
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
+DVDNAV_COMPONENT = libdvdnav-5-0-3
+DVDREAD_COMPONENT = libdvdread-5-0-3
+
 GL_CONFIG_OPTIONS = --enable-gl --disable-gles --enable-vdpau
 ARCH_SPECIFIC_LIB_RECOMMENDS_ADD = -lvdpau
 
@@ -42,6 +45,8 @@ ARCH_SPECIFIC_LIB_RECOMMENDS += $(ARCH_SPECIFIC_LIB_RECOMMENDS_ADD)
 
 # Various environment variables to set
 export DEB_LDFLAGS_MAINT_APPEND = -latomic
+# for embedded libdvd*:
+export DEB_CPPFLAGS_MAINT_APPEND = -D_XBMC
 
 # List of options to pass to configure. Can be overridden.
 # Extra options can simply be passed using KODI_CONFIG_EXTRA_OPTIONS env
@@ -84,6 +89,16 @@ override_dh_clean:
 	dh_clean libtool xbmc/config.h xbmc/stamp-h1
 	find . -name config.status -o -name config.cache -o -name config.log \
 		-exec rm -f "{}" \;
+	rm -rf tools/depends/target; \
+	ls $(CURDIR)/debian/patches/libdvdnav-0* | tac | xargs cat patch -p1 \
+		-d $(DVDNAV_COMPONENT) || true
+	ls $(CURDIR)/debian/patches/libdvdread-0* | tac | xargs cat patch -p1 \
+		-d $(DVDREAD_COMPONENT) || true
+
+override_dh_auto_clean:
+	dh_auto_clean
+	-make -C $(DVDNAV_COMPONENT) clean
+	-make -C $(DVDREAD_COMPONENT) clean
 
 # Use package's version in Kodi
 VERSION := $(shell dpkg-parsechangelog | sed -n 's/^Version: \(.*\)/\1/p')
@@ -96,6 +111,8 @@ DEJAVUSANS=/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf
 endif
 
 override_dh_auto_configure: configure
+	cat $(CURDIR)/debian/patches/libdvdnav-0* | patch -p1 -d $(DVDNAV_COMPONENT)
+	cat $(CURDIR)/debian/patches/libdvdread-0* | patch -p1 -d $(DVDREAD_COMPONENT)
 	sed -i 's/DEB_VERSION/"'$(VERSION)'"/' xbmc/Application.cpp xbmc/utils/SystemInfo.cpp
 	fontforge -script $(CURDIR)/debian/mergefonts.ff \
 		/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf \
@@ -106,6 +123,14 @@ override_dh_auto_configure: configure
 	dh_auto_configure -- $(KODI_CONFIG_OPTIONS)
 	# Add "from Debian" next to Kodi's original logo
 	inkscape -z --export-png=addons/skin.estuary/media/from-debian-logo.png debian/from-debian-logo.svg
+	(cd $(DVDREAD_COMPONENT) && autoreconf -vif && \
+		$(shell dpkg-buildflags --export=configure) ./configure \
+		--prefix=$(CURDIR)/tools/depends/target/libdvdread/dvdread-install --disable-shared --enable-static --with-pic && \
+		$(MAKE) install) && \
+	(cd $(DVDNAV_COMPONENT) && autoreconf -vif && \
+		$(shell dpkg-buildflags --export=configure) PKG_CONFIG_PATH="$(CURDIR)/tools/depends/target/libdvdread/dvdread-install/lib/pkgconfig" ./configure \
+		--prefix=$(CURDIR)/tools/depends/target/libdvdnav/dvdnav-install --disable-shared --enable-static --with-pic && \
+		$(MAKE) install)
 
 override_dh_auto_install:
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
@@ -158,3 +183,10 @@ override_dh_strip:
 
 override_dh_installinit:
 	@echo "Shipping systemd kodi.service file as an example only"
+
+# extract and patch customized libdvdread and libdvdnav
+extract-components:
+	tar -xf $(CURDIR)/../kodi_17.0~alpha2+dfsg1.orig-$(DVDNAV_COMPONENT).tar.bz2 && \
+		mv libdvdnav-* $(CURDIR)/$(DVDNAV_COMPONENT)
+	tar -xf $(CURDIR)/../kodi_17.0~alpha2+dfsg1.orig-$(DVDREAD_COMPONENT).tar.bz2 && \
+		mv libdvdread-* $(CURDIR)/$(DVDREAD_COMPONENT)

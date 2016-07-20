@@ -45,8 +45,8 @@ Build-Depends: autoconf,
  libcwiid-dev [linux-any],
  libdbus-1-dev,
  libcrossguid-dev,
- libdvdnav-dev,
- libdvdread-dev,
+# libdvdnav-dev, use patched embedded version
+# libdvdread-dev, use patched embedded version
  libenca-dev,
  libflac-dev,
  libfontconfig-dev,

@@ -15,17 +15,7 @@ Forwarded: not-needed
  all: $(BOOTSTRAP_TARGETS)
 --- a/configure.ac
 +++ b/configure.ac
-@@ -1102,6 +1102,9 @@
- PKG_CHECK_MODULES([TAGLIB],  [taglib >= 1.9],
-   [INCLUDES="$INCLUDES $TAGLIB_CFLAGS"; LIBS="$LIBS $TAGLIB_LIBS"],
-   AC_MSG_ERROR($missing_library))
-+PKG_CHECK_MODULES([DVDREAD],  [dvdread],
-+  [INCLUDES="$INCLUDES $DVDREAD_CFLAGS"; LIBS="$LIBS $DVDREAD_LIBS"],
-+  AC_MSG_ERROR($missing_library))
- 
- if test "$use_optical_drive" = "yes"; then
-   PKG_CHECK_MODULES([CDIO],       [libcdio],
-@@ -2353,18 +2356,11 @@
+@@ -2353,18 +2353,11 @@
  ], [0])
  
  XB_CONFIG_MODULE([lib/gtest], [
@@ -76,6 +66,15 @@ Forwarded: not-needed
    EXTRA_CONFIGURE = --enable-static
 --- a/lib/libdvd/Makefile.in
 +++ b/lib/libdvd/Makefile.in
+@@ -11,7 +11,7 @@
+ else
+   DVDNAV_A = @abs_top_srcdir@/tools/depends/target/libdvdnav/dvdnav-install/lib/libdvdnav.a
+   DVDREAD_A = @abs_top_srcdir@/tools/depends/target/libdvdread/dvdread-install/lib/libdvdread.a
+-  DVDCSS_A = @abs_top_srcdir@/tools/depends/target/libdvdcss/dvdcss-install/lib/libdvdcss.a
++  DVDCSS_A =
+ endif
+ 
+ SYSDIR = @abs_top_srcdir@/system/players/VideoPlayer
 @@ -35,7 +35,7 @@
  ifeq ($(ARCH),arm-osx)
    BUILD_DVDCSS = 0

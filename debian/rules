@@ -119,6 +119,8 @@ override_dh_auto_configure: configure
 		$(DEJAVUSANS) \
 		$(CURDIR)/media/Fonts/arial.ttf
 	cp -r /usr/src/gtest ./lib/
+	mkdir -p lib/gtest/lib/.libs
+	ln -s ../../libgtest.a lib/gtest/lib/.libs/
 	./bootstrap
 	dh_auto_configure -- $(KODI_CONFIG_OPTIONS)
 	# Add "from Debian" next to Kodi's original logo

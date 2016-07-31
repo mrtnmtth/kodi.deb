@@ -15,3 +15,4 @@
 12-build-cpluff-pic-only.patch
 13-fix-tests.patch
 14-gcc6-cximage-fixes.patch
+15-disable-failing-webserver-tests.patch

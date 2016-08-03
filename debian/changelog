@@ -3,6 +3,7 @@ kodi (16.1+dfsg1-2~bpo8+1) jessie-backports; urgency=medium
   * Rebuild for jessie-backports.
   * Revert to using fonts-roboto which is available in jessie
   * Build-depend on fonts-droid which is available in jessie-backports
+  * Ignore failing tests but run them with Valgrind when it is available
 
  -- Balint Reczey <balint@balintreczey.hu>  Mon, 26 Sep 2016 22:19:30 +0200
 

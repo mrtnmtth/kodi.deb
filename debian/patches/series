@@ -14,5 +14,6 @@
 11-build-with-ffmpeg-2.9.patch
 12-build-cpluff-pic-only.patch
 13-fix-tests.patch
+14-ignore-test-results.patch
 14-gcc6-cximage-fixes.patch
 15-disable-failing-webserver-tests.patch

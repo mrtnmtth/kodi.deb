@@ -11,3 +11,4 @@
 10-dont-use-omitted-files.patch
 12-build-cpluff-pic-only.patch
 13-fix-tests.patch
+14-ignore-test-results.patch

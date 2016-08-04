@@ -1,6 +1,6 @@
 --- a/configure.ac
 +++ b/configure.ac
-@@ -2168,7 +2168,6 @@
+@@ -2198,7 +2198,6 @@
      tools/Linux/kodi-standalone.sh \
      tools/Linux/kodi-xsession.desktop \
      tools/EventClients/Makefile \

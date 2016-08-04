@@ -5,7 +5,7 @@ Forwarded: not-needed
 
 --- a/xbmc/Application.cpp
 +++ b/xbmc/Application.cpp
-@@ -512,7 +512,7 @@
+@@ -526,7 +526,7 @@
  //  specialVersion = " (version for XXXX)";
  #endif
    CLog::Log(LOGNOTICE, "Using %s %s x%d build%s", buildType.c_str(), CSysInfo::GetAppName().c_str(), g_sysinfo.GetXbmcBitness(), specialVersion.c_str());

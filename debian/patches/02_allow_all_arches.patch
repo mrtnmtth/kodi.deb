@@ -13,7 +13,7 @@ entering uncharted territory.
 
 --- a/configure.ac
 +++ b/configure.ac
-@@ -653,7 +653,8 @@
+@@ -662,7 +662,8 @@
       USE_STATIC_FFMPEG=1
       ;;
    *)

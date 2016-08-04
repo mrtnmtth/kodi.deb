@@ -66,7 +66,7 @@ namespace PLAYLIST
 #include "storage/DetectDVDType.h"
 #endif
 #ifdef TARGET_WINDOWS
-#include "win32/WIN32Util.h"
+#include "platform/win32/WIN32Util.h"
 #endif
 #include "utils/Stopwatch.h"
 #ifdef HAS_PERFORMANCE_SAMPLE
@@ -203,7 +203,6 @@ public:
   bool IsIdleShutdownInhibited() const;
   // Checks whether the screensaver and / or DPMS should become active.
   void CheckScreenSaverAndDPMS();
-  void CheckPlayingProgress();
   void ActivateScreenSaver(bool forceType = false);
   bool SetupNetwork();
   void CloseNetworkShares();
@@ -506,7 +505,7 @@ protected:
   bool InitDirectoriesLinux();
   bool InitDirectoriesOSX();
   bool InitDirectoriesWin32();
-  void CreateUserDirs();
+  void CreateUserDirs() const;
 
   /*! \brief Helper method to determine how to handle TMSG_SHUTDOWN
   */

@@ -592,8 +592,27 @@ bool CGUIWindowPVRBase::EditTimer(CFileItem *item)
   newTimer->UpdateEntry(timer);
 
   if (ShowTimerSettings(newTimer) && !timer->GetTimerType()->IsReadOnly())
-    return g_PVRTimers->UpdateTimer(newTimer);
+  {
+    if (newTimer->GetTimerType() == timer->GetTimerType())
+    {
+      return g_PVRTimers->UpdateTimer(newTimer);
+    }
+    else
+    {
+      // timer type changed. delete the original timer, then create the new timer. this order is
+      // important. for instance, the new timer might be a rule which schedules the original timer.
+      // deleting the original timer after creating the rule would do literally this and we would
+      // end up with one timer missing wrt to the rule defined by the new timer.
+      if (g_PVRTimers->DeleteTimer(timer, timer->IsRecording(), false))
+      {
+        if (g_PVRTimers->AddTimer(newTimer))
+          return true;
 
+        // rollback.
+        return g_PVRTimers->AddTimer(timer);
+      }
+    }
+  }
   return false;
 }
 
@@ -649,7 +668,7 @@ bool CGUIWindowPVRBase::DeleteTimer(CFileItem *item, bool bIsRecording, bool bDe
     return false;
   }
 
-  if (bDeleteRule && !timer->IsRepeating())
+  if (bDeleteRule && !timer->IsTimerRule())
     timer = g_PVRTimers->GetTimerRule(timer);
 
   if (!timer)
@@ -676,8 +695,9 @@ bool CGUIWindowPVRBase::DeleteTimer(CFileItem *item, bool bIsRecording, bool bDe
   return false;
 }
 
-void CGUIWindowPVRBase::CheckResumeRecording(CFileItem *item)
+bool CGUIWindowPVRBase::CheckResumeRecording(CFileItem *item)
 {
+  bool bPlayIt(true);
   std::string resumeString = CGUIWindowPVRRecordings::GetResumeString(*item);
   if (!resumeString.empty())
   {
@@ -687,7 +707,10 @@ void CGUIWindowPVRBase::CheckResumeRecording(CFileItem *item)
     int choice = CGUIDialogContextMenu::ShowAndGetChoice(choices);
     if (choice > 0)
       item->m_lStartOffset = choice == CONTEXT_BUTTON_RESUME_ITEM ? STARTOFFSET_RESUME : 0;
+    else
+      bPlayIt = false; // context menu cancelled
   }
+  return bPlayIt;
 }
 
 bool CGUIWindowPVRBase::PlayRecording(CFileItem *item, bool bPlayMinimized /* = false */, bool bCheckResume /* = true */)
@@ -698,9 +721,9 @@ bool CGUIWindowPVRBase::PlayRecording(CFileItem *item, bool bPlayMinimized /* = 
   std::string stream = item->GetPVRRecordingInfoTag()->m_strStreamURL;
   if (stream.empty())
   {
-    if (bCheckResume)
-      CheckResumeRecording(item);
-    CApplicationMessenger::GetInstance().PostMsg(TMSG_MEDIA_PLAY, 0, 0, static_cast<void*>(new CFileItem(*item)));
+    if (!bCheckResume || CheckResumeRecording(item))
+      CApplicationMessenger::GetInstance().PostMsg(TMSG_MEDIA_PLAY, 0, 0, static_cast<void*>(new CFileItem(*item)));
+
     return true;
   }
 
@@ -750,9 +773,8 @@ bool CGUIWindowPVRBase::PlayRecording(CFileItem *item, bool bPlayMinimized /* = 
     return false;
   }
 
-  if (bCheckResume)
-    CheckResumeRecording(item);
-  CApplicationMessenger::GetInstance().PostMsg(TMSG_MEDIA_PLAY, 0, 0, static_cast<void*>(new CFileItem(*item)));
+  if (!bCheckResume || CheckResumeRecording(item))
+    CApplicationMessenger::GetInstance().PostMsg(TMSG_MEDIA_PLAY, 0, 0, static_cast<void*>(new CFileItem(*item)));
 
   return true;
 }
@@ -983,7 +1005,7 @@ bool CGUIWindowPVRBase::ConfirmDeleteTimer(const CPVRTimerInfoTagPtr &timer, boo
     // prompt user for confirmation for deleting the timer
     bConfirmed = CGUIDialogYesNo::ShowAndGetInput(
                         CVariant{122}, // "Confirm delete"
-                        timer->IsRepeating()
+                        timer->IsTimerRule()
                           ? CVariant{845}  // "Are you sure you want to delete this timer rule and all timers it has scheduled?"
                           : CVariant{846}, // "Are you sure you want to delete this timer?"
                         CVariant{""},

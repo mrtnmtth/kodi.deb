@@ -99,8 +99,7 @@ void CGUIWindowPVRGuide::RegisterObservers(void)
 {
   CSingleLock lock(m_critSection);
   g_EpgContainer.RegisterObserver(this);
-  if (g_PVRTimers)
-    g_PVRTimers->RegisterObserver(this);
+  g_PVRManager.RegisterObserver(this);
   CGUIWindowPVRBase::RegisterObservers();
 }
 
@@ -108,8 +107,7 @@ void CGUIWindowPVRGuide::UnregisterObservers(void)
 {
   CSingleLock lock(m_critSection);
   CGUIWindowPVRBase::UnregisterObservers();
-  if (g_PVRTimers)
-    g_PVRTimers->UnregisterObserver(this);
+  g_PVRManager.UnregisterObserver(this);
   g_EpgContainer.UnregisterObserver(this);
 }
 
@@ -162,8 +160,10 @@ void CGUIWindowPVRGuide::GetContextButtons(int itemNumber, CContextButtons &butt
       }
 
       const CPVRTimerTypePtr timerType(timer->GetTimerType());
-      if (timerType && !timerType->IsReadOnly())
+      if (timerType && !timerType->IsReadOnly() && timer->GetTimerRuleId() == PVR_TIMER_NO_PARENT)
         buttons.Add(CONTEXT_BUTTON_EDIT_TIMER, 19242);    /* Edit timer */
+      else
+        buttons.Add(CONTEXT_BUTTON_EDIT_TIMER, 19241);    /* View timer information */
 
       if (timer->IsRecording())
         buttons.Add(CONTEXT_BUTTON_STOP_RECORD, 19059);   /* Stop recording */

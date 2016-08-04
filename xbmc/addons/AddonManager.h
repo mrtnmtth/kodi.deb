@@ -19,13 +19,16 @@
  *
  */
 #include "Addon.h"
+#include "AddonDatabase.h"
+#include "AddonEvents.h"
+#include "Repository.h"
 #include "threads/CriticalSection.h"
-#include "utils/Observer.h"
+#include "utils/EventStream.h"
 #include <string>
 #include <vector>
 #include <map>
 #include <deque>
-#include "AddonDatabase.h"
+
 
 class DllLibCPluff;
 extern "C"
@@ -61,7 +64,7 @@ namespace ADDON
   * otherwise. Services the generic callbacks available
   * to all addon variants.
   */
-  class CAddonMgr : public Observable
+  class CAddonMgr
   {
   public:
     static CAddonMgr &GetInstance();
@@ -74,6 +77,7 @@ namespace ADDON
     CAddonMgr const& operator=(CAddonMgr const&);
     virtual ~CAddonMgr();
 
+    CEventStream<AddonEvent>& Events() { return m_events; }
 
     IAddonMgrCallback* GetCallbackForType(TYPE type);
     bool RegisterAddonMgrCallback(TYPE type, IAddonMgrCallback* cb);
@@ -134,12 +138,11 @@ namespace ADDON
      */
     bool FindAddons();
 
-    /*! \brief Checks for new / updated add-ons and notifies all observers
-    \return True if everything went ok, false otherwise
-    */
-    bool FindAddonsAndNotify();
+    /*! Unload addon from the system. Returns true if it was unloaded, otherwise false. */
+    bool UnloadAddon(const AddonPtr& addon);
 
-    void UnregisterAddon(const std::string& ID);
+    /*! Returns true if the addon was successfully loaded and enabled; otherwise false. */
+    bool ReloadAddon(AddonPtr& addon);
 
     /*! Hook for clearing internal state after uninstall. */
     void OnPostUnInstall(const std::string& id);
@@ -180,6 +183,8 @@ namespace ADDON
     bool AddToUpdateBlacklist(const std::string& id);
     bool RemoveFromUpdateBlacklist(const std::string& id);
     bool IsBlacklisted(const std::string& id) const;
+
+    void UpdateLastUsed(const std::string& id);
 
     /* libcpluff */
     std::string GetExtValue(cp_cfg_element_t *base, const char *path) const;
@@ -223,21 +228,14 @@ namespace ADDON
      */
     bool LoadAddonDescription(const std::string &path, AddonPtr &addon);
 
-    /*! \brief Load the addon in the given in-memory xml
-     This loads the addon using c-pluff which parses the addon descriptor file.
-     \param root Root element of an XML document.
-     \param addon [out] returned addon.
-     \return true if addon is set, false otherwise.
-     */
-    bool LoadAddonDescriptionFromMemory(const TiXmlElement *root, AddonPtr &addon);
-
     /*! \brief Parse a repository XML file for addons and load their descriptors
      A repository XML is essentially a concatenated list of addon descriptors.
-     \param root Root element of an XML document.
+     \param repo The repository info.
+     \param xml The XML document from repository.
      \param addons [out] returned list of addons.
      \return true if the repository XML file is parsed, false otherwise.
      */
-    bool AddonsFromRepoXML(const TiXmlElement *root, VECADDONS &addons);
+    bool AddonsFromRepoXML(const CRepository::DirInfo& repo, const std::string& xml, VECADDONS& addons);
 
     /*! \brief Start all services addons.
         \return True is all addons are started, false otherwise
@@ -246,8 +244,9 @@ namespace ADDON
     /*! \brief Stop all services addons.
     */
     void StopServices(const bool onlylogin);
+
     static AddonPtr Factory(const cp_plugin_info_t* plugin, TYPE type);
-    static AddonPtr Factory(const cp_plugin_info_t* plugin, TYPE type, CAddonBuilder& builder);
+    static bool Factory(const cp_plugin_info_t* plugin, TYPE type, CAddonBuilder& builder);
     static void FillCpluffMetadata(const cp_plugin_info_t* plugin, CAddonBuilder& builder);
 
   private:
@@ -271,6 +270,7 @@ namespace ADDON
     static std::map<TYPE, IAddonMgrCallback*> m_managers;
     CCriticalSection m_critSection;
     CAddonDatabase m_database;
+    CEventSource<AddonEvent> m_events;
     std::set<std::string> m_systemAddons;
     std::set<std::string> m_optionalAddons;
   };

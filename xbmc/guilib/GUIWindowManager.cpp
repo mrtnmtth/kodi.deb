@@ -79,6 +79,9 @@
 #include "dialogs/GUIDialogTextViewer.h"
 #include "network/GUIDialogNetworkSetup.h"
 #include "dialogs/GUIDialogMediaSource.h"
+#ifdef HAS_GL
+#include "video/dialogs/GUIDialogCMSSettings.h"
+#endif
 #include "video/dialogs/GUIDialogVideoSettings.h"
 #include "video/dialogs/GUIDialogAudioSubtitleSettings.h"
 #include "video/dialogs/GUIDialogVideoBookmarks.h"
@@ -103,6 +106,7 @@
 #include "dialogs/GUIDialogButtonMenu.h"
 #include "dialogs/GUIDialogContextMenu.h"
 #include "dialogs/GUIDialogPlayerControls.h"
+#include "dialogs/GUIDialogPlayerProcessInfo.h"
 #include "music/dialogs/GUIDialogSongInfo.h"
 #include "dialogs/GUIDialogSmartPlaylistEditor.h"
 #include "dialogs/GUIDialogSmartPlaylistRule.h"
@@ -210,9 +214,13 @@ void CGUIWindowManager::CreateWindows()
   Add(new CGUIDialogGamepad);
   Add(new CGUIDialogButtonMenu);
   Add(new CGUIDialogPlayerControls);
+  Add(new CGUIDialogPlayerProcessInfo);
   Add(new CGUIDialogSlider);
   Add(new CGUIDialogMusicOSD);
   Add(new CGUIDialogVisualisationPresetList);
+#ifdef HAS_GL
+  Add(new CGUIDialogCMSSettings);
+#endif
   Add(new CGUIDialogVideoSettings);
   Add(new CGUIDialogAudioSubtitleSettings);
   Add(new CGUIDialogVideoBookmarks);
@@ -315,6 +323,7 @@ bool CGUIWindowManager::DestroyWindows()
     Delete(WINDOW_DIALOG_BUTTON_MENU);
     Delete(WINDOW_DIALOG_CONTEXT_MENU);
     Delete(WINDOW_DIALOG_PLAYER_CONTROLS);
+    Delete(WINDOW_DIALOG_PLAYER_PROCESS_INFO);
     Delete(WINDOW_DIALOG_MUSIC_OSD);
     Delete(WINDOW_DIALOG_VIS_PRESET_LIST);
     Delete(WINDOW_DIALOG_SELECT);
@@ -326,6 +335,7 @@ bool CGUIWindowManager::DestroyWindows()
     Delete(WINDOW_DIALOG_LOCK_SETTINGS);
     Delete(WINDOW_DIALOG_NETWORK_SETUP);
     Delete(WINDOW_DIALOG_MEDIA_SOURCE);
+    Delete(WINDOW_DIALOG_CMS_OSD_SETTINGS);
     Delete(WINDOW_DIALOG_VIDEO_OSD_SETTINGS);
     Delete(WINDOW_DIALOG_AUDIO_OSD_SETTINGS);
     Delete(WINDOW_DIALOG_VIDEO_BOOKMARKS);
@@ -399,7 +409,7 @@ bool CGUIWindowManager::DestroyWindows()
     Remove(WINDOW_SETTINGS_SERVICE);
     Remove(WINDOW_SETTINGS_MYPVR);
     Remove(WINDOW_SETTINGS_PLAYER);
-    Remove(WINDOW_SETTINGS_LIBRARY);
+    Remove(WINDOW_SETTINGS_MEDIA);
     Remove(WINDOW_SETTINGS_INTERFACE);
     Remove(WINDOW_DIALOG_KAI_TOAST);
 

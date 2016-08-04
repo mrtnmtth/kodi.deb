@@ -121,6 +121,7 @@ public:
   static int GetMaxSystemVolume();
   static float GetSystemVolume();
   static void SetSystemVolume(float percent);
+  static void InitDirectories();
 
   static void SetRefreshRate(float rate);
   static int GetDPI();
@@ -144,6 +145,8 @@ public:
 
   static void InitFrameCallback(CVideoSyncAndroid *syncImpl);
   static void DeinitFrameCallback();
+
+  static bool WaitVSync(unsigned int milliSeconds);
 
   static CXBMCApp* get() { return m_xbmcappinstance; }
 
@@ -180,6 +183,7 @@ private:
   static CEvent m_windowCreated;
 
   static CVideoSyncAndroid* m_syncImpl;
+  static CEvent m_vsyncEvent;
 
   void XBMC_Pause(bool pause);
   void XBMC_Stop();

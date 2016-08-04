@@ -369,12 +369,10 @@ JSONRPC_STATUS CPVROperations::AddTimer(const std::string &method, ITransportLay
   if (!epgTag)
     return InvalidParams;
 
-  bool repeating = parameterObject["repeating"].asBoolean(false);
-
   if (epgTag->HasTimer())
     return InvalidParams;
 
-  CPVRTimerInfoTagPtr newTimer = CPVRTimerInfoTag::CreateFromEpg(epgTag, repeating);
+  CPVRTimerInfoTagPtr newTimer = CPVRTimerInfoTag::CreateFromEpg(epgTag, parameterObject["timerrule"].asBoolean(false));
   if (newTimer)
   {
     if (g_PVRTimers->AddTimer(newTimer))
@@ -395,9 +393,7 @@ JSONRPC_STATUS CPVROperations::DeleteTimer(const std::string &method, ITransport
   if (!timer)
     return InvalidParams;
 
-  bool repeating = parameterObject["repeating"].asBoolean(false);
-
-  if (timers->DeleteTimer(timer, false, repeating))
+  if (timers->DeleteTimer(timer, timer->IsRecording(), false))
     return ACK;
 
   return FailedToExecute;
@@ -420,16 +416,20 @@ JSONRPC_STATUS CPVROperations::ToggleTimer(const std::string &method, ITransport
   if (!epgTag)
     return InvalidParams;
 
-  bool repeating = parameterObject["repeating"].asBoolean(false);
+  bool timerrule = parameterObject["timerrule"].asBoolean(false);
   bool sentOkay = false;
   CPVRTimerInfoTagPtr timer(epgTag->Timer());
   if (timer)
   {
-    sentOkay = g_PVRTimers->DeleteTimer(timer, false, repeating);
+    if (timerrule)
+      timer = g_PVRTimers->GetTimerRule(timer);
+
+    if (timer)
+      sentOkay = g_PVRTimers->DeleteTimer(timer, timer->IsRecording(), false);
   }
   else
   {
-    timer = CPVRTimerInfoTag::CreateFromEpg(epgTag, repeating);
+    timer = CPVRTimerInfoTag::CreateFromEpg(epgTag, timerrule);
     sentOkay = g_PVRTimers->AddTimer(timer);
   }
 

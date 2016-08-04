@@ -65,14 +65,14 @@
 
 #define MAX_TEXT_LENGTH 1024
 
-COMXVideo::COMXVideo(CRenderManager& renderManager) : m_video_codec_name("")
+COMXVideo::COMXVideo(CRenderManager& renderManager, CProcessInfo &processInfo) : m_video_codec_name("")
 , m_renderManager(renderManager)
+, m_processInfo(processInfo)
 {
   m_is_open           = false;
   m_extradata         = NULL;
   m_extrasize         = 0;
   m_deinterlace       = false;
-  m_deinterlace_request = VS_DEINTERLACEMODE_OFF;
   m_hdmi_clock_sync   = false;
   m_drop_state        = false;
   m_decoded_width     = 0;
@@ -174,14 +174,9 @@ bool COMXVideo::PortSettingsChanged(ResolutionUpdateInfo &resinfo)
   interlace.nPortIndex = m_omx_decoder.GetOutputPort();
   omx_err = m_omx_decoder.GetConfig(OMX_IndexConfigCommonInterlace, &interlace);
 
-  if(m_deinterlace_request == VS_DEINTERLACEMODE_FORCE)
-    m_deinterlace = true;
-  else if(m_deinterlace_request == VS_DEINTERLACEMODE_OFF)
-    m_deinterlace = false;
-  else
-    m_deinterlace = interlace.eMode != OMX_InterlaceProgressive;
+  m_deinterlace = interlace.eMode != OMX_InterlaceProgressive;
 
-    CLog::Log(LOGDEBUG, "%s::%s - %dx%d@%.2f interlace:%d deinterlace:%d", CLASSNAME, __func__,
+  CLog::Log(LOGDEBUG, "%s::%s - %dx%d@%.2f interlace:%d deinterlace:%d", CLASSNAME, __func__,
       port_image.format.video.nFrameWidth, port_image.format.video.nFrameHeight,
       port_image.format.video.xFramerate / (float)(1<<16), interlace.eMode, m_deinterlace);
 
@@ -239,11 +234,27 @@ bool COMXVideo::PortSettingsChanged(ResolutionUpdateInfo &resinfo)
     }
   }
 
-  if(m_deinterlace)
+  EINTERLACEMETHOD interlace_method = CMediaSettings::GetInstance().GetCurrentVideoSettings().m_InterlaceMethod;
+  if (interlace_method == VS_INTERLACEMETHOD_AUTO)
+    interlace_method = VS_INTERLACEMETHOD_MMAL_ADVANCED;
+
+  if (m_deinterlace && interlace_method != VS_INTERLACEMETHOD_NONE)
   {
-    EINTERLACEMETHOD interlace_method = m_renderManager.AutoInterlaceMethod(CMediaSettings::GetInstance().GetCurrentVideoSettings().m_InterlaceMethod);
     bool advanced_deinterlace = interlace_method == VS_INTERLACEMETHOD_MMAL_ADVANCED || interlace_method == VS_INTERLACEMETHOD_MMAL_ADVANCED_HALF;
     bool half_framerate = interlace_method == VS_INTERLACEMETHOD_MMAL_ADVANCED_HALF || interlace_method == VS_INTERLACEMETHOD_MMAL_BOB_HALF;
+
+    if (advanced_deinterlace && !half_framerate)
+       m_processInfo.SetVideoDeintMethod("adv(x2)");
+    else if (advanced_deinterlace && half_framerate)
+       m_processInfo.SetVideoDeintMethod("adv(x1)");
+    else if (!advanced_deinterlace && !half_framerate)
+       m_processInfo.SetVideoDeintMethod("bob(x2)");
+    else if (!advanced_deinterlace && half_framerate)
+       m_processInfo.SetVideoDeintMethod("bob(x1)");
+
+    if (!half_framerate)
+      resinfo.framerate *= 2.0f;
+
     if (!advanced_deinterlace)
     {
       // Image_fx assumed 3 frames of context. simple deinterlace doesn't require this
@@ -279,6 +290,10 @@ bool COMXVideo::PortSettingsChanged(ResolutionUpdateInfo &resinfo)
       CLog::Log(LOGERROR, "%s::%s - OMX_IndexConfigCommonImageFilterParameters omx_err(0x%08x)", CLASSNAME, __func__, omx_err);
       return false;
     }
+  }
+  else
+  {
+    m_processInfo.SetVideoDeintMethod("none");
   }
 
   if(m_deinterlace)
@@ -350,7 +365,7 @@ bool COMXVideo::PortSettingsChanged(ResolutionUpdateInfo &resinfo)
   return true;
 }
 
-bool COMXVideo::Open(CDVDStreamInfo &hints, OMXClock *clock, EDEINTERLACEMODE deinterlace, bool hdmi_clock_sync)
+bool COMXVideo::Open(CDVDStreamInfo &hints, OMXClock *clock, bool hdmi_clock_sync)
 {
   CSingleLock lock (m_critSection);
   bool vflip = false;
@@ -494,7 +509,6 @@ bool COMXVideo::Open(CDVDStreamInfo &hints, OMXClock *clock, EDEINTERLACEMODE de
       return false;
     break;
   }
-  m_deinterlace_request = deinterlace;
 
   if(!m_omx_decoder.Initialize(decoder_name, OMX_IndexParamVideoInit))
     return false;
@@ -658,9 +672,9 @@ bool COMXVideo::Open(CDVDStreamInfo &hints, OMXClock *clock, EDEINTERLACEMODE de
     return false;
 
   CLog::Log(LOGDEBUG,
-    "%s::%s - decoder_component(0x%p), input_port(0x%x), output_port(0x%x) deinterlace %d hdmiclocksync %d\n",
+    "%s::%s - decoder_component(0x%p), input_port(0x%x), output_port(0x%x) hdmiclocksync %d\n",
     CLASSNAME, __func__, m_omx_decoder.GetComponent(), m_omx_decoder.GetInputPort(), m_omx_decoder.GetOutputPort(),
-    m_deinterlace_request, m_hdmi_clock_sync);
+    m_hdmi_clock_sync);
 
   return true;
 }

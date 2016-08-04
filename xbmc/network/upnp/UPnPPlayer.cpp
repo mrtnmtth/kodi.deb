@@ -602,4 +602,17 @@ bool CUPnPPlayer::OnAction(const CAction &action)
   }
 }
 
+void CUPnPPlayer::SetSpeed(int iSpeed)
+{
+
+}
+
+int CUPnPPlayer::GetSpeed()
+{
+  if (IsPaused())
+    return 0;
+  else
+    return 1;
+}
+
 } /* namespace UPNP */

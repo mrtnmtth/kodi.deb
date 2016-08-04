@@ -58,10 +58,10 @@
  				</control>
 +		                <control type="image">
 +			          <description>LOGO2</description>
-+			          <left>118</left>
-+			          <top>9</top>
-+			          <width>125</width>
-+			          <height>41</height>
++			          <left>223</left>
++			          <top>6</top>
++			          <width>250</width>
++			          <height>82</height>
 +			          <aspectratio aligny="top" align="left">keep</aspectratio>
 +			          <texture>from-debian-logo.png</texture>
 +			          <include>VisibleFadeEffect</include>

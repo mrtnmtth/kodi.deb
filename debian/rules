@@ -124,7 +124,7 @@ override_dh_auto_configure: configure
 	./bootstrap
 	dh_auto_configure -- $(KODI_CONFIG_OPTIONS)
 	# Add "from Debian" next to Kodi's original logo
-	inkscape -z --export-png=addons/skin.estuary/media/from-debian-logo.png debian/from-debian-logo.svg
+	inkscape -z -w 250 -h 82 --export-png=addons/skin.estuary/media/from-debian-logo.png debian/from-debian-logo.svg
 	(cd $(DVDREAD_COMPONENT) && autoreconf -vif && \
 		$(shell dpkg-buildflags --export=configure) ./configure \
 		--prefix=$(CURDIR)/tools/depends/target/libdvdread/dvdread-install --disable-shared --enable-static --with-pic && \

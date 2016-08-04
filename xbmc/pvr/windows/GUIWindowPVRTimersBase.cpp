@@ -48,8 +48,7 @@ CGUIWindowPVRTimersBase::CGUIWindowPVRTimersBase(bool bRadio, int id, const std:
 void CGUIWindowPVRTimersBase::RegisterObservers(void)
 {
   CSingleLock lock(m_critSection);
-  if (g_PVRTimers)
-    g_PVRTimers->RegisterObserver(this);
+  g_PVRManager.RegisterObserver(this);
   g_infoManager.RegisterObserver(this);
   CGUIWindowPVRBase::RegisterObservers();
 }
@@ -59,8 +58,7 @@ void CGUIWindowPVRTimersBase::UnregisterObservers(void)
   CSingleLock lock(m_critSection);
   CGUIWindowPVRBase::UnregisterObservers();
   g_infoManager.UnregisterObserver(this);
-  if (g_PVRTimers)
-    g_PVRTimers->UnregisterObserver(this);
+  g_PVRManager.UnregisterObserver(this);
 }
 
 void CGUIWindowPVRTimersBase::GetContextButtons(int itemNumber, CContextButtons &buttons)
@@ -96,6 +94,8 @@ void CGUIWindowPVRTimersBase::GetContextButtons(int itemNumber, CContextButtons 
 
         if (timerType && !timerType->IsReadOnly() && timer->GetTimerRuleId() == PVR_TIMER_NO_PARENT)
           buttons.Add(CONTEXT_BUTTON_EDIT_TIMER, 21450);  /* Edit */
+        else
+          buttons.Add(CONTEXT_BUTTON_EDIT_TIMER, 19241);  /* View timer information */
 
         // As epg-based timers will get it's title from the epg tag, they should not be renamable.
         if (timer->IsManual() && !timerType->IsReadOnly())
@@ -374,12 +374,7 @@ bool CGUIWindowPVRTimersBase::ActionShowTimer(CFileItem *item)
   }
   else
   {
-    const CPVRTimerInfoTagPtr tag(item->GetPVRTimerInfoTag());
-    if (ShowTimerSettings(tag) && !tag->GetTimerType()->IsReadOnly())
-    {
-      /* Update timer on pvr backend */
-      bReturn = g_PVRTimers->UpdateTimer(tag);
-    }
+    bReturn = EditTimer(item);
   }
 
   return bReturn;

@@ -23,6 +23,7 @@
 #if defined(TARGET_ANDROID)
 #include "../RenderCapture.h"
 
+#include "platform/android/activity/XBMCApp.h"
 #include "DVDCodecs/Video/DVDVideoCodecAndroidMediaCodec.h"
 #include "utils/log.h"
 
@@ -88,11 +89,6 @@ bool CRendererMediaCodecSurface::Supports(EINTERLACEMETHOD method)
   return false;
 }
 
-bool CRendererMediaCodecSurface::Supports(EDEINTERLACEMODE mode)
-{
-  return false;
-}
-
 EINTERLACEMETHOD CRendererMediaCodecSurface::AutoInterlaceMethod()
 {
   return VS_INTERLACEMETHOD_NONE;
@@ -102,8 +98,8 @@ CRenderInfo CRendererMediaCodecSurface::GetRenderInfo()
 {
   CRenderInfo info;
   info.formats = m_formats;
-  info.max_buffer_size = NUM_BUFFERS;
-  info.optimal_buffer_size = 2;
+  info.max_buffer_size = 4;
+  info.optimal_buffer_size = 3;
   return info;
 }
 
@@ -156,6 +152,7 @@ bool CRendererMediaCodecSurface::RenderUpdateVideoHook(bool clear, DWORD flags, 
     mci->RenderUpdate(srcRect, dstRect);
   }
 
+  CXBMCApp::WaitVSync(1000.0 / g_graphicsContext.GetFPS());
   return true;
 }
 
@@ -174,4 +171,3 @@ bool CRendererMediaCodecSurface::UploadTexture(int index)
   return true; // nothing todo
 }
 #endif
-

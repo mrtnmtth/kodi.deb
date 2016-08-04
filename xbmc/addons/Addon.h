@@ -70,11 +70,11 @@ public:
   std::string libname;
   std::string author;
   std::string source;
-  //! @todo fix parts relying on mutating these
-  mutable std::string path;
-  mutable std::string icon;
+  std::string path;
+  std::string icon;
   std::string changelog;
-  mutable std::string fanart;
+  std::string fanart;
+  std::vector<std::string> screenshots;
   std::string disclaimer;
   ADDONDEPS dependencies;
   std::string broken;
@@ -96,7 +96,6 @@ public:
   TYPE Type() const override { return m_props.type; }
   TYPE FullType() const override { return Type(); }
   bool IsType(TYPE type) const override { return type == m_props.type; }
-  const AddonProps& Props() override { return m_props; }
   std::string ID() const override{ return m_props.id; }
   std::string Name() const override { return m_props.name; }
   bool IsInUse() const override{ return false; };
@@ -111,6 +110,7 @@ public:
   std::string ChangeLog() const override { return m_props.changelog; }
   std::string FanArt() const override { return m_props.fanart; }
   std::string Icon() const override { return m_props.icon; };
+  std::vector<std::string> Screenshots() const override { return m_props.screenshots; };
   std::string Disclaimer() const override { return m_props.disclaimer; }
   std::string Broken() const override { return m_props.broken; }
   CDateTime InstallDate() const override { return m_props.installDate; }

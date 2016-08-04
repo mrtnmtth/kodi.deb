@@ -24,6 +24,7 @@
 #include "DVDVideoCodec.h"
 #include "cores/VideoPlayer/DVDCodecs/DVDCodecUtils.h"
 #include "cores/VideoPlayer/DVDClock.h"
+#include "cores/VideoPlayer/Process/ProcessInfo.h"
 #include "utils/log.h"
 #include "utils/StringUtils.h"
 #include "threads/SingleLock.h"
@@ -444,7 +445,9 @@ bool CVideoSurfaces::HasRefs()
 // VAAPI
 //-----------------------------------------------------------------------------
 
-CDecoder::CDecoder() : m_vaapiOutput(&m_inMsgEvent)
+CDecoder::CDecoder(CProcessInfo& processInfo) :
+  m_vaapiOutput(&m_inMsgEvent),
+  m_processInfo(processInfo)
 {
   m_vaapiConfig.videoSurfaces = &m_videoSurfaces;
 
@@ -453,6 +456,7 @@ CDecoder::CDecoder() : m_vaapiOutput(&m_inMsgEvent)
   m_vaapiConfig.context = 0;
   m_vaapiConfig.contextId = VA_INVALID_ID;
   m_vaapiConfig.configId = VA_INVALID_ID;
+  m_vaapiConfig.processInfo = &m_processInfo;
   m_avctx = NULL;
   m_getBufferError = 0;
 }
@@ -1986,23 +1990,22 @@ void COutput::InitCycle()
 
   m_config.stats->SetCanSkipDeint(false);
 
-  EDEINTERLACEMODE mode = CMediaSettings::GetInstance().GetCurrentVideoSettings().m_DeinterlaceMode;
   EINTERLACEMETHOD method = CMediaSettings::GetInstance().GetCurrentVideoSettings().m_InterlaceMethod;
   bool interlaced = m_currentPicture.DVDPic.iFlags & DVP_FLAG_INTERLACED;
 
   if (!(flags & DVD_CODEC_CTRL_NO_POSTPROC) &&
-      (mode == VS_DEINTERLACEMODE_FORCE ||
-      (mode == VS_DEINTERLACEMODE_AUTO && interlaced)))
+      interlaced &&
+      method != VS_INTERLACEMETHOD_NONE)
   {
-    if((method == VS_INTERLACEMETHOD_AUTO && interlaced)
-        ||  method == VS_INTERLACEMETHOD_VAAPI_BOB
-        ||  method == VS_INTERLACEMETHOD_VAAPI_MADI
-        ||  method == VS_INTERLACEMETHOD_VAAPI_MACI
-        ||  method == VS_INTERLACEMETHOD_DEINTERLACE
-        ||  method == VS_INTERLACEMETHOD_RENDER_BOB)
+    if (method == VS_INTERLACEMETHOD_AUTO ||
+        method == VS_INTERLACEMETHOD_VAAPI_BOB ||
+        method == VS_INTERLACEMETHOD_VAAPI_MADI ||
+        method == VS_INTERLACEMETHOD_VAAPI_MACI ||
+        method == VS_INTERLACEMETHOD_DEINTERLACE ||
+        method == VS_INTERLACEMETHOD_RENDER_BOB)
     {
-        if (method == VS_INTERLACEMETHOD_AUTO)
-          method = VS_INTERLACEMETHOD_RENDER_BOB;
+      if (method == VS_INTERLACEMETHOD_AUTO)
+        method = VS_INTERLACEMETHOD_RENDER_BOB;
     }
     else
     {
@@ -2016,6 +2019,7 @@ void COutput::InitCycle()
       delete m_pp;
       m_pp = NULL;
       DropVppProcessedPictures();
+      m_config.processInfo->SetVideoDeintMethod("unknown");
     }
     if (!m_pp)
     {
@@ -2034,6 +2038,17 @@ void COutput::InitCycle()
       {
         m_pp->Init(method);
         m_currentDiMethod = method;
+
+        if (method == VS_INTERLACEMETHOD_DEINTERLACE)
+          m_config.processInfo->SetVideoDeintMethod("yadif");
+        else if (method == VS_INTERLACEMETHOD_RENDER_BOB)
+          m_config.processInfo->SetVideoDeintMethod("render-bob");
+        else if (method == VS_INTERLACEMETHOD_VAAPI_BOB)
+          m_config.processInfo->SetVideoDeintMethod("vaapi-bob");
+        else if (method == VS_INTERLACEMETHOD_VAAPI_MADI)
+          m_config.processInfo->SetVideoDeintMethod("vaapi-madi");
+        else if (method == VS_INTERLACEMETHOD_VAAPI_MACI)
+          m_config.processInfo->SetVideoDeintMethod("vaapi-maci");
       }
       else
       {
@@ -2066,6 +2081,7 @@ void COutput::InitCycle()
       {
         m_pp->Init(method);
         m_currentDiMethod = method;
+        m_config.processInfo->SetVideoDeintMethod("none");
       }
       else
       {

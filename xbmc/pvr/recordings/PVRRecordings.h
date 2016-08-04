@@ -20,7 +20,6 @@
  */
 
 #include "FileItem.h"
-#include "utils/Observer.h"
 #include "video/VideoDatabase.h"
 
 #include "PVRRecording.h"
@@ -29,7 +28,7 @@ namespace PVR
 {
   class CPVRRecordingsPath;
 
-  class CPVRRecordings : public Observable
+  class CPVRRecordings
   {
   private:
     typedef std::map<CPVRRecordingUid, CPVRRecordingPtr> PVR_RECORDINGMAP;
@@ -40,7 +39,6 @@ namespace PVR
     bool                         m_bIsUpdating;
     PVR_RECORDINGMAP             m_recordings;
     unsigned int                 m_iLastId;
-    bool                         m_bGroupItems;
     CVideoDatabase               m_database;
     bool                         m_bDeletedTVRecordings;
     bool                         m_bDeletedRadioRecordings;
@@ -95,7 +93,5 @@ namespace PVR
     CPVRRecordingPtr GetById(int iClientId, const std::string &strRecordingId) const;
     void GetAll(CFileItemList &items, bool bDeleted = false);
     CFileItemPtr GetById(unsigned int iId) const;
-
-    void SetGroupItems(bool value) { m_bGroupItems = value; };
   };
 }

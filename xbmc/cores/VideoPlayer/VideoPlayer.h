@@ -75,7 +75,6 @@ public:
 struct SOmxPlayerState
 {
   OMXClock av_clock;              // openmax clock component
-  EDEINTERLACEMODE current_deinterlace; // whether deinterlace is currently enabled
   EINTERLACEMETHOD interlace_method; // current deinterlace method
   bool bOmxWaitVideo;             // whether we need to wait for video to play out on EOS
   bool bOmxWaitAudio;             // whether we need to wait for audio to play out on EOS
@@ -242,8 +241,7 @@ public:
   virtual bool OpenFile(const CFileItem& file, const CPlayerOptions &options);
   virtual bool CloseFile(bool reopen = false);
   virtual bool IsPlaying() const;
-  virtual void Pause();
-  virtual bool IsPaused() const;
+  virtual void Pause() override;
   virtual bool HasVideo() const;
   virtual bool HasAudio() const;
   virtual bool HasRDS() const;
@@ -255,9 +253,9 @@ public:
   virtual float GetPercentage();
   virtual float GetCachePercentage();
 
-  virtual void SetVolume(float nVolume)                         { m_VideoPlayerAudio->SetVolume(nVolume); }
-  virtual void SetMute(bool bOnOff)                             { m_VideoPlayerAudio->SetMute(bOnOff); }
-  virtual void SetDynamicRangeCompression(long drc)             { m_VideoPlayerAudio->SetDynamicRangeCompression(drc); }
+  virtual void SetVolume(float nVolume) override;
+  virtual void SetMute(bool bOnOff) override;
+  virtual void SetDynamicRangeCompression(long drc) override;
   virtual bool CanRecord();
   virtual bool IsRecording();
   virtual bool CanPause();
@@ -301,7 +299,8 @@ public:
   virtual bool SeekTimeRelative(int64_t iTime);
   virtual int64_t GetTime();
   virtual int64_t GetTotalTime();
-  virtual void ToFFRW(int iSpeed);
+  virtual void SetSpeed(int iSpeed) override;
+  virtual int GetSpeed() override;
   virtual bool OnAction(const CAction &action);
 
   virtual int GetSourceBitrate();
@@ -325,7 +324,6 @@ public:
   virtual bool IsRenderingVideo();
   virtual bool IsRenderingGuiLayer();
   virtual bool IsRenderingVideoLayer();
-  virtual bool Supports(EDEINTERLACEMODE mode);
   virtual bool Supports(EINTERLACEMETHOD method);
   virtual bool Supports(ESCALINGMETHOD method);
   virtual bool Supports(ERENDERFEATURE feature);
@@ -352,8 +350,6 @@ public:
 
   virtual int OnDVDNavResult(void* pData, int iMessage) override;
   void GetVideoResolution(unsigned int &width, unsigned int &height) override;
-
-  virtual bool ControlsVolume() {return m_omxplayer_mode;}
 
 protected:
   friend class CSelectionStreams;
@@ -398,7 +394,7 @@ protected:
    * one of the DVD_PLAYSPEED defines
    */
   void SetPlaySpeed(int iSpeed);
-  int GetPlaySpeed()                                                { return m_playSpeed; }
+  int GetPlaySpeed() { return m_playSpeed; }
   void SetCaching(ECacheState state);
 
   int64_t GetTotalTimeInMsec();
@@ -459,7 +455,8 @@ protected:
 
   CSelectionStreams m_SelectionStreams;
 
-  int m_playSpeed;
+  std::atomic_int m_playSpeed;
+  std::atomic_int m_newPlaySpeed;
   int m_streamPlayerSpeed;
   struct SSpeedState
   {

@@ -120,10 +120,6 @@ Files: tools/EventClients/*
 Copyright: 2008-2013, Team XBMC
 License: GPL-2+
 
-Files: tools/EventClients/Clients/J2ME?Client/*
-Copyright: 2008, topfs2
-License: GPL-2+
-
 Files: tools/EventClients/Clients/Kodi?Send/*
 Copyright: 2009, Team XBMC
 License: GPL-2+

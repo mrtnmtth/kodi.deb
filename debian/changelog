@@ -1,4 +1,4 @@
-kodi (17.0~alpha3+dfsg1-1) UNRELEASED; urgency=medium
+kodi (17.0~alpha3+dfsg1-1) experimental; urgency=medium
 
   [ Lukas Rechberger ]
   * Skip timestamps to make build reproducible (Closes: #825285)
@@ -18,10 +18,16 @@ kodi (17.0~alpha3+dfsg1-1) UNRELEASED; urgency=medium
   * Ignore failing tests but run them with Valgrind when it is available
   * Update d/copyright
   * Add information about multiple orig tarballs
-  * New upstream alpha release 17.0 Alpha 2
+  * New upstream alpha release 17.0 Alpha 3
     See: https://kodi.tv/kodi-v17-krypton-alpha-3/
+  * Refresh patches
+  * Really revert patches to embedded dvdnav and dvdread copies in clean target
+  * Drop J2ME client support in sync with upstream
+  * Don't crash on missing version checker addon
+  * Position "from Debian" image better on new skin
+  * Drop symlinks to fonts used in the replaced skin
 
- -- Balint Reczey <balint@balintreczey.hu>  Fri, 20 May 2016 23:06:27 +0200
+ -- Balint Reczey <balint@balintreczey.hu>  Fri, 05 Aug 2016 01:23:53 +0200
 
 kodi (16.1+dfsg1-1) unstable; urgency=medium
 

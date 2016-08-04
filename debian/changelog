@@ -1,4 +1,4 @@
-kodi (17.0~alpha2+dfsg1-1) UNRELEASED; urgency=medium
+kodi (17.0~alpha3+dfsg1-1) UNRELEASED; urgency=medium
 
   [ Lukas Rechberger ]
   * Skip timestamps to make build reproducible (Closes: #825285)
@@ -9,6 +9,17 @@ kodi (17.0~alpha2+dfsg1-1) UNRELEASED; urgency=medium
   * New upstream alpha release 17.0 Alpha 2
     See: https://kodi.tv/kodi-v17-krypton-alpha-2/
   * Stop excluding paths from orig tarball which are already removed
+  * Refresh patches and changed paths in d/rules
+  * Fix FTBFS due to format string warnings
+  * Disable building DVDCSS
+  * Build-depend on libbluray-dev (>= 0.7.0) to match version required by ./configure
+  * Derive embedded libdvdnav and libdvdread from additional original tarballs
+  * Fix building with Google Test
+  * Ignore failing tests but run them with Valgrind when it is available
+  * Update d/copyright
+  * Add information about multiple orig tarballs
+  * New upstream alpha release 17.0 Alpha 2
+    See: https://kodi.tv/kodi-v17-krypton-alpha-3/
 
  -- Balint Reczey <balint@balintreczey.hu>  Fri, 20 May 2016 23:06:27 +0200
 

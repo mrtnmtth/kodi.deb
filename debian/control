@@ -152,10 +152,11 @@ Multi-Arch: foreign
 Depends: mesa-utils,
          x11-utils,
          fonts-dejavu-core,
-         fonts-roboto-hinted,
+         fonts-lato,
          libjs-jquery,
          libjs-iscroll,
          python-imaging,
+         texlive-fonts-extra,
          ${python:Depends},
          ${misc:Depends}
 Replaces: xbmc (<< 2:13.2+dfsg1-5~), kodi (<< 15.2~rc1+dfsg1-2~)

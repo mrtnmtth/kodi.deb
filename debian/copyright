@@ -2,6 +2,7 @@ Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: Kodi
 Source: http://kodi.tv/
 Files-Excluded: addons/service.xbmc.versioncheck
+ addons/skin.estuary/fonts/*.ttf
  addons/webinterface.default/js/iscroll-min.js
  addons/webinterface.default/js/jquery-1.8.2.min.js
  lib/cpluff/doc/reference

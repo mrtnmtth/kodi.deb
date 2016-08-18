@@ -5,6 +5,12 @@ kodi (16.1+dfsg1-2) UNRELEASED; urgency=medium
 
   [ Balint Reczey ]
   * Build depend on groovy instead of groovy2 (Closes: #824187)
+  * Recommend kodi-visualization-spectrum
+  * Build-depend on libbluray-dev (>= 0.7.0) to match version required by ./configure
+
+  [ Tobias Grimm ]
+  * Added gcc-6 fixes for CxImage code (Closes: #831137)
+  * Disabled failing webserver tests (Closes: #832857)
 
  -- Balint Reczey <balint@balintreczey.hu>  Fri, 20 May 2016 23:06:27 +0200
 

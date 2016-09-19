@@ -186,6 +186,14 @@ override_dh_strip:
 override_dh_installinit:
 	@echo "Shipping systemd kodi.service file as an example only"
 
+override_dh_gencontrol:
+	dh_gencontrol -pxbmc -pxbmc-bin -pxbmc-eventclients-common \
+		-pxbmc-eventclients-dev -pxbmc-eventclients-wiiremote \
+		-pxbmc-eventclients-j2me -pxbmc-eventclients-ps3 \
+		-pxbmc-eventclients-xbmc-send -pxbmc-addons-dev \
+		-- -v"2:13.2+dfsg1-7"
+	dh_gencontrol --remaining-packages
+
 # extract and patch customized libdvdread and libdvdnav
 extract-components:
 	tar -xf $(CURDIR)/../kodi_17.0~alpha2+dfsg1.orig-$(DVDNAV_COMPONENT).tar.bz2 && \

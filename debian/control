@@ -370,3 +370,65 @@ Description: Open Source Home Theatre (Addons Dev package)
  This package contains independent headers for building Addons
  without the whole Kodi source tree.
 
+# transitional packages from xbmc
+Package: xbmc
+Architecture: all
+Depends: kodi,
+Provides: xbmc-standalone, xbmc-data, xbmc-skin-confluence, xbmc-live
+Replaces: xbmc-standalone, xbmc-data, xbmc-skin-confluence, xbmc-live
+Breaks: xbmc-standalone (<< 2:11.0~git20111222.22ad8e4),
+        xbmc-data (<< 2:11.0~git20111222.22ad8e4),
+        xbmc-skin-confluence (<< 2:11.0~git20111222.22ad8e4)
+Description: transitional dummy package
+ This is a transitional dummy package. It can safely be removed.
+
+Package: xbmc-bin
+Architecture: any
+Depends: kodi-bin,
+Provides: xbmc-common
+Replaces: xbmc-common
+Description: transitional dummy package
+ This is a transitional dummy package. It can safely be removed.
+
+Package: xbmc-eventclients-common
+Architecture: all
+Depends: kodi-eventclients-common
+Description: transitional dummy package
+ This is a transitional dummy package. It can safely be removed.
+
+Package: xbmc-eventclients-dev
+Architecture: all
+Depends: kodi-eventclients-dev
+Description: transitional dummy package
+ This is a transitional dummy package. It can safely be removed.
+
+Package: xbmc-eventclients-wiiremote
+Architecture: any
+Depends: kodi-eventclients-wiiremote
+Description: transitional dummy package
+ This is a transitional dummy package. It can safely be removed.
+
+Package: xbmc-eventclients-j2me
+Architecture: all
+Depends: kodi-eventclients-j2me
+Description: transitional dummy package
+ This is a transitional dummy package. It can safely be removed.
+
+Package: xbmc-eventclients-ps3
+Architecture: all
+Depends: kodi-eventclients-ps3
+Description: transitional dummy package
+ This is a transitional dummy package. It can safely be removed.
+
+Package: xbmc-eventclients-xbmc-send
+Architecture: all
+Depends: kodi-eventclients-kodi-send
+Description: transitional dummy package
+ This is a transitional dummy package. It can safely be removed.
+
+Package: xbmc-addons-dev
+Architecture: all
+Depends: kodi-addons-dev
+Description: transitional dummy package
+ This is a transitional dummy package. It can safely be removed.
+

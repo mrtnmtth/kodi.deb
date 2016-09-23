@@ -166,18 +166,9 @@ debian/tmp/kodi-bin-recommends-dummy.so:
 		-lass \
 		-lbluray \
 		-lcec \
-		-lFLAC \
-		-lmad \
 		-lmodplug \
-		-lmp3lame \
-		-lmpeg2 \
 		-lnfs \
-		-logg \
 		-lplist \
-		-lrtmp \
-		-lvorbis \
-		-lvorbisenc \
-		-lvorbisfile \
 		$(ARCH_SPECIFIC_LIB_RECOMMENDS)
 
 override_dh_strip:

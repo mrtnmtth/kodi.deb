@@ -97,8 +97,8 @@ override_dh_clean:
 
 override_dh_auto_clean:
 	dh_auto_clean
-	-make -C $(DVDNAV_COMPONENT) clean
-	-make -C $(DVDREAD_COMPONENT) clean
+	make -C $(DVDNAV_COMPONENT) clean || true
+	make -C $(DVDREAD_COMPONENT) clean || true
 
 # Use package's version in Kodi
 VERSION := $(shell dpkg-parsechangelog | sed -n 's/^Version: \(.*\)/\1/p')

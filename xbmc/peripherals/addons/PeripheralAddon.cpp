@@ -32,6 +32,7 @@
 #include "peripherals/Peripherals.h"
 #include "peripherals/bus/virtual/PeripheralBusAddon.h"
 #include "peripherals/devices/PeripheralJoystick.h"
+#include "settings/Settings.h"
 #include "utils/log.h"
 #include "utils/StringUtils.h"
 
@@ -71,7 +72,20 @@ CPeripheralAddon::~CPeripheralAddon(void)
 {
   // delete all peripherals provided by this addon
   for (const auto& peripheral : m_peripherals)
+  {
+    if (CSettings::GetInstance().GetBool(CSettings::SETTING_INPUT_CONTROLLERPOWEROFF))
+    {
+      // shutdown the joystick if it is supported
+      if (peripheral.second->Type() == PERIPHERAL_JOYSTICK)
+      {
+        CPeripheralJoystick* joystick = static_cast<CPeripheralJoystick*>(peripheral.second);
+        if (joystick->SupportsPowerOff())
+          PowerOffJoystick(peripheral.first);
+      }
+    }
+
     delete peripheral.second;
+  }
   m_peripherals.clear();
 
   // only clear buttonMaps but don't delete them as they are owned by a CAddonJoystickInputHandling instance
@@ -158,6 +172,13 @@ bool CPeripheralAddon::GetAddonProperties(void)
     CLog::Log(LOGERROR, "PERIPHERAL - Add-on '%s': provides_joysticks'(%s) in add-on DLL  doesn't match 'provides_joysticks'(%s) in addon.xml. Please contact the developer of this add-on: %s",
         Name().c_str(), addonCapabilities.provides_joysticks ? "true" : "false",
         m_bProvidesJoysticks ? "true" : "false", Author().c_str());
+    return false;
+  }
+  if (m_bProvidesButtonMaps != addonCapabilities.provides_buttonmaps)
+  {
+    CLog::Log(LOGERROR, "PERIPHERAL - Add-on '%s': provides_buttonmaps' (%s) in add-on DLL  doesn't match 'provides_buttonmaps' (%s) in addon.xml. Please contact the developer of this add-on: %s",
+        Name().c_str(), addonCapabilities.provides_buttonmaps ? "true" : "false",
+        m_bProvidesButtonMaps ? "true" : "false", Author().c_str());
     return false;
   }
 
@@ -326,7 +347,7 @@ void CPeripheralAddon::GetDirectory(const std::string &strPath, CFileItemList &i
     peripheralFile->SetProperty("location", peripheral->Location());
     peripheralFile->SetProperty("class", PeripheralTypeTranslator::TypeToString(peripheral->Type()));
     peripheralFile->SetProperty("version", peripheral->GetVersionInfo());
-    peripheralFile->SetIconImage("DefaultAddon.png");
+    peripheralFile->SetIconImage(peripheral->GetIcon());
     items.Add(peripheralFile);
   }
 }
@@ -455,6 +476,23 @@ bool CPeripheralAddon::ProcessEvents(void)
   return false;
 }
 
+bool CPeripheralAddon::SendRumbleEvent(unsigned int peripheralIndex, unsigned int driverIndex, float magnitude)
+{
+  bool bHandled = false;
+
+  PERIPHERAL_EVENT eventStruct = { };
+
+  eventStruct.peripheral_index = peripheralIndex;
+  eventStruct.type             = PERIPHERAL_EVENT_TYPE_SET_MOTOR;
+  eventStruct.driver_index     = driverIndex;
+  eventStruct.motor_state      = magnitude;
+
+  try { bHandled = m_pStruct->SendEvent(&eventStruct); }
+  catch (std::exception &e) { LogException(e, "SendEvent()"); }
+
+  return bHandled;
+}
+
 bool CPeripheralAddon::GetJoystickProperties(unsigned int index, CPeripheralJoystick& joystick)
 {
   if (!m_bProvidesJoysticks)
@@ -521,9 +559,9 @@ bool CPeripheralAddon::GetFeatures(const CPeripheral* device,
   return false;
 }
 
-bool CPeripheralAddon::MapFeatures(const CPeripheral* device,
-                                   const std::string& strControllerId,
-                                   const FeatureMap& features)
+bool CPeripheralAddon::MapFeature(const CPeripheral* device,
+                                  const std::string& strControllerId,
+                                  const ADDON::JoystickFeature& feature)
 {
   if (!m_bProvidesButtonMaps)
     return false;
@@ -536,26 +574,35 @@ bool CPeripheralAddon::MapFeatures(const CPeripheral* device,
   JOYSTICK_INFO joystickStruct;
   joystickInfo.ToStruct(joystickStruct);
 
-  std::vector<ADDON::JoystickFeature> featureVector;
-  for (FeatureMap::const_iterator it = features.begin(); it != features.end(); ++it)
-    featureVector.push_back(it->second);
-
-  unsigned int featureCount = featureVector.size();
-
-  JOYSTICK_FEATURE* pFeatures = NULL;
-  ADDON::JoystickFeatures::ToStructs(featureVector, &pFeatures);
+  JOYSTICK_FEATURE addonFeature;
+  feature.ToStruct(addonFeature);
 
   try { LogError(retVal = m_pStruct->MapFeatures(&joystickStruct, strControllerId.c_str(),
-                                                 featureCount, pFeatures), "MapFeatures()"); }
+                                                 1, &addonFeature), "MapFeatures()"); }
   catch (std::exception &e) { LogException(e, "MapFeatures()"); return false;  }
 
   if (retVal == PERIPHERAL_NO_ERROR)
   {
     // Notify observing button maps
-    RefreshButtonMaps(device->DeviceName(), strControllerId);
+    RefreshButtonMaps(device->DeviceName());
   }
 
   return retVal == PERIPHERAL_NO_ERROR;
+}
+
+void CPeripheralAddon::SaveButtonMap(const CPeripheral* device)
+{
+  if (!m_bProvidesButtonMaps)
+    return;
+
+  ADDON::Joystick joystickInfo;
+  GetJoystickInfo(device, joystickInfo);
+
+  JOYSTICK_INFO joystickStruct;
+  joystickInfo.ToStruct(joystickStruct);
+
+  try { m_pStruct->SaveButtonMap(&joystickStruct); }
+  catch (std::exception &e) { LogException(e, "SaveMap()"); return; }
 }
 
 void CPeripheralAddon::ResetButtonMap(const CPeripheral* device, const std::string& strControllerId)
@@ -571,6 +618,15 @@ void CPeripheralAddon::ResetButtonMap(const CPeripheral* device, const std::stri
 
   try { m_pStruct->ResetButtonMap(&joystickStruct, strControllerId.c_str()); }
   catch (std::exception &e) { LogException(e, "ResetButtonMap()"); return; }
+}
+
+void CPeripheralAddon::PowerOffJoystick(unsigned int index)
+{
+  if (!HasFeature(FEATURE_JOYSTICK))
+    return;
+
+  try { m_pStruct->PowerOffJoystick(index); }
+  catch (std::exception &e) { LogException(e, "PowerOffJoystick()"); return; }
 }
 
 void CPeripheralAddon::RegisterButtonMap(CPeripheral* device, IButtonMap* buttonMap)
@@ -591,16 +647,12 @@ void CPeripheralAddon::UnregisterButtonMap(IButtonMap* buttonMap)
   }
 }
 
-void CPeripheralAddon::RefreshButtonMaps(const std::string& strDeviceName /* = "" */,
-                                         const std::string& strControllerId /* = "" */)
+void CPeripheralAddon::RefreshButtonMaps(const std::string& strDeviceName /* = "" */)
 {
   for (auto it = m_buttonMaps.begin(); it != m_buttonMaps.end(); ++it)
   {
-    if ((strDeviceName.empty() || strDeviceName == it->first->DeviceName()) &&
-        (strControllerId.empty() || strControllerId == it->second->ControllerID()))
-    {
+    if (strDeviceName.empty() || strDeviceName == it->first->DeviceName())
       it->second->Load();
-    }
   }
 }
 
@@ -622,6 +674,8 @@ void CPeripheralAddon::GetJoystickInfo(const CPeripheral* device, ADDON::Joystic
     joystickInfo.SetButtonCount(joystick->ButtonCount());
     joystickInfo.SetHatCount(joystick->HatCount());
     joystickInfo.SetAxisCount(joystick->AxisCount());
+    joystickInfo.SetMotorCount(joystick->MotorCount());
+    joystickInfo.SetSupportsPowerOff(joystick->SupportsPowerOff());
   }
 }
 
@@ -632,6 +686,8 @@ void CPeripheralAddon::SetJoystickInfo(CPeripheralJoystick& joystick, const ADDO
   joystick.SetButtonCount(joystickInfo.ButtonCount());
   joystick.SetHatCount(joystickInfo.HatCount());
   joystick.SetAxisCount(joystickInfo.AxisCount());
+  joystick.SetMotorCount(joystickInfo.MotorCount());
+  joystick.SetSupportsPowerOff(joystickInfo.SupportsPowerOff());
 }
 
 bool CPeripheralAddon::LogError(const PERIPHERAL_ERROR error, const char *strMethod) const

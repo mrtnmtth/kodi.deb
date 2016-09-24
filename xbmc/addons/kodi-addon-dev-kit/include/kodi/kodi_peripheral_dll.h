@@ -100,6 +100,14 @@ extern "C"
    * @param events       The array of allocated events
    */
   void FreeEvents(unsigned int event_count, PERIPHERAL_EVENT* events);
+
+  /*!
+   * @brief Send an input event to the specified peripheral
+   * @param peripheralIndex The index of the device receiving the input event
+   * @param event The input event
+   * @return true if the event was handled, false otherwise
+   */
+  bool SendEvent(const PERIPHERAL_EVENT* event);
   ///}
 
   /// @name Joystick operations
@@ -158,11 +166,23 @@ extern "C"
                                unsigned int feature_count, JOYSTICK_FEATURE* features);
 
   /*!
+   * @brief Save the button map for the given joystick
+   * @param joystick      The device's joystick properties
+   */
+  void SaveButtonMap(const JOYSTICK_INFO* joystick);
+
+  /*!
    * @brief Reset the button map for the given joystick and controller profile ID
    * @param joystick      The device's joystick properties
    * @param controller_id The game controller profile being reset
    */
   void ResetButtonMap(const JOYSTICK_INFO* joystick, const char* controller_id);
+
+  /*!
+   * @brief Powers off the given joystick if supported
+   * @param index  The joystick's driver index
+   */
+  void PowerOffJoystick(unsigned int index);
 #endif
   ///}
 
@@ -180,6 +200,7 @@ extern "C"
     pClient->FreeScanResults                = FreeScanResults;
     pClient->GetEvents                      = GetEvents;
     pClient->FreeEvents                     = FreeEvents;
+    pClient->SendEvent                      = SendEvent;
 
 #ifdef PERIPHERAL_ADDON_JOYSTICKS
     pClient->GetJoystickInfo                = GetJoystickInfo;
@@ -187,7 +208,9 @@ extern "C"
     pClient->GetFeatures                    = GetFeatures;
     pClient->FreeFeatures                   = FreeFeatures;
     pClient->MapFeatures                    = MapFeatures;
+    pClient->SaveButtonMap                  = SaveButtonMap;
     pClient->ResetButtonMap                 = ResetButtonMap;
+    pClient->PowerOffJoystick               = PowerOffJoystick;
 #endif
   }
 

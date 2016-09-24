@@ -280,7 +280,7 @@ CApplication::CApplication(void)
   m_nextPlaylistItem = -1;
   m_bPlaybackStarting = false;
   m_ePlayState = PLAY_STATE_NONE;
-  m_skinReverting = false;
+  m_confirmSkinChange = true;
 
 #ifdef HAS_GLX
   XInitThreads();
@@ -415,7 +415,7 @@ void CApplication::Preflight()
 #if defined(TARGET_DARWIN_OSX)
   std::string install_path;
 
-  CUtil::GetHomePath(install_path);
+  install_path = CUtil::GetHomePath();
   setenv("KODI_HOME", install_path.c_str(), 0);
   install_path += "/tools/darwin/runtime/preflight";
   system(install_path.c_str());
@@ -458,6 +458,7 @@ bool CApplication::Create()
     g_graphicsContext.ResetOverscan((RESOLUTION)i, CDisplaySettings::GetInstance().GetResolutionInfo(i).Overscan);
   }
 
+  //! @todo - move to CPlatformXXX
 #ifdef TARGET_POSIX
   tzset();   // Initialize timezone information variables
 #endif
@@ -465,6 +466,7 @@ bool CApplication::Create()
   // Grab a handle to our thread to be used later in identifying the render thread.
   m_threadID = CThread::GetCurrentThreadId();
 
+  //! @todo - move to CPlatformXXX
 #ifndef TARGET_POSIX
   //floating point precision to 24 bits (faster performance)
   _controlfp(_PC_24, _MCW_PC);
@@ -474,7 +476,8 @@ bool CApplication::Create()
   win32_exception::install_handler();
 
 #endif
-  
+
+  //! @todo - move to CPlatformXXX
   #if defined(TARGET_POSIX)
     // set special://envhome
     CSpecialProtocol::SetEnvHomePath(getenv("HOME"));
@@ -492,6 +495,7 @@ bool CApplication::Create()
   CopyUserDataIfNeeded("special://masterprofile/", "favourites.xml");
   CopyUserDataIfNeeded("special://masterprofile/", "Lircmap.xml");
   
+  //! @todo - move to CPlatformXXX
   #ifdef TARGET_DARWIN_IOS
     CopyUserDataIfNeeded("special://masterprofile/", "iOS/sources.xml", "sources.xml");
   #endif
@@ -520,6 +524,8 @@ bool CApplication::Create()
   buildType = "Unknown";
 #endif
   std::string specialVersion;
+  
+  //! @todo - move to CPlatformXXX
 #if defined(TARGET_RASPBERRY_PI)
   specialVersion = " (version for Raspberry Pi)";
 //#elif defined(some_ID) // uncomment for special version/fork
@@ -540,6 +546,7 @@ bool CApplication::Create()
     CLog::Log(LOGNOTICE, "Running on %s, kernel: %s %s %d-bit version %s", g_sysinfo.GetOsPrettyNameWithVersion().c_str(),
               g_sysinfo.GetKernelName().c_str(), g_sysinfo.GetKernelCpuFamily().c_str(), g_sysinfo.GetKernelBitness(), g_sysinfo.GetKernelVersionFull().c_str());
 
+  //! @todo - move to CPlatformXXX ???
 #if defined(TARGET_LINUX)
 #if USE_STATIC_FFMPEG
   CLog::Log(LOGNOTICE, "FFmpeg statically linked, version: %s", FFMPEG_VERSION);
@@ -560,6 +567,8 @@ bool CApplication::Create()
     CLog::Log(LOGNOTICE, "Host CPU: %s, %d core%s available", cpuModel.c_str(), g_cpuInfo.getCPUCount(), (g_cpuInfo.getCPUCount() == 1) ? "" : "s");
   else
     CLog::Log(LOGNOTICE, "%d CPU core%s available", g_cpuInfo.getCPUCount(), (g_cpuInfo.getCPUCount() == 1) ? "" : "s");
+  
+  //! @todo - move to CPlatformXXX ???
 #if defined(TARGET_WINDOWS)
   CLog::Log(LOGNOTICE, "%s", CWIN32Util::GetResInfoString().c_str());
   CLog::Log(LOGNOTICE, "Running with %s rights", (CWIN32Util::IsCurrentUserLocalAdministrator() == TRUE) ? "administrator" : "restricted");
@@ -594,10 +603,10 @@ bool CApplication::Create()
   CRegExp::LogCheckUtf8Support();
   CLog::Log(LOGNOTICE, "-----------------------------------------------------------------------");
 
-  std::string strExecutablePath;
-  CUtil::GetHomePath(strExecutablePath);
+  std::string strExecutablePath = CUtil::GetHomePath();
 
   // for python scripts that check the OS
+  //! @todo - move to CPlatformXXX
 #if defined(TARGET_DARWIN)
   setenv("OS","OS X",true);
 #elif defined(TARGET_POSIX)
@@ -653,6 +662,7 @@ bool CApplication::Create()
 
   update_emu_environ();//apply the GUI settings
 
+  //! @todo - move to CPlatformXXX
 #ifdef TARGET_WINDOWS
   CWIN32Util::SetThreadLocalLocale(true); // enable independent locale for each thread, see https://connect.microsoft.com/VisualStudio/feedback/details/794122
 #endif // TARGET_WINDOWS
@@ -694,6 +704,7 @@ bool CApplication::Create()
     return false;
   }
 
+  //! @todo - move to CPlatformXXX
 #if defined(TARGET_DARWIN_OSX)
   // Configure and possible manually start the helper.
   XBMCHelper::GetInstance().Configure();
@@ -873,7 +884,11 @@ bool CApplication::InitDirectoriesLinux()
   else
     userHome = "/root";
 
-  std::string appBinPath, appPath;
+  std::string binaddonAltDir;
+  if (getenv("KODI_BINADDON_PATH"))
+    binaddonAltDir = getenv("KODI_BINADDON_PATH");
+
+  std::string appPath;
   std::string appName = CCompileInfo::GetAppName();
   std::string dotLowerAppName = "." + appName;
   StringUtils::ToLower(dotLowerAppName);
@@ -881,18 +896,20 @@ bool CApplication::InitDirectoriesLinux()
   const char* envAppBinHome = "KODI_BIN_HOME";
   const char* envAppTemp = "KODI_TEMP";
 
-  CUtil::GetHomePath(appBinPath, envAppBinHome);
+  auto appBinPath = CUtil::GetHomePath(envAppBinHome);
+  // overridden by user
   if (getenv(envAppHome))
     appPath = getenv(envAppHome);
   else
   {
-    appPath = appBinPath;
+    // use build time default
+    appPath = INSTALL_PATH;
     /* Check if binaries and arch independent data files are being kept in
      * separate locations. */
     if (!CDirectory::Exists(URIUtils::AddFileToFolder(appPath, "userdata")))
     {
       /* Attempt to locate arch independent data files. */
-      CUtil::GetHomePath(appPath);
+      appPath = CUtil::GetHomePath(appBinPath);
       if (!CDirectory::Exists(URIUtils::AddFileToFolder(appPath, "userdata")))
       {
         fprintf(stderr, "Unable to find path to %s data files!\n", appName.c_str());
@@ -909,6 +926,7 @@ bool CApplication::InitDirectoriesLinux()
   {
     // map our special drives
     CSpecialProtocol::SetXBMCBinPath(appBinPath);
+    CSpecialProtocol::SetXBMCAltBinAddonPath(binaddonAltDir);
     CSpecialProtocol::SetXBMCPath(appPath);
     CSpecialProtocol::SetHomePath(userHome + "/" + dotLowerAppName);
     CSpecialProtocol::SetMasterProfilePath(userHome + "/" + dotLowerAppName + "/userdata");
@@ -928,6 +946,7 @@ bool CApplication::InitDirectoriesLinux()
     URIUtils::AddSlashAtEnd(appPath);
 
     CSpecialProtocol::SetXBMCBinPath(appBinPath);
+    CSpecialProtocol::SetXBMCAltBinAddonPath(binaddonAltDir);
     CSpecialProtocol::SetXBMCPath(appPath);
     CSpecialProtocol::SetHomePath(URIUtils::AddFileToFolder(appPath, "portable_data"));
     CSpecialProtocol::SetMasterProfilePath(URIUtils::AddFileToFolder(appPath, "portable_data/userdata"));
@@ -967,8 +986,7 @@ bool CApplication::InitDirectoriesOSX()
   else
     userHome = "/root";
 
-  std::string appPath;
-  CUtil::GetHomePath(appPath);
+  std::string appPath = CUtil::GetHomePath();
   setenv("KODI_HOME", appPath.c_str(), 0);
 
 #if defined(TARGET_DARWIN_IOS)
@@ -1041,9 +1059,7 @@ bool CApplication::InitDirectoriesOSX()
 bool CApplication::InitDirectoriesWin32()
 {
 #ifdef TARGET_WINDOWS
-  std::string xbmcPath;
-
-  CUtil::GetHomePath(xbmcPath);
+  std::string xbmcPath = CUtil::GetHomePath();
   CEnvironment::setenv("KODI_HOME", xbmcPath);
   CSpecialProtocol::SetXBMCBinPath(xbmcPath);
   CSpecialProtocol::SetXBMCPath(xbmcPath);
@@ -1079,8 +1095,10 @@ void CApplication::CreateUserDirs() const
 
   //Let's clear our archive cache before starting up anything more
   auto archiveCachePath = CSpecialProtocol::TranslatePath("special://temp/archive_cache/");
-  CDirectory::Remove(archiveCachePath);
-  CDirectory::Create(archiveCachePath);
+  if (CDirectory::RemoveRecursive(archiveCachePath))
+    CDirectory::Create(archiveCachePath);
+  else
+    CLog::Log(LOGWARNING, "Failed to remove the archive cache at %s", archiveCachePath.c_str());
 
 }
 
@@ -1146,12 +1164,19 @@ bool CApplication::Initialize()
     if (g_advancedSettings.m_splashImage)
       g_windowManager.ActivateWindow(WINDOW_SPLASH);
 
-    // Make sure we have at least the default skin
+    m_confirmSkinChange = false;
+    m_incompatibleAddons = CAddonSystemSettings::GetInstance().MigrateAddons();
+    m_confirmSkinChange = true;
+
     std::string defaultSkin = ((const CSettingString*)CSettings::GetInstance().GetSetting(CSettings::SETTING_LOOKANDFEEL_SKIN))->GetDefault();
-    if (!LoadSkin(CSettings::GetInstance().GetString(CSettings::SETTING_LOOKANDFEEL_SKIN)) && !LoadSkin(defaultSkin))
+    if (!LoadSkin(CSettings::GetInstance().GetString(CSettings::SETTING_LOOKANDFEEL_SKIN)))
     {
-      CLog::Log(LOGERROR, "Default skin '%s' not found! Terminating..", defaultSkin.c_str());
-      return false;
+      CLog::Log(LOGERROR, "Failed to load skin '%s'", CSettings::GetInstance().GetString(CSettings::SETTING_LOOKANDFEEL_SKIN).c_str());
+      if (!LoadSkin(defaultSkin))
+      {
+        CLog::Log(LOGFATAL, "Default skin '%s' could not be loaded! Terminating..", defaultSkin.c_str());
+        return false;
+      }
     }
 
     if (CSettings::GetInstance().GetBool(CSettings::SETTING_MASTERLOCK_STARTUPLOCK) &&
@@ -1230,8 +1255,6 @@ bool CApplication::Initialize()
   CRepositoryUpdater::GetInstance().Start();
 
   CLog::Log(LOGNOTICE, "initialize done");
-
-  m_bInitializing = false;
 
   // reset our screensaver (starts timers etc.)
   ResetScreenSaver();
@@ -1388,11 +1411,14 @@ void CApplication::OnSettingChanged(const CSetting *setting)
     // reset the settings to ignore during changing skins
     m_skinReloadSettingIgnore.clear();
 
-    // now we can finally reload skins
-    std::string builtin("ReloadSkin");
-    if (settingId == CSettings::SETTING_LOOKANDFEEL_SKIN && !m_skinReverting)
-      builtin += "(confirm)";
-    CApplicationMessenger::GetInstance().PostMsg(TMSG_EXECUTE_BUILT_IN, -1, -1, nullptr, builtin);
+    if (g_SkinInfo)
+    {
+      // now we can finally reload skins
+      std::string builtin("ReloadSkin");
+      if (settingId == CSettings::SETTING_LOOKANDFEEL_SKIN && m_confirmSkinChange)
+        builtin += "(confirm)";
+      CApplicationMessenger::GetInstance().PostMsg(TMSG_EXECUTE_BUILT_IN, -1, -1, nullptr, builtin);
+    }
   }
   else if (settingId == CSettings::SETTING_LOOKANDFEEL_SKINZOOM)
   {
@@ -1531,7 +1557,10 @@ bool CApplication::OnSettingsSaving() const
 
 void CApplication::ReloadSkin(bool confirm/*=false*/)
 {
-  std::string oldSkin = g_SkinInfo ? g_SkinInfo->ID() : "";
+  if (!g_SkinInfo || m_bInitializing)
+    return; // Don't allow reload before skin is loaded by system
+
+  std::string oldSkin = g_SkinInfo->ID();
 
   CGUIMessage msg(GUI_MSG_LOAD_SKIN, -1, g_windowManager.GetActiveWindow());
   g_windowManager.SendMessage(msg);
@@ -1539,18 +1568,15 @@ void CApplication::ReloadSkin(bool confirm/*=false*/)
   std::string newSkin = CSettings::GetInstance().GetString(CSettings::SETTING_LOOKANDFEEL_SKIN);
   if (LoadSkin(newSkin))
   {
-    /* The Reset() or SetString() below will cause recursion, so the m_skinReverting boolean is set so as to not prompt the
+    /* The Reset() or SetString() below will cause recursion, so the m_confirmSkinChange boolean is set so as to not prompt the
        user as to whether they want to keep the current skin. */
-    if (confirm && !m_skinReverting)
+    if (confirm && m_confirmSkinChange)
     {
       if (HELPERS::ShowYesNoDialogText(CVariant{13123}, CVariant{13111}, CVariant{""}, CVariant{""}, 10000) != 
         DialogResponse::YES)
       {
-        m_skinReverting = true;
-        if (oldSkin.empty())
-          CSettings::GetInstance().GetSetting(CSettings::SETTING_LOOKANDFEEL_SKIN)->Reset();
-        else
-          CSettings::GetInstance().SetString(CSettings::SETTING_LOOKANDFEEL_SKIN, oldSkin);
+        m_confirmSkinChange = false;
+        CSettings::GetInstance().SetString(CSettings::SETTING_LOOKANDFEEL_SKIN, oldSkin);
       }
     }
   }
@@ -1560,12 +1586,12 @@ void CApplication::ReloadSkin(bool confirm/*=false*/)
     std::string defaultSkin = ((CSettingString*)CSettings::GetInstance().GetSetting(CSettings::SETTING_LOOKANDFEEL_SKIN))->GetDefault();
     if (newSkin != defaultSkin)
     {
-      m_skinReverting = true;
+      m_confirmSkinChange = false;
       CSettings::GetInstance().GetSetting(CSettings::SETTING_LOOKANDFEEL_SKIN)->Reset();
       CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Error, g_localizeStrings.Get(24102), g_localizeStrings.Get(24103));
     }
   }
-  m_skinReverting = false;
+  m_confirmSkinChange = true;
 }
 
 bool CApplication::Load(const TiXmlNode *settings)
@@ -1602,20 +1628,13 @@ bool CApplication::Save(TiXmlNode *settings) const
 
 bool CApplication::LoadSkin(const std::string& skinID)
 {
-  AddonPtr addon;
-  if (CAddonMgr::GetInstance().GetAddon(skinID, addon, ADDON_SKIN))
+  SkinPtr skin;
   {
-    if (LoadSkin(std::dynamic_pointer_cast<ADDON::CSkinInfo>(addon)))
-      return true;
+    AddonPtr addon;
+    if (!CAddonMgr::GetInstance().GetAddon(skinID, addon, ADDON_SKIN))
+      return false;
+    skin = std::static_pointer_cast<ADDON::CSkinInfo>(addon);
   }
-  CLog::Log(LOGERROR, "failed to load requested skin '%s'", skinID.c_str());
-  return false;
-}
-
-bool CApplication::LoadSkin(const SkinPtr& skin)
-{
-  if (!skin)
-    return false;
 
   // start/prepare the skin
   skin->Start();
@@ -1625,7 +1644,10 @@ bool CApplication::LoadSkin(const SkinPtr& skin)
 
   // check if the skin has been properly loaded and if it has a Home.xml
   if (!skin->HasSkinFile("Home.xml"))
+  {
+    CLog::Log(LOGERROR, "failed to load requested skin '%s'", skin->ID().c_str());
     return false;
+  }
 
   bool bPreviousPlayingState=false;
   bool bPreviousRenderingState=false;
@@ -1657,7 +1679,6 @@ bool CApplication::LoadSkin(const SkinPtr& skin)
 
   CLog::Log(LOGINFO, "  load skin from: %s (version: %s)", skin->Path().c_str(), skin->Version().asString().c_str());
   g_SkinInfo = skin;
-  g_SkinInfo->Start();
 
   CLog::Log(LOGINFO, "  load fonts for skin...");
   g_graphicsContext.SetMediaDir(skin->Path());
@@ -2218,22 +2239,25 @@ bool CApplication::OnAction(const CAction &action)
     {
       if (action.GetID() == ACTION_PLAYER_FORWARD || action.GetID() == ACTION_PLAYER_REWIND)
       {
-        int iPlaySpeed = m_pPlayer->GetPlaySpeed();
-        if (action.GetID() == ACTION_PLAYER_REWIND && iPlaySpeed == 1) // Enables Rewinding
-          iPlaySpeed *= -2;
-        else if (action.GetID() == ACTION_PLAYER_REWIND && iPlaySpeed > 1) //goes down a notch if you're FFing
-          iPlaySpeed /= 2;
-        else if (action.GetID() == ACTION_PLAYER_FORWARD && iPlaySpeed < 1) //goes up a notch if you're RWing
-          iPlaySpeed /= 2;
+        float playSpeed = m_pPlayer->GetPlaySpeed();
+        if (playSpeed >= 0.75 && playSpeed <= 1.55)
+          playSpeed = 1;
+
+        if (action.GetID() == ACTION_PLAYER_REWIND && (playSpeed == 1)) // Enables Rewinding
+          playSpeed *= -2;
+        else if (action.GetID() == ACTION_PLAYER_REWIND && playSpeed > 1) //goes down a notch if you're FFing
+          playSpeed /= 2;
+        else if (action.GetID() == ACTION_PLAYER_FORWARD && playSpeed < 1) //goes up a notch if you're RWing
+          playSpeed /= 2;
         else
-          iPlaySpeed *= 2;
+          playSpeed *= 2;
 
-        if (action.GetID() == ACTION_PLAYER_FORWARD && iPlaySpeed == -1) //sets iSpeed back to 1 if -1 (didn't plan for a -1)
-          iPlaySpeed = 1;
-        if (iPlaySpeed > 32 || iPlaySpeed < -32)
-          iPlaySpeed = 1;
+        if (action.GetID() == ACTION_PLAYER_FORWARD && playSpeed == -1) //sets iSpeed back to 1 if -1 (didn't plan for a -1)
+          playSpeed = 1;
+        if (playSpeed > 32 || playSpeed < -32)
+          playSpeed = 1;
 
-        m_pPlayer->SetPlaySpeed(iPlaySpeed);
+        m_pPlayer->SetPlaySpeed(playSpeed);
         return true;
       }
       else if ((action.GetAmount() || m_pPlayer->GetPlaySpeed() != 1) && (action.GetID() == ACTION_ANALOG_REWIND || action.GetID() == ACTION_ANALOG_FORWARD))
@@ -3672,7 +3696,7 @@ void CApplication::OnPlayBackSeek(int iTime, int seekOffset)
   CJSONUtils::MillisecondsToTimeObject(iTime, param["player"]["time"]);
   CJSONUtils::MillisecondsToTimeObject(seekOffset, param["player"]["seekoffset"]);
   param["player"]["playerid"] = g_playlistPlayer.GetCurrentPlaylist();
-  param["player"]["speed"] = m_pPlayer->GetPlaySpeed();
+  param["player"]["speed"] = (int)m_pPlayer->GetPlaySpeed();
   CAnnouncementManager::GetInstance().Announce(Player, "xbmc", "OnSeek", m_itemCurrentFile, param);
   g_infoManager.SetDisplayAfterSeek(2500, seekOffset);
 }
@@ -4138,8 +4162,18 @@ bool CApplication::OnMessage(CGUIMessage& message)
         if (m_fallbackLanguageLoaded)
           CGUIDialogOK::ShowAndGetInput(CVariant{24133}, CVariant{24134});
 
+        if (!m_incompatibleAddons.empty())
+        {
+          auto addonList = StringUtils::Join(m_incompatibleAddons, ", ");
+          auto msg = StringUtils::Format(g_localizeStrings.Get(24149).c_str(), addonList.c_str());
+          CGUIDialogOK::ShowAndGetInput(CVariant{24148}, CVariant{std::move(msg)});
+          m_incompatibleAddons.clear();
+        }
+
         // show info dialog about moved configuration files if needed
         ShowAppMigrationMessage();
+
+        m_bInitializing = false;
       }
     }
     break;
@@ -4507,8 +4541,7 @@ void CApplication::ProcessSlow()
   // check for any idle curl connections
   g_curlInterface.CheckIdle();
 
-  if (!m_pPlayer->IsPlayingVideo())
-    g_largeTextureManager.CleanupUnusedImages();
+  g_largeTextureManager.CleanupUnusedImages();
 
   g_TextureManager.FreeUnusedTextures(5000);
 

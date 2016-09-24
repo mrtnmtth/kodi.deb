@@ -49,6 +49,7 @@
 #include "guilib/LocalizeStrings.h"
 #include "guilib/WindowIDs.h"
 #include "GUIUserMessages.h"
+#include "input/joysticks/IButtonMapper.h"
 #include "input/Key.h"
 #include "messaging/ApplicationMessenger.h"
 #include "messaging/ThreadMessage.h"
@@ -402,7 +403,8 @@ bool CPeripherals::GetMappingForDevice(const CPeripheralBus &bus, PeripheralScan
       PeripheralTypeTranslator::FormatHexString(result.m_iProductId, strProductId);
       CLog::Log(LOGDEBUG, "%s - device (%s:%s) mapped to %s (type = %s)", __FUNCTION__, strVendorId.c_str(), strProductId.c_str(), mapping.m_strDeviceName.c_str(), PeripheralTypeTranslator::TypeToString(mapping.m_mappedTo));
       result.m_mappedType    = mapping.m_mappedTo;
-      result.m_strDeviceName = mapping.m_strDeviceName;
+      if (!mapping.m_strDeviceName.empty())
+        result.m_strDeviceName = mapping.m_strDeviceName;
       return true;
     }
   }
@@ -727,6 +729,29 @@ bool CPeripherals::GetNextKeypress(float frameTime, CKey &key)
   return false;
 }
 
+void CPeripherals::OnUserNotification()
+{
+  std::vector<CPeripheral*> peripherals;
+  GetPeripheralsWithFeature(peripherals, FEATURE_RUMBLE);
+
+  for (CPeripheral* peripheral : peripherals)
+    peripheral->OnUserNotification();
+}
+
+bool CPeripherals::TestFeature(PeripheralFeature feature)
+{
+  std::vector<CPeripheral*> peripherals;
+  GetPeripheralsWithFeature(peripherals, feature);
+
+  if (!peripherals.empty())
+  {
+    for (CPeripheral* peripheral : peripherals)
+      peripheral->TestFeature(feature);
+    return true;
+  }
+  return false;
+}
+
 void CPeripherals::ProcessEvents(void)
 {
   std::vector<PeripheralBusPtr> busses;
@@ -739,27 +764,15 @@ void CPeripherals::ProcessEvents(void)
     bus->ProcessEvents();
 }
 
-PeripheralAddonPtr CPeripherals::GetAddon(const CPeripheral* device)
+PeripheralAddonPtr CPeripherals::GetAddonWithButtonMap(const CPeripheral* device)
 {
+  PeripheralBusAddonPtr addonBus = std::static_pointer_cast<CPeripheralBusAddon>(GetBusByType(PERIPHERAL_BUS_ADDON));
+
   PeripheralAddonPtr addon;
 
-  PeripheralBusAddonPtr addonBus = std::static_pointer_cast<CPeripheralBusAddon>(GetBusByType(PERIPHERAL_BUS_ADDON));
-  if (device && addonBus)
-  {
-    PeripheralBusType busType = device->GetBusType();
-
-    if (busType == PERIPHERAL_BUS_ADDON)
-    {
-      // If device is from an add-on, use that add-on
-      unsigned int index;
-      addonBus->SplitLocation(device->Location(), addon, index);
-    }
-    else
-    {
-      // Otherwise, have the add-on bus find a suitable add-on
-      addonBus->GetAddonWithButtonMap(device, addon);
-    }
-  }
+  PeripheralAddonPtr addonWithButtonMap;
+  if (addonBus && addonBus->GetAddonWithButtonMap(device, addonWithButtonMap))
+    addon = std::move(addonWithButtonMap);
 
   return addon;
 }
@@ -793,6 +806,8 @@ void CPeripherals::RegisterJoystickButtonMapper(IButtonMapper* mapper)
 
 void CPeripherals::UnregisterJoystickButtonMapper(IButtonMapper* mapper)
 {
+  mapper->ResetButtonMapCallback();
+
   std::vector<CPeripheral*> peripherals;
   GetPeripheralsWithFeature(peripherals, FEATURE_JOYSTICK);
 
@@ -876,6 +891,8 @@ void CPeripherals::OnSettingAction(const CSetting *setting)
   }
   else if (settingId == CSettings::SETTING_INPUT_CONTROLLERCONFIG)
     g_windowManager.ActivateWindow(WINDOW_DIALOG_GAME_CONTROLLERS);
+  else if (settingId == CSettings::SETTING_INPUT_TESTRUMBLE)
+    TestFeature(FEATURE_RUMBLE);
 }
 
 void CPeripherals::OnApplicationMessage(KODI::MESSAGING::ThreadMessage* pMsg)

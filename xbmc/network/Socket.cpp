@@ -70,7 +70,7 @@ bool CPosixUDPSocket::Bind(bool localOnly, int port, int range)
         // Try to bind a socket to validate ipv6 status
         for (m_iPort = port; m_iPort <= port + range; ++m_iPort)
         {
-          m_addr.saddr.saddr6.sin6_port = htons(port);
+          m_addr.saddr.saddr6.sin6_port = htons(m_iPort);
           if (bind(testSocket, (struct sockaddr*)&m_addr.saddr, m_addr.size) >= 0)
           {
             closesocket(testSocket);
@@ -81,6 +81,7 @@ bool CPosixUDPSocket::Bind(bool localOnly, int port, int range)
         if (!m_ipv6Socket)
         {
           CLog::Log(LOGWARNING, "UDP: Unable to bind to advertised ipv6, fallback to ipv4");
+          closesocket(testSocket);
           close(m_iSock);
           m_iSock = INVALID_SOCKET;
         }
@@ -142,9 +143,9 @@ bool CPosixUDPSocket::Bind(bool localOnly, int port, int range)
   for (m_iPort = port; m_iPort <= port + range; ++m_iPort)
   {
     if (m_ipv6Socket)
-      m_addr.saddr.saddr6.sin6_port = htons(port);
+      m_addr.saddr.saddr6.sin6_port = htons(m_iPort);
     else
-      m_addr.saddr.saddr4.sin_port = htons(port);
+      m_addr.saddr.saddr4.sin_port = htons(m_iPort);
 
     if (bind(m_iSock, (struct sockaddr*)&m_addr.saddr, m_addr.size) != 0)
     {

@@ -923,6 +923,7 @@ msgctxt "#207"
 msgid "Plot"
 msgstr ""
 
+#: xbmc/pvr/windows/PVRGUIWindowRecordings.cpp
 #: xbmc/dialogs/GUIDialogPlayEject.cpp
 #: system/settings/settings.xml
 msgctxt "#208"
@@ -5176,6 +5177,8 @@ msgctxt "#12022"
 msgid "Resume from %s"
 msgstr ""
 
+#. Label of video/recordings context menu items
+#: xbmc/pvr/windows/PVRGUIWindowRecordings.cpp
 #: xbmc/video/ContextMenus.cpp
 msgctxt "#12023"
 msgid "Play from beginning"
@@ -6818,7 +6821,17 @@ msgctxt "#13516"
 msgid "Add art"
 msgstr ""
 
-#empty strings from id 13517 to 13549
+#: system/settings/settings.xml
+msgctxt "#13517"
+msgid "Threshold for pitch correction"
+msgstr ""
+
+#: system/settings/settings.xml
+msgctxt "#13518"
+msgid "When the speed change exceeds this threshold, a pitch-correction filter will be applied. This avoids the \"chipmonk voices\" that normally result from speeding up a video"
+msgstr ""
+
+#empty strings from id 13519 to 13549
 
 #: system/settings/settings.xml
 msgctxt "#13550"
@@ -7326,7 +7339,7 @@ msgid "Security"
 msgstr ""
 
 msgctxt "#14094"
-msgid "Input devices"
+msgid "Devices"
 msgstr ""
 
 #: system/settings/settings.xml
@@ -7495,7 +7508,13 @@ msgctxt "#14124"
 msgid "Region C"
 msgstr ""
 
-#empty strings from id 14125 to 14199
+#. This is in the context of input devices!
+#: system/settings/settings.xml
+msgctxt "#14125"
+msgid "Input"
+msgstr ""
+
+#empty strings from id 14126 to 14199
 
 #: system/settings/settings.xml
 msgctxt "#14200"
@@ -8134,8 +8153,9 @@ msgctxt "#15086"
 msgid "Post-process"
 msgstr ""
 
-#. Audio DSP process chain indication
+#. Audio DSP process chain indication - this is in the context of input signal
 #: xbmc/settings/dialogs/GUIDialogAudioDSPSettings.cpp
+#: system/settings/settings.xml
 msgctxt "#15087"
 msgid "Input"
 msgstr ""
@@ -8501,7 +8521,14 @@ msgctxt "#16039"
 msgid "Off"
 msgstr ""
 
-#empty strings from id 16040 to 16099
+#empty string with id 16040
+
+#: xbmc/guilib/GUIRadioButtonControl.cpp"
+msgctxt "#16041"
+msgid "On"
+msgstr ""
+
+#empty strings from id 16042 to 16099
 
 #: xbmc/video/windows/GUIWindowVideoNav.cpp
 msgctxt "#16100"
@@ -8769,16 +8796,22 @@ msgstr ""
 #. Description of OSD video settings for deinterlace method with label #16334
 #: xbmc/video/dialogs/GUIDialogVideoSettings.cpp
 msgctxt "#16334"
-msgid "IMX - Fast motion"
+msgid "Bob (half)"
 msgstr ""
 
 #. Description of OSD video settings for deinterlace method with label #16335
 #: xbmc/video/dialogs/GUIDialogVideoSettings.cpp
 msgctxt "#16335"
-msgid "IMX - Fast motion (double)"
+msgid "IMX - Advanced (half)"
 msgstr ""
 
-#empty strings from id 16336 to 16399
+#. Description of OSD video settings for deinterlace method with label #16336
+#: xbmc/video/dialogs/GUIDialogVideoSettings.cpp
+msgctxt "#16336"
+msgid "IMX - Advanced"
+msgstr ""
+
+#empty strings from id 16337 to 16399
 
 #: xbmc/video/dialogs/GUIDialogVideoSettings.cpp
 msgctxt "#16400"
@@ -9328,7 +9361,19 @@ msgctxt "#19093"
 msgid "Instant recording: %s"
 msgstr ""
 
-#empty strings from id 19094 to 19096
+#. error message displayed in case adding a timer failed because no suitable epg-based timer type could be found.
+#: xbmc/pvr/windows/GUIWindowPVRBase.cpp
+msgctxt "#19094"
+msgid "Timer creation failed. The PVR add-on does not support a suitable timer type."
+msgstr ""
+
+#. error message displayed in case adding a timer rule failed because no suitable epg-based timer rule type could be found.
+#: xbmc/pvr/windows/GUIWindowPVRBase.cpp
+msgctxt "#19095"
+msgid "Timer rule creation failed. The PVR add-on does not support a suitable timer rule type."
+msgstr ""
+
+#empty string with id 19096
 
 msgctxt "#19097"
 msgid "Enter the name for the recording"
@@ -9734,9 +9779,10 @@ msgctxt "#19179"
 msgid "Deleted"
 msgstr ""
 
+#. Settings -> Interface -> Other -> Startup window
 #: system/settings/settings.xml
 msgctxt "#19180"
-msgid "TV"
+msgid "TV channels"
 msgstr ""
 
 #: system/settings/settings.xml
@@ -9749,9 +9795,10 @@ msgctxt "#19182"
 msgid "Days to display"
 msgstr ""
 
+#. Settings -> Interface -> Other -> Startup window
 #: system/settings/settings.xml
 msgctxt "#19183"
-msgid "Radio"
+msgid "Radio channels"
 msgstr ""
 
 #. Used on pvr recordings as button to show of them
@@ -10171,7 +10218,17 @@ msgctxt "#19272"
 msgid "You need a tuner, backend software, and an add-on for the backend to be able to use PVR. Please visit http://kodi.wiki/view/PVR to learn more."
 msgstr ""
 
-#empty strings from id 19273 to 19274
+#. Settings -> Interface -> Other -> Startup window
+#: system/settings/settings.xml
+msgctxt "#19273"
+msgid "TV guide"
+msgstr ""
+
+#. Settings -> Interface -> Other -> Startup window
+#: system/settings/settings.xml
+msgctxt "#19274"
+msgid "Radio guide"
+msgstr ""
 
 #: xbmc/pvr/timers/PVRTimerInfoTag.cpp
 msgctxt "#19275"
@@ -10297,7 +10354,13 @@ msgctxt "#19295"
 msgid "Delete timer rule"
 msgstr ""
 
-#empty strings from id 19296 to 19498
+#. Label if no pvr addons are enabled
+#: xbmc/pvr/windows/GUIWindowPVRBase.cpp
+msgctxt "#19296"
+msgid "No PVR add-on enabled"
+msgstr ""
+
+#empty strings from id 19297 to 19498
 
 #: xbmc/epg/Epg.cpp
 msgctxt "#19499"
@@ -13391,7 +13454,13 @@ msgctxt "#21844"
 msgid "XP comment"
 msgstr ""
 
-#empty strings from id 21845 to 21856
+#. Used in context menu
+#: xbmc/video/windows/GUIWindowVideoNav.cpp
+msgctxt "#21845"
+msgid "Scan to library"
+msgstr ""
+
+#empty strings from id 21846 to 21856
 
 msgctxt "#21857"
 msgid "Sub-location"
@@ -14030,11 +14099,7 @@ msgctxt "#24043"
 msgid "Available updates"
 msgstr ""
 
-#: xbmc/addons/AddonInstaller.cpp
-#: xbmc/addons/AddonsDatabase.cpp
-msgctxt "#24044"
-msgid "Dependencies not met. Please contact add-on author."
-msgstr ""
+# empty string 24043
 
 #. Used as an event log description for add-ons failed to install from zip
 #: xbmc/addons/AddonInstaller.cpp
@@ -14057,10 +14122,7 @@ msgctxt "#24048"
 msgid "VideoPlayer InputStream"
 msgstr ""
 
-#: xbmc/filesystem/AddonsDirectory.cpp
-msgctxt "#24049"
-msgid "Incompatible"
-msgstr ""
+# empty string 24049
 
 #: unknown
 msgctxt "#24050"
@@ -14579,7 +14641,15 @@ msgctxt "#24147"
 msgid "Failed to scan %s: %s"
 msgstr ""
 
-#empty strings from id 24148 to 24990
+msgctxt "#24148"
+msgid "Incompatible add-ons"
+msgstr ""
+
+msgctxt "#24149"
+msgid "The following add-ons are incompatible with this version of Kodi and have been automatically disabled: %s."
+msgstr ""
+
+#empty strings from id 24150 to 24990
 
 #. Used as error message in add-on browser when add-on repository data could not be downloaded
 #: xbmc/filesystem/AddonsDirectory.cpp
@@ -15187,18 +15257,6 @@ msgstr ""
 #: system/settings/settings.xml
 msgctxt "#29985"
 msgid "If traffic advisory is send from RDS, volume is increased"
-msgstr ""
-
-#. Boolean value on settings
-#: system/settings/settings.xml
-msgctxt "#29986"
-msgid "Publicate traffic messages"
-msgstr ""
-
-#. Help text of boolean on/off value
-#: system/settings/settings.xml
-msgctxt "#29987"
-msgid "Send present traffic messages around and can be handled from add-ons (nothing inside Kodi)"
 msgstr ""
 
 #. Music role category
@@ -15942,7 +16000,19 @@ msgctxt "#35050"
 msgid "Controller profiles"
 msgstr ""
 
-#empty strings from id 35051 to 35054
+#. Setting to test rumble
+#: system/settings/settings.xml
+msgctxt "#35051"
+msgid "Test rumble"
+msgstr ""
+
+#. Description of setting to test rumble
+#: system/settings/settings.xml
+msgctxt "#35052"
+msgid "Activate the rumble motors of all controllers."
+msgstr ""
+
+#empty strings from id 35053 to 35054
 
 #. Help text for controller window
 #: xbmc/games/controllers/windows/GUIControllerWindow.cpp
@@ -16004,7 +16074,53 @@ msgctxt "#35064"
 msgid "Pair your controllers with the various input devices of different game systems."
 msgstr ""
 
-#empty strings from id 35065 to 35089
+#empty strings from id 35065 to 35073
+
+#. Label for buttons that appear on the face of the controller. Used in the controller mapping dialog.
+msgctxt "#35074"
+msgid "Face buttons"
+msgstr ""
+
+#. Label for buttons that appear on the shoulders of the controller. Used in the controller mapping dialog.
+msgctxt "#35075"
+msgid "Shoulder buttons"
+msgstr ""
+
+#. Label for triggers on the controller. Used in the controller mapping dialog.
+msgctxt "#35076"
+msgid "Triggers"
+msgstr ""
+
+#. Label for analog sticks on the controller. Used in the controller mapping dialog.
+msgctxt "#35077"
+msgid "Analog sticks"
+msgstr ""
+
+#. Setting title for left analog stick deadzone
+#: system/peripherals.xml
+msgctxt "#35078"
+msgid "Left stick deadzone"
+msgstr ""
+
+#. Setting title for right analog stick deadzone
+#: system/peripherals.xml
+msgctxt "#35079"
+msgid "Right stick deadzone"
+msgstr ""
+
+#empty strings from id 35080 to 35087
+
+#. Name of the setting that enables/disables powering off controllers on exit
+#: system/settings/settings.xml
+msgctxt "#35088"
+msgid "Power off controllers on exit"
+msgstr ""
+
+#. Description for the setting that enables/disables powering off controllers on exit
+#: system/settings/settings.xml
+msgctxt "#35089"
+msgid "Powers off any controller that supports it on exit."
+msgstr ""
 
 #. Button prompt without timeout. %s - button name
 #: xbmc/games/controllers/guicontrols/GUIScalarFeatureButton.cpp
@@ -17583,10 +17699,10 @@ msgctxt "#36326"
 msgid "Enable the UPnP control point. This allows you to stream media to any UPnP client and control it's playback."
 msgstr ""
 
-#. Description of settings category with label #20187 "Webserver"
+#. Description of settings category with label #20187 "Control"
 #: system/settings/settings.xml
 msgctxt "#36327"
-msgid "This category contains the settings for how the web server service is handled."
+msgid "This category contains the settings for how the web server service and the application control service is handled."
 msgstr ""
 
 #. Description of setting with label #263 "Allow remote control via HTTP"
@@ -17859,7 +17975,7 @@ msgctxt "#36373"
 msgid "Configure how interface sounds are handled, such as menu navigation and important notifications."
 msgstr ""
 
-#. Description of settings category with label #14219 "Control"
+#. Description of settings category with label #15087 "Input"
 #: system/settings/settings.xml
 msgctxt "#36374"
 msgid "This category contains the settings for how input devices are handled."
@@ -18848,7 +18964,19 @@ msgctxt "#36618"
 msgid "Add-ons will be given access to personal data stored on this device. By allowing, you agree that you are solely responsible for any loss of data, unwanted behaviour, or damage to your device. Proceed?"
 msgstr ""
 
-#empty strings from id 36619 to 36899
+#. Label of a setting, allow the user to specifiy high quality downscaling of pictures
+#: system/settings/settings.xml
+msgctxt "#36619"
+msgid "High quality downscaling"
+msgstr ""
+
+#. Description of setting "Pictures -> Slideshow -> High Quality Downscaling" with label #36619
+#: system/settings/settings.xml
+msgctxt "#36620"
+msgid "Enable high quality downscaling of pictures (uses more memory and has moderate performance impact)."
+msgstr ""
+
+#empty strings from id 36621 to 36899
 
 #: xbmc/media/MediaType.cpp
 msgctxt "#36900"
@@ -19456,3 +19584,12 @@ msgctxt "#39007"
 msgid "This provides access to where picture sources can be added and otherwise managed."
 msgstr ""
 
+#: xbmc/video/dialogs/GUIDialogVideoSettings.cpp
+msgctxt "#39008"
+msgid "Zoom - 120% width"
+msgstr ""
+
+#: xbmc/video/dialogs/GUIDialogVideoSettings.cpp
+msgctxt "#39009"
+msgid "Zoom - 110% width"
+msgstr ""

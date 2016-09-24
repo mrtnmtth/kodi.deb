@@ -91,12 +91,14 @@ msgctxt "#31014"
 msgid "Unplayed albums"
 msgstr ""
 
-#: /1080i/Home.xml:362
+#. home screen recordings widget: recent tv / radio recordings
+#: /1080i/Home.xml
 msgctxt "#31015"
 msgid "Recent recordings"
 msgstr ""
 
-#: /1080i/Home.xml:374
+#. home screen channel widget: recently played tv channels. (please note that in some non-english languages #31018 and #31016 might not be equal)
+#: /1080i/Home.xml
 msgctxt "#31016"
 msgid "Recently played channels"
 msgstr ""
@@ -106,9 +108,10 @@ msgctxt "#31017"
 msgid "Rated"
 msgstr ""
 
-#: /1080i/Home.xml:443
+#. home screen channel widget: recently played radio channels. (please note that in some non-english languages #31018 and #31016 might not be equal)
+#: /1080i/Home.xml
 msgctxt "#31018"
-msgid "Most played channels"
+msgid "Recently played channels"
 msgstr ""
 
 #: /1080i/Home.xml:675 /1080i/MyWeather.xml:52
@@ -725,3 +728,19 @@ msgstr ""
 msgctxt "#31141"
 msgid "Changes for version"
 msgstr ""
+
+#: /1080i/Variables.xml
+msgctxt "#31142"
+msgid "Play speed"
+msgstr ""
+
+#: /1080i/Home.xml
+msgctxt "#31143"
+msgid "You did not set up PVR yet. In order to use PVR, choose a PVR client addon and configure it. Please visit http://kodi.wiki/view/PVR to learn more."
+msgstr ""
+
+#: /1080i/Home.xml
+msgctxt "#31144"
+msgid "Enter add-on browser"
+msgstr ""
+

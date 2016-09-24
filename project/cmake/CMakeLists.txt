@@ -6,6 +6,32 @@ if(DEPENDS_DIR)
   list(APPEND CMAKE_PREFIX_PATH ${DEPENDS_DIR})
 endif()
 
+# Set CORE_SOURCE_DIR and CORE_BUILD_DIR
+get_filename_component(CORE_SOURCE_DIR ${PROJECT_SOURCE_DIR}/../.. ABSOLUTE)
+set(CORE_BUILD_DIR build)
+
+message(STATUS "Source directory: ${CORE_SOURCE_DIR}")
+message(STATUS "Build directory: ${CMAKE_BINARY_DIR}")
+if(CMAKE_BINARY_DIR STREQUAL CORE_SOURCE_DIR)
+  message(WARNING "In-source build detected. It is recommended to build out-of-source.")
+endif()
+
+# Hide messages from Check*.cmake (e.g. CheckCSourceCompiles)
+if(NOT VERBOSE)
+  set(CMAKE_REQUIRED_QUIET ON)
+endif()
+
+# Includes
+include(modules/extra/ECMEnableSanitizers.cmake)
+include(scripts/common/GeneratorSetup.cmake)
+include(scripts/common/AddOptions.cmake)
+include(scripts/common/ArchSetup.cmake)
+include(scripts/common/Macros.cmake)
+include(scripts/common/ProjectMacros.cmake)
+include(scripts/${CORE_SYSTEM_NAME}/PathSetup.cmake)
+include(ExternalProject)
+
+# Languages and global compiler settings
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -16,35 +42,21 @@ option(VERBOSE            "Enable verbose output?" OFF)
 option(ENABLE_DVDCSS      "Enable libdvdcss support?" ON)
 option(ENABLE_UPNP        "Enable UPnP support?" ON)
 option(ENABLE_NONFREE     "Enable non-free components?" ON)
-option(ENABLE_MICROHTTPD  "Enable MicroHttpd webserver?" ON)
-option(ENABLE_MYSQLCLIENT "Enable MySql support?" ON)
-option(ENABLE_AVAHI       "Enable Avahi support?" ON)
-option(ENABLE_BLURAY      "Enable BluRay support?" ON)
-option(ENABLE_XSLT        "Enable XSLT scrapers support?" ON)
-option(ENABLE_PLIST       "Enable AirPlay support?" ON)
-option(ENABLE_NFS         "Enable NFS support?" ON)
 option(ENABLE_AIRTUNES    "Enable AirTunes support?" ON)
 option(ENABLE_CEC         "Enable CEC support?" ON)
+option(ENABLE_OPTICAL     "Enable optical support?" ON)
 if(UNIX)
   if(NOT APPLE)
     option(ENABLE_INTERNAL_FFMPEG "Enable internal ffmpeg?" ON)
   endif()
   option(FFMPEG_PATH        "Path to external ffmpeg?" "")
   option(ENABLE_INTERNAL_CROSSGUID "Enable internal crossguid?" ON)
-  option(ENABLE_ALSA        "Enable ALSA support?" ON)
-  option(ENABLE_PULSEAUDIO  "Enable PulseAudio support?" ON)
-  option(ENABLE_DBUS        "Enable dbus support?" ON)
-  option(ENABLE_LIBUSB      "Enable libusb support?" ON)
-  option(ENABLE_UDEV        "Enable UDev support?" ON)
-  option(ENABLE_OPENGL      "Enable OpenGL?" ON)
-  option(ENABLE_OPENGLES    "Enable OpenGLES?" ON)
   option(ENABLE_OPENSSL     "Enable OpenSSL?" ON)
   option(ENABLE_SDL         "Enable SDL?" OFF)
-  option(ENABLE_X11         "Enable X11 support?" ON)
-  option(ENABLE_EGL         "Enable EGL?" OFF)
-  option(ENABLE_VAAPI       "Enable VAAPI support?" ON)
-  option(ENABLE_VDPAU       "Enable VDPAU support?" ON)
-  option(ENABLE_OPTICAL     "Enable optical support?" ON)
+  if(CORE_SYSTEM_NAME STREQUAL linux OR CORE_SYSTEM_NAME STREQUAL freebsd)
+    option(ENABLE_X11         "Enable X11 support?" ON)
+    option(ENABLE_AML         "Enable AML?" OFF)
+  endif()
 endif()
 # System options
 if(NOT WIN32)
@@ -52,7 +64,7 @@ if(NOT WIN32)
   option(WITH_CPU               "build with given cpu" OFF)
   option(ENABLE_CCACHE          "Enable Ccache support" ON)
 endif()
-if(CMAKE_SYSTEM_NAME STREQUAL Linux)
+if(CORE_SYSTEM_NAME STREQUAL linux)
   option(ENABLE_LIRC            "Enable LIRC support?" ON)
   option(ENABLE_EVENTCLIENTS    "Enable event clients support?" OFF)
 endif()
@@ -66,25 +78,7 @@ endif()
 option(ENABLE_STATIC_LIBS "Build static libraries per directory" ${STATIC_LIBS_DEFAULT})
 unset(STATIC_LIBS_DEFAULT)
 
-get_filename_component(CORE_SOURCE_DIR ${PROJECT_SOURCE_DIR}/../.. ABSOLUTE)
-set(CORE_BUILD_DIR build)
-
-message(STATUS "Source directory: ${CORE_SOURCE_DIR}")
-message(STATUS "Build directory: ${CMAKE_BINARY_DIR}")
-if(CMAKE_BINARY_DIR STREQUAL CORE_SOURCE_DIR)
-  message(WARNING "In-source build detected. It is recommended to build out-of-source.")
-endif()
-
-include(modules/extra/ECMEnableSanitizers.cmake)
-include(scripts/common/GeneratorSetup.cmake)
-include(scripts/common/AddOptions.cmake)
-include(scripts/common/ArchSetup.cmake)
-include(scripts/common/Macros.cmake)
-include(scripts/common/ProjectMacros.cmake)
-include(scripts/${CORE_SYSTEM_NAME}/PathSetup.cmake)
-include(ExternalProject)
-
-core_find_git_rev()
+core_find_git_rev(APP_SCMID FULL)
 core_find_versions()
 
 # Dynamically loaded libraries built with the project
@@ -104,12 +98,11 @@ set(INCLUDES ${CORE_SOURCE_DIR}
 find_package(PkgConfig)
 if(CMAKE_CROSSCOMPILING)
   if(PKG_CONFIG_EXECUTABLE)
-    message(STATUS "CMAKE_CROSSCOMPILING: ${CMAKE_CROSSCOMPILING}")
     set(PKG_CONFIG_FOUND TRUE)
   endif()
 endif()
 
-find_package(Threads REQUIRED)
+find_package(Threads REQUIRED QUIET)
 list(APPEND DEPLIBS ${CMAKE_THREAD_LIBS_INIT})
 
 # Required dependencies
@@ -117,7 +110,7 @@ set(required_deps Sqlite3 FreeType PCRE Cpluff LibDvd
                   TinyXML Python Yajl
                   Lzo2 Fribidi TagLib FFMPEG CrossGUID)
 if(NOT WIN32)
-  list(APPEND required_deps LibSmbClient ZLIB)
+  list(APPEND required_deps ZLIB)
 else()
   list(APPEND required_deps D3DX11Effects)
 endif()
@@ -126,8 +119,8 @@ if(CORE_SYSTEM_NAME STREQUAL android)
 endif()
 
 # Optional dependencies
-set(optional_deps MicroHttpd MySqlClient SSH Xslt
-                  Alsa UDev Dbus Avahi
+set(optional_deps MicroHttpd MySqlClient SSH XSLT
+                  Alsa UDEV DBus Avahi SmbClient
                   PulseAudio VDPAU VAAPI)
 
 # Required, dyloaded deps
@@ -192,38 +185,38 @@ if(ENABLE_AIRTUNES)
   endif()
 endif()
 
+if(CORE_SYSTEM_NAME STREQUAL osx)
+  core_require_dep(Sdl)
+else()
+  core_optional_dep(Sdl)
+endif()
+
 if(NOT WIN32)
   core_optional_dep(OpenGl)
   if(OPENGL_FOUND)
-    if(NOT APPLE)
-      core_optional_dep(Sdl)
-    else()
-      core_require_dep(Sdl)
-    endif()
     core_optional_dep(X ENABLE_X11)
+    core_optional_dep(LibDRM ENABLE_X11)
     core_optional_dep(XRandR ENABLE_X11)
   else()
-    core_optional_dep(OpenGLES ENABLE_OPENGLES)
+    core_optional_dep(OpenGLES)
     if(OPENGLES_FOUND)
-      core_optional_dep(EGL ENABLE_EGL)
-      core_optional_dep(OMX ENABLE_OMX)
-      core_optional_dep(AML ENABLE_AML)
       core_optional_dep(X ENABLE_X11)
-      core_optional_dep(Sdl)
+      core_optional_dep(LibDRM ENABLE_X11)
     endif()
   endif()
-
-  if(CORE_SYSTEM_NAME STREQUAL rbpi)
-    core_require_dep(MMAL)
+  if(NOT APPLE)
+    core_require_dep(EGL)
   endif()
+endif()
+
+if(CORE_SYSTEM_NAME STREQUAL android OR CORE_SYSTEM_NAME STREQUAL linux)
+  core_optional_dep(AML)
+elseif(CORE_SYSTEM_NAME STREQUAL rbpi)
+  core_require_dep(MMAL)
 endif()
 
 if(ENABLE_CCACHE)
   core_optional_dep(CCache)
-endif()
-
-if(CORE_SYSTEM_NAME STREQUAL android)
-  core_optional_dep(Breakpad)
 endif()
 
 # Compile Info
@@ -331,6 +324,7 @@ if(NOT CORE_SYSTEM_NAME STREQUAL android)
   add_executable(${APP_NAME_LC} ${CORE_MAIN_SOURCE} "${RESOURCES}" ${OTHER_FILES})
   add_dependencies(${APP_NAME_LC} ${APP_NAME_LC}-libraries export-files pack-skins)
 else()
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined")
   add_library(${APP_NAME_LC} SHARED ${CORE_MAIN_SOURCE} "${RESOURCES}" ${OTHER_FILES})
   # The libraries depend on the main shared library for wrapping. Because of this we cannot build
   # the libraries as a dependency. This requires to build the all target on android (and not only kodi).
@@ -343,6 +337,7 @@ unset(_MAIN_LIBRARIES)
 if(WIN32)
   set_target_properties(${APP_NAME_LC} PROPERTIES WIN32_EXECUTABLE ON)
   set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${APP_NAME_LC})
+  target_sources(kodi PRIVATE ${CORE_SOURCE_DIR}/xbmc/platform/win32/app.manifest)
 elseif(CORE_SYSTEM_NAME STREQUAL android)
   # Nothing
 else()
@@ -366,6 +361,16 @@ if(NOT CMAKE_CROSSCOMPILING)
   gtest_add_tests(${APP_NAME_LC}-test "" ${test_sources})
   add_custom_target(check ${CMAKE_CTEST_COMMAND} WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
   add_dependencies(check ${APP_NAME_LC}-test)
+
+  # Valgrind (memcheck)
+  find_program(VALGRIND_EXECUTABLE NAMES valgrind)
+  if(VALGRIND_EXECUTABLE)
+    set(CTEST_MEMORYCHECK_COMMAND ${VALGRIND_EXECUTABLE})
+    set(CTEST_MEMORYCHECK_COMMAND_OPTIONS "-q --trace-children=yes --leak-check=yes --track-origins=yes")
+    include(CTest)
+    add_custom_target(check-valgrind ${CMAKE_CTEST_COMMAND} -D ExperimentalMemCheck \${ARGS} WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+    add_dependencies(check-valgrind ${APP_NAME_LC}-test)
+  endif()
 
   # For testing commit series
   add_custom_target(check-commits ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/scripts/common/CheckCommits.cmake
@@ -397,6 +402,12 @@ endif()
 
 include(scripts/${CORE_SYSTEM_NAME}/Install.cmake)
 
+# Add uninstall target
+if(CMAKE_GENERATOR MATCHES Makefile)
+  add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/scripts/common/Uninstall.cmake)
+  set_target_properties(uninstall PROPERTIES FOLDER "Build Utilities")
+endif()
+
 # Create target that allows to build binary-addons.
 # Use make binary-addons ADDONS="visualization.spectrum" to select the addons to build.
 if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
@@ -418,10 +429,13 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 endif()
 
 # Prepare add-on build env
-foreach(binding ${addon_bindings})
-  get_filename_component(file ${binding} NAME)
-  set(BINDING_TARGET ${CORE_BUILD_DIR}/include/${APP_NAME_LC}/${file})
-  configure_file(${binding} ${BINDING_TARGET} COPYONLY)
+core_file_read_filtered(bindings ${CORE_SOURCE_DIR}/xbmc/addons/addon-bindings.mk)
+foreach(binding ${bindings})
+  string(REPLACE " =" ";" binding "${binding}")
+  string(REPLACE "+=" ";" binding "${binding}")
+  list(GET binding 1 header)
+  get_filename_component(file ${header} NAME)
+  configure_file(${CORE_SOURCE_DIR}/${header} ${CORE_BUILD_DIR}/include/${APP_NAME_LC}/${file} COPYONLY)
 endforeach()
 
 set(APP_LIB_DIR ${CMAKE_BINARY_DIR}/${CORE_BUILD_DIR}/lib/${APP_NAME_LC})

@@ -14,19 +14,14 @@ if(NOT EXISTS "${APP_LIB_DIR}/")
   file(MAKE_DIRECTORY ${APP_LIB_DIR})
 endif()
 
+set(APP_DATA_DIR ${DEPENDS_PATH}/share/${APP_NAME_LC})
+if(NOT EXISTS "${APP_DATA_DIR}/")
+  file(MAKE_DIRECTORY ${APP_DATA_DIR})
+endif()
+
 set(APP_INCLUDE_DIR ${DEPENDS_PATH}/include/${APP_NAME_LC})
 if(NOT EXISTS "${APP_INCLUDE_DIR}/")
   file(MAKE_DIRECTORY ${APP_INCLUDE_DIR})
-endif()
-
-# we still need XBMC_INCLUDE_DIR and XBMC_LIB_DIR for backwards compatibility to xbmc
-set(XBMC_LIB_DIR ${DEPENDS_PATH}/lib/xbmc)
-if(NOT EXISTS "${XBMC_LIB_DIR}/")
-  file(MAKE_DIRECTORY ${XBMC_LIB_DIR})
-endif()
-set(XBMC_INCLUDE_DIR ${DEPENDS_PATH}/include/xbmc)
-if(NOT EXISTS "${XBMC_INCLUDE_DIR}/")
-  file(MAKE_DIRECTORY ${XBMC_INCLUDE_DIR})
 endif()
 
 # make sure C++11 is always set
@@ -47,29 +42,13 @@ file(COPY ${CORE_SOURCE_DIR}/project/cmake/scripts/common/AddonHelpers.cmake
 
 ### copy all the addon binding header files to include/kodi
 # parse addon-bindings.mk to get the list of header files to copy
-file(STRINGS ${CORE_SOURCE_DIR}/xbmc/addons/addon-bindings.mk bindings)
-string(REPLACE "\n" ";" bindings "${bindings}")
+core_file_read_filtered(bindings ${CORE_SOURCE_DIR}/xbmc/addons/addon-bindings.mk)
 foreach(binding ${bindings})
   string(REPLACE " =" ";" binding "${binding}")
   string(REPLACE "+=" ";" binding "${binding}")
   list(GET binding 1 header)
   # copy the header file to include/kodi
-  file(COPY ${CORE_SOURCE_DIR}/${header} DESTINATION ${APP_INCLUDE_DIR})
-
-  # auto-generate header files for backwards compatibility to xbmc with deprecation warning
-  # but only do it if the file doesn't already exist
-  get_filename_component(headerfile ${header} NAME)
-  if(NOT EXISTS "${XBMC_INCLUDE_DIR}/${headerfile}")
-    file(WRITE ${XBMC_INCLUDE_DIR}/${headerfile}
-"#pragma once
-#define DEPRECATION_WARNING \"Including xbmc/${headerfile} has been deprecated, please use kodi/${headerfile}\"
-#ifdef _MSC_VER
-  #pragma message(\"WARNING: \" DEPRECATION_WARNING)
-#else
-  #warning DEPRECATION_WARNING
-#endif
-#include \"kodi/${headerfile}\"")
-  endif()
+  configure_file(${CORE_SOURCE_DIR}/${header} ${APP_INCLUDE_DIR} COPYONLY)
 endforeach()
 
 ### on windows we need a "patch" binary to be able to patch 3rd party sources

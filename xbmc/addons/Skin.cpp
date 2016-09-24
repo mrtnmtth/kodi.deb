@@ -256,17 +256,14 @@ std::string CSkinInfo::GetSkinPath(const std::string& strFile, RESOLUTION_INFO *
   const RESOLUTION_INFO &target = g_graphicsContext.GetResInfo();
   *res = *std::min_element(m_resolutions.begin(), m_resolutions.end(), closestRes(target));
 
-  std::string strPath = URIUtils::AddFileToFolder(strPathToUse, res->strMode);
-  strPath = URIUtils::AddFileToFolder(strPath, strFile);
+  std::string strPath = URIUtils::AddFileToFolder(strPathToUse, res->strMode, strFile);
   if (CFile::Exists(strPath))
     return strPath;
 
   // use the default resolution
   *res = m_defaultRes;
 
-  strPath = URIUtils::AddFileToFolder(strPathToUse, res->strMode);
-  strPath = URIUtils::AddFileToFolder(strPath, strFile);
-  return strPath;
+  return URIUtils::AddFileToFolder(strPathToUse, res->strMode, strFile);
 }
 
 bool CSkinInfo::HasSkinFile(const std::string &strFile) const
@@ -308,7 +305,9 @@ bool CSkinInfo::LoadStartupWindows(const cp_extension_t *ext)
   m_startupWindows.clear();
   m_startupWindows.emplace_back(WINDOW_HOME, "513");
   m_startupWindows.emplace_back(WINDOW_TV_CHANNELS, "19180");
+  m_startupWindows.emplace_back(WINDOW_TV_GUIDE, "19273");
   m_startupWindows.emplace_back(WINDOW_RADIO_CHANNELS, "19183");
+  m_startupWindows.emplace_back(WINDOW_RADIO_GUIDE, "19274");
   m_startupWindows.emplace_back(WINDOW_PROGRAMS, "0");
   m_startupWindows.emplace_back(WINDOW_PICTURES, "1");
   m_startupWindows.emplace_back(WINDOW_MUSIC_NAV, "2");
@@ -370,12 +369,13 @@ const INFO::CSkinVariableString* CSkinInfo::CreateSkinVariable(const std::string
 
 void CSkinInfo::OnPreInstall()
 {
-  if (IsInUse())
-    CApplicationMessenger::GetInstance().SendMsg(TMSG_EXECUTE_BUILT_IN, -1, -1, nullptr, "UnloadSkin");
 }
 
 void CSkinInfo::OnPostInstall(bool update, bool modal)
 {
+  if (!g_SkinInfo)
+    return;
+
   if (IsInUse() || (!update && !modal && 
     HELPERS::ShowYesNoDialogText(CVariant{Name()}, CVariant{24099}) == DialogResponse::YES))
   {
@@ -386,7 +386,7 @@ void CSkinInfo::OnPostInstall(bool update, bool modal)
       toast->Close(true);
     }
     if (CSettings::GetInstance().GetString(CSettings::SETTING_LOOKANDFEEL_SKIN) == ID())
-      CApplicationMessenger::GetInstance().SendMsg(TMSG_EXECUTE_BUILT_IN, -1, -1, nullptr, "ReloadSkin");
+      CApplicationMessenger::GetInstance().PostMsg(TMSG_EXECUTE_BUILT_IN, -1, -1, nullptr, "ReloadSkin");
     else
       CSettings::GetInstance().SetString(CSettings::SETTING_LOOKANDFEEL_SKIN, ID());
   }
@@ -394,6 +394,9 @@ void CSkinInfo::OnPostInstall(bool update, bool modal)
 
 void CSkinInfo::SettingOptionsSkinColorsFiller(const CSetting *setting, std::vector< std::pair<std::string, std::string> > &list, std::string &current, void *data)
 {
+  if (!g_SkinInfo)
+    return;
+
   std::string settingValue = ((const CSettingString*)setting)->GetValue();
   // Remove the .xml extension from the Themes
   if (URIUtils::HasExtension(settingValue, ".xml"))
@@ -435,6 +438,9 @@ void CSkinInfo::SettingOptionsSkinColorsFiller(const CSetting *setting, std::vec
 
 void CSkinInfo::SettingOptionsSkinFontsFiller(const CSetting *setting, std::vector< std::pair<std::string, std::string> > &list, std::string &current, void *data)
 {
+  if (!g_SkinInfo)
+    return;
+
   std::string settingValue = ((const CSettingString*)setting)->GetValue();
   bool currentValueSet = false;
   std::string strPath = g_SkinInfo->GetSkinPath("Font.xml");
@@ -513,6 +519,9 @@ void CSkinInfo::SettingOptionsSkinThemesFiller(const CSetting *setting, std::vec
 
 void CSkinInfo::SettingOptionsStartupWindowsFiller(const CSetting *setting, std::vector< std::pair<std::string, int> > &list, int &current, void *data)
 {
+  if (!g_SkinInfo)
+    return;
+
   int settingValue = ((const CSettingInt *)setting)->GetValue();
   current = -1;
 

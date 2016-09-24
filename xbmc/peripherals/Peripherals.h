@@ -216,6 +216,17 @@ namespace PERIPHERALS
      */
     EventRateHandle SetEventScanRate(float rateHz) { return m_eventScanner.SetRate(rateHz); }
 
+    /*!
+     * 
+     */
+    void OnUserNotification();
+
+    /*!
+     * @brief Request peripherals with the specified feature to perform a quick test
+     * @return true if any peripherals support the feature, false otherwise
+     */
+    bool TestFeature(PeripheralFeature feature);
+
     bool SupportsCEC() const
     {
 #if defined(HAVE_LIBCEC)
@@ -228,7 +239,7 @@ namespace PERIPHERALS
     // implementation of IEventScannerCallback
     virtual void ProcessEvents(void) override;
 
-    virtual PeripheralAddonPtr GetAddon(const CPeripheral* device);
+    virtual PeripheralAddonPtr GetAddonWithButtonMap(const CPeripheral* device);
 
     virtual void ResetButtonMaps(const std::string& controllerId);
 

@@ -272,7 +272,7 @@ CHECK_LIBS = xbmc/addons/test/addonsTest.a \
              xbmc/cores/AudioEngine/Sinks/test/AESinkTest.a \
              xbmc/test/xbmc-test.a
 
-ifeq (@USE_SSE4@,1)
+ifeq (@HAVE_SSE4@,1)
 LIBSSE4+=sse4
 sse4 : force
 	$(MAKE) -C xbmc/linux/sse4
@@ -355,6 +355,14 @@ endif
 else
 	$(MAKE) -C tools/EventClients
 endif
+
+certs:
+ifeq ($(findstring osx,@ARCH@), osx)
+	mkdir -p system/certs
+	cp tools/depends/target/openssl/cacert.pem system/certs
+endif
+
+
 libexif: dllloader
 	$(MAKE) -C lib/libexif
 
@@ -365,7 +373,7 @@ libs: $(LIBSSE4) libexif system/libcpluff-@ARCH@.so
 externals: codecs libs libaddon
 
 xcode_depends: \
-	codecs libs eventclients skins libaddon
+	codecs libs eventclients skins libaddon certs
 
 DYNOBJSXBMC= \
 	xbmc/linux/linux.a \

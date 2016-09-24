@@ -6,6 +6,7 @@ set(SOURCES PVRActionListener.cpp
 
 set(HEADERS PVRActionListener.h
             PVRDatabase.h
+            PVREvent.h
             PVRGUIInfo.h
             PVRManager.h
             PVRSettings.h)

@@ -61,6 +61,8 @@ namespace PVR
     virtual void UnregisterObservers(void) override;
 
   private:
+    void Init();
+
     EPG::CGUIEPGGridContainer* GetGridControl();
 
     bool SelectPlayingFile(void);

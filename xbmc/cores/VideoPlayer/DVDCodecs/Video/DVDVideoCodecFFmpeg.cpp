@@ -89,26 +89,80 @@ enum EFilterFlags {
   FILTER_ROTATE              = 0x40,  //< rotate image according to the codec hints
 };
 
-enum AVPixelFormat CDVDVideoCodecFFmpeg::GetFormat( struct AVCodecContext * avctx, const AVPixelFormat * fmt)
+CDVDVideoCodecFFmpeg::CDropControl::CDropControl()
+{
+  Reset(true);
+}
+
+void CDVDVideoCodecFFmpeg::CDropControl::Reset(bool init)
+{
+  m_lastPTS = AV_NOPTS_VALUE;
+
+  if (init || m_state != VALID)
+  {
+    m_count = 0;
+    m_diffPTS = 0;
+    m_state = INIT;
+  }
+}
+
+void CDVDVideoCodecFFmpeg::CDropControl::Process(int64_t pts, bool drop)
+{
+  if (m_state == INIT)
+  {
+    if (pts != AV_NOPTS_VALUE && m_lastPTS != AV_NOPTS_VALUE)
+    {
+      m_diffPTS += pts - m_lastPTS;
+      m_count++;
+    }
+    if (m_count > 10)
+    {
+      m_diffPTS = m_diffPTS / m_count;
+      if (m_diffPTS > 0)
+      {
+        CLog::Log(LOGNOTICE, "CDVDVideoCodecFFmpeg::CDropControl: calculated diff time: %lld", m_diffPTS);
+        m_state = CDropControl::VALID;
+        m_count = 0;
+      }
+    }
+  }
+  else if (m_state == VALID && !drop)
+  {
+    if (std::abs(pts - m_lastPTS - m_diffPTS) > m_diffPTS * 0.2)
+    {
+      m_count++;
+      if (m_count > 5)
+      {
+        CLog::Log(LOGNOTICE, "CDVDVideoCodecFFmpeg::CDropControl: lost diff");
+        Reset(true);
+      }
+    }
+    else
+      m_count = 0;
+  }
+  m_lastPTS = pts;
+}
+
+enum AVPixelFormat CDVDVideoCodecFFmpeg::GetFormat(struct AVCodecContext * avctx, const AVPixelFormat * fmt)
 {
   CDVDVideoCodecFFmpeg* ctx  = (CDVDVideoCodecFFmpeg*)avctx->opaque;
 
   const char* pixFmtName = av_get_pix_fmt_name(*fmt);
 
+  ctx->m_processInfo.SetVideoDimensions(avctx->coded_width, avctx->coded_height);
+
   // if frame threading is enabled hw accel is not allowed
-  if(ctx->m_decoderState != STATE_HW_SINGLE)
+  // 2nd condition:
+  // fix an ffmpeg issue here, it calls us with an invalid profile
+  // then a 2nd call with a valid one
+  if(ctx->m_decoderState != STATE_HW_SINGLE ||
+     (avctx->codec_id == AV_CODEC_ID_VC1 && avctx->profile == FF_PROFILE_UNKNOWN))
   {
     AVPixelFormat defaultFmt = avcodec_default_get_format(avctx, fmt);
     pixFmtName = av_get_pix_fmt_name(defaultFmt);
     ctx->m_processInfo.SetVideoPixelFormat(pixFmtName ? pixFmtName : "");
+    ctx->m_processInfo.SetSwDeinterlacingMethods();
     return defaultFmt;
-  }
-
-  // fix an ffmpeg issue here, it calls us with an invalid profile
-  // then a 2nd call with a valid one
-  if (avctx->codec_id == AV_CODEC_ID_VC1 && avctx->profile == FF_PROFILE_UNKNOWN)
-  {
-    return avcodec_default_get_format(avctx, fmt);
   }
 
   // hardware decoder de-selected, restore standard ffmpeg
@@ -123,6 +177,8 @@ enum AVPixelFormat CDVDVideoCodecFFmpeg::GetFormat( struct AVCodecContext * avct
   const AVPixelFormat * cur = fmt;
   while(*cur != AV_PIX_FMT_NONE)
   {
+    pixFmtName = av_get_pix_fmt_name(*cur);
+
 #ifdef HAVE_LIBVDPAU
     if(VDPAU::CDecoder::IsVDPAUFormat(*cur) && CSettings::GetInstance().GetBool(CSettings::SETTING_VIDEOPLAYER_USEVDPAU))
     {
@@ -188,7 +244,7 @@ enum AVPixelFormat CDVDVideoCodecFFmpeg::GetFormat( struct AVCodecContext * avct
 #ifdef HAS_MMAL
     if (*cur == AV_PIX_FMT_YUV420P)
     {
-      MMAL::CDecoder* dec = new MMAL::CDecoder();
+      MMAL::CDecoder* dec = new MMAL::CDecoder(ctx->m_processInfo);
       if(dec->Open(avctx, ctx->m_pCodecContext, *cur, ctx->m_uSurfacesCount))
       {
         ctx->m_processInfo.SetVideoPixelFormat(pixFmtName ? pixFmtName : "");
@@ -203,6 +259,7 @@ enum AVPixelFormat CDVDVideoCodecFFmpeg::GetFormat( struct AVCodecContext * avct
   }
 
   ctx->m_processInfo.SetVideoPixelFormat(pixFmtName ? pixFmtName : "");
+  ctx->m_processInfo.SetSwDeinterlacingMethods();
   ctx->m_decoderState = STATE_HW_FAILED;
   return avcodec_default_get_format(avctx, fmt);
 }
@@ -397,7 +454,7 @@ bool CDVDVideoCodecFFmpeg::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options
 
   UpdateName();
 
-  m_processInfo.SetVideoDimensions(m_pCodecContext->coded_width, m_pCodecContext->coded_height);
+  m_dropCtrl.Reset(true);
   return true;
 }
 
@@ -449,7 +506,7 @@ void CDVDVideoCodecFFmpeg::SetFilters()
   // ask codec to do deinterlacing if possible
   EINTERLACEMETHOD mInt = CMediaSettings::GetInstance().GetCurrentVideoSettings().m_InterlaceMethod;
 
-  if (mInt != VS_INTERLACEMETHOD_DEINTERLACE && mInt != VS_INTERLACEMETHOD_DEINTERLACE_HALF)
+  if (!m_processInfo.Supports(mInt))
     mInt = m_processInfo.GetFallbackDeintMethod();
 
   unsigned int filters = 0;
@@ -609,13 +666,6 @@ int CDVDVideoCodecFFmpeg::Decode(uint8_t* pData, int iSize, double dts, double p
 
   if (!iGotPicture)
   {
-    if (pData && m_pCodecContext->skip_frame > AVDISCARD_DEFAULT)
-    {
-      m_droppedFrames++;
-      if (m_interlaced)
-        m_droppedFrames++;
-    }
-
     if (m_pHardware && (m_codecControlFlags & DVD_CODEC_CTRL_DRAIN))
     {
       int result;
@@ -626,10 +676,32 @@ int CDVDVideoCodecFFmpeg::Decode(uint8_t* pData, int iSize, double dts, double p
       return VC_BUFFER;
   }
 
+  int64_t framePTS = av_frame_get_best_effort_timestamp(m_pDecodedFrame);
+
+  if (m_pCodecContext->skip_frame > AVDISCARD_DEFAULT)
+  {
+    if (m_dropCtrl.m_state == CDropControl::VALID &&
+        m_dropCtrl.m_lastPTS != AV_NOPTS_VALUE &&
+        framePTS != AV_NOPTS_VALUE &&
+        framePTS > (m_dropCtrl.m_lastPTS + m_dropCtrl.m_diffPTS * 1.5))
+    {
+      m_droppedFrames++;
+      if (m_interlaced)
+        m_droppedFrames++;
+    }
+  }
+  m_dropCtrl.Process(framePTS, m_pCodecContext->skip_frame > AVDISCARD_DEFAULT);
+
   if (m_pDecodedFrame->key_frame)
   {
     m_started = true;
     m_iLastKeyframe = m_pCodecContext->has_b_frames + 2;
+  }
+
+  if (!m_started)
+  {
+    av_frame_unref(m_pDecodedFrame);
+    return VC_BUFFER;
   }
 
   if (m_pDecodedFrame->interlaced_frame)
@@ -637,13 +709,12 @@ int CDVDVideoCodecFFmpeg::Decode(uint8_t* pData, int iSize, double dts, double p
   else
     m_interlaced = false;
 
-  /* put a limit on convergence count to avoid huge mem usage on streams without keyframes */
+  // put a limit on convergence count to avoid huge mem usage on streams without keyframes
   if (m_iLastKeyframe > 300)
     m_iLastKeyframe = 300;
 
-  /* h264 doesn't always have keyframes + won't output before first keyframe anyway */
-  if(m_pCodecContext->codec_id == AV_CODEC_ID_H264 ||
-     m_pCodecContext->codec_id == AV_CODEC_ID_SVQ3)
+  //! @todo check if this work-around is still required
+  if(m_pCodecContext->codec_id == AV_CODEC_ID_SVQ3)
     m_started = true;
 
   if (m_pHardware == nullptr)
@@ -719,6 +790,7 @@ void CDVDVideoCodecFFmpeg::Reset()
 
   m_filters = "";
   FilterClose();
+  m_dropCtrl.Reset(false);
 }
 
 void CDVDVideoCodecFFmpeg::Reopen()
@@ -853,9 +925,6 @@ bool CDVDVideoCodecFFmpeg::GetPictureCommon(DVDVideoPicture* pDvdVideoPicture)
 
   m_requestSkipDeint = false;
   pDvdVideoPicture->iFlags |= m_codecControlFlags;
-
-  if (!m_started)
-    pDvdVideoPicture->iFlags |= DVP_FLAG_DROPPED;
 
   return true;
 }

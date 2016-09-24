@@ -9,7 +9,8 @@ kodi (17.0~beta2+dfsg1-1) experimental; urgency=medium
     fonts instead of shipping them.
   * Add transitional dummy packages from xbmc
   * Drop obsoleted dependencies and patches
-  * Silence Lintian complaining for missing misc:Depends of transitional packages
+  * Silence Lintian complaining for missing misc:Depends of transitional
+    packages
   * Ignore failed clean of components without Lintian noticing
   * Build-depend on liblcms2-dev for Little CMS support
 

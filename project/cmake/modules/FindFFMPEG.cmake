@@ -12,6 +12,18 @@ if(ENABLE_INTERNAL_FFMPEG)
   if(FFMPEG_PATH)
     message(WARNING "Internal FFmpeg enabled, but FFMPEG_PATH given, ignoring")
   endif()
+
+  # allow user to override the download URL with a local tarball
+  # needed for offline build envs
+  if(FFMPEG_URL)
+    get_filename_component(FFMPEG_URL "${FFMPEG_URL}" ABSOLUTE)
+  else()
+    set(FFMPEG_URL ${FFMPEG_BASE_URL}/${FFMPEG_VER}.tar.gz)
+  endif()
+  if(VERBOSE)
+    message(STATUS "FFMPEG_URL: ${FFMPEG_URL}")
+  endif()
+
   if(CMAKE_CROSSCOMPILING)
     set(CROSS_ARGS -DDEPENDS_PATH=${DEPENDS_PATH}
                    -DPKG_CONFIG_EXECUTABLE=${PKG_CONFIG_EXECUTABLE}
@@ -28,7 +40,9 @@ if(ENABLE_INTERNAL_FFMPEG)
   endif()
 
   externalproject_add(ffmpeg
-                      URL ${FFMPEG_BASE_URL}/${FFMPEG_VER}.tar.gz
+                      URL ${FFMPEG_URL}
+                      DOWNLOAD_NAME ffmpeg-${FFMPEG_VER}.tar.gz
+                      DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/${CORE_BUILD_DIR}/download
                       PREFIX ${CORE_BUILD_DIR}/ffmpeg
                       CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/${CORE_BUILD_DIR}
                                  -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -72,7 +86,7 @@ else()
   endif()
   set(FFMPEG_PKGS libavcodec>=56.26.100 libavfilter>=5.11.100 libavformat>=56.25.101
                   libavutil>=54.20.100 libswscale>=3.1.101 libswresample>=1.1.100 libpostproc>=53.3.100)
-  if(PKG_CONFIG_FOUND)
+  if(PKG_CONFIG_FOUND AND NOT WIN32)
     pkg_check_modules (FFMPEG ${FFMPEG_PKGS})
     string(REGEX REPLACE "framework;" "framework " FFMPEG_LDFLAGS "${FFMPEG_LDFLAGS}")
     set(FFMPEG_LIBRARIES ${FFMPEG_LDFLAGS})

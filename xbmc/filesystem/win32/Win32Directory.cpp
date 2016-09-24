@@ -178,4 +178,70 @@ bool CWin32Directory::Remove(const CURL& url)
   return !Exists(url);
 }
 
+bool CWin32Directory::RemoveRecursive(const CURL& url)
+{
+  std::string pathWithSlash(url.Get());
+  if (!pathWithSlash.empty() && pathWithSlash.back() != '\\')
+    pathWithSlash.push_back('\\');
+
+  auto basePath = CWIN32Util::ConvertPathToWin32Form(pathWithSlash);
+  if (basePath.empty())
+    return false;
+
+  auto searchMask = basePath + L'*';
+
+  HANDLE hSearch;
+  WIN32_FIND_DATAW findData = {};
+
+  if (g_sysinfo.IsWindowsVersionAtLeast(CSysInfo::WindowsVersionWin7))
+    hSearch = FindFirstFileExW(searchMask.c_str(), FindExInfoBasic, &findData, FindExSearchNameMatch, nullptr, FIND_FIRST_EX_LARGE_FETCH);
+  else
+    hSearch = FindFirstFileExW(searchMask.c_str(), FindExInfoStandard, &findData, FindExSearchNameMatch, nullptr, 0);
+
+  if (hSearch == INVALID_HANDLE_VALUE)
+    return GetLastError() == ERROR_FILE_NOT_FOUND ? Exists(url) : false; // return true if directory exist and empty
+
+  bool success = true;
+  do
+  {
+    std::wstring itemNameW(findData.cFileName);
+    if (itemNameW == L"." || itemNameW == L"..")
+      continue;
+
+    auto pathW = basePath + itemNameW;
+    if (0 != (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+    {
+      std::string path;
+      if (!g_charsetConverter.wToUTF8(pathW, path, true))
+      {
+        CLog::Log(LOGERROR, "%s: Can't convert wide string name to UTF-8 encoding", __FUNCTION__);
+        continue;
+      }
+
+      if (!RemoveRecursive(CURL{ path }))
+      {
+        success = false;
+        break;
+      }
+
+      if (FALSE == RemoveDirectoryW(pathW.c_str()))
+      {
+        success = false;
+        break;
+      }
+    }
+    else
+    {
+      if (FALSE == DeleteFileW(pathW.c_str()))
+      {
+        success = false;
+        break;
+      }
+    }
+  } while (FindNextFileW(hSearch, &findData));
+
+  FindClose(hSearch);
+
+  return success;
+}
 #endif // TARGET_WINDOWS

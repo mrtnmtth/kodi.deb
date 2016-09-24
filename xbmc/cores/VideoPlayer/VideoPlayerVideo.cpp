@@ -195,6 +195,7 @@ void CVideoPlayerVideo::OpenStream(CDVDStreamInfo &hint, CDVDVideoCodec* codec)
   m_pVideoCodec = codec;
   m_hints   = hint;
   m_stalled = m_messageQueue.GetPacketCount(CDVDMsg::DEMUXER_PACKET) == 0;
+  m_rewindStalled = false;
   m_packets.clear();
   m_syncState = IDVDStreamPlayer::SYNC_STARTING;
 }
@@ -255,6 +256,7 @@ void CVideoPlayerVideo::Process()
   m_videoStats.Start();
   m_droppingStats.Reset();
   m_iDroppedFrames = 0;
+  m_rewindStalled = false;
 
   while (!m_bStop)
   {
@@ -321,6 +323,7 @@ void CVideoPlayerVideo::Process()
 
       m_syncState = IDVDStreamPlayer::SYNC_INSYNC;
       m_droppingStats.Reset();
+      m_rewindStalled = false;
 
       CLog::Log(LOGDEBUG, "CVideoPlayerVideo - CDVDMsg::GENERAL_RESYNC(%f)", pts);
     }
@@ -337,6 +340,7 @@ void CVideoPlayerVideo::Process()
       m_packets.clear();
       m_droppingStats.Reset();
       m_syncState = IDVDStreamPlayer::SYNC_STARTING;
+      m_rewindStalled = false;
     }
     else if (pMsg->IsType(CDVDMsg::GENERAL_FLUSH)) // private message sent by (CVideoPlayerVideo::Flush())
     {
@@ -346,6 +350,7 @@ void CVideoPlayerVideo::Process()
       m_picture.iFlags &= ~DVP_FLAG_ALLOCATED;
       m_packets.clear();
       pts = 0;
+      m_rewindStalled = false;
 
       m_pullupCorrection.Flush();
       //we need to recalculate the framerate
@@ -826,6 +831,7 @@ int CVideoPlayerVideo::OutputPicture(const DVDVideoPicture* src, double pts)
     {
       if (inputPts >= renderPts)
       {
+        m_rewindStalled = true;
         Sleep(50);
       }
       return result | EOS_DROPPED;
@@ -862,13 +868,20 @@ int CVideoPlayerVideo::OutputPicture(const DVDVideoPicture* src, double pts)
   }
 
   // set fieldsync if picture is interlaced
+  EINTERLACEMETHOD deintMethod = EINTERLACEMETHOD::VS_INTERLACEMETHOD_NONE;
   EFIELDSYNC mDisplayField = FS_NONE;
-  if( pPicture->iFlags & DVP_FLAG_INTERLACED )
+  if (pPicture->iFlags & DVP_FLAG_INTERLACED)
   {
-    if( pPicture->iFlags & DVP_FLAG_TOP_FIELD_FIRST )
-      mDisplayField = FS_TOP;
+    deintMethod = CMediaSettings::GetInstance().GetCurrentVideoSettings().m_InterlaceMethod;
+    if (m_processInfo.Supports(deintMethod))
+    {
+      if (pPicture->iFlags & DVP_FLAG_TOP_FIELD_FIRST)
+        mDisplayField = FS_TOP;
+      else
+        mDisplayField = FS_BOT;
+    }
     else
-      mDisplayField = FS_BOT;
+      deintMethod = EINTERLACEMETHOD::VS_INTERLACEMETHOD_NONE;
   }
 
   int timeToDisplay = DVD_TIME_TO_MSEC(pts - iPlayingClock);
@@ -902,7 +915,7 @@ int CVideoPlayerVideo::OutputPicture(const DVDVideoPicture* src, double pts)
     return EOS_DROPPED;
   }
 
-  m_renderManager.FlipPage(m_bAbortOutput, pts, -1, mDisplayField);
+  m_renderManager.FlipPage(m_bAbortOutput, pts, deintMethod, mDisplayField);
 
   return result;
 }

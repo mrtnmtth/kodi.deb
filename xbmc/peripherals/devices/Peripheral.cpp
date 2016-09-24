@@ -23,6 +23,9 @@
 #include <utility>
 
 #include "guilib/LocalizeStrings.h"
+#include "input/joysticks/IInputHandler.h"
+#include "peripherals/addons/PeripheralAddon.h"
+#include "peripherals/bus/virtual/PeripheralBusAddon.h"
 #include "peripherals/Peripherals.h"
 #include "settings/lib/Setting.h"
 #include "peripherals/addons/AddonButtonMapping.h"
@@ -32,6 +35,8 @@
 #include "utils/StringUtils.h"
 #include "utils/XBMCTinyXML.h"
 #include "utils/XMLUtils.h"
+#include "Util.h"
+#include "filesystem/File.h"
 
 using namespace JOYSTICK;
 using namespace PERIPHERALS;
@@ -148,10 +153,32 @@ bool CPeripheral::Initialise(void)
     return bReturn;
 
   g_peripherals.GetSettingsFromMapping(*this);
-  m_strSettingsFile = StringUtils::Format("special://profile/peripheral_data/%s_%s_%s.xml",
-                                          PeripheralTypeTranslator::BusTypeToString(m_mappedBusType),
-                                          m_strVendorId.c_str(),
-                                          m_strProductId.c_str());
+
+  std::string safeDeviceName = m_strDeviceName;
+  StringUtils::Replace(safeDeviceName, ' ', '_');
+
+  if (m_iVendorId == 0x0000 && m_iProductId == 0x0000)
+  {
+    m_strSettingsFile = StringUtils::Format("special://profile/peripheral_data/%s_%s.xml",
+                                            PeripheralTypeTranslator::BusTypeToString(m_mappedBusType),
+                                            CUtil::MakeLegalFileName(safeDeviceName, LEGAL_WIN32_COMPAT).c_str());
+  }
+  else
+  {
+    // Backwards compatibility - old settings files didn't include the device name
+    m_strSettingsFile = StringUtils::Format("special://profile/peripheral_data/%s_%s_%s.xml",
+                                            PeripheralTypeTranslator::BusTypeToString(m_mappedBusType),
+                                            m_strVendorId.c_str(),
+                                            m_strProductId.c_str());
+
+    if (!XFILE::CFile::Exists(m_strSettingsFile))
+      m_strSettingsFile = StringUtils::Format("special://profile/peripheral_data/%s_%s_%s_%s.xml",
+                                              PeripheralTypeTranslator::BusTypeToString(m_mappedBusType),
+                                              m_strVendorId.c_str(),
+                                              m_strProductId.c_str(),
+                                              CUtil::MakeLegalFileName(safeDeviceName, LEGAL_WIN32_COMPAT).c_str());
+  }
+
   LoadPersistedSettings();
 
   for (unsigned int iFeaturePtr = 0; iFeaturePtr < m_features.size(); iFeaturePtr++)
@@ -543,22 +570,23 @@ void CPeripheral::ClearSettings(void)
 
 void CPeripheral::RegisterJoystickInputHandler(IInputHandler* handler)
 {
-  std::map<IInputHandler*, IDriverHandler*>::iterator it = m_inputHandlers.find(handler);
+  auto it = m_inputHandlers.find(handler);
   if (it == m_inputHandlers.end())
   {
-    CAddonInputHandling* inputHandling = new CAddonInputHandling(this, handler);
-    RegisterJoystickDriverHandler(inputHandling, false);
-    m_inputHandlers[handler] = inputHandling;
+    CAddonInputHandling* addonInput = new CAddonInputHandling(this, handler, GetDriverReceiver());
+    RegisterJoystickDriverHandler(addonInput, false);
+    m_inputHandlers[handler].reset(addonInput);
   }
 }
 
 void CPeripheral::UnregisterJoystickInputHandler(IInputHandler* handler)
 {
-  std::map<IInputHandler*, IDriverHandler*>::iterator it = m_inputHandlers.find(handler);
+  handler->ResetInputReceiver();
+
+  auto it = m_inputHandlers.find(handler);
   if (it != m_inputHandlers.end())
   {
-    UnregisterJoystickDriverHandler(it->second);
-    delete it->second;
+    UnregisterJoystickDriverHandler(it->second.get());
     m_inputHandlers.erase(it);
   }
 }
@@ -568,7 +596,7 @@ void CPeripheral::RegisterJoystickButtonMapper(IButtonMapper* mapper)
   std::map<IButtonMapper*, IDriverHandler*>::iterator it = m_buttonMappers.find(mapper);
   if (it == m_buttonMappers.end())
   {
-    CAddonButtonMapping* addonMapping = new CAddonButtonMapping(this, mapper);
+    IDriverHandler* addonMapping = new CAddonButtonMapping(this, mapper);
     RegisterJoystickDriverHandler(addonMapping, false);
     m_buttonMappers[mapper] = addonMapping;
   }
@@ -583,6 +611,27 @@ void CPeripheral::UnregisterJoystickButtonMapper(IButtonMapper* mapper)
     delete it->second;
     m_buttonMappers.erase(it);
   }
+}
+
+std::string CPeripheral::GetIcon() const
+{
+  std::string icon = "DefaultAddon.png";
+
+  if (m_busType == PERIPHERAL_BUS_ADDON)
+  {
+    CPeripheralBusAddon* bus = static_cast<CPeripheralBusAddon*>(m_bus);
+
+    PeripheralAddonPtr addon;
+    unsigned int index;
+    if (bus->SplitLocation(m_strLocation, addon, index))
+    {
+      std::string addonIcon = addon->Icon();
+      if (!addonIcon.empty())
+        icon = std::move(addonIcon);
+    }
+  }
+
+  return icon;
 }
 
 bool CPeripheral::operator ==(const PeripheralScanResult& right) const

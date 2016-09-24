@@ -869,8 +869,7 @@ void CLinuxRendererGL::UpdateVideoFilter()
         m_ditherDepth,
         m_cmsOn ? m_fullRange : false,
         m_cmsOn ? m_tCLUTTex : 0,
-        m_CLUTsize,
-        m_iFlags);
+        m_CLUTsize);
     m_pVideoFilterShader = new ConvolutionFilterShader(m_scalingMethod, m_nonLinStretch, out);
     if (!m_pVideoFilterShader->CompileAndLink())
     {
@@ -939,13 +938,12 @@ void CLinuxRendererGL::LoadShaders(int field)
         // if single pass, create GLSLOutput helper and pass it to YUV2RGB shader
         GLSLOutput *out = nullptr;
         if (m_renderQuality == RQ_SINGLEPASS)
-          out = new GLSLOutput(3,
-              m_useDithering,
-              m_ditherDepth,
-              m_cmsOn ? m_fullRange : false,
-              m_cmsOn ? m_tCLUTTex : 0,
-              m_CLUTsize,
-              m_iFlags);
+        {
+          out = new GLSLOutput(3, m_useDithering, m_ditherDepth,
+                               m_cmsOn ? m_fullRange : false,
+                               m_cmsOn ? m_tCLUTTex : 0,
+                               m_CLUTsize);
+        }
         m_pYUVShader = new YUV2RGBProgressiveShader(m_textureTarget==GL_TEXTURE_RECTANGLE_ARB, m_iFlags, m_format,
                                                     m_nonLinStretch && m_renderQuality == RQ_SINGLEPASS,
                                                     out);
@@ -2478,28 +2476,6 @@ bool CLinuxRendererGL::SupportsMultiPassRendering()
   return g_Windowing.IsExtSupported("GL_EXT_framebuffer_object");
 }
 
-bool CLinuxRendererGL::Supports(EINTERLACEMETHOD method)
-{
-  if(m_renderMethod & RENDER_CVREF)
-    return false;
-
-  if(method == VS_INTERLACEMETHOD_AUTO)
-    return true;
-  
-  if(method == VS_INTERLACEMETHOD_DEINTERLACE
-  || method == VS_INTERLACEMETHOD_DEINTERLACE_HALF)
-    return true;
-
-  if((method == VS_INTERLACEMETHOD_RENDER_BLEND
-  ||  method == VS_INTERLACEMETHOD_RENDER_WEAVE_INVERTED
-  ||  method == VS_INTERLACEMETHOD_RENDER_WEAVE
-  ||  method == VS_INTERLACEMETHOD_RENDER_BOB_INVERTED
-  ||  method == VS_INTERLACEMETHOD_RENDER_BOB))
-    return true;
-
-  return false;
-}
-
 bool CLinuxRendererGL::Supports(ESCALINGMETHOD method)
 {
   //nearest neighbor doesn't work on YUY2 and UYVY
@@ -2538,14 +2514,6 @@ bool CLinuxRendererGL::Supports(ESCALINGMETHOD method)
   }
  
   return false;
-}
-
-EINTERLACEMETHOD CLinuxRendererGL::AutoInterlaceMethod()
-{
-  if(Supports(VS_INTERLACEMETHOD_RENDER_BOB))
-    return VS_INTERLACEMETHOD_RENDER_BOB;
-
-  return VS_INTERLACEMETHOD_NONE;
 }
 
 void CLinuxRendererGL::BindPbo(YUVBUFFER& buff)

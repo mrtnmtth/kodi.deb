@@ -46,6 +46,8 @@ set(SOURCES Activity.cpp
             Resources.cpp
             ScanResult.cpp
             StatFs.cpp
+            StorageManager.cpp
+            StorageVolume.cpp
             Surface.cpp
             SurfaceTexture.cpp
             SystemClock.cpp
@@ -95,7 +97,6 @@ set(HEADERS Activity.h
             KeyCharacterMap.h
             KeyEvent.h
             List.h
-            Makefile.in
             MediaCodecBufferInfo.h
             MediaCodecCryptoInfo.h
             MediaCodec.h

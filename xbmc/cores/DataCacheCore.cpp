@@ -200,9 +200,23 @@ void CDataCacheCore::SetAudioBitsPerSample(int bitsPerSample)
   m_playerAudioInfo.bitsPerSample = bitsPerSample;
 }
 
-int CDataCacheCore::GetAudioBitsPerSampe()
+int CDataCacheCore::GetAudioBitsPerSample()
 {
   CSingleLock lock(m_audioPlayerSection);
 
   return m_playerAudioInfo.bitsPerSample;
+}
+
+void CDataCacheCore::SetRenderClockSync(bool enable)
+{
+  CSingleLock lock(m_renderSection);
+
+  m_renderInfo.m_isClockSync = enable;
+}
+
+bool CDataCacheCore::IsRenderClockSync()
+{
+  CSingleLock lock(m_renderSection);
+
+  return m_renderInfo.m_isClockSync;
 }

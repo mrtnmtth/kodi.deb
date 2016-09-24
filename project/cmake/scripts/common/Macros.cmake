@@ -74,6 +74,7 @@ function(core_add_library name)
     if(CORE_SYSTEM_NAME STREQUAL windows)
       add_precompiled_header(${name} pch.h ${CORE_SOURCE_DIR}/xbmc/platform/win32/pch.cpp PCH_TARGET kodi)
       set_language_cxx(${name})
+      target_link_libraries(${name} PUBLIC effects11)
     endif()
   else()
     foreach(src IN LISTS SOURCES HEADERS OTHERS)
@@ -258,7 +259,15 @@ function(copy_files_from_filelist_to_buildtree pattern)
         else()
           list(GET dir -1 dest)
         endif()
-        file(GLOB_RECURSE files RELATIVE ${CORE_SOURCE_DIR} ${CORE_SOURCE_DIR}/${src})
+
+        # If the full path to an existing file is specified then add that single file.
+        # Don't recursively add all files with the given name.
+        if(EXISTS ${CORE_SOURCE_DIR}/${src} AND NOT IS_DIRECTORY ${CORE_SOURCE_DIR}/${src})
+          set(files ${src})
+        else()
+          file(GLOB_RECURSE files RELATIVE ${CORE_SOURCE_DIR} ${CORE_SOURCE_DIR}/${src})
+        endif()
+
         foreach(file ${files})
           if(arg_NO_INSTALL)
             copy_file_to_buildtree(${CORE_SOURCE_DIR}/${file} DIRECTORY ${dest} NO_INSTALL)
@@ -318,6 +327,8 @@ macro(setup_enable_switch)
   else()
     set(enable_switch ENABLE_${depup})
   endif()
+  # normal options are boolean, so we override set our ENABLE_FOO var to allow "auto" handling
+  set(${enable_switch} "AUTO" CACHE STRING "Enable ${depup} support?")
 endmacro()
 
 # add an optional dependency of main application
@@ -327,17 +338,20 @@ endmacro()
 #   dependency optionally added to ${SYSTEM_INCLUDES}, ${DEPLIBS} and ${DEP_DEFINES}
 function(core_optional_dep dep)
   setup_enable_switch()
-  if(${enable_switch})
+  if(${enable_switch} STREQUAL AUTO)
     find_package(${dep})
-    if(${depup}_FOUND)
-      list(APPEND SYSTEM_INCLUDES ${${depup}_INCLUDE_DIRS})
-      list(APPEND DEPLIBS ${${depup}_LIBRARIES})
-      list(APPEND DEP_DEFINES ${${depup}_DEFINITIONS})
-      set(final_message ${final_message} "${depup} enabled: Yes" PARENT_SCOPE)
-      export_dep()
-    else()
-      set(final_message ${final_message} "${depup} enabled: No" PARENT_SCOPE)
-    endif()
+  elseif(${${enable_switch}})
+    find_package(${dep} REQUIRED)
+  endif()
+
+  if(${depup}_FOUND)
+    list(APPEND SYSTEM_INCLUDES ${${depup}_INCLUDE_DIRS})
+    list(APPEND DEPLIBS ${${depup}_LIBRARIES})
+    list(APPEND DEP_DEFINES ${${depup}_DEFINITIONS})
+    set(final_message ${final_message} "${depup} enabled: Yes" PARENT_SCOPE)
+    export_dep()
+  else()
+    set(final_message ${final_message} "${depup} enabled: No" PARENT_SCOPE)
   endif()
 endfunction()
 
@@ -441,32 +455,17 @@ macro(core_add_optional_subdirs_from_filelist pattern)
       foreach(opt ${opts})
         if(ENABLE_${opt})
           if(VERBOSE)
-            message(STATUS "  core_add_optional_subdirs_from_filelist - adding subdir: ${CORE_SOURCE_DIR}${subdir_src} -> ${CORE_BUILD_DIR}/${subdir_dest}")
+            message(STATUS "  core_add_optional_subdirs_from_filelist - adding subdir: ${CORE_SOURCE_DIR}/${subdir_src} -> ${CORE_BUILD_DIR}/${subdir_dest}")
           endif()
           add_subdirectory(${CORE_SOURCE_DIR}/${subdir_src} ${CORE_BUILD_DIR}/${subdir_dest})
-         else()
-            if(VERBOSE)
-              message(STATUS "  core_add_optional_subdirs_from_filelist: OPTION ${opt} not enabled for ${subdir_src}, skipping subdir")
-            endif()
+        else()
+          if(VERBOSE)
+            message(STATUS "  core_add_optional_subdirs_from_filelist: OPTION ${opt} not enabled for ${subdir_src}, skipping subdir")
+          endif()
         endif()
       endforeach()
     endforeach()
   endforeach()
-endmacro()
-
-macro(today RESULT)
-  if(WIN32)
-    execute_process(COMMAND "cmd" " /C date /T" OUTPUT_VARIABLE ${RESULT})
-    string(REGEX REPLACE "(..)/(..)/..(..).*" "\\1/\\2/\\3" ${RESULT} ${${RESULT}})
-  elseif(UNIX)
-    execute_process(COMMAND date -u +%F
-                    OUTPUT_VARIABLE ${RESULT})
-    string(REGEX REPLACE "(..)/(..)/..(..).*" "\\1/\\2/\\3" ${RESULT} ${${RESULT}})
-  else()
-    message(SEND_ERROR "date not implemented")
-    set(${RESULT} 00000000)
-  endif()
-  string(REGEX REPLACE "(\r?\n)+$" "" ${RESULT} "${${RESULT}}")
 endmacro()
 
 # Generates an RFC2822 timestamp
@@ -502,48 +501,57 @@ function(userstamp)
 endfunction()
 
 # Parses git info and sets variables used to identify the build
-#
-# The following variables are set:
-#   APP_SCMID - git HEAD commit in the form of 'YYYYMMDD-hash'
-#               if git tree is dirty, value is set in the form of 'YYYYMMDD-hash-dirty'
-#               if no git tree is found, value is set in the form of 'YYYYMMDD-nogitfound'
-#   GIT_HASH  - git HEAD commit in the form of 'hash'. if git tree is dirty,
-#               value is set in the form of 'hash-dirty'
-function(core_find_git_rev)
-  find_package(Git)
-  if(GIT_FOUND AND EXISTS ${CORE_SOURCE_DIR}/.git)
-    execute_process(COMMAND ${GIT_EXECUTABLE} diff-files --ignore-submodules --quiet --
-                    RESULT_VARIABLE status_code
-                    WORKING_DIRECTORY ${CORE_SOURCE_DIR})
-      if(NOT status_code)
-        execute_process(COMMAND ${GIT_EXECUTABLE} diff-index --ignore-submodules --quiet HEAD --
+# Arguments:
+#   stamp variable name to return
+# Optional Arguments:
+#   FULL: generate git HEAD commit in the form of 'YYYYMMDD-hash'
+#         if git tree is dirty, value is set in the form of 'YYYYMMDD-hash-dirty'
+#         if no git tree is found, value is set in the form of 'YYYYMMDD-nogitfound'
+#         if FULL is not given, stamp is generated following the same process as above
+#         but without 'YYYYMMDD'
+# On return:
+#   Variable is set with generated stamp to PARENT_SCOPE
+function(core_find_git_rev stamp)
+  # allow manual setting GIT_VERSION
+  if(GIT_VERSION)
+    set(${stamp} ${GIT_VERSION} PARENT_SCOPE)
+  else()
+    find_package(Git)
+    if(GIT_FOUND AND EXISTS ${CORE_SOURCE_DIR}/.git)
+      execute_process(COMMAND ${GIT_EXECUTABLE} diff-files --ignore-submodules --quiet --
                       RESULT_VARIABLE status_code
                       WORKING_DIRECTORY ${CORE_SOURCE_DIR})
-      endif()
-      if(status_code)
-        execute_process(COMMAND ${GIT_EXECUTABLE} log -n 1 --pretty=format:"%h-dirty" HEAD
-                        OUTPUT_VARIABLE HASH
+        if(NOT status_code)
+          execute_process(COMMAND ${GIT_EXECUTABLE} diff-index --ignore-submodules --quiet HEAD --
+                        RESULT_VARIABLE status_code
                         WORKING_DIRECTORY ${CORE_SOURCE_DIR})
-        string(SUBSTRING ${HASH} 1 13 HASH)
-      else()
-        execute_process(COMMAND ${GIT_EXECUTABLE} log -n 1 --pretty=format:"%h" HEAD
-                        OUTPUT_VARIABLE HASH
-                        WORKING_DIRECTORY ${CORE_SOURCE_DIR})
-        string(SUBSTRING ${HASH} 1 7 HASH)
-      endif()
-    execute_process(COMMAND ${GIT_EXECUTABLE} log -1 --pretty=format:"%cd" --date=short HEAD
-                    OUTPUT_VARIABLE DATE
-                    WORKING_DIRECTORY ${CORE_SOURCE_DIR})
-    string(SUBSTRING ${DATE} 1 10 DATE)
-  else()
-    today(DATE)
-    set(HASH "nogitfound")
-  endif()
-  string(REPLACE "-" "" DATE ${DATE})
-  set(GIT_REV "${DATE}-${HASH}")
-  if(GIT_REV)
-    set(APP_SCMID ${GIT_REV} PARENT_SCOPE)
-    set(GIT_HASH ${HASH} PARENT_SCOPE)
+        endif()
+        if(status_code)
+          execute_process(COMMAND ${GIT_EXECUTABLE} log -n 1 --pretty=format:"%h-dirty" HEAD
+                          OUTPUT_VARIABLE HASH
+                          WORKING_DIRECTORY ${CORE_SOURCE_DIR})
+          string(SUBSTRING ${HASH} 1 13 HASH)
+        else()
+          execute_process(COMMAND ${GIT_EXECUTABLE} log -n 1 --pretty=format:"%h" HEAD
+                          OUTPUT_VARIABLE HASH
+                          WORKING_DIRECTORY ${CORE_SOURCE_DIR})
+          string(SUBSTRING ${HASH} 1 7 HASH)
+        endif()
+      execute_process(COMMAND ${GIT_EXECUTABLE} log -1 --pretty=format:"%cd" --date=short HEAD
+                      OUTPUT_VARIABLE DATE
+                      WORKING_DIRECTORY ${CORE_SOURCE_DIR})
+      string(SUBSTRING ${DATE} 1 10 DATE)
+      string(REPLACE "-" "" DATE ${DATE})
+    else()
+      string(TIMESTAMP DATE "%Y%m%d" UTC)
+      set(HASH "nogitfound")
+    endif()
+    cmake_parse_arguments(arg "FULL" "" "" ${ARGN})
+    if(arg_FULL)
+      set(${stamp} ${DATE}-${HASH} PARENT_SCOPE)
+    else()
+      set(${stamp} ${HASH} PARENT_SCOPE)
+    endif()
   endif()
 endfunction()
 

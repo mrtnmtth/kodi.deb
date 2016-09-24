@@ -1,3 +1,4 @@
+
 /*
  *      Copyright (C) 2014-2016 Team Kodi
  *      http://kodi.tv
@@ -50,10 +51,10 @@
 #endif
 
 /* current Peripheral API version */
-#define PERIPHERAL_API_VERSION "1.0.17"
+#define PERIPHERAL_API_VERSION "1.1.0"
 
 /* min. Peripheral API version */
-#define PERIPHERAL_MIN_API_VERSION "1.0.16"
+#define PERIPHERAL_MIN_API_VERSION "1.1.0"
 
 /* indicates a joystick has no preference for port number */
 #define NO_PORT_REQUESTED     (-1)
@@ -111,6 +112,7 @@ extern "C"
   typedef struct PERIPHERAL_CAPABILITIES
   {
     bool provides_joysticks;            /*!< @brief true if the add-on provides joysticks */
+    bool provides_buttonmaps;           /*!< @brief true if the add-on provides button maps */
   } ATTRIBUTE_PACKED PERIPHERAL_CAPABILITIES;
   ///}
 
@@ -122,6 +124,7 @@ extern "C"
     PERIPHERAL_EVENT_TYPE_DRIVER_BUTTON,  /*!< @brief state changed for joystick driver button */
     PERIPHERAL_EVENT_TYPE_DRIVER_HAT,     /*!< @brief state changed for joystick driver hat */
     PERIPHERAL_EVENT_TYPE_DRIVER_AXIS,    /*!< @brief state changed for joystick driver axis */
+    PERIPHERAL_EVENT_TYPE_SET_MOTOR,      /*!< @brief set the state for joystick rumble motor */
   } PERIPHERAL_EVENT_TYPE;
 
   typedef enum JOYSTICK_STATE_BUTTON
@@ -152,6 +155,8 @@ extern "C"
    */
   typedef float JOYSTICK_STATE_AXIS;
 
+  typedef float JOYSTICK_STATE_MOTOR;
+
   typedef struct PERIPHERAL_EVENT
   {
     unsigned int             peripheral_index;
@@ -160,6 +165,7 @@ extern "C"
     JOYSTICK_STATE_BUTTON    driver_button_state;
     JOYSTICK_STATE_HAT       driver_hat_state;
     JOYSTICK_STATE_AXIS      driver_axis_state;
+    JOYSTICK_STATE_MOTOR     motor_state;
   } ATTRIBUTE_PACKED PERIPHERAL_EVENT;
   ///}
 
@@ -173,6 +179,8 @@ extern "C"
     unsigned int    button_count;       /*!< @brief number of buttons reported by the driver */
     unsigned int    hat_count;          /*!< @brief number of hats reported by the driver */
     unsigned int    axis_count;         /*!< @brief number of axes reported by the driver */
+    unsigned int    motor_count;        /*!< @brief number of motors reported by the driver */
+    bool            supports_poweroff;  /*!< @brief whether the joystick supports being powered off */
   } ATTRIBUTE_PACKED JOYSTICK_INFO;
 
   typedef enum JOYSTICK_DRIVER_PRIMITIVE_TYPE
@@ -181,6 +189,7 @@ extern "C"
     JOYSTICK_DRIVER_PRIMITIVE_TYPE_BUTTON,
     JOYSTICK_DRIVER_PRIMITIVE_TYPE_HAT_DIRECTION,
     JOYSTICK_DRIVER_PRIMITIVE_TYPE_SEMIAXIS,
+    JOYSTICK_DRIVER_PRIMITIVE_TYPE_MOTOR,
   } JOYSTICK_DRIVER_PRIMITIVE_TYPE;
 
   typedef struct JOYSTICK_DRIVER_BUTTON
@@ -216,6 +225,11 @@ extern "C"
     JOYSTICK_DRIVER_SEMIAXIS_DIRECTION direction;
   } ATTRIBUTE_PACKED JOYSTICK_DRIVER_SEMIAXIS;
 
+  typedef struct JOYSTICK_DRIVER_MOTOR
+  {
+    int              index;
+  } ATTRIBUTE_PACKED JOYSTICK_DRIVER_MOTOR;
+
   typedef struct JOYSTICK_DRIVER_PRIMITIVE
   {
     JOYSTICK_DRIVER_PRIMITIVE_TYPE    type;
@@ -224,6 +238,7 @@ extern "C"
       struct JOYSTICK_DRIVER_BUTTON   button;
       struct JOYSTICK_DRIVER_HAT      hat;
       struct JOYSTICK_DRIVER_SEMIAXIS semiaxis;
+      struct JOYSTICK_DRIVER_MOTOR    motor;
     };
   } ATTRIBUTE_PACKED JOYSTICK_DRIVER_PRIMITIVE;
 
@@ -233,38 +248,37 @@ extern "C"
     JOYSTICK_FEATURE_TYPE_SCALAR,
     JOYSTICK_FEATURE_TYPE_ANALOG_STICK,
     JOYSTICK_FEATURE_TYPE_ACCELEROMETER,
+    JOYSTICK_FEATURE_TYPE_MOTOR,
   } JOYSTICK_FEATURE_TYPE;
 
-  typedef struct JOYSTICK_FEATURE_SCALAR
+  typedef enum JOYSTICK_FEATURE_PRIMITIVE
   {
-    struct JOYSTICK_DRIVER_PRIMITIVE primitive;
-  } ATTRIBUTE_PACKED JOYSTICK_FEATURE_SCALAR;
+    // Scalar feature
+    JOYSTICK_SCALAR_PRIMITIVE = 0,
 
-  typedef struct JOYSTICK_FEATURE_ANALOG_STICK
-  {
-    struct JOYSTICK_DRIVER_PRIMITIVE up;
-    struct JOYSTICK_DRIVER_PRIMITIVE down;
-    struct JOYSTICK_DRIVER_PRIMITIVE right;
-    struct JOYSTICK_DRIVER_PRIMITIVE left;
-  } ATTRIBUTE_PACKED JOYSTICK_FEATURE_ANALOG_STICK;
+    // Analog stick
+    JOYSTICK_ANALOG_STICK_UP = 0,
+    JOYSTICK_ANALOG_STICK_DOWN = 1,
+    JOYSTICK_ANALOG_STICK_RIGHT = 2,
+    JOYSTICK_ANALOG_STICK_LEFT = 3,
 
-  typedef struct JOYSTICK_FEATURE_ACCELEROMETER
-  {
-    struct JOYSTICK_DRIVER_PRIMITIVE positive_x;
-    struct JOYSTICK_DRIVER_PRIMITIVE positive_y;
-    struct JOYSTICK_DRIVER_PRIMITIVE positive_z;
-  } ATTRIBUTE_PACKED JOYSTICK_FEATURE_ACCELEROMETER;
+    // Accelerometer
+    JOYSTICK_ACCELEROMETER_POSITIVE_X = 0,
+    JOYSTICK_ACCELEROMETER_POSITIVE_Y = 1,
+    JOYSTICK_ACCELEROMETER_POSITIVE_Z = 2,
+
+    // Motor
+    JOYSTICK_MOTOR_PRIMITIVE = 0,
+
+    // Maximum number of primitives
+    JOYSTICK_PRIMITIVE_MAX = 4,
+  } JOYSTICK_FEATURE_PRIMITIVE;
 
   typedef struct JOYSTICK_FEATURE
   {
     char*                                   name;
     JOYSTICK_FEATURE_TYPE                   type;
-    union
-    {
-      struct JOYSTICK_FEATURE_SCALAR        scalar;
-      struct JOYSTICK_FEATURE_ANALOG_STICK  analog_stick;
-      struct JOYSTICK_FEATURE_ACCELEROMETER accelerometer;
-    };
+    struct JOYSTICK_DRIVER_PRIMITIVE        primitives[JOYSTICK_PRIMITIVE_MAX];
   } ATTRIBUTE_PACKED JOYSTICK_FEATURE;
   ///}
 
@@ -282,6 +296,7 @@ extern "C"
     void             (__cdecl* FreeScanResults)(unsigned int, PERIPHERAL_INFO*);
     PERIPHERAL_ERROR (__cdecl* GetEvents)(unsigned int*, PERIPHERAL_EVENT**);
     void             (__cdecl* FreeEvents)(unsigned int, PERIPHERAL_EVENT*);
+    bool             (__cdecl* SendEvent)(const PERIPHERAL_EVENT*);
 
     /// @name Joystick operations
     ///{
@@ -290,7 +305,9 @@ extern "C"
     PERIPHERAL_ERROR (__cdecl* GetFeatures)(const JOYSTICK_INFO*, const char*, unsigned int*, JOYSTICK_FEATURE**);
     void             (__cdecl* FreeFeatures)(unsigned int, JOYSTICK_FEATURE*);
     PERIPHERAL_ERROR (__cdecl* MapFeatures)(const JOYSTICK_INFO*, const char*, unsigned int, JOYSTICK_FEATURE*);
+    void             (__cdecl* SaveButtonMap)(const JOYSTICK_INFO*);
     void             (__cdecl* ResetButtonMap)(const JOYSTICK_INFO*, const char*);
+    void             (__cdecl* PowerOffJoystick)(unsigned int);
     ///}
   } PeripheralAddon;
 

@@ -36,6 +36,7 @@ namespace JOYSTICK
    *   1) scalar[1]
    *   2) analog stick
    *   3) accelerometer
+   *   4) rumble motor
    *
    * [1] All three driver primitives (buttons, hats and axes) have a state that
    *     can be represented using a single scalar value. For this reason,
@@ -47,6 +48,7 @@ namespace JOYSTICK
     SCALAR,
     ANALOG_STICK,
     ACCELEROMETER,
+    MOTOR,
   };
 
   /*!
@@ -62,9 +64,9 @@ namespace JOYSTICK
   };
 
   /*!
-   * \brief Generic typedef for cardinal directions
+   * \brief Typedef for analog stick directions
    */
-  typedef HAT_DIRECTION CARDINAL_DIRECTION;
+  typedef HAT_DIRECTION  ANALOG_STICK_DIRECTION;
 
   /*!
    * \brief States in which a hat can be
@@ -81,11 +83,6 @@ namespace JOYSTICK
     LEFTUP    = LEFT  | UP,
     LEFTDOWN  = LEFT  | DOWN,
   };
-
-  /*!
-   * \brief Generic typedef for intercardinal directions
-   */
-  typedef HAT_STATE  INTERCARDINAL_DIRECTION;
 
   /*!
    * \brief Directions in which a semiaxis can point
@@ -105,5 +102,17 @@ namespace JOYSTICK
     UNKNOWN,
     DIGITAL,
     ANALOG,
+  };
+
+  /*!
+  * \brief Type of driver primitive
+  */
+  enum PRIMITIVE_TYPE
+  {
+    UNKNOWN = 0, // primitive has no type (invalid)
+    BUTTON,      // a digital button
+    HAT,         // one of the four direction arrows on a D-pad
+    SEMIAXIS,    // the positive or negative half of an axis
+    MOTOR,       // a rumble motor
   };
 }

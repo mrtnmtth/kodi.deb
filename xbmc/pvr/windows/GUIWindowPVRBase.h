@@ -70,10 +70,11 @@ namespace PVR
     virtual bool OnContextButton(int itemNumber, CONTEXT_BUTTON button) override;
     virtual bool OnContextButton(const CFileItem &item, CONTEXT_BUTTON button) { return false; };
     virtual bool OnContextButtonActiveAEDSPSettings(CFileItem *item, CONTEXT_BUTTON button);
+    virtual bool Update(const std::string &strDirectory, bool updateFilterPath = true) override;
     virtual void UpdateButtons(void) override;
     virtual bool OnAction(const CAction &action) override;
     virtual bool OnBack(int actionID) override;
-    virtual bool OpenGroupSelectionDialog(void);
+    virtual bool OpenChannelGroupSelectionDialog(void);
     virtual void Notify(const Observable &obs, const ObservableMessage msg) override;
     virtual void SetInvalid() override;
     virtual bool CanBeActivated() const override;
@@ -92,12 +93,16 @@ namespace PVR
     static bool DeleteTimerRule(CFileItem *item);
     static bool StopRecordFile(CFileItem *item);
 
+    static bool PlayRecording(CFileItem *item, bool bPlayMinimized = false, bool bCheckResume = true);
+
   protected:
     CGUIWindowPVRBase(bool bRadio, int id, const std::string &xmlFile);
 
     virtual std::string GetDirectoryPath(void) = 0;
-    virtual CPVRChannelGroupPtr GetGroup(void);
-    virtual void SetGroup(const CPVRChannelGroupPtr &group);
+
+    bool InitChannelGroup(void);
+    virtual CPVRChannelGroupPtr GetChannelGroup(void);
+    virtual void SetChannelGroup(const CPVRChannelGroupPtr &group);
 
     virtual bool ActionShowTimerRule(CFileItem *item);
     virtual bool ActionToggleTimer(CFileItem *item);
@@ -106,14 +111,12 @@ namespace PVR
     virtual bool ActionDeleteChannel(CFileItem *item);
     virtual bool ActionInputChannelNumber(int input);
 
-    virtual bool PlayRecording(CFileItem *item, bool bPlayMinimized = false, bool bCheckResume = true);
     virtual bool PlayFile(CFileItem *item, bool bPlayMinimized = false, bool bCheckResume = true);
     virtual void ShowEPGInfo(CFileItem *item);
     virtual void ShowRecordingInfo(CFileItem *item);
     virtual bool UpdateEpgForChannel(CFileItem *item);
     virtual void UpdateSelectedItemPath();
-    virtual bool IsValidMessage(CGUIMessage& message);
-    bool CheckResumeRecording(CFileItem *item);
+    static bool CheckResumeRecording(CFileItem *item);
 
     bool OnContextButtonEditTimer(CFileItem *item, CONTEXT_BUTTON button);
     bool OnContextButtonEditTimerRule(CFileItem *item, CONTEXT_BUTTON button);
@@ -150,7 +153,7 @@ namespace PVR
     static bool DeleteTimer(CFileItem *item, bool bIsRecording, bool bDeleteRule);
     static bool AddTimer(CFileItem *item, bool bCreateRule, bool bShowTimerSettings);
 
-    CPVRChannelGroupPtr m_group;
+    CPVRChannelGroupPtr m_channelGroup;
     XbmcThreads::EndTime m_refreshTimeout;
   };
 }

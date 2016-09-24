@@ -230,14 +230,11 @@ bool CDVDDemuxFFmpeg::Open(CDVDInputStream* pInput, bool streaminfo, bool filein
 
   if( m_pInput->IsStreamType(DVDSTREAM_TYPE_FFMPEG) )
   {
-    CURL url = m_pInput->GetURL();
-
     // special stream type that makes avformat handle file opening
     // allows internal ffmpeg protocols to be used
-    AVDictionary *options = GetFFMpegOptionsFromURL(url);
+    AVDictionary *options = GetFFMpegOptionsFromInput();
 
-    // use updated url - options may have been stripped
-    strFile = url.Get();
+    CURL url = m_pInput->GetURL();
 
     int result=-1;
     if (url.IsProtocol("mms"))
@@ -632,11 +629,12 @@ void CDVDDemuxFFmpeg::SetSpeed(int iSpeed)
   }
 }
 
-AVDictionary *CDVDDemuxFFmpeg::GetFFMpegOptionsFromURL(CURL &url)
+AVDictionary *CDVDDemuxFFmpeg::GetFFMpegOptionsFromInput()
 {
   const CDVDInputStreamFFmpeg *const input =
     dynamic_cast<CDVDInputStreamFFmpeg*>(m_pInput);
 
+  CURL url = m_pInput->GetURL();
   AVDictionary *options = nullptr;
 
   if (url.IsProtocol("http") || url.IsProtocol("https"))
@@ -645,33 +643,73 @@ AVDictionary *CDVDDemuxFFmpeg::GetFFMpegOptionsFromURL(CURL &url)
     url.GetProtocolOptions(protocolOptions);
     std::string headers;
     bool hasUserAgent = false;
+    bool hasCookies = false;
     for(std::map<std::string, std::string>::const_iterator it = protocolOptions.begin(); it != protocolOptions.end(); ++it)
     {
-      std::string name = it->first; StringUtils::ToLower(name);
+      std::string name = it->first;
+      StringUtils::ToLower(name);
       const std::string &value = it->second;
 
       if (name == "seekable")
         av_dict_set(&options, "seekable", value.c_str(), 0);
+      // map some standard http headers to the ffmpeg related options
       else if (name == "user-agent")
       {
         av_dict_set(&options, "user-agent", value.c_str(), 0);
+        CLog::Log(LOGDEBUG, "CDVDDemuxFFmpeg::GetFFMpegOptionsFromInput() adding ffmpeg option 'user-agent: %s'", value.c_str());
         hasUserAgent = true;
+      }
+      else if (name == "cookie")
+      {
+        CLog::Log(LOGDEBUG, "CDVDDemuxFFmpeg::GetFFMpegOptionsFromInput() adding ffmpeg option 'cookies: %s'", value.c_str());
+        headers.append(it->first).append(": ").append(value).append("\r\n");
+        hasCookies = true;
+      }
+      // other standard headers (see https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) are appended as actual headers
+      else if (name == "accept" || name == "accept-language" || name == "accept-datetime" || 
+               name == "authorization" || name == "cache-control" || name == "connection" || name == "content-md5" ||
+               name == "date" || name == "expect" || name == "forwarded" || name == "from" || name == "if-match" ||
+               name == "if-modified-since" || name == "if-none-match" || name == "if-range" || name == "if-unmodified-since" ||
+               name == "max-forwards" || name == "origin" || name == "pragma" || name == "range" || name == "referer" ||
+               name == "te" || name == "upgrade" || name == "via" || name == "warning" || name == "x-requested-with" ||
+               name == "dnt" || name == "x-forwarded-for" || name == "x-forwarded-host" || name == "x-forwarded-proto" ||
+               name == "front-end-https" || name == "x-http-method-override" || name == "x-att-deviceid" ||
+               name == "x-wap-profile" || name == "x-uidh" || name == "x-csrf-token" || name == "x-request-id" ||
+               name == "x-correlation-id")
+      {
+        if (name == "authorization")
+        {
+          CLog::Log(LOGDEBUG, "CDVDDemuxFFmpeg::GetFFMpegOptionsFromInput() adding custom header option '%s: ***********'", it->first.c_str());
+        }
+        else
+        {
+          CLog::Log(LOGDEBUG, "CDVDDemuxFFmpeg::GetFFMpegOptionsFromInput() adding custom header option '%s: %s'", it->first.c_str(), value.c_str());
+        }
+        headers.append(it->first).append(": ").append(value).append("\r\n");
       }
       // we don't add blindly all options to headers anymore
       // if anybody wants to pass options to ffmpeg, explicitly prefix those
       // to be identified here
+      else 
+      {
+        CLog::Log(LOGDEBUG, "CDVDDemuxFFmpeg::GetFFMpegOptionsFromInput() ignoring header option '%s: %s'", it->first.c_str(), value.c_str());
+      }
     }
     if (!hasUserAgent)
+    {
       // set default xbmc user-agent.
       av_dict_set(&options, "user-agent", g_advancedSettings.m_userAgent.c_str(), 0);
+    }
 
     if (!headers.empty())
       av_dict_set(&options, "headers", headers.c_str(), 0);
 
-    std::string cookies;
-    if (XFILE::CCurlFile::GetCookies(url, cookies))
-      av_dict_set(&options, "cookies", cookies.c_str(), 0);
-
+    if (!hasCookies)
+    {
+      std::string cookies;
+      if (XFILE::CCurlFile::GetCookies(url, cookies))
+        av_dict_set(&options, "cookies", cookies.c_str(), 0);
+    }
   }
 
   if (input)
@@ -698,13 +736,13 @@ AVDictionary *CDVDDemuxFFmpeg::GetFFMpegOptionsFromURL(CURL &url)
 
       av_dict_set(&options, "http_proxy", urlStream.str().c_str(), 0);
     }
-  }
 
-  if (url.IsProtocol("rtmp")  || url.IsProtocol("rtmpt")  ||
-      url.IsProtocol("rtmpe") || url.IsProtocol("rtmpte") ||
-      url.IsProtocol("rtmps"))
-  {
-    static const std::map<std::string,std::string> optionmap =
+    // rtmp options
+    if (url.IsProtocol("rtmp")  || url.IsProtocol("rtmpt")  ||
+        url.IsProtocol("rtmpe") || url.IsProtocol("rtmpte") ||
+        url.IsProtocol("rtmps"))
+    {
+      static const std::map<std::string,std::string> optionmap =
       {{{"SWFPlayer", "rtmp_swfurl"},
         {"PageURL", "rtmp_pageurl"},
         {"PlayPath", "rtmp_playpath"},
@@ -714,35 +752,40 @@ AVDictionary *CDVDDemuxFFmpeg::GetFFMpegOptionsFromURL(CURL &url)
         {"swfurl",   "rtmp_swfurl"},
         {"swfvfy",   "rtmp_swfverify"},
       }};
-    CDVDInputStreamFFmpeg* is = static_cast<CDVDInputStreamFFmpeg*>(m_pInput);
-    for (const auto& it : optionmap)
-    {
-      if (is->GetItem().HasProperty(it.first))
-        av_dict_set(&options, it.second.c_str(),
-                    is->GetItem().GetProperty(it.first).asString().c_str(),0);
-    }
-    std::vector<std::string> opts = StringUtils::Split(url.Get(), " ");
-    if (opts.size() > 1) // inline rtmp options
-    {
-      std::string swfurl;
-      bool swfvfy=false;
-      for (size_t i = 1; i < opts.size(); ++i)
+
+      for (const auto& it : optionmap)
       {
-        std::vector<std::string> value = StringUtils::Split(opts[i], "=");
-        auto it = optionmap.find(value[0]);
-        if (it != optionmap.end())
+        if (input->GetItem().HasProperty(it.first))
         {
-          if (value[0] == "swfurl" || value[0] == "SWFPlayer")
-            swfurl = value[1];
-          if (value[0] == "swfvfy" && value[1] == "true")
-            swfvfy = true;
-          else
-            av_dict_set(&options, it->second.c_str(), value[1].c_str(), 0);
+          av_dict_set(&options, it.second.c_str(),
+                      input->GetItem().GetProperty(it.first).asString().c_str(),0);
         }
-        if (swfvfy)
-          av_dict_set(&options, "rtmp_swfverify", swfurl.c_str(), 0);
       }
-      url = CURL(opts.front());
+
+      CURL tmpUrl = url;
+      std::vector<std::string> opts = StringUtils::Split(tmpUrl.Get(), " ");
+      if (opts.size() > 1) // inline rtmp options
+      {
+        std::string swfurl;
+        bool swfvfy=false;
+        for (size_t i = 1; i < opts.size(); ++i)
+        {
+          std::vector<std::string> value = StringUtils::Split(opts[i], "=");
+          auto it = optionmap.find(value[0]);
+          if (it != optionmap.end())
+          {
+            if (value[0] == "swfurl" || value[0] == "SWFPlayer")
+              swfurl = value[1];
+            if (value[0] == "swfvfy" && value[1] == "true")
+              swfvfy = true;
+            else
+              av_dict_set(&options, it->second.c_str(), value[1].c_str(), 0);
+          }
+          if (swfvfy)
+            av_dict_set(&options, "rtmp_swfverify", swfurl.c_str(), 0);
+        }
+        tmpUrl = CURL(opts.front());
+      }
     }
   }
 

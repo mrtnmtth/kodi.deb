@@ -22,19 +22,28 @@
 #include "Peripheral.h"
 #include "input/joysticks/DefaultJoystick.h"
 #include "input/joysticks/IDriverHandler.h"
+#include "input/joysticks/IDriverReceiver.h"
 #include "input/joysticks/JoystickMonitor.h"
 #include "input/joysticks/JoystickTypes.h"
 #include "threads/CriticalSection.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #define JOYSTICK_PORT_UNKNOWN  (-1)
 
+namespace JOYSTICK
+{
+  class CDeadzoneFilter;
+  class IButtonMap;
+}
+
 namespace PERIPHERALS
 {
   class CPeripheralJoystick : public CPeripheral, //! @todo extend CPeripheralHID
-                              public JOYSTICK::IDriverHandler
+                              public JOYSTICK::IDriverHandler,
+                              public JOYSTICK::IDriverReceiver
   {
   public:
     CPeripheralJoystick(const PeripheralScanResult& scanResult, CPeripheralBus* bus);
@@ -43,14 +52,20 @@ namespace PERIPHERALS
 
     // implementation of CPeripheral
     virtual bool InitialiseFeature(const PeripheralFeature feature) override;
+    virtual void OnUserNotification() override;
+    virtual bool TestFeature(PeripheralFeature feature) override;
     virtual void RegisterJoystickDriverHandler(IDriverHandler* handler, bool bPromiscuous) override;
     virtual void UnregisterJoystickDriverHandler(IDriverHandler* handler) override;
+    virtual JOYSTICK::IDriverReceiver* GetDriverReceiver() override { return this; }
 
     // implementation of IDriverHandler
     virtual bool OnButtonMotion(unsigned int buttonIndex, bool bPressed) override;
     virtual bool OnHatMotion(unsigned int hatIndex, JOYSTICK::HAT_STATE state) override;
     virtual bool OnAxisMotion(unsigned int axisIndex, float position) override;
     virtual void ProcessAxisMotions(void) override;
+
+    // implementation of IDriverReceiver
+    virtual bool SetMotorState(unsigned int motorIndex, float magnitude) override;
 
     /*!
      * \brief Get the name of the driver or API providing this joystick
@@ -74,18 +89,27 @@ namespace PERIPHERALS
     unsigned int ButtonCount(void) const { return m_buttonCount; }
     unsigned int HatCount(void) const    { return m_hatCount; }
     unsigned int AxisCount(void) const   { return m_axisCount; }
+    unsigned int MotorCount(void) const  { return m_motorCount; }
+    bool SupportsPowerOff(void) const    { return m_supportsPowerOff; }
 
+    /*!
+     * \brief Set joystick properties
+     */
     void SetProvider(const std::string& provider) { m_strProvider   = provider; }
     void SetRequestedPort(int port)               { m_requestedPort = port; }
     void SetButtonCount(unsigned int buttonCount) { m_buttonCount   = buttonCount; }
     void SetHatCount(unsigned int hatCount)       { m_hatCount      = hatCount; }
     void SetAxisCount(unsigned int axisCount)     { m_axisCount     = axisCount; }
+    void SetMotorCount(unsigned int motorCount); // specialized to update m_features
+    void SetSupportsPowerOff(bool supportsPowerOff) { m_supportsPowerOff = supportsPowerOff; }
 
   protected:
+    void InitializeDeadzoneFiltering();
+
     struct DriverHandler
     {
       JOYSTICK::IDriverHandler* handler;
-      bool                              bPromiscuous;
+      bool                      bPromiscuous;
     };
 
     std::string                         m_strProvider;
@@ -93,8 +117,12 @@ namespace PERIPHERALS
     unsigned int                        m_buttonCount;
     unsigned int                        m_hatCount;
     unsigned int                        m_axisCount;
+    unsigned int                        m_motorCount;
+    bool                                m_supportsPowerOff;
     JOYSTICK::CDefaultJoystick          m_defaultInputHandler;
     JOYSTICK::CJoystickMonitor          m_joystickMonitor;
+    std::unique_ptr<JOYSTICK::IButtonMap>      m_buttonMap;
+    std::unique_ptr<JOYSTICK::CDeadzoneFilter> m_deadzoneFilter;
     std::vector<DriverHandler>          m_driverHandlers;
     CCriticalSection                    m_handlerMutex;
   };

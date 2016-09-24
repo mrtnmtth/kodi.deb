@@ -104,7 +104,7 @@ std::string CGUIWindowPVRChannels::GetDirectoryPath(void)
 {
   return StringUtils::Format("pvr://channels/%s/%s/",
       m_bRadio ? "radio" : "tv",
-      m_bShowHiddenChannels ? ".hidden" : GetGroup()->GroupName().c_str());
+      m_bShowHiddenChannels ? ".hidden" : GetChannelGroup()->GroupName().c_str());
 }
 
 bool CGUIWindowPVRChannels::OnContextButton(int itemNumber, CONTEXT_BUTTON button)
@@ -126,18 +126,20 @@ bool CGUIWindowPVRChannels::OnContextButton(int itemNumber, CONTEXT_BUTTON butto
 
 bool CGUIWindowPVRChannels::Update(const std::string &strDirectory, bool updateFilterPath /* = true */)
 {
-  CSingleLock lock(m_critSection);
   bool bReturn = CGUIWindowPVRBase::Update(strDirectory);
 
-  /* empty list for hidden channels */
-  if (m_vecItems->GetObjectCount() == 0 && m_bShowHiddenChannels)
+  if (bReturn)
   {
-    /* show the visible channels instead */
-    m_bShowHiddenChannels = false;
-    lock.Leave();
-    Update(GetDirectoryPath());
+    CSingleLock lock(m_critSection);
+    /* empty list for hidden channels */
+    if (m_vecItems->GetObjectCount() == 0 && m_bShowHiddenChannels)
+    {
+      /* show the visible channels instead */
+      m_bShowHiddenChannels = false;
+      lock.Leave();
+      Update(GetDirectoryPath());
+    }
   }
-
   return bReturn;
 }
 
@@ -151,7 +153,7 @@ void CGUIWindowPVRChannels::UpdateButtons(void)
   }
 
   CGUIWindowPVRBase::UpdateButtons();
-  SET_CONTROL_LABEL(CONTROL_LABEL_HEADER1, m_bShowHiddenChannels ? g_localizeStrings.Get(19022) : GetGroup()->GroupName());
+  SET_CONTROL_LABEL(CONTROL_LABEL_HEADER1, m_bShowHiddenChannels ? g_localizeStrings.Get(19022) : GetChannelGroup()->GroupName());
 }
 
 bool CGUIWindowPVRChannels::OnAction(const CAction &action)
@@ -176,9 +178,6 @@ bool CGUIWindowPVRChannels::OnAction(const CAction &action)
 
 bool CGUIWindowPVRChannels::OnMessage(CGUIMessage& message)
 {
-  if (!IsValidMessage(message))
-    return false;
-
   bool bReturn = false;
   switch (message.GetMessage())
   {
@@ -242,6 +241,7 @@ bool CGUIWindowPVRChannels::OnMessage(CGUIMessage& message)
         case ObservableMessageEpgContainer:
         case ObservableMessageEpgActiveItem:
         case ObservableMessageCurrentItem:
+        case ObservableMessageRecordings:
         {
           SetInvalid();
           break;

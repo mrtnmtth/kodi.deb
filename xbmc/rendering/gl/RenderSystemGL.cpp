@@ -297,7 +297,6 @@ void CRenderSystemGL::PresentRender(bool rendered, bool videoLayer)
     return;
 
   PresentRenderImpl(rendered);
-  m_latencyCounter++;
 
   if (!rendered)
     Sleep(40);
@@ -322,16 +321,6 @@ void CRenderSystemGL::SetVSync(bool enable)
   SetVSyncImpl(enable);
 }
 
-void CRenderSystemGL::FinishPipeline()
-{
-  // GL implementations are free to queue an undefined number of frames internally
-  // as a result video latency can be very high which is bad for a/v sync
-  // calling glFinish reduces latency to the number of back buffers
-  // in order to keep some elasticity, we call glFinish only every other cycle
-  if (m_latencyCounter & 0x01)
-    glFinish();
-}
-
 void CRenderSystemGL::CaptureStateBlock()
 {
   if (!m_bRenderCreated)
@@ -342,8 +331,7 @@ void CRenderSystemGL::CaptureStateBlock()
   glMatrixTexture.Push();
 
   glDisable(GL_SCISSOR_TEST); // fixes FBO corruption on Macs
-  if (glActiveTextureARB)
-    glActiveTextureARB(GL_TEXTURE0_ARB);
+  glActiveTextureARB(GL_TEXTURE0_ARB);
   glDisable(GL_TEXTURE_2D);
   glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
   glColor3f(1.0, 1.0, 1.0);
@@ -360,8 +348,7 @@ void CRenderSystemGL::ApplyStateBlock()
   glMatrixModview.PopLoad();
   glMatrixTexture.PopLoad();
 
-  if (glActiveTextureARB)
-    glActiveTextureARB(GL_TEXTURE0_ARB);
+  glActiveTextureARB(GL_TEXTURE0_ARB);
   glEnable(GL_TEXTURE_2D);
   glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
   glEnable(GL_BLEND);

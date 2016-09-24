@@ -1,8 +1,19 @@
-kodi (17.0~alpha3+dfsg1-2) UNRELEASED; urgency=medium
+kodi (17.0~beta2+dfsg1-1) experimental; urgency=medium
 
-  *
+  * New upstream beta release 17.0 Beta 2
+    See: https://kodi.tv/kodi-v17-krypton-beta-2/
+  * Drop build-depenency on libjasper-dev (Closes: 818201)
+  * Adjust packaging to new skin's font requirements.
+    Add dependency on fonts-lato and texlive-fonts-extra, drop
+    dependency on fonts-roboto-hinted, make symlinks to new
+    fonts instead of shipping them.
+  * Add transitional dummy packages from xbmc
+  * Drop obsoleted dependencies and patches
+  * Silence Lintian complaining for missing misc:Depends of transitional packages
+  * Ignore failed clean of components without Lintian noticing
+  * Build-depend on liblcms2-dev for Little CMS support
 
- -- Balint Reczey <balint@balintreczey.hu>  Wed, 10 Aug 2016 17:39:20 +0200
+ -- Balint Reczey <balint@balintreczey.hu>  Sat, 24 Sep 2016 14:57:31 +0200
 
 kodi (17.0~alpha3+dfsg1-1) experimental; urgency=medium
 

@@ -95,6 +95,7 @@ Build-Depends: autoconf,
  udev,
  unzip,
  uuid-dev,
+ valgrind [amd64 i386],
  yasm,
  zip,
  zlib1g-dev

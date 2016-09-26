@@ -1,22 +1,27 @@
-kodi (16.1+dfsg1-1~bpo8+3) jessie-backports; urgency=medium
-
-  * Build-depend on libbluray-dev (>= 0.7.0) to match version required by ./configure.
-    This enables Blu-ray support.
-
- -- Balint Reczey <balint@balintreczey.hu>  Mon, 18 Jul 2016 02:12:48 +0200
-
-kodi (16.1+dfsg1-1~bpo8+2) jessie-backports; urgency=medium
-
-  * Revert to using fonts-roboto which is available in jessie
-
- -- Balint Reczey <balint@balintreczey.hu>  Tue, 31 May 2016 10:21:52 +0200
-
-kodi (16.1+dfsg1-1~bpo8+1) jessie-backports; urgency=medium
+kodi (16.1+dfsg1-2~bpo8+1) jessie-backports; urgency=medium
 
   * Rebuild for jessie-backports.
+  * Revert to using fonts-roboto which is available in jessie
   * Build-depend on fonts-droid which is available in jessie-backports
 
- -- Balint Reczey <balint@balintreczey.hu>  Sun, 08 May 2016 22:29:05 +0200
+ -- Balint Reczey <balint@balintreczey.hu>  Mon, 26 Sep 2016 22:19:30 +0200
+
+kodi (16.1+dfsg1-2) unstable; urgency=medium
+
+  [ Lukas Rechberger ]
+  * Skip timestamps to make build reproducible (Closes: #825285)
+
+  [ Balint Reczey ]
+  * Build depend on groovy instead of groovy2 (Closes: #824187)
+  * Recommend kodi-visualization-spectrum
+  * Build-depend on libbluray-dev (>= 0.7.0) to match version
+    required by ./configure
+
+  [ Tobias Grimm ]
+  * Added gcc-6 fixes for CxImage code (Closes: #831137)
+  * Disabled failing webserver tests (Closes: #832857)
+
+ -- Balint Reczey <balint@balintreczey.hu>  Thu, 18 Aug 2016 17:32:53 +0200
 
 kodi (16.1+dfsg1-1) unstable; urgency=medium
 

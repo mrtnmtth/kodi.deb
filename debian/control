@@ -19,7 +19,7 @@ Build-Depends: autoconf,
  fonts-droid,
  gawk,
  gperf,
- groovy2,
+ groovy,
  inkscape,
  libasound2-dev | libasound-dev,
  libass-dev (>= 0.9.8),
@@ -124,6 +124,7 @@ Depends: kodi-bin (>= ${source:Version}),
          kodi-bin (<< ${source:Version}.1~),
          kodi-data,
          ${misc:Depends}
+Recommends: kodi-visualization-spectrum
 Replaces: xbmc (<< 2:13.2+dfsg1-5~)
 Breaks: xbmc (<< 2:13.2+dfsg1-5~)
 Description: Open Source Home Theatre (executable binaries)

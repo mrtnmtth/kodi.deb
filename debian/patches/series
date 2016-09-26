@@ -2,6 +2,7 @@
 0002-core-added-arm64-support-to-GetKernelCpuFamily.patch
 0003-core-added-s390x-support-to-system-info.patch
 0004-core-Make-GetKernelBitness-return-64-for-s390x.patch
+01_reproducible_build.patch
 02_allow_all_arches.patch
 03-privacy.patch
 04-differentiate-from-vanilla-Kodi.patch
@@ -13,3 +14,5 @@
 11-build-with-ffmpeg-2.9.patch
 12-build-cpluff-pic-only.patch
 13-fix-tests.patch
+14-gcc6-cximage-fixes.patch
+15-disable-failing-webserver-tests.patch

@@ -1087,7 +1087,11 @@ CRenderInfo CWinRenderer::GetRenderInfo()
   info.formats = m_formats;
   info.max_buffer_size = NUM_BUFFERS;
   if (m_renderMethod == RENDER_DXVA && m_processor)
+  {
     info.optimal_buffer_size = m_processor->Size();
+    if (m_extended_format != RENDER_FMT_DXVA)
+      info.m_deintMethods.push_back(VS_INTERLACEMETHOD_DXVA_AUTO);
+  }
   else
     info.optimal_buffer_size = 4;
   return info;
@@ -1099,7 +1103,7 @@ void CWinRenderer::ReleaseBuffer(int idx)
     SAFE_RELEASE(reinterpret_cast<DXVABuffer*>(m_VideoBuffers[idx])->pic);
 }
 
-bool CWinRenderer::NeedBufferForRef(int idx)
+bool CWinRenderer::NeedBuffer(int idx)
 {
   // check if processor wants to keep past frames
   if (m_renderMethod == RENDER_DXVA && m_processor)

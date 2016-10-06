@@ -298,6 +298,8 @@ bool CRenderManager::Configure()
     m_pRenderer->SetBufferSize(m_QueueSize);
     m_pRenderer->Update();
 
+    m_playerPort->UpdateRenderInfo(info);
+
     m_queued.clear();
     m_discard.clear();
     m_free.clear();
@@ -360,6 +362,8 @@ bool CRenderManager::HasFrame()
 
 void CRenderManager::FrameMove()
 {
+  UpdateResolution();
+
   {
     CSingleLock lock(m_statelock);
 
@@ -405,7 +409,7 @@ void CRenderManager::FrameMove()
     for (std::deque<int>::iterator it = m_discard.begin(); it != m_discard.end(); )
     {
       // renderer may want to keep the frame for postprocessing
-      if (!m_pRenderer->NeedBufferForRef(*it) || !m_bRenderGUI)
+      if (!m_pRenderer->NeedBuffer(*it) || !m_bRenderGUI)
       {
         m_pRenderer->ReleaseBuffer(*it);
         m_overlays.Release(*it);
@@ -419,7 +423,6 @@ void CRenderManager::FrameMove()
     m_bRenderGUI = true;
   }
 
-  UpdateResolution();
   ManageCaptures();
 }
 
@@ -738,9 +741,8 @@ void CRenderManager::ManageCaptures()
         //if rendering this capture continuously, and readout is async, render a new capture immediately
         if (capture->IsAsync() && !(capture->GetFlags() & CAPTUREFLAG_IMMEDIATELY))
           RenderCapture(capture);
-
-        ++it;
       }
+      ++it;
     }
     else
     {
@@ -960,7 +962,8 @@ bool CRenderManager::IsGuiLayer()
     if (!m_pRenderer)
       return false;
 
-    if (m_pRenderer->IsGuiLayer() || m_renderedOverlay || m_overlays.HasOverlay(m_presentsource))
+    if ((m_pRenderer->IsGuiLayer() && HasFrame()) ||
+        m_renderedOverlay || m_overlays.HasOverlay(m_presentsource))
       return true;
 
     if (m_renderDebug && m_debugTimer.IsTimePast())

@@ -158,6 +158,7 @@ public:
   bool StartServer(enum ESERVERS eServer, bool bStart, bool bWait = false);
 
   void StopPVRManager();
+  void ReinitPVRManager();
   bool IsCurrentThread() const;
   void Stop(int exitCode);
   void RestartApp();
@@ -426,7 +427,7 @@ protected:
   bool NotifyActionListeners(const CAction &action) const;
 
   bool m_confirmSkinChange;
-  std::string m_skinReloadSettingIgnore;
+  bool m_ignoreSkinSettingChanges;
 
   bool m_saveSkinOnUnloading;
   bool m_autoExecScriptExecuted;

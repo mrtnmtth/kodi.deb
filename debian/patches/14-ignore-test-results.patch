@@ -1,8 +1,6 @@
-diff --git a/Makefile.in b/Makefile.in
-index 957fb92..58c9a51 100644
 --- a/Makefile.in
 +++ b/Makefile.in
-@@ -597,7 +597,7 @@ clean-externals: clean-codecs clean-eventclients clean-libs \
+@@ -605,7 +605,7 @@
  
  ifeq (1,@GTEST_CONFIGURED@)
  check: testsuite

@@ -61,7 +61,7 @@ Forwarded: not-needed
  long AtomicIncrement(volatile long* pAddr);
 --- a/xbmc/cores/VideoPlayer/VideoRenderers/LinuxRendererGL.h
 +++ b/xbmc/cores/VideoPlayer/VideoRenderers/LinuxRendererGL.h
-@@ -295,7 +295,7 @@
+@@ -293,7 +293,7 @@
  
  
  inline int NP2( unsigned x ) {

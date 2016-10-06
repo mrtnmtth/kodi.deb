@@ -4,7 +4,7 @@
 export DH_OPTIONS
 
 # bindnow breaks wrappers used in with libdvdread
-export DEB_BUILD_MAINT_OPTIONS = hardening=+all-bindnow
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all,-bindnow
 
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 

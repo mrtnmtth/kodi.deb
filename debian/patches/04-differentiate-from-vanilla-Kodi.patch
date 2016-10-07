@@ -58,8 +58,8 @@
  				</control>
 +		                <control type="image">
 +			          <description>LOGO2</description>
-+			          <left>223</left>
-+			          <top>6</top>
++			          <left>210</left>
++			          <top>0</top>
 +			          <width>250</width>
 +			          <height>82</height>
 +			          <aspectratio aligny="top" align="left">keep</aspectratio>

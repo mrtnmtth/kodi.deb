@@ -140,6 +140,13 @@ override_dh_install:
 		-XLato-Regular.ttf -XDejaVuSans-Bold.ttf -XLICENSE.txt \
 		-XAnonymousPro -XNOTICE.txt \
 		-Xjquery-1.8.2.min.js -Xiscroll-min.js
+	# check if all needed headers are included
+	$(CXX) -c debian/headers-check.c -DBUILD_KODI_ADDON \
+	$(shell dpkg-buildflags --get CPPFLAGS) \
+	$(shell dpkg-buildflags --get CXXFLAGS) \
+	-Idebian/kodi-addons-dev/usr/include \
+	-Idebian/kodi-addons-dev/usr/include/kodi \
+	-o /dev/null
 
 override_dh_shlibdeps: debian/tmp/kodi-bin-depends-dummy.so debian/tmp/kodi-bin-recommends-dummy.so
 	dh_shlibdeps -a -O--parallel \

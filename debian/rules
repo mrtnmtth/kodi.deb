@@ -83,9 +83,9 @@ override_dh_clean:
 	find . -name config.status -o -name config.cache -o -name config.log \
 		-exec rm -f "{}" \;
 	rm -rf tools/depends/target; \
-	ls $(CURDIR)/debian/patches/libdvdnav-0* | tac | xargs cat | patch -R -r - -s -p1 \
+	ls $(CURDIR)/debian/patches/libdvdnav-* | tac | xargs cat | patch -R --no-backup-if-mismatch -r - -s -p1 \
 		-d $(DVDNAV_COMPONENT) || true
-	ls $(CURDIR)/debian/patches/libdvdread-0* | tac | xargs cat | patch -R -r - -s -p1 \
+	ls $(CURDIR)/debian/patches/libdvdread-* | tac | xargs cat | patch -R --no-backup-if-mismatch -r - -s -p1 \
 		-d $(DVDREAD_COMPONENT) || true
 
 override_dh_auto_clean:
@@ -104,8 +104,8 @@ DEJAVUSANS=/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf
 endif
 
 override_dh_auto_configure: configure
-	cat $(CURDIR)/debian/patches/libdvdnav-0* | patch -p1 -d $(DVDNAV_COMPONENT)
-	cat $(CURDIR)/debian/patches/libdvdread-0* | patch -p1 -d $(DVDREAD_COMPONENT)
+	cat $(CURDIR)/debian/patches/libdvdnav-* | patch -p1 -d $(DVDNAV_COMPONENT)
+	cat $(CURDIR)/debian/patches/libdvdread-* | patch -p1 -d $(DVDREAD_COMPONENT)
 	sed -i 's/DEB_VERSION/"'$(VERSION)'"/' xbmc/Application.cpp xbmc/utils/SystemInfo.cpp
 	fontforge -script $(CURDIR)/debian/mergefonts.ff \
 		/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf \

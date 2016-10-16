@@ -68,7 +68,6 @@ KODI_CONFIG_OPTIONS ?= --host=$(DEB_HOST_GNU_TYPE) \
   --with-ffmpeg=shared \
   --disable-dependency-tracking \
   --disable-dvdcss \
-  --disable-non-free \
   --enable-gtest \
   $(ARCH_SPECIFIC_OPTIONS) \
   $(KODI_CONFIG_EXTRA_OPTIONS)

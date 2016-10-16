@@ -1,19 +1,31 @@
 --- a/xbmc/utils/test/TestSystemInfo.cpp
 +++ b/xbmc/utils/test/TestSystemInfo.cpp
-@@ -129,8 +129,8 @@
- TEST_F(TestSystemInfo, GetOsVersion)
- {
-   EXPECT_FALSE(g_sysinfo.GetOsVersion().empty()) << "'GetOsVersion()' must not return empty string";
+@@ -126,14 +126,14 @@ TEST_F(TestSystemInfo, GetOsName)
+ #endif // TARGET_DARWIN
+ }
+
+-TEST_F(TestSystemInfo, GetOsVersion)
+-{
+-  EXPECT_FALSE(g_sysinfo.GetOsVersion().empty()) << "'GetOsVersion()' must not return empty string";
 -  EXPECT_STRNE("0.0.0", g_sysinfo.GetOsVersion().c_str()) << "'GetOsVersion()' must not return '0.0.0'";
 -  EXPECT_STRNE("0.0", g_sysinfo.GetOsVersion().c_str()) << "'GetOsVersion()' must not return '0.0'";
-+  // EXPECT_STRNE("0.0.0", g_sysinfo.GetOsVersion().c_str()) << "'GetOsVersion()' must not return '0.0.0'";
-+  // EXPECT_STRNE("0.0", g_sysinfo.GetOsVersion().c_str()) << "'GetOsVersion()' must not return '0.0'";
-   EXPECT_EQ(0, g_sysinfo.GetOsVersion().find_first_of("0123456789")) << "'GetOsVersion()' must not return version not starting from digit";
-   EXPECT_EQ(std::string::npos, g_sysinfo.GetOsVersion().find_first_not_of("0123456789.")) << "'GetOsVersion()' must not return version with not only digits and dots";
- }
+-  EXPECT_EQ(0, g_sysinfo.GetOsVersion().find_first_of("0123456789")) << "'GetOsVersion()' must not return version not starting from digit";
+-  EXPECT_EQ(std::string::npos, g_sysinfo.GetOsVersion().find_first_not_of("0123456789.")) << "'GetOsVersion()' must not return version with not only digits and dots";
+-}
++// TEST_F(TestSystemInfo, GetOsVersion)
++// {
++//   EXPECT_FALSE(g_sysinfo.GetOsVersion().empty()) << "'GetOsVersion()' must not return empty string";
++//   EXPECT_STRNE("0.0.0", g_sysinfo.GetOsVersion().c_str()) << "'GetOsVersion()' must not return '0.0.0'";
++//   EXPECT_STRNE("0.0", g_sysinfo.GetOsVersion().c_str()) << "'GetOsVersion()' must not return '0.0'";
++//   EXPECT_EQ(0, g_sysinfo.GetOsVersion().find_first_of("0123456789")) << "'GetOsVersion()' must not return version not starting from digit";
++//   EXPECT_EQ(std::string::npos, g_sysinfo.GetOsVersion().find_first_not_of("0123456789.")) << "'GetOsVersion()' must not return version with not only digits and dots";
++// }
+
+ TEST_F(TestSystemInfo, GetOsPrettyNameWithVersion)
+ {
 --- a/xbmc/utils/test/TestCPUInfo.cpp
 +++ b/xbmc/utils/test/TestCPUInfo.cpp
-@@ -82,7 +82,7 @@
+@@ -82,7 +82,7 @@ TEST(TestCPUInfo, getTemperature)
  TEST(TestCPUInfo, getCPUModel)
  {
    std::string s = g_cpuInfo.getCPUModel();
@@ -22,7 +34,7 @@
  }
  
  TEST(TestCPUInfo, getCPUBogoMips)
-@@ -113,7 +113,7 @@
+@@ -113,7 +113,7 @@ TEST(TestCPUInfo, CoreInfo)
  {
    ASSERT_TRUE(g_cpuInfo.HasCoreId(0));
    const CoreInfo c = g_cpuInfo.GetCoreInfo(0);
@@ -33,7 +45,7 @@
  TEST(TestCPUInfo, GetCoresUsageString)
 --- a/xbmc/utils/test/Makefile
 +++ b/xbmc/utils/test/Makefile
-@@ -37,7 +37,6 @@
+@@ -37,7 +37,6 @@ SRCS=	\
  	TestRingBuffer.cpp \
  	TestScraperParser.cpp \
  	TestScraperUrl.cpp \

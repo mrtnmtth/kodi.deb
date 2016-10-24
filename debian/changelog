@@ -1,3 +1,11 @@
+kodi (16.1+dfsg1-2+mtt1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Update patch to fix FTBS (Closes: #833841)
+  * Enable rar support (non-free)
+
+ -- mttronc <mattronic@gmx.de>  Mon, 24 Oct 2016 13:40:01 +0200
+
 kodi (16.1+dfsg1-2) unstable; urgency=medium
 
   [ Lukas Rechberger ]

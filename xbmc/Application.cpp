@@ -469,11 +469,6 @@ bool CApplication::Create()
 #ifndef TARGET_POSIX
   //floating point precision to 24 bits (faster performance)
   _controlfp(_PC_24, _MCW_PC);
-
-  /* install win32 exception translator, win32 exceptions
-   * can now be caught using c++ try catch */
-  win32_exception::install_handler();
-
 #endif
 
   //! @todo - move to CPlatformXXX
@@ -4926,16 +4921,16 @@ void CApplication::SeekPercentage(float percent)
 // SwitchToFullScreen() returns true if a switch is made, else returns false
 bool CApplication::SwitchToFullScreen(bool force /* = false */)
 {
+  // don't switch if the slideshow is active
+  if (g_windowManager.GetFocusedWindow() == WINDOW_SLIDESHOW)
+    return false;
+
   // if playing from the video info window, close it first!
   if (g_windowManager.HasModalDialog() && g_windowManager.GetTopMostModalDialogID() == WINDOW_DIALOG_VIDEO_INFO)
   {
     CGUIDialogVideoInfo* pDialog = (CGUIDialogVideoInfo*)g_windowManager.GetWindow(WINDOW_DIALOG_VIDEO_INFO);
     if (pDialog) pDialog->Close(true);
   }
-
-  // don't switch if the slideshow is active
-  if (g_windowManager.GetActiveWindow() == WINDOW_SLIDESHOW)
-    return false;
 
   int windowID = WINDOW_INVALID;
   // See if we're playing a video, and are in GUI mode

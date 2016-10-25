@@ -20,6 +20,8 @@
  *
  */
 
+#include "system.h"
+
 #include <queue>
 #include <vector>
 #include <memory>
@@ -61,10 +63,12 @@ public:
 
   // meat and potatos
   void                Validate(bool state);
+  bool                WaitForFrame(int millis);
   // MediaCodec related
   void                ReleaseOutputBuffer(bool render);
+  bool                IsReleased() { return m_isReleased; }
   // SurfaceTexture released
-  int                 GetIndex() const;
+  ssize_t             GetIndex() const;
   int                 GetTextureID() const;
   void                GetTransformMatrix(float *textureMatrix);
   void                UpdateTexImage();
@@ -127,6 +131,7 @@ protected:
   bool            m_opened;
   bool            m_drop;
   int             m_codecControlFlags;
+  int             m_state;
 
   CJNISurface    *m_surface;
   unsigned int    m_textureId;

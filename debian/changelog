@@ -1,6 +1,15 @@
-kodi (17.0~beta3+dfsg1-2) UNRELEASED; urgency=medium
+kodi (17.0~beta4+dfsg1-1) experimental; urgency=medium
 
-  *
+  * Ship additional headers referenced from already shipped ones
+  * Ensure all needed development headers are installed
+  * Use patches from libdvdread package
+  * Build-depend on libssh-gcrypt-dev instead of libssh-dev to avoid
+    transitive linking to libssl
+  * Build-depend on libgcrypt-dev instead of libssl-dev
+  * New upstream beta release 17.0 Beta 4
+    See: https://kodi.tv/kodi-v17-krypton-beta-4/
+  * Refresh patches
+  * Stop building with OpenSSL
 
  -- Balint Reczey <balint@balintreczey.hu>  Mon, 10 Oct 2016 23:00:38 +0200
 

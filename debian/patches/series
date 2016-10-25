@@ -13,3 +13,4 @@
 12-build-cpluff-pic-only.patch
 13-fix-tests.patch
 14-ignore-test-results.patch
+15-dont-use-openssl.patch

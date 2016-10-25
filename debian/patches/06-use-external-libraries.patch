@@ -15,7 +15,7 @@ Forwarded: not-needed
  all: $(BOOTSTRAP_TARGETS)
 --- a/configure.ac
 +++ b/configure.ac
-@@ -2384,18 +2384,11 @@
+@@ -2391,18 +2391,11 @@
  ], [0])
  
  XB_CONFIG_MODULE([lib/gtest], [

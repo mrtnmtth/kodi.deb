@@ -1,7 +1,6 @@
 0001-c-pluff-Fix-format-string-warnings.patch
 0002-StringUtils-Fix-format-string.patch
 0003-Revert-droid-fix-builds-with-AML-disabled.patch
-0004-utils-drop-AsyncFileCopy-from-Makefile-too.patch
 01_reproducible_build.patch
 02_allow_all_arches.patch
 03-privacy.patch

@@ -19,7 +19,7 @@
  
    return appName;
  }
-@@ -1095,7 +1098,9 @@
+@@ -1086,7 +1089,9 @@
    if (!result.empty())
      return result;
  
@@ -30,7 +30,7 @@
  #if defined(TARGET_WINDOWS)
    result += GetKernelName() + " " + GetKernelVersion();
    BOOL bIsWow = FALSE;
-@@ -1253,7 +1258,7 @@
+@@ -1244,7 +1249,7 @@
  
  std::string CSysInfo::GetVersion()
  {
@@ -52,7 +52,7 @@
    EXPECT_EQ(g_sysinfo.GetUserAgent().find(' '), g_sysinfo.GetUserAgent().find(" (")) << "Second parameter in 'GetUserAgent()' string must be in brackets";
 --- a/addons/skin.estuary/1080i/Home.xml
 +++ b/addons/skin.estuary/1080i/Home.xml
-@@ -948,6 +948,18 @@
+@@ -950,6 +950,18 @@
  					<height>36</height>
  					<texture>icons/logo-text.png</texture>
  				</control>

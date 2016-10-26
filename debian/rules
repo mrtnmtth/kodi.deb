@@ -182,7 +182,7 @@ override_dh_gencontrol:
 		-pxbmc-eventclients-dev -pxbmc-eventclients-wiiremote \
 		-pxbmc-eventclients-j2me -pxbmc-eventclients-ps3 \
 		-pxbmc-eventclients-xbmc-send -pxbmc-addons-dev \
-		-- -v"2:13.2+dfsg1-7"
+		-- -v2:"$(VERSION)"
 	dh_gencontrol --remaining-packages
 
 # extract and patch customized libdvdread and libdvdnav

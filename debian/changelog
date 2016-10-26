@@ -1,3 +1,11 @@
+kodi (17.0~beta4+dfsg1-2) experimental; urgency=medium
+
+  * Generate version of xbmc transitional packages dynamically
+    (Closes: #842141)
+  * Check installed headers only during architecture-specific builds
+
+ -- Balint Reczey <balint@balintreczey.hu>  Wed, 26 Oct 2016 13:37:42 +0200
+
 kodi (17.0~beta4+dfsg1-1) experimental; urgency=medium
 
   * Ship additional headers referenced from already shipped ones

@@ -134,12 +134,16 @@ override_dh_auto_install:
 	$(MAKE) eventclients DESTDIR=$(CURDIR)/debian/tmp \
 		WII_EXTRA_OPTS=-DCWIID_OLD
 
-override_dh_install:
-	dh_install -XLICENCE -XLICENSE \
+override_dh_install-indep:
+	dh_install -i -XLICENCE -XLICENSE \
 		-XLicence.txt -XLicense.txt -XLato-Bold.ttf \
 		-XLato-Regular.ttf -XDejaVuSans-Bold.ttf -XLICENSE.txt \
 		-XAnonymousPro -XNOTICE.txt \
 		-Xjquery-1.8.2.min.js -Xiscroll-min.js
+
+override_dh_install-arch:
+	dh_install -a -XLICENCE -XLICENSE -XLicence.txt -XLicense.txt \
+		-XLICENSE.txt -XNOTICE.txt
 	# check if all needed headers are included
 	$(CXX) -c debian/headers-check.c -DBUILD_KODI_ADDON \
 	$(shell dpkg-buildflags --get CPPFLAGS) \

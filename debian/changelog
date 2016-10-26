@@ -1,3 +1,11 @@
+kodi (16.1+dfsg1-2~bpo8+1+mtt1) jessie-backports; urgency=medium
+
+  [ mttronc ]
+  * Non-maintainer upload.
+  * Enable rar support (non-free)
+
+ -- mttronc <mattronic@gmx.de>  Wed, 26 Oct 2016 14:38:31 +0200
+
 kodi (16.1+dfsg1-2~bpo8+1) jessie-backports; urgency=medium
 
   * Rebuild for jessie-backports.

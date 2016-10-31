@@ -108,7 +108,7 @@ Package: kodi
 Architecture: any
 Depends: kodi-bin (>= ${source:Version}),
          kodi-bin (<< ${source:Version}.1~),
-         kodi-data,
+         kodi-data (>= ${source:Version}),
          ${misc:Depends}
 Recommends: kodi-visualization-spectrum
 Replaces: xbmc (<< 2:13.2+dfsg1-5~)

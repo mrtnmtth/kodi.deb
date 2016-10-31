@@ -141,6 +141,7 @@ override_dh_auto_install:
 		WII_EXTRA_OPTS=-DCWIID_OLD
 
 override_dh_install-indep:
+	dh_link -pkodi-data usr/share/fonts/truetype/anonymous-pro/Anonymous\ Pro.ttf usr/share/kodi/addons/skin.estuary/fonts/AnonymousPro.ttf
 	dh_install -i -XLICENCE -XLICENSE \
 		-XLicence.txt -XLicense.txt -XLato-Bold.ttf \
 		-XLato-Regular.ttf -XDejaVuSans-Bold.ttf -XLICENSE.txt \

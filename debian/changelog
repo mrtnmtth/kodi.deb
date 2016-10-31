@@ -1,3 +1,9 @@
+kodi (17.0~beta4+dfsg1-3) UNRELEASED; urgency=medium
+
+  * 
+
+ -- Balint Reczey <balint@balintreczey.hu>  Mon, 31 Oct 2016 10:29:05 +0100
+
 kodi (17.0~beta4+dfsg1-2) experimental; urgency=medium
 
   * Generate version of xbmc transitional packages dynamically

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- This file contains the mapping of keyboard keys to actions within Kodi.              -->
+<!-- This file contains the mapping of remote keys to actions within Kodi.                -->
 <!--                                                                                      -->
 <!-- The format is:                                                                       -->
 <!--  <window>                                                                            -->
@@ -8,24 +8,12 @@
 <!--    </device>                                                                         -->
 <!--  </window>                                                                           -->
 <!--                                                                                      -->
-<!-- To map keys from other remotes using the RCA protocol, you may add <universalremote> -->
-<!-- blocks. In this case, the tags used are <obc#> where # is the original button code   -->
-<!-- (OBC) of the key. You set it up by adding a <universalremote> block to the window or -->
-<!-- <global> section:                                                                    -->
-<!--    <universalremote>                                                                 -->
-<!--       <obc45>Stop</obc45>                                                            -->
-<!--    </universalremote>                                                                -->
-<!--                                                                                      -->
 <!-- The <global> section is a fall through - they will only be used if the button is     -->
 <!-- not used in the current window's section.                                            -->
 <!--                                                                                      -->
 <!-- Actions can be built-in functions.                                                   -->
-<!--  eg <B>ActivateWindow(MyMusic)</B>                                                   -->
+<!--  eg <B>ActivateWindow(Music)</B>                                                     -->
 <!-- would automatically go to Music on the press of the B button.                        -->
-<!--                                                                                      -->
-<!--  Long presses                                                                        -->
-<!--   A limitation is that if a single press is mapped in a section, a global "longpress"-->
-<!--   will be ignored. The workaround is to duplicate the long mapping in the section.   -->
 <!--                                                                                      -->
 <!-- An empty action removes the corresponding mapping from default and parent keymaps.   -->
 <!-- This is different from a "noop" action, which disables a button.                     -->
@@ -49,7 +37,6 @@
       <pageminus>PageDown</pageminus>
       <back>Back</back>
       <menu>ContextMenu</menu>
-      <menu mod="longpress">Menu</menu>
       <contentsmenu>PreviousMenu</contentsmenu>
       <rootmenu>PreviousMenu</rootmenu>
       <title>ContextMenu</title>
@@ -64,9 +51,9 @@
       <volumeminus>VolumeDown</volumeminus>
       <mute>Mute</mute>
       <power>ShutDown()</power>
-      <myvideo>ActivateWindow(MyVideos)</myvideo>
-      <mymusic>ActivateWindow(MyMusic)</mymusic>
-      <mypictures>ActivateWindow(MyPictures)</mypictures>
+      <myvideo>ActivateWindow(Videos)</myvideo>
+      <mymusic>ActivateWindow(Music)</mymusic>
+      <mypictures>ActivateWindow(Pictures)</mypictures>
       <mytv>ActivateWindow(Videos,TvShows)</mytv>
       <guide>ActivateWindow(TVGuide)</guide>
       <livetv>ActivateWindow(TVChannels)</livetv>
@@ -74,9 +61,9 @@
       <recordedtv>ActivateWindow(TVRecordings)</recordedtv>
       <epgsearch>ActivateWindow(TVSearch)</epgsearch>
       <red>ActivateWindow(TVChannels)</red>
-      <green>ActivateWindow(MyVideos)</green>
-      <yellow>ActivateWindow(MyMusic)</yellow>
-      <blue>ActivateWindow(MyPictures)</blue>
+      <green>ActivateWindow(Videos)</green>
+      <yellow>ActivateWindow(Music)</yellow>
+      <blue>ActivateWindow(Pictures)</blue>
       <zero>Number0</zero>
       <one>Number1</one>
       <two>JumpSMS2</two>
@@ -92,12 +79,11 @@
   </global>
   <Home>
     <remote>
-      <info>ActivateWindow(SystemInfo)</info>
       <clear>ActivateWindow(Weather)</clear>
       <hash>ActivateWindow(Settings)</hash>
     </remote>
   </Home>
-  <MyTVRecordings>
+  <TVRecordings>
     <remote>
       <clear>Delete</clear>
       <red>Red</red>
@@ -105,8 +91,8 @@
       <yellow>Yellow</yellow>
       <blue>Blue</blue>
     </remote>
-  </MyTVRecordings>
-  <MyTVTimers>
+  </TVRecordings>
+  <TVTimers>
     <remote>
       <clear>Delete</clear>
       <red>Red</red>
@@ -114,8 +100,8 @@
       <yellow>Yellow</yellow>
       <blue>Blue</blue>
     </remote>
-  </MyTVTimers>
-  <MyRadioRecordings>
+  </TVTimers>
+  <TVTimerRules>
     <remote>
       <clear>Delete</clear>
       <red>Red</red>
@@ -123,8 +109,8 @@
       <yellow>Yellow</yellow>
       <blue>Blue</blue>
     </remote>
-  </MyRadioRecordings>
-  <MyRadioTimers>
+  </TVTimerRules>
+  <RadioRecordings>
     <remote>
       <clear>Delete</clear>
       <red>Red</red>
@@ -132,43 +118,55 @@
       <yellow>Yellow</yellow>
       <blue>Blue</blue>
     </remote>
-  </MyRadioTimers>
-  <MyFiles>
+  </RadioRecordings>
+  <RadioTimers>
+    <remote>
+      <clear>Delete</clear>
+      <red>Red</red>
+      <green>Green</green>
+      <yellow>Yellow</yellow>
+      <blue>Blue</blue>
+    </remote>
+  </RadioTimers>
+  <RadioTimerRules>
+    <remote>
+      <clear>Delete</clear>
+      <red>Red</red>
+      <green>Green</green>
+      <yellow>Yellow</yellow>
+      <blue>Blue</blue>
+    </remote>
+  </RadioTimerRules>
+  <FileManager>
     <remote>
       <clear>Delete</clear>
       <zero>Highlight</zero>
       <star>Move</star>
       <hash>Rename</hash>
     </remote>
-  </MyFiles>
-  <MyMusicPlaylist>
+  </FileManager>
+  <MusicPlaylist>
     <remote>
       <clear>Delete</clear>
       <zero>Delete</zero>
     </remote>
-  </MyMusicPlaylist>
-  <MyMusicPlaylistEditor>
+  </MusicPlaylist>
+  <MusicPlaylistEditor>
     <remote>
       <zero>Queue</zero>
     </remote>
-  </MyMusicPlaylistEditor>
-  <MyMusicFiles>
-    <remote>
-      <zero>Queue</zero>
-      <star>Queue</star>
-    </remote>
-  </MyMusicFiles>
-  <MyMusicLibrary>
+  </MusicPlaylistEditor>
+  <Music>
     <remote>
       <zero>Queue</zero>
       <star>Queue</star>
     </remote>
-  </MyMusicLibrary>
-  <MyPictures>
+  </Music>
+  <Pictures>
     <remote>
       <clear>Delete</clear>
     </remote>
-  </MyPictures>
+  </Pictures>
   <FullscreenVideo>
     <remote>
       <zero>Number0</zero>
@@ -191,7 +189,7 @@
       <rootmenu>OSD</rootmenu>
       <start>OSD</start>
       <select>OSD</select>
-      <title>CodecInfo</title>
+      <title>PlayerProcessInfo</title>
       <info>Info</info>
       <guide>ActivateWindow(PVROSDGuide)</guide>
       <teletext>ActivateWindow(Teletext)</teletext>
@@ -212,7 +210,7 @@
   </VideoTimeSeek>
   <FullscreenInfo>
     <remote>
-      <title>CodecInfo</title>
+      <title>PlayerProcessInfo</title>
       <info>Back</info>
       <menu>OSD</menu>
       <contentsmenu>OSD</contentsmenu>
@@ -235,7 +233,7 @@
       <pageplus>IncreaseRating</pageplus>
       <pageminus>DecreaseRating</pageminus>
       <back>Back</back>
-      <title>CodecInfo</title>
+      <title>PlayerProcessInfo</title>
       <select>OSD</select>
       <menu>OSD</menu>
       <contentsmenu>OSD</contentsmenu>
@@ -252,16 +250,9 @@
       <contentsmenu>Back</contentsmenu>
       <rootmenu>Back</rootmenu>
       <title>Info</title>
-      <info>CodecInfo</info>
+      <info>PlayerProcessInfo</info>
     </remote>
   </MusicOSD>
-  <VisualisationSettings>
-    <remote>
-      <menu>Back</menu>
-      <contentsmenu>Back</contentsmenu>
-      <rootmenu>Back</rootmenu>
-    </remote>
-  </VisualisationSettings>
   <VisualisationPresetList>
     <remote>
       <menu>Back</menu>
@@ -281,7 +272,7 @@
       <seven>ZoomLevel7</seven>
       <eight>ZoomLevel8</eight>
       <nine>ZoomLevel9</nine>
-      <info>CodecInfo</info>
+      <info>Info</info>
       <skipplus>NextPicture</skipplus>
       <skipminus>PreviousPicture</skipminus>
       <title>Info</title>
@@ -296,12 +287,12 @@
       <xbox>NextResolution</xbox>
     </remote>
   </ScreenCalibration>
-  <GUICalibration>
+  <ScreenCalibration>
     <remote>
       <select>NextCalibration</select>
       <zero>ResetCalibration</zero>
     </remote>
-  </GUICalibration>
+  </ScreenCalibration>
   <VideoOSD>
     <remote>
       <menu>Back</menu>
@@ -316,7 +307,7 @@
       <contentsmenu>OSD</contentsmenu>
       <rootmenu>OSD</rootmenu>
       <info>Info</info>
-      <title>CodecInfo</title>
+      <title>PlayerProcessInfo</title>
       <zero>Number0</zero>
       <one>Number1</one>
       <two>Number2</two>
@@ -357,24 +348,18 @@
       <zero>Delete</zero>
     </remote>
   </VideoBookmarks>
-  <MyVideoLibrary>
+  <Videos>
     <remote>
       <zero>Queue</zero>
       <clear>Delete</clear>
     </remote>
-  </MyVideoLibrary>
-  <MyVideoFiles>
-    <remote>
-      <zero>Queue</zero>
-      <star>Queue</star>
-    </remote>
-  </MyVideoFiles>
-  <MyVideoPlaylist>
+  </Videos>
+  <VideoPlaylist>
     <remote>
       <clear>Delete</clear>
       <zero>Delete</zero>
     </remote>
-  </MyVideoPlaylist>
+  </VideoPlaylist>
   <VirtualKeyboard>
     <remote>
       <back>Back</back>
@@ -400,11 +385,11 @@
       <title>Back</title>
     </remote>
   </ContextMenu>
-  <Scripts>
+  <Programs>
     <remote>
       <info>info</info>
     </remote>
-  </Scripts>
+  </Programs>
   <NumericInput>
     <remote>
       <zero>Number0</zero>
@@ -450,46 +435,31 @@
       <back>Close</back>
     </remote>
   </TextViewer>
-  <MyPicturesSettings>
+  <PlayerSettings>
     <remote>
       <back>PreviousMenu</back>
     </remote>
-  </MyPicturesSettings>
-  <MyProgramsSettings>
+  </PlayerSettings>
+  <MediaSettings>
     <remote>
       <back>PreviousMenu</back>
     </remote>
-  </MyProgramsSettings>
-  <MyWeatherSettings>
-    <remote>
-      <back>PreviousMenu</back>
-    </remote>
-  </MyWeatherSettings>
-  <MyMusicSettings>
-    <remote>
-      <back>PreviousMenu</back>
-    </remote>
-  </MyMusicSettings>
+  </MediaSettings>
   <SystemSettings>
     <remote>
       <back>PreviousMenu</back>
     </remote>
   </SystemSettings>
-  <MyVideosSettings>
+  <ServiceSettings>
     <remote>
       <back>PreviousMenu</back>
     </remote>
-  </MyVideosSettings>
-  <NetworkSettings>
+  </ServiceSettings>
+  <InterfaceSettings>
     <remote>
       <back>PreviousMenu</back>
     </remote>
-  </NetworkSettings>
-  <AppearanceSettings>
-    <remote>
-      <back>PreviousMenu</back>
-    </remote>
-  </AppearanceSettings>
+  </InterfaceSettings>
   <Profiles>
     <remote>
       <back>PreviousMenu</back>
@@ -672,16 +642,25 @@
       <nine>number9</nine>
     </remote>
   </RadioChannels>
-  <MyTVSettings>
+  <RadioGuide>
+    <remote>
+      <zero>Number0</zero>
+      <one>Number1</one>
+      <two>number2</two>
+      <three>number3</three>
+      <four>number4</four>
+      <five>number5</five>
+      <six>number6</six>
+      <seven>number7</seven>
+      <eight>number8</eight>
+      <nine>number9</nine>
+    </remote>
+  </RadioGuide>
+  <PVRSettings>
     <remote>
       <back>PreviousMenu</back>
     </remote>
-  </MyTVSettings>
-  <AddonSettings>
-    <remote>
-      <clear>Delete</clear>
-    </remote>
-  </AddonSettings>
+  </PVRSettings>
   <Addon>
     <remote>
       <red>Red</red>
@@ -690,4 +669,9 @@
       <blue>Blue</blue>
     </remote>
   </Addon>
+  <PlayerProcessInfo>
+    <remote>
+      <title>PlayerProcessInfo</title>
+    </remote>
+  </PlayerProcessInfo>
 </keymap>

@@ -31,12 +31,13 @@
 #include <utility>
 
 #include "Application.h"
-#include "cores/dvdplayer/DVDDemuxers/DVDDemuxBXA.h"
+#include "cores/VideoPlayer/DVDDemuxers/DVDDemuxBXA.h"
 #include "FileItem.h"
 #include "filesystem/File.h"
 #include "filesystem/PipeFile.h"
 #include "GUIInfoManager.h"
 #include "guilib/GUIWindowManager.h"
+#include "input/Key.h"
 #include "interfaces/AnnouncementManager.h"
 #include "messaging/ApplicationMessenger.h"
 #include "music/tags/MusicInfoTag.h"
@@ -415,11 +416,8 @@ void CAirTunesServer::AudioOutputFunctions::audio_set_progress(void *cls, void *
   duration /= m_sampleRate;
   position /= m_sampleRate;
 
-  if (g_application.m_pPlayer->GetInternal())
-  {
-    g_application.m_pPlayer->GetInternal()->SetTime(position * 1000);
-    g_application.m_pPlayer->GetInternal()->SetTotalTime(duration * 1000);
-  }
+  g_application.m_pPlayer->SetTime(position * 1000);
+  g_application.m_pPlayer->SetTotalTime(duration * 1000);
 }
 
 void CAirTunesServer::SetupRemoteControl()
@@ -619,16 +617,27 @@ void CAirTunesServer::StopServer(bool bWait)
   }
 }
 
- bool CAirTunesServer::IsRunning()
- {
-   if (ServerInstance == NULL)
-     return false;
+bool CAirTunesServer::IsRunning()
+{
+  if (ServerInstance == NULL)
+    return false;
 
-   return ((CThread*)ServerInstance)->IsRunning();
- }
+  return ServerInstance->IsRAOPRunningInternal();
+}
+
+bool CAirTunesServer::IsRAOPRunningInternal()
+{
+  if (m_pLibShairplay != nullptr && m_pRaop != nullptr)
+  {
+    return m_pLibShairplay->raop_is_running(m_pRaop);
+  }
+  return false;
+}
+
 
 CAirTunesServer::CAirTunesServer(int port, bool nonlocal)
-: CThread("AirTunesActionThread")
+: CThread("AirTunesActionThread"),
+  m_pRaop(nullptr)
 {
   m_port = port;
   m_pLibShairplay = new DllLibShairplay();
@@ -719,6 +728,7 @@ void CAirTunesServer::Deinitialize()
     m_pLibShairplay->raop_stop(m_pRaop);
     m_pLibShairplay->raop_destroy(m_pRaop);
     m_pLibShairplay->Unload();
+    m_pRaop = nullptr;
   }
 }
 

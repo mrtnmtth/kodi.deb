@@ -1,6 +1,6 @@
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      Copyright (C) 2016 Team Kodi
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
+ *  along with Kodi; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
@@ -54,46 +54,6 @@ VECSOURCES& CGUIViewStateWindowVideo::GetSources()
 {
   AddLiveTVSources();
   return CGUIViewState::GetSources();
-}
-
-CGUIViewStateWindowVideoFiles::CGUIViewStateWindowVideoFiles(const CFileItemList& items) : CGUIViewStateWindowVideo(items)
-{
-  if (items.IsVirtualDirectoryRoot())
-  {
-    AddSortMethod(SortByLabel, 551, LABEL_MASKS()); // Preformated
-    AddSortMethod(SortByDriveType, 564, LABEL_MASKS()); // Preformated
-    SetSortMethod(SortByLabel);
-
-    SetViewAsControl(DEFAULT_VIEW_LIST);
-
-    SetSortOrder(SortOrderAscending);
-  }
-  else
-  {
-    AddSortMethod(SortByLabel, 551, LABEL_MASKS("%L", "%I", "%L", ""),  // Label, Size | Label, empty
-      CSettings::GetInstance().GetBool(CSettings::SETTING_FILELISTS_IGNORETHEWHENSORTING) ? SortAttributeIgnoreArticle : SortAttributeNone);
-    AddSortMethod(SortBySize, 553, LABEL_MASKS("%L", "%I", "%L", "%I"));  // Label, Size | Label, Size
-    AddSortMethod(SortByDate, 552, LABEL_MASKS("%L", "%J", "%L", "%J"));  // Label, Date | Label, Date
-    AddSortMethod(SortByFile, 561, LABEL_MASKS("%L", "%I", "%L", ""));  // Label, Size | Label, empty
-
-    const CViewState *viewState = CViewStateSettings::GetInstance().Get("videofiles");
-    SetSortMethod(viewState->m_sortDescription);
-    SetViewAsControl(viewState->m_viewMode);
-    SetSortOrder(viewState->m_sortDescription.sortOrder);
-  }
-  LoadViewState(items.GetPath(), WINDOW_VIDEO_FILES);
-}
-
-void CGUIViewStateWindowVideoFiles::SaveViewState()
-{
-  SaveViewToDb(m_items.GetPath(), WINDOW_VIDEO_FILES, CViewStateSettings::GetInstance().Get("videofiles"));
-}
-
-VECSOURCES& CGUIViewStateWindowVideoFiles::GetSources()
-{
-  VECSOURCES *videoSources = CMediaSourceSettings::GetInstance().GetSources("video");
-  AddOrReplace(*videoSources, CGUIViewStateWindowVideo::GetSources());
-  return *videoSources;
 }
 
 CGUIViewStateWindowVideoNav::CGUIViewStateWindowVideoNav(const CFileItemList& items) : CGUIViewStateWindowVideo(items)
@@ -137,6 +97,7 @@ CGUIViewStateWindowVideoNav::CGUIViewStateWindowVideoNav(const CFileItemList& it
     case NODE_TYPE_ACTOR:
       {
         AddSortMethod(SortByLabel, 551, LABEL_MASKS("%T", "%R", "%L", ""));  // Title, Rating | Label, empty
+        AddSortMethod(SortByRelevance, 38026, LABEL_MASKS("%T", "%c", "%L", "%c"));  // Title, Actor's appearences (Relevance) | Label, Actor's appearences (Relevance)
         SetSortMethod(SortByLabel);
 
         const CViewState *viewState = CViewStateSettings::GetInstance().Get("videonavactors");
@@ -165,6 +126,7 @@ CGUIViewStateWindowVideoNav::CGUIViewStateWindowVideoNav(const CFileItemList& it
       }
       break;
     case NODE_TYPE_TITLE_TVSHOWS:
+    case NODE_TYPE_INPROGRESS_TVSHOWS:
       {
         AddSortMethod(SortBySortTitle, sortAttributes, 556, LABEL_MASKS("%T", "%M", "%T", "%M"));  // Title, #Episodes | Title, #Episodes
 

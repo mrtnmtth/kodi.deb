@@ -22,16 +22,14 @@
 
 #include <string>
 #include <vector>
-#include "TextureBundleXPR.h"
 #include "TextureBundleXBT.h"
 
 class CTextureBundle
 {
 public:
-  CTextureBundle(void);
-  ~CTextureBundle(void);
-
-  void Cleanup();
+  CTextureBundle();
+  explicit CTextureBundle(bool useXBT);
+  ~CTextureBundle() = default;
 
   void SetThemeBundle(bool themeBundle);
   bool HasFile(const std::string& Filename);
@@ -43,10 +41,8 @@ public:
   int LoadAnim(const std::string& Filename, CBaseTexture*** ppTextures, int &width, int &height, int& nLoops, int** ppDelays);
 
 private:
-  CTextureBundleXPR m_tbXPR;
   CTextureBundleXBT m_tbXBT;
 
-  bool m_useXPR;
   bool m_useXBT;
 };
 

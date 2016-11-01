@@ -33,17 +33,14 @@
 #include "StringUtils.h"
 #include "CharsetConverter.h"
 #if defined(TARGET_ANDROID)
-#include "android/jni/JNIThreading.h"
+#include "platform/android/jni/JNIThreading.h"
 #endif
 #include "utils/fstrcmp.h"
 #include "Util.h"
-#include "LangInfo.h"
-#include <locale>
 #include <functional>
-
+#include <array>
 #include <assert.h>
 #include <math.h>
-#include <sstream>
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
@@ -403,6 +400,10 @@ void StringUtils::ToCapitalize(std::wstring &str)
 
 bool StringUtils::EqualsNoCase(const std::string &str1, const std::string &str2)
 {
+  // before we do the char-by-char comparison, first compare sizes of both strings.
+  // This led to a 33% improvement in benchmarking on average. (size() just returns a member of std::string)
+  if (str1.size() != str2.size())
+    return false;
   return EqualsNoCase(str1.c_str(), str2.c_str());
 }
 
@@ -510,6 +511,17 @@ std::string& StringUtils::TrimRight(std::string &str, const char* const chars)
   size_t nidx = str.find_last_not_of(chars);
   str.erase(str.npos == nidx ? 0 : ++nidx);
   return str;
+}
+
+int StringUtils::ReturnDigits(const std::string& str)
+{
+  std::stringstream ss;
+  for (const auto& character : str)
+  {
+    if (isdigit(character))
+      ss << character;
+  }
+  return atoi(ss.str().c_str());
 }
 
 std::string& StringUtils::RemoveDuplicatedSpacesAndTabs(std::string& str)
@@ -744,6 +756,58 @@ std::vector<std::string> StringUtils::Split(const std::string& input, const char
   return results;
 }
 
+std::vector<std::string> StringUtils::SplitMulti(const std::vector<std::string> &input, const std::vector<std::string> &delimiters, unsigned int iMaxStrings /* = 0 */)
+{
+  if (input.empty())
+    return std::vector<std::string>(); 
+
+  std::vector<std::string> results(input);
+
+  if (delimiters.empty() || (iMaxStrings > 0 && iMaxStrings <= input.size()))
+    return results;
+
+  std::vector<std::string> strings1;
+  if (iMaxStrings == 0)
+  {
+    for (size_t di = 0; di < delimiters.size(); di++)
+    {
+      for (size_t i = 0; i < results.size(); i++)
+      {
+        std::vector<std::string> substrings = StringUtils::Split(results[i], delimiters[di]);
+        for (size_t j = 0; j < substrings.size(); j++)
+          strings1.push_back(substrings[j]);
+      }
+      results = strings1;
+      strings1.clear();
+    }
+    return results;
+  }
+
+  // Control the number of strings input is split into, keeping the original strings. 
+  // Note iMaxStrings > input.size() 
+  int iNew = iMaxStrings - results.size();
+  for (size_t di = 0; di < delimiters.size(); di++)
+  {
+    for (size_t i = 0; i < results.size(); i++)
+    {
+      if (iNew > 0)
+      {
+        std::vector<std::string> substrings = StringUtils::Split(results[i], delimiters[di], iNew + 1);
+        iNew = iNew - substrings.size() + 1;
+        for (size_t j = 0; j < substrings.size(); j++)
+          strings1.push_back(substrings[j]);
+      }
+      else
+        strings1.push_back(results[i]);
+    }
+    results = strings1;
+    iNew = iMaxStrings - results.size();
+    strings1.clear();
+    if ((iNew <= 0))
+      break;  //Stop trying any more delimiters
+  }
+  return results;
+}
 
 // returns the number of occurrences of strFind in strInput.
 int StringUtils::FindNumber(const std::string& strInput, const std::string &strFind)
@@ -870,13 +934,13 @@ std::string StringUtils::SecondsToTimeString(long lSeconds, TIME_FORMAT format)
     format = (hh >= 1) ? TIME_FORMAT_HH_MM_SS : TIME_FORMAT_MM_SS;
   std::string strHMS;
   if (format & TIME_FORMAT_HH)
-    strHMS += StringUtils::Format("%02.2i", hh);
+    strHMS += StringUtils::Format("%2.2i", hh);
   else if (format & TIME_FORMAT_H)
     strHMS += StringUtils::Format("%i", hh);
   if (format & TIME_FORMAT_MM)
-    strHMS += StringUtils::Format(strHMS.empty() ? "%02.2i" : ":%02.2i", mm);
+    strHMS += StringUtils::Format(strHMS.empty() ? "%2.2i" : ":%2.2i", mm);
   if (format & TIME_FORMAT_SS)
-    strHMS += StringUtils::Format(strHMS.empty() ? "%02.2i" : ":%02.2i", ss);
+    strHMS += StringUtils::Format(strHMS.empty() ? "%2.2i" : ":%2.2i", ss);
   return strHMS;
 }
 
@@ -966,6 +1030,29 @@ std::string StringUtils::SizeToString(int64_t size)
     strLabel = StringUtils::Format("%.2lf %cB", s, prefixes[i]);
 
   return strLabel;
+}
+
+std::string StringUtils::BinaryStringToString(const std::string& in)
+{
+  std::string out;
+  out.reserve(in.size() / 2);
+  for (const char *cur = in.c_str(), *end = cur + in.size(); cur != end; ++cur) {
+    if (*cur == '\\') {
+      ++cur;                                                                             
+      if (cur == end) {
+        break;
+      }
+      if (isdigit(*cur)) {                                                             
+        char* end;
+        unsigned long num = strtol(cur, &end, 10);
+        cur = end - 1;
+        out.push_back(num);
+        continue;
+      }
+    }
+    out.push_back(*cur);
+  }
+  return out;
 }
 
 // return -1 if not, else return the utf8 char length.
@@ -1196,4 +1283,30 @@ void StringUtils::Tokenize(const std::string& input, std::vector<std::string>& t
     // Skip delimiters.  Note the "not_of"
     dataPos = input.find_first_not_of(delimiter, nextDelimPos);
   }
+}
+
+uint64_t StringUtils::ToUint64(std::string str, uint64_t fallback) noexcept
+{
+  std::istringstream iss(str);
+  uint64_t result(fallback);
+  iss >> result;
+  return result;
+}
+
+std::string StringUtils::FormatFileSize(uint64_t bytes)
+{
+  const std::array<std::string, 6> units{"B", "kB", "MB", "GB", "TB", "PB"};
+  if (bytes < 1000)
+    return Format("%lluB", bytes);
+
+  int i = 0;
+  double value = static_cast<double>(bytes);
+  while (i < units.size() - 1 && value >= 999.5)
+  {
+    ++i;
+    value /= 1024.0;
+  }
+  int decimals = value < 9.995 ? 2 : (value < 99.95 ? 1 : 0);
+  auto frmt = "%.0" + Format("%d", decimals) + "f%s";
+  return Format(frmt.c_str(), value, units[i].c_str());
 }

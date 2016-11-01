@@ -26,6 +26,7 @@
 #include "guilib/GUIWindowManager.h"
 #include "guilib/GUIKeyboardFactory.h"
 #include "input/ButtonTranslator.h"
+#include "input/Key.h"
 #include "utils/Variant.h"
 #include "input/XBMC_keyboard.h"
 #include "input/XBMC_vkeys.h"
@@ -34,9 +35,9 @@
 using namespace JSONRPC;
 using namespace KODI::MESSAGING;
 
-//TODO the breakage of the screensaver should be refactored
-//to one central super duper place for getting rid of
-//1 million dupes
+//! @todo the breakage of the screensaver should be refactored
+//! to one central super duper place for getting rid of
+//! 1 million dupes
 bool CInputOperations::handleScreenSaver()
 {
   g_application.ResetScreenSaver();
@@ -141,7 +142,12 @@ JSONRPC_STATUS CInputOperations::Home(const std::string &method, ITransportLayer
 
 JSONRPC_STATUS CInputOperations::ShowCodec(const std::string &method, ITransportLayer *transport, IClient *client, const CVariant &parameterObject, CVariant &result)
 {
-  return SendAction(ACTION_SHOW_CODEC);
+  return MethodNotFound;
+}
+
+JSONRPC_STATUS CInputOperations::ShowPlayerProcessInfo(const std::string &method, ITransportLayer *transport, IClient *client, const CVariant &parameterObject, CVariant &result)
+{
+  return SendAction(ACTION_PLAYER_PROCESS_INFO);
 }
 
 JSONRPC_STATUS CInputOperations::ShowOSD(const std::string &method, ITransportLayer *transport, IClient *client, const CVariant &parameterObject, CVariant &result)

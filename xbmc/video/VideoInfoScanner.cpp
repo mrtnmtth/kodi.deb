@@ -1,6 +1,6 @@
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      Copyright (C) 2005-2015 Team Kodi
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
+ *  along with Kodi; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
@@ -139,7 +139,11 @@ namespace VIDEO
          * occurs.
          */
         std::string directory = *m_pathsToScan.begin();
-        if (!CDirectory::Exists(directory))
+        if (m_bStop)
+        {
+          bCancelled = true;
+        }
+        else if (!CDirectory::Exists(directory))
         {
           /*
            * Note that this will skip clean (if m_bClean is enabled) if the directory really
@@ -236,12 +240,6 @@ namespace VIDEO
     g_windowManager.SendThreadMessage(msg);
   }
 
-  bool CVideoInfoScanner::IsExcluded(const std::string& strDirectory) const
-  {
-    std::string noMediaFile = URIUtils::AddFileToFolder(strDirectory, ".nomedia");
-    return CFile::Exists(noMediaFile);
-  }
-
   bool CVideoInfoScanner::DoScan(const std::string& strDirectory)
   {
     if (m_handle)
@@ -271,14 +269,8 @@ namespace VIDEO
     const std::vector<std::string> &regexps = content == CONTENT_TVSHOWS ? g_advancedSettings.m_tvshowExcludeFromScanRegExps
                                                          : g_advancedSettings.m_moviesExcludeFromScanRegExps;
 
-    if (CUtil::ExcludeFileOrFolder(strDirectory, regexps))
+    if (IsExcluded(strDirectory, regexps))
       return true;
-
-    if (IsExcluded(strDirectory))
-    {
-      CLog::Log(LOGWARNING, "Skipping item '%s' with '.nomedia' file in parent directory, it won't be added to the library.", CURL::GetRedacted(strDirectory).c_str());
-      return true;
-    }
 
     bool ignoreFolder = !m_scanAll && settings.noupdate;
     if (content == CONTENT_NONE || ignoreFolder)
@@ -465,6 +457,10 @@ namespace VIDEO
       }
       if (ret == INFO_CANCELLED || ret == INFO_ERROR)
       {
+        CLog::Log(LOGWARNING,
+                  "VideoInfoScanner: Error %s occurred while retrieving"
+                  "information for %s.", ret,
+                  CURL::GetRedacted(pItem->GetPath()).c_str());
         FoundSomeInfo = false;
         break;
       }
@@ -482,7 +478,7 @@ namespace VIDEO
         CEventLog::GetInstance().Add(EventPtr(new CMediaLibraryEvent(
           mediaType, pItem->GetPath(), 24145,
           StringUtils::Format(g_localizeStrings.Get(24147).c_str(), mediaType.c_str(), URIUtils::GetFileName(pItem->GetPath()).c_str()),
-          pItem->GetArt("thumb"), CURL::GetRedacted(pItem->GetPath()), EventLevelWarning)));
+          pItem->GetArt("thumb"), CURL::GetRedacted(pItem->GetPath()), EventLevel::Warning)));
       }
 
       pURL = NULL;
@@ -511,11 +507,6 @@ namespace VIDEO
 
   INFO_RET CVideoInfoScanner::RetrieveInfoForTvShow(CFileItem *pItem, bool bDirNames, ScraperPtr &info2, bool useLocal, CScraperUrl* pURL, bool fetchEpisodes, CGUIDialogProgress* pDlgProgress)
   {
-    if (pItem->m_bIsFolder && IsExcluded(pItem->GetPath()))
-    {
-      CLog::Log(LOGWARNING, "Skipping show '%s' with '.nomedia' file in its directory, it won't be added to the library.", CURL::GetRedacted(pItem->GetPath()).c_str());
-      return INFO_NOT_NEEDED;
-    }
     long idTvShow = -1;
     if (pItem->m_bIsFolder)
       idTvShow = m_database.GetTvShowId(pItem->GetPath());
@@ -565,13 +556,21 @@ namespace VIDEO
 
     CScraperUrl url;
     int retVal = 0;
-    if (pURL)
+    if (pURL && !pURL->m_url.empty())
       url = *pURL;
     else if ((retVal = FindVideo(pItem->GetMovieName(bDirNames), info2, url, pDlgProgress)) <= 0)
       return retVal < 0 ? INFO_CANCELLED : INFO_NOT_FOUND;
 
-    long lResult=-1;
-    if (GetDetails(pItem, url, info2, result == CNfoFile::COMBINED_NFO ? &m_nfoReader : NULL, pDlgProgress))
+    CLog::Log(LOGDEBUG,
+              "VideoInfoScanner: Fetching url '%s' using %s scraper (content: '%s')",
+              url.m_url[0].m_url.c_str(), info2->Name().c_str(),
+              TranslateContent(info2->Content()).c_str());
+
+    long lResult = -1;
+    if (GetDetails(pItem, url, info2,
+                   (result == CNfoFile::COMBINED_NFO
+                    || result == CNfoFile::PARTIAL_NFO) ? &m_nfoReader : NULL,
+                   pDlgProgress))
     {
       if ((lResult = AddVideo(pItem, info2->Content(), false, useLocal)) < 0)
         return INFO_ERROR;
@@ -619,18 +618,26 @@ namespace VIDEO
 
     CScraperUrl url;
     int retVal = 0;
-    if (pURL)
+    if (pURL && !pURL->m_url.empty())
       url = *pURL;
     else if ((retVal = FindVideo(pItem->GetMovieName(bDirNames), info2, url, pDlgProgress)) <= 0)
       return retVal < 0 ? INFO_CANCELLED : INFO_NOT_FOUND;
 
-    if (GetDetails(pItem, url, info2, result == CNfoFile::COMBINED_NFO ? &m_nfoReader : NULL, pDlgProgress))
+    CLog::Log(LOGDEBUG,
+              "VideoInfoScanner: Fetching url '%s' using %s scraper (content: '%s')",
+              url.m_url[0].m_url.c_str(), info2->Name().c_str(),
+              TranslateContent(info2->Content()).c_str());
+
+    if (GetDetails(pItem, url, info2,
+                   (result == CNfoFile::COMBINED_NFO
+                    || result == CNfoFile::PARTIAL_NFO) ? &m_nfoReader : NULL,
+                   pDlgProgress))
     {
       if (AddVideo(pItem, info2->Content(), bDirNames, useLocal) < 0)
         return INFO_ERROR;
       return INFO_ADDED;
     }
-    // TODO: This is not strictly correct as we could fail to download information here or error, or be cancelled
+    //! @todo This is not strictly correct as we could fail to download information here or error, or be cancelled
     return INFO_NOT_FOUND;
   }
 
@@ -668,18 +675,26 @@ namespace VIDEO
 
     CScraperUrl url;
     int retVal = 0;
-    if (pURL)
+    if (pURL && !pURL->m_url.empty())
       url = *pURL;
     else if ((retVal = FindVideo(pItem->GetMovieName(bDirNames), info2, url, pDlgProgress)) <= 0)
       return retVal < 0 ? INFO_CANCELLED : INFO_NOT_FOUND;
 
-    if (GetDetails(pItem, url, info2, result == CNfoFile::COMBINED_NFO ? &m_nfoReader : NULL, pDlgProgress))
+    CLog::Log(LOGDEBUG,
+              "VideoInfoScanner: Fetching url '%s' using %s scraper (content: '%s')",
+              url.m_url[0].m_url.c_str(), info2->Name().c_str(),
+              TranslateContent(info2->Content()).c_str());
+
+    if (GetDetails(pItem, url, info2,
+                   (result == CNfoFile::COMBINED_NFO
+                    || result == CNfoFile::PARTIAL_NFO) ? &m_nfoReader : NULL,
+                   pDlgProgress))
     {
       if (AddVideo(pItem, info2->Content(), bDirNames, useLocal) < 0)
         return INFO_ERROR;
       return INFO_ADDED;
     }
-    // TODO: This is not strictly correct as we could fail to download information here or error, or be cancelled
+    //! @todo This is not strictly correct as we could fail to download information here or error, or be cancelled
     return INFO_NOT_FOUND;
   }
 
@@ -689,7 +704,7 @@ namespace VIDEO
     EPISODELIST files;
     if (!EnumerateSeriesFolder(item, files))
       return INFO_HAVE_ALREADY;
-    if (files.size() == 0) // no update or no files
+    if (files.empty()) // no update or no files
       return INFO_NOT_NEEDED;
 
     if (m_bStop || (progress && progress->IsCanceled()))
@@ -1251,14 +1266,12 @@ namespace VIDEO
         movieDetails.m_iDbId = lResult;
         movieDetails.m_type = MediaTypeEpisode;
         movieDetails.m_strShowTitle = showInfo ? showInfo->m_strTitle : "";
-        if (movieDetails.m_fEpBookmark > 0)
+        if (movieDetails.m_EpBookmark.timeInSeconds > 0)
         {
           movieDetails.m_strFileNameAndPath = pItem->GetPath();
-          CBookmark bookmark;
-          bookmark.timeInSeconds = movieDetails.m_fEpBookmark;
-          bookmark.seasonNumber = movieDetails.m_iSeason;
-          bookmark.episodeNumber = movieDetails.m_iEpisode;
-          m_database.AddBookMarkForEpisode(movieDetails, bookmark);
+          movieDetails.m_EpBookmark.seasonNumber = movieDetails.m_iSeason;
+          movieDetails.m_EpBookmark.episodeNumber = movieDetails.m_iEpisode;
+          m_database.AddBookMarkForEpisode(movieDetails, movieDetails.m_EpBookmark);
         }
       }
     }
@@ -1593,7 +1606,7 @@ namespace VIDEO
           std::string loweredTitle(file->strTitle);
           StringUtils::ToLower(loweredTitle);
           int index = StringUtils::FindBestMatch(loweredTitle, titles, matchscore);
-          if (matchscore >= minscore)
+          if (index >= 0 && matchscore >= minscore)
           {
             guide = candidates->begin() + index;
             bFound = true;
@@ -1609,7 +1622,7 @@ namespace VIDEO
         CFileItem item;
         item.SetPath(file->strPath);
         if (!imdb.GetEpisodeDetails(guide->cScraperUrl, *item.GetVideoInfoTag(), pDlgProgress))
-          return INFO_NOT_FOUND; // TODO: should we just skip to the next episode?
+          return INFO_NOT_FOUND; //! @todo should we just skip to the next episode?
           
         // Only set season/epnum from filename when it is not already set by a scraper
         if (item.GetVideoInfoTag()->m_iSeason == -1)
@@ -1856,8 +1869,8 @@ namespace VIDEO
       struct __stat64 buffer;
       if (XFILE::CFile::Stat(items[i]->GetPath(), &buffer) == 0)
       {
-        // TODO: some filesystems may return the mtime/ctime inline, in which case this is
-        // unnecessarily expensive. Consider supporting Stat() in our directory cache?
+        //! @todo some filesystems may return the mtime/ctime inline, in which case this is
+        //! unnecessarily expensive. Consider supporting Stat() in our directory cache?
         stat_time = buffer.st_mtime ? buffer.st_mtime : buffer.st_ctime;
         time += stat_time;
       }
@@ -2014,16 +2027,19 @@ namespace VIDEO
       switch(result)
       {
         case CNfoFile::COMBINED_NFO:
-          type = "Mixed";
+          type = "mixed";
           break;
         case CNfoFile::FULL_NFO:
-          type = "Full";
+          type = "full";
           break;
         case CNfoFile::URL_NFO:
           type = "URL";
           break;
         case CNfoFile::NO_NFO:
           type = "";
+          break;
+        case CNfoFile::PARTIAL_NFO:
+          type = "partial";
           break;
         default:
           type = "malformed";
@@ -2037,14 +2053,14 @@ namespace VIDEO
       }
       else if (result != CNfoFile::NO_NFO && result != CNfoFile::ERROR_NFO)
       {
-        scrUrl = m_nfoReader.ScraperUrl();
-        info = m_nfoReader.GetScraperInfo();
+        if (result != CNfoFile::PARTIAL_NFO)
+        {
+          scrUrl = m_nfoReader.ScraperUrl();
+          StringUtils::RemoveCRLF(scrUrl.m_url[0].m_url);
+          info = m_nfoReader.GetScraperInfo();
+        }
 
-        StringUtils::RemoveCRLF(scrUrl.m_url[0].m_url);
-        CLog::Log(LOGDEBUG, "VideoInfoScanner: Fetching url '%s' using %s scraper (content: '%s')",
-          scrUrl.m_url[0].m_url.c_str(), info->Name().c_str(), TranslateContent(info->Content()).c_str());
-
-        if (result == CNfoFile::COMBINED_NFO)
+        if (result != CNfoFile::URL_NFO)
           m_nfoReader.GetDetails(*pItem->GetVideoInfoTag());
       }
     }

@@ -23,14 +23,18 @@
 #include "system.h" // for HAS_DVD_DRIVE et. al.
 #include "XBApplicationEx.h"
 
+#include "addons/AddonSystemSettings.h"
 #include "guilib/IMsgTargetCallback.h"
 #include "guilib/Resolution.h"
 #include "utils/GlobalsHandling.h"
 #include "messaging/IMessageTarget.h"
+#include "ServiceManager.h"
 
+#include <atomic>
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 class CAction;
 class CFileItem;
@@ -50,9 +54,12 @@ namespace MEDIA_DETECT
   class CAutorun;
 }
 
+namespace PLAYLIST
+{
+  class CPlayList;
+}
+
 #include "cores/IPlayerCallback.h"
-#include "cores/playercorefactory/PlayerCoreFactory.h"
-#include "PlayListPlayer.h"
 #include "settings/lib/ISettingsHandler.h"
 #include "settings/lib/ISettingCallback.h"
 #include "settings/lib/ISubSettings.h"
@@ -60,7 +67,7 @@ namespace MEDIA_DETECT
 #include "storage/DetectDVDType.h"
 #endif
 #ifdef TARGET_WINDOWS
-#include "win32/WIN32Util.h"
+#include "platform/win32/WIN32Util.h"
 #endif
 #include "utils/Stopwatch.h"
 #ifdef HAS_PERFORMANCE_SAMPLE
@@ -70,7 +77,7 @@ namespace MEDIA_DETECT
 #include "threads/Thread.h"
 
 #include "ApplicationPlayer.h"
-#include "interfaces/IActionListener.h"
+#include "FileItem.h"
 
 class CSeekHandler;
 class CInertialScrollingHandler;
@@ -78,6 +85,7 @@ class DPMSSupport;
 class CSplash;
 class CBookmark;
 class CNetwork;
+class IActionListener;
 
 namespace VIDEO
 {
@@ -92,7 +100,6 @@ namespace MUSIC_INFO
 #define VOLUME_MINIMUM 0.0f        // -60dB
 #define VOLUME_MAXIMUM 1.0f        // 0dB
 #define VOLUME_DYNAMIC_RANGE 90.0f // 60dB
-#define VOLUME_CONTROL_STEPS 90    // 90 steps
 
 // replay gain settings struct for quick access by the player multiple
 // times per second (saves doing settings lookup)
@@ -138,9 +145,8 @@ public:
   virtual bool Initialize() override;
   virtual void FrameMove(bool processEvents, bool processGUI = true) override;
   virtual void Render() override;
-  virtual bool RenderNoPresent();
   virtual void Preflight();
-  virtual bool Create() override;
+  bool Create();
   virtual bool Cleanup() override;
 
   bool CreateGUI();
@@ -151,8 +157,8 @@ public:
 
   bool StartServer(enum ESERVERS eServer, bool bStart, bool bWait = false);
 
-  void StartPVRManager();
   void StopPVRManager();
+  void ReinitPVRManager();
   bool IsCurrentThread() const;
   void Stop(int exitCode);
   void RestartApp();
@@ -161,9 +167,10 @@ public:
   void ReloadSkin(bool confirm = false);
   const std::string& CurrentFile();
   CFileItem& CurrentFileItem();
+  void SetCurrentFileItem(const CFileItem &item);
   CFileItem& CurrentUnstackedItem();
   virtual bool OnMessage(CGUIMessage& message) override;
-  PLAYERCOREID GetCurrentPlayer();
+  std::string GetCurrentPlayer();
   virtual void OnPlayBackEnded() override;
   virtual void OnPlayBackStarted() override;
   virtual void OnPlayBackPaused() override;
@@ -177,10 +184,10 @@ public:
   virtual int  GetMessageMask() override;
   virtual void OnApplicationMessage(KODI::MESSAGING::ThreadMessage* pMsg) override;
 
-  bool PlayMedia(const CFileItem& item, int iPlaylist = PLAYLIST_MUSIC);
-  bool PlayMediaSync(const CFileItem& item, int iPlaylist = PLAYLIST_MUSIC);
+  bool PlayMedia(const CFileItem& item, const std::string &player, int iPlaylist);
+  bool PlayMediaSync(const CFileItem& item, int iPlaylist);
   bool ProcessAndStartPlaylist(const std::string& strPlayList, PLAYLIST::CPlayList& playlist, int iPlaylist, int track=0);
-  PlayBackRet PlayFile(const CFileItem& item, bool bRestart = false);
+  PlayBackRet PlayFile(CFileItem item, const std::string& player, bool bRestart = false);
   void SaveFileState(bool bForeground = false);
   void UpdateFileState();
   void LoadVideoSettings(const CFileItem& item);
@@ -198,7 +205,6 @@ public:
   bool IsIdleShutdownInhibited() const;
   // Checks whether the screensaver and / or DPMS should become active.
   void CheckScreenSaverAndDPMS();
-  void CheckPlayingProgress();
   void ActivateScreenSaver(bool forceType = false);
   bool SetupNetwork();
   void CloseNetworkShares();
@@ -318,7 +324,6 @@ public:
   PlayState m_ePlayState;
   CCriticalSection m_playStateMutex;
 
-  PLAYERCOREID m_eForcedNextPlayer;
   std::string m_strPlayListFile;
 
   int GlobalIdleTime();
@@ -390,6 +395,18 @@ public:
    */
   void UnregisterActionListener(IActionListener *listener);
 
+  std::unique_ptr<CServiceManager> m_ServiceManager;
+
+  /*!
+  \brief Locks calls from outside kodi (e.g. python) until framemove is processed.
+  */
+  void LockFrameMoveGuard();
+
+  /*!
+  \brief Unlocks calls from outside kodi (e.g. python).
+  */
+  void UnlockFrameMoveGuard();
+
 protected:
   virtual bool OnSettingsSaving() const override;
 
@@ -401,8 +418,7 @@ protected:
   virtual bool OnSettingUpdate(CSetting* &setting, const char *oldSettingId, const TiXmlNode *oldSettingNode) override;
 
   bool LoadSkin(const std::string& skinID);
-  bool LoadSkin(const std::shared_ptr<ADDON::CSkinInfo>& skin);
-  
+
   /*!
    \brief Delegates the action to all registered action handlers.
    \param action The action
@@ -410,8 +426,8 @@ protected:
    */
   bool NotifyActionListeners(const CAction &action) const;
 
-  bool m_skinReverting;
-  std::string m_skinReloadSettingIgnore;
+  bool m_confirmSkinChange;
+  bool m_ignoreSkinSettingChanges;
 
   bool m_saveSkinOnUnloading;
   bool m_autoExecScriptExecuted;
@@ -462,8 +478,6 @@ protected:
   int m_currentStackPosition;
   int m_nextPlaylistItem;
 
-  bool m_bPresentFrame;
-  unsigned int m_lastFrameTime;
   unsigned int m_lastRenderTime;
   bool m_skipGuiRender;
 
@@ -492,7 +506,7 @@ protected:
   bool InitDirectoriesLinux();
   bool InitDirectoriesOSX();
   bool InitDirectoriesWin32();
-  void CreateUserDirs();
+  void CreateUserDirs() const;
 
   /*! \brief Helper method to determine how to handle TMSG_SHUTDOWN
   */
@@ -509,9 +523,15 @@ protected:
   std::vector<IActionListener *> m_actionListeners;
 
   bool m_fallbackLanguageLoaded;
-  
+
+  std::vector<std::string> m_incompatibleAddons;  /*!< Result of addon migration */
+
 private:
-  CCriticalSection                m_critSection;                 /*!< critical section for all changes to this class, except for changes to triggers */
+  CCriticalSection m_critSection;                 /*!< critical section for all changes to this class, except for changes to triggers */
+
+  CCriticalSection m_frameMoveGuard;              /*!< critical section for synchronizing GUI actions from inside and outside (python) */
+  std::atomic_uint m_WaitingExternalCalls;        /*!< counts threads wich are waiting to be processed in FrameMove */
+  unsigned int m_ProcessedExternalCalls;          /*!< counts calls wich are processed during one "door open" cycle in FrameMove */
 };
 
 XBMC_GLOBAL_REF(CApplication,g_application);

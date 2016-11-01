@@ -337,6 +337,108 @@ JSONRPC_STATUS CPVROperations::GetTimerDetails(const std::string &method, ITrans
   return OK;
 }
 
+CFileItemPtr CPVROperations::GetBroadcastFromBroadcastid(unsigned int broadcastid)
+{
+  EpgSearchFilter filter;
+  filter.Reset();
+  filter.m_iUniqueBroadcastId = broadcastid;
+
+  CFileItemList broadcasts;
+  int resultSize = g_EpgContainer.GetEPGSearch(broadcasts, filter);
+
+  if (resultSize != 1)
+    return CFileItemPtr();
+
+  return broadcasts.Get(0);
+}
+
+JSONRPC_STATUS CPVROperations::AddTimer(const std::string &method, ITransportLayer *transport, IClient *client, const CVariant &parameterObject, CVariant &result)
+{
+  if (!g_PVRManager.IsStarted())
+    return FailedToExecute;
+
+  CFileItemPtr broadcast = CPVROperations::GetBroadcastFromBroadcastid(parameterObject["broadcastid"].asUnsignedInteger());
+  if (!broadcast)
+    return InvalidParams;
+
+  if (!broadcast->HasEPGInfoTag())
+    return InvalidParams;
+
+  CEpgInfoTagPtr epgTag = broadcast->GetEPGInfoTag();
+
+  if (!epgTag)
+    return InvalidParams;
+
+  if (epgTag->HasTimer())
+    return InvalidParams;
+
+  CPVRTimerInfoTagPtr newTimer = CPVRTimerInfoTag::CreateFromEpg(epgTag, parameterObject["timerrule"].asBoolean(false));
+  if (newTimer)
+  {
+    if (g_PVRTimers->AddTimer(newTimer))
+      return ACK;
+  }
+  return FailedToExecute;
+}
+
+
+JSONRPC_STATUS CPVROperations::DeleteTimer(const std::string &method, ITransportLayer *transport, IClient *client, const CVariant &parameterObject, CVariant &result)
+{
+  if (!g_PVRManager.IsStarted())
+    return FailedToExecute;
+
+  CPVRTimers* timers = g_PVRTimers;
+
+  CPVRTimerInfoTagPtr timer = timers->GetById(parameterObject["timerid"].asInteger());
+  if (!timer)
+    return InvalidParams;
+
+  if (timers->DeleteTimer(timer, timer->IsRecording(), false))
+    return ACK;
+
+  return FailedToExecute;
+}
+
+JSONRPC_STATUS CPVROperations::ToggleTimer(const std::string &method, ITransportLayer *transport, IClient *client, const CVariant &parameterObject, CVariant &result)
+{
+  if (!g_PVRManager.IsStarted())
+    return FailedToExecute;
+
+  CFileItemPtr broadcast = CPVROperations::GetBroadcastFromBroadcastid(parameterObject["broadcastid"].asUnsignedInteger());
+  if (!broadcast)
+    return InvalidParams;
+
+  if (!broadcast->HasEPGInfoTag())
+    return InvalidParams;
+
+  CEpgInfoTagPtr epgTag = broadcast->GetEPGInfoTag();
+
+  if (!epgTag)
+    return InvalidParams;
+
+  bool timerrule = parameterObject["timerrule"].asBoolean(false);
+  bool sentOkay = false;
+  CPVRTimerInfoTagPtr timer(epgTag->Timer());
+  if (timer)
+  {
+    if (timerrule)
+      timer = g_PVRTimers->GetTimerRule(timer);
+
+    if (timer)
+      sentOkay = g_PVRTimers->DeleteTimer(timer, timer->IsRecording(), false);
+  }
+  else
+  {
+    timer = CPVRTimerInfoTag::CreateFromEpg(epgTag, timerrule);
+    sentOkay = g_PVRTimers->AddTimer(timer);
+  }
+
+  if (sentOkay)
+    return ACK;
+
+  return FailedToExecute;
+}
+
 JSONRPC_STATUS CPVROperations::GetRecordings(const std::string &method, ITransportLayer *transport, IClient *client, const CVariant &parameterObject, CVariant &result)
 {
   if (!g_PVRManager.IsStarted())

@@ -22,9 +22,11 @@
 #include "WinEventsWin32.h"
 #include "resource.h"
 #include "guilib/gui3d.h"
+#include "messaging/ApplicationMessenger.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/DisplaySettings.h"
 #include "settings/Settings.h"
+#include "threads/SingleLock.h"
 #include "utils/log.h"
 #include "utils/CharsetConverter.h"
 #include "utils/SystemInfo.h"
@@ -457,13 +459,13 @@ bool CWinSystemWin32::ResizeInternal(bool forceRefresh)
     // white frame plus titlebar around the xbmc splash
     SetWindowPos(m_hWnd, windowAfter, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, SWP_SHOWWINDOW|SWP_DRAWFRAME);
 
-    // TODO: Probably only need this if switching screens
+    //! @todo Probably only need this if switching screens
     ValidateRect(NULL, NULL);
   }
   return true;
 }
 
-bool CWinSystemWin32::ChangeResolution(RESOLUTION_INFO res, bool forceChange /*= false*/)
+bool CWinSystemWin32::ChangeResolution(const RESOLUTION_INFO& res, bool forceChange /*= false*/)
 {
   const MONITOR_DETAILS* details = GetMonitor(res.iScreen);
 
@@ -542,6 +544,9 @@ bool CWinSystemWin32::ChangeResolution(RESOLUTION_INFO res, bool forceChange /*=
       else
         CLog::Log(LOGERROR, "%s : ChangeDisplaySettingsEx failed with %d", __FUNCTION__, rc);
     }
+    
+    if (bResChanged) 
+      ResolutionChanged();
 
     return bResChanged;
   }
@@ -553,7 +558,7 @@ bool CWinSystemWin32::ChangeResolution(RESOLUTION_INFO res, bool forceChange /*=
 
 void CWinSystemWin32::UpdateResolutions()
 {
-
+  m_MonitorsInfo.clear();
   CWinSystemBase::UpdateResolutions();
 
   UpdateResolutionsInternal();
@@ -697,7 +702,7 @@ bool CWinSystemWin32::UpdateResolutionsInternal()
         CLog::Log(LOGNOTICE, "Found screen: %s on %s, adapter %d.", monitorStr.c_str(), adapterStr.c_str(), adapter);
 
         // get information about the display's current position and display mode
-        // TODO: for Windows 7/Server 2008 and up, Microsoft recommends QueryDisplayConfig() instead, the API used by the control panel.
+        //! @todo for Windows 7/Server 2008 and up, Microsoft recommends QueryDisplayConfig() instead, the API used by the control panel.
         DEVMODEW dm;
         ZeroMemory(&dm, sizeof(dm));
         dm.dmSize = sizeof(dm);
@@ -780,6 +785,104 @@ bool CWinSystemWin32::Show(bool raise)
     SetFocus(m_hWnd);
   }
   return true;
+}
+
+void CWinSystemWin32::Register(IDispResource *resource)
+{
+  CSingleLock lock(m_resourceSection);
+  m_resources.push_back(resource);
+}
+
+void CWinSystemWin32::Unregister(IDispResource* resource)
+{
+  CSingleLock lock(m_resourceSection);
+  std::vector<IDispResource*>::iterator i = find(m_resources.begin(), m_resources.end(), resource);
+  if (i != m_resources.end())
+    m_resources.erase(i);
+}
+
+void CWinSystemWin32::OnDisplayLost()
+{
+  CLog::Log(LOGDEBUG, "%s - notify display lost event", __FUNCTION__);
+
+  // make sure renderer has no invalid references
+  KODI::MESSAGING::CApplicationMessenger::GetInstance().SendMsg(TMSG_RENDERER_FLUSH);
+
+  {
+    CSingleLock lock(m_resourceSection);
+    for (std::vector<IDispResource *>::iterator i = m_resources.begin(); i != m_resources.end(); ++i)
+      (*i)->OnLostDisplay();
+  }
+}
+
+void CWinSystemWin32::OnDisplayReset()
+{
+  if (!m_delayDispReset)
+  {
+    CLog::Log(LOGDEBUG, "%s - notify display reset event", __FUNCTION__);
+    CSingleLock lock(m_resourceSection);
+    for (std::vector<IDispResource *>::iterator i = m_resources.begin(); i != m_resources.end(); ++i)
+      (*i)->OnResetDisplay();
+  }
+}
+
+void CWinSystemWin32::OnDisplayBack()
+{
+  int delay = CSettings::GetInstance().GetInt("videoscreen.delayrefreshchange");
+  if (delay > 0)
+  {
+    m_delayDispReset = true;
+    m_dispResetTimer.Set(delay * 100);
+  }
+  OnDisplayReset();
+}
+
+void CWinSystemWin32::ResolutionChanged()
+{
+  OnDisplayLost();
+  OnDisplayBack();
+}
+
+void CWinSystemWin32::SetForegroundWindowInternal(HWND hWnd)
+{
+  if (!IsWindow(hWnd)) return;
+
+  // if the window isn't focused, bring it to front or SetFullScreen will fail
+  BYTE keyState[256] = { 0 };
+  // to unlock SetForegroundWindow we need to imitate Alt pressing
+  if (GetKeyboardState((LPBYTE)&keyState) && !(keyState[VK_MENU] & 0x80))
+    keybd_event(VK_MENU, 0, KEYEVENTF_EXTENDEDKEY | 0, 0);
+
+  BOOL res = SetForegroundWindow(hWnd);
+
+  if (GetKeyboardState((LPBYTE)&keyState) && !(keyState[VK_MENU] & 0x80))
+    keybd_event(VK_MENU, 0, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0);
+
+  if (!res)
+  {
+    //relation time of SetForegroundWindow lock
+    DWORD lockTimeOut = 0;
+    HWND  hCurrWnd = GetForegroundWindow();
+    DWORD dwThisTID = GetCurrentThreadId(),
+          dwCurrTID = GetWindowThreadProcessId(hCurrWnd, 0);
+
+    // we need to bypass some limitations from Microsoft
+    if (dwThisTID != dwCurrTID)
+    {
+      AttachThreadInput(dwThisTID, dwCurrTID, TRUE);
+      SystemParametersInfo(SPI_GETFOREGROUNDLOCKTIMEOUT, 0, &lockTimeOut, 0);
+      SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, 0, SPIF_SENDWININICHANGE | SPIF_UPDATEINIFILE);
+      AllowSetForegroundWindow(ASFW_ANY);
+    }
+
+    SetForegroundWindow(hWnd);
+
+    if (dwThisTID != dwCurrTID)
+    {
+      SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, (PVOID)lockTimeOut, SPIF_SENDWININICHANGE | SPIF_UPDATEINIFILE);
+      AttachThreadInput(dwThisTID, dwCurrTID, FALSE);
+    }
+  }
 }
 
 #endif

@@ -37,16 +37,6 @@
 
 using namespace ADDON;
 
-CURL::CURL(const std::string& strURL1)
-{
-  Parse(strURL1);
-}
-
-CURL::CURL()
-{
-  m_iPort = 0;
-}
-
 CURL::~CURL()
 {
 }
@@ -152,7 +142,6 @@ void CURL::Parse(const std::string& strURL1)
     IsProtocol("stack") ||
     IsProtocol("virtualpath") ||
     IsProtocol("multipath") ||
-    IsProtocol("filereader") ||
     IsProtocol("special") ||
     IsProtocol("resource")
     )
@@ -180,7 +169,7 @@ void CURL::Parse(const std::string& strURL1)
   size_t iEnd = strURL.length();
   const char* sep = NULL;
 
-  //TODO fix all Addon paths
+  //! @todo fix all Addon paths
   std::string strProtocol2 = GetTranslatedProtocol();
   if(IsProtocol("rss") ||
      IsProtocol("rar") ||
@@ -191,7 +180,8 @@ void CURL::Parse(const std::string& strURL1)
      IsProtocol("image") ||
      IsProtocol("videodb") ||
      IsProtocol("musicdb") ||
-     IsProtocol("androidapp"))
+     IsProtocol("androidapp") ||
+     IsProtocol("pvr"))
     sep = "?";
   else
   if(  IsProtocolEqual(strProtocol2, "http")
@@ -358,21 +348,6 @@ void CURL::SetFileName(const std::string& strFileName)
   StringUtils::ToLower(m_strFileType);
 }
 
-void CURL::SetHostName(const std::string& strHostName)
-{
-  m_strHostName = strHostName;
-}
-
-void CURL::SetUserName(const std::string& strUserName)
-{
-  m_strUserName = strUserName;
-}
-
-void CURL::SetPassword(const std::string& strPassword)
-{
-  m_strPassword = strPassword;
-}
-
 void CURL::SetProtocol(const std::string& strProtocol)
 {
   m_strProtocol = strProtocol;
@@ -412,57 +387,6 @@ void CURL::SetProtocolOptions(const std::string& strOptions)
   }
 }
 
-void CURL::SetPort(int port)
-{
-  m_iPort = port;
-}
-
-bool CURL::HasPort() const
-{
-  return (m_iPort != 0);
-}
-
-int CURL::GetPort() const
-{
-  return m_iPort;
-}
-
-
-const std::string& CURL::GetHostName() const
-{
-  return m_strHostName;
-}
-
-const std::string&  CURL::GetShareName() const
-{
-  return m_strShareName;
-}
-
-const std::string& CURL::GetDomain() const
-{
-  return m_strDomain;
-}
-
-const std::string& CURL::GetUserName() const
-{
-  return m_strUserName;
-}
-
-const std::string& CURL::GetPassWord() const
-{
-  return m_strPassword;
-}
-
-const std::string& CURL::GetFileName() const
-{
-  return m_strFileName;
-}
-
-const std::string& CURL::GetProtocol() const
-{
-  return m_strProtocol;
-}
-
 const std::string CURL::GetTranslatedProtocol() const
 {
   if (IsProtocol("shout")
@@ -474,21 +398,6 @@ const std::string CURL::GetTranslatedProtocol() const
     return "https";
 
   return GetProtocol();
-}
-
-const std::string& CURL::GetFileType() const
-{
-  return m_strFileType;
-}
-
-const std::string& CURL::GetOptions() const
-{
-  return m_strOptions;
-}
-
-const std::string& CURL::GetProtocolOptions() const
-{
-  return m_strProtocolOptions;
 }
 
 const std::string CURL::GetFileNameWithoutPath() const
@@ -738,7 +647,7 @@ bool CURL::IsFullPath(const std::string &url)
   if (url.size() && url[0] == '/') return true;     //   /foo/bar.ext
   if (url.find("://") != std::string::npos) return true;                 //   foo://bar.ext
   if (url.size() > 1 && url[1] == ':') return true; //   c:\\foo\\bar\\bar.ext
-  if (URIUtils::PathStarts(url, "\\\\")) return true;    //   \\UNC\path\to\file
+  if (StringUtils::StartsWith(url, "\\\\")) return true;    //   \\UNC\path\to\file
   return false;
 }
 
@@ -792,11 +701,11 @@ std::string CURL::Encode(const std::string& strURLData)
     const char kar = strURLData[i];
     
     // Don't URL encode "-_.!()" according to RFC1738
-    // TODO: Update it to "-_.~" after Gotham according to RFC3986
+    //! @todo Update it to "-_.~" after Gotham according to RFC3986
     if (StringUtils::isasciialphanum(kar) || kar == '-' || kar == '.' || kar == '_' || kar == '!' || kar == '(' || kar == ')')
       strResult.push_back(kar);
     else
-      strResult += StringUtils::Format("%%%02.2x", (unsigned int)((unsigned char)kar)); // TODO: Change to "%%%02.2X" after Gotham
+      strResult += StringUtils::Format("%%%2.2X", (unsigned int)((unsigned char)kar));
   }
 
   return strResult;

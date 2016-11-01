@@ -22,6 +22,7 @@
 #include "dialogs/GUIDialogOK.h"
 #include "dialogs/GUIDialogYesNo.h"
 #include "dialogs/GUIDialogSelect.h"
+#include "dialogs/GUIDialogContextMenu.h"
 #include "dialogs/GUIDialogTextViewer.h"
 #include "guilib/GUIWindowManager.h"
 #include "dialogs/GUIDialogFileBrowser.h"
@@ -35,6 +36,9 @@
 #include "WindowException.h"
 #include "messaging/ApplicationMessenger.h"
 #include "Dialog.h"
+#ifdef TARGET_POSIX
+#include "linux/XTimeUtils.h"
+#endif
 
 using namespace KODI::MESSAGING;
 
@@ -81,7 +85,23 @@ namespace XBMCAddon
       return pDialog->IsConfirmed();
     }
 
-    int Dialog::select(const String& heading, const std::vector<String>& list, int autoclose)
+    int Dialog::contextmenu(const std::vector<String>& list)
+    {
+      DelayedCallGuard dcguard(languageHook);
+      CGUIDialogContextMenu* pDialog= (CGUIDialogContextMenu*)g_windowManager.GetWindow(WINDOW_DIALOG_CONTEXT_MENU);
+      if (pDialog == NULL)
+        throw WindowException("Error: Window is NULL, this is not possible :-)");
+
+      CContextButtons choices;
+      for(unsigned int i = 0; i < list.size(); i++)
+      {
+        choices.Add(i, list[i]);
+      }
+      return pDialog->Show(choices);
+    }
+
+
+    int Dialog::select(const String& heading, const std::vector<Alternative<String, const ListItem* > > & list, int autoclose, int preselect, bool useDetails)
     {
       DelayedCallGuard dcguard(languageHook);
       CGUIDialogSelect* pDialog= (CGUIDialogSelect*)g_windowManager.GetWindow(WINDOW_DIALOG_SELECT);
@@ -91,24 +111,25 @@ namespace XBMCAddon
       pDialog->Reset();
       if (!heading.empty())
         pDialog->SetHeading(CVariant{heading});
-
-      String listLine;
-      for(unsigned int i = 0; i < list.size(); i++)
+      for (const auto& item : list)
       {
-        listLine = list[i];
-          pDialog->Add(listLine);
+        AddonClass::Ref<ListItem> ritem = item.which() == XBMCAddon::first ? ListItem::fromString(item.former()) : AddonClass::Ref<ListItem>(item.later());
+        CFileItemPtr& fileItem = ritem->item;
+        pDialog->Add(*fileItem);
       }
+      if (preselect > -1)
+        pDialog->SetSelected(preselect);
       if (autoclose > 0)
         pDialog->SetAutoClose(autoclose);
-
+      pDialog->SetUseDetails(useDetails);
       pDialog->Open();
 
-      return pDialog->GetSelectedLabel();
+      return pDialog->GetSelectedItem();
     }
 
 
     std::unique_ptr<std::vector<int>> Dialog::multiselect(const String& heading,
-        const std::vector<String>& options, int autoclose)
+        const std::vector<Alternative<String, const ListItem* > > & options, int autoclose, const std::vector<int>& preselect, bool useDetails)
     {
       DelayedCallGuard dcguard(languageHook);
       CGUIDialogSelect* pDialog = (CGUIDialogSelect*)g_windowManager.GetWindow(WINDOW_DIALOG_SELECT);
@@ -119,12 +140,16 @@ namespace XBMCAddon
       pDialog->SetMultiSelection(true);
       pDialog->SetHeading(CVariant{heading});
 
-      for (const auto& option : options)
-        pDialog->Add(option);
-
+      for (const auto& item : options)
+      {
+        AddonClass::Ref<ListItem> ritem = item.which() == XBMCAddon::first ? ListItem::fromString(item.former()) : AddonClass::Ref<ListItem>(item.later());
+        CFileItemPtr& fileItem = ritem->item;
+        pDialog->Add(*fileItem);
+      }
       if (autoclose > 0)
         pDialog->SetAutoClose(autoclose);
-
+      pDialog->SetUseDetails(useDetails);
+      pDialog->SetSelected(preselect);
       pDialog->Open();
 
       if (pDialog->IsConfirmed())

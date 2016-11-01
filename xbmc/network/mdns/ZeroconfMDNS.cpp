@@ -19,6 +19,7 @@
  */
 
 #include "ZeroconfMDNS.h"
+#include <arpa/inet.h>
 
 #include <string>
 #include <sstream>
@@ -27,7 +28,7 @@
 #include "dialogs/GUIDialogKaiToast.h"
 #include "guilib/LocalizeStrings.h"
 #if defined(TARGET_WINDOWS)
-#include "win32/WIN32Util.h"
+#include "platform/win32/WIN32Util.h"
 #endif //TARGET_WINDOWS
 
 #if defined(HAS_MDNS_EMBEDDED)

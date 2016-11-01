@@ -31,6 +31,7 @@
                              Linux: ~/.kodi/
                              OS X:  ~/Library/Application Support/Kodi/
                              Win32: ~/Application Data/XBMC/
+ special://envhome/       - on posix systems this will be equal to the $HOME
  special://userhome/      - a writable version of the user home directory
                              Linux, OS X: ~/.kodi
                              Win32: home directory of user
@@ -55,11 +56,15 @@ public:
   static void SetProfilePath(const std::string &path);
   static void SetXBMCPath(const std::string &path);
   static void SetXBMCBinPath(const std::string &path);
+  static void SetXBMCBinAddonPath(const std::string &path);
+  static void SetXBMCAltBinAddonPath(const std::string &path);
   static void SetXBMCFrameworksPath(const std::string &path);
   static void SetHomePath(const std::string &path);
   static void SetUserHomePath(const std::string &path);
+  static void SetEnvHomePath(const std::string &path);
   static void SetMasterProfilePath(const std::string &path);
   static void SetTempPath(const std::string &path);
+  static void SetLogPath(const std::string &dir);
 
   static bool ComparePath(const std::string &path1, const std::string &path2);
   static void LogPaths();

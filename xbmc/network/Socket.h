@@ -1,11 +1,10 @@
-#ifndef __XBMC_SOCKET_H__
-#define __XBMC_SOCKET_H__
+#pragma once
 
 /*
  * Socket classes
  *      Copyright (c) 2008 d4rk
- *      Copyright (C) 2008-2013 Team XBMC
- *      http://xbmc.org
+ *      Copyright (C) 2008-2015 Team Kodi
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
+ *  along with Kodi; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
@@ -52,16 +51,21 @@ namespace SOCKETS
   class CAddress
   {
   public:
-    sockaddr_in saddr;
+    union
+    {
+      sockaddr_in saddr4;
+      sockaddr_in6 saddr6;
+      sockaddr saddr_generic;
+    } saddr;
     socklen_t   size;
 
   public:
     CAddress()
     {
       memset(&saddr, 0, sizeof(saddr));
-      saddr.sin_family = AF_INET;
-      saddr.sin_addr.s_addr = htonl(INADDR_ANY);
-      size = sizeof(saddr);
+      saddr.saddr4.sin_family = AF_INET;
+      saddr.saddr4.sin_addr.s_addr = htonl(INADDR_ANY);
+      size = sizeof(saddr.saddr4);
     }
 
     CAddress(const char *address)
@@ -71,21 +75,56 @@ namespace SOCKETS
 
     void SetAddress(const char *address)
     {
+      in6_addr addr6;
       memset(&saddr, 0, sizeof(saddr));
-      saddr.sin_family = AF_INET;
-      saddr.sin_addr.s_addr = inet_addr(address);
-      size = sizeof(saddr);
+      if (inet_pton(AF_INET6, address, &addr6) == 1)
+      {
+        saddr.saddr6.sin6_family = AF_INET6;
+        saddr.saddr6.sin6_addr = addr6;
+        size = sizeof(saddr.saddr6);
+      }
+      else
+      {
+        saddr.saddr4.sin_family = AF_INET;
+        saddr.saddr4.sin_addr.s_addr = inet_addr(address);
+        size = sizeof(saddr.saddr4);
+      }
     }
 
     // returns statically alloced buffer, do not free
-    char *Address()
+    const char *Address()
     {
-      return inet_ntoa(saddr.sin_addr);
+      if (saddr.saddr_generic.sa_family == AF_INET6)
+      {
+        static char buf[INET6_ADDRSTRLEN];
+        return inet_ntop(AF_INET6, &saddr.saddr6.sin6_addr, buf, size);
+      }
+      else
+        return inet_ntoa(saddr.saddr4.sin_addr);
     }
 
     unsigned long ULong()
     {
-      return (unsigned long)saddr.sin_addr.s_addr;
+      if (saddr.saddr_generic.sa_family == AF_INET6)
+      {
+        // IPv4 coercion (see http://home.samfundet.no/~sesse/ipv6-porting.pdf).
+        // We hash the entire IPv6 address because XBMC might conceivably need to
+        // distinguish between different hosts in the same subnet.
+        // This hash function (djbhash) is not too strong, but good enough.
+        uint32_t hash = 5381;
+        for (int i = 0; i < 16; ++i)
+        {
+          hash = hash * 33 + saddr.saddr6.sin6_addr.s6_addr[i];
+        }
+        // Move into 224.0.0.0/3. As a special safeguard, make sure we don't
+        // end up with the the special broadcast address 255.255.255.255.
+        hash |= 0xe0000000u;
+        if (hash == 0xffffffffu)
+          hash = 0xfffffffeu;
+        return (unsigned long)htonl(hash);
+      }
+      else 
+        return (unsigned long)saddr.saddr4.sin_addr.s_addr;
     }
   };
 
@@ -105,7 +144,7 @@ namespace SOCKETS
     virtual ~CBaseSocket() { Close(); }
 
     // socket functions
-    virtual bool Bind(CAddress& addr, int port, int range=0) = 0;
+    virtual bool Bind(bool localOnly, int port, int range=0) = 0;
     virtual bool Connect() = 0;
     virtual void Close() {};
 
@@ -158,16 +197,17 @@ namespace SOCKETS
     CPosixUDPSocket()
       {
         m_iSock = INVALID_SOCKET;
+        m_ipv6Socket = false;
       }
 
-    bool Bind(CAddress& addr, int port, int range=0);
+    bool Bind(bool localOnly, int port, int range=0);
     bool Connect() { return false; }
     bool Listen(int timeout);
     int  SendTo(const CAddress& addr, const int datasize, const void* data);
     int  Read(CAddress& addr, const int buffersize, void *buffer);
     bool Broadcast(const CAddress& addr, const int datasize, const void* data)
     {
-      // TODO
+      //! @todo implement
       return false;
     }
     SOCKET  Socket() { return m_iSock; }
@@ -176,6 +216,9 @@ namespace SOCKETS
   protected:
     SOCKET   m_iSock;
     CAddress m_addr;
+
+  private:
+    bool m_ipv6Socket;
   };
 
   /**********************************************************************/
@@ -214,4 +257,3 @@ namespace SOCKETS
 
 }
 
-#endif //  __XBMC_SOCKET_H__

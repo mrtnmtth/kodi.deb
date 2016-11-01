@@ -30,7 +30,6 @@
 #include "utils/log.h"
 #include "utils/SysfsUtils.h"
 #include "utils/StringUtils.h"
-#include "utils/AMLUtils.h"
 #include "guilib/gui3d.h"
 #include "utils/RegExp.h"
 
@@ -118,6 +117,21 @@ bool aml_permissions()
       CLog::Log(LOGERROR, "AML: no rw on /sys/class/tsync/pts_pcrscr");
       permissions_ok = 0;
     }
+    if (!SysfsUtils::HasRW("/dev/video10"))
+    {
+      CLog::Log(LOGERROR, "AML: no rw on /dev/video10");
+      permissions_ok = 0;
+    }
+    if (!SysfsUtils::HasRW("/sys/module/amvideo/parameters/omx_pts"))
+    {
+      CLog::Log(LOGERROR, "AML: no rw on /sys/module/amvideo/parameters/omx_pts");
+      permissions_ok = 0;
+    }
+    if (!SysfsUtils::HasRW("/sys/module/amlvideodri/parameters/freerun_mode"))
+    {
+      CLog::Log(LOGERROR, "AML: no rw on /sys/module/amlvideodri/parameters/freerun_mode");
+      permissions_ok = 0;
+    }
     if (!SysfsUtils::HasRW("/sys/class/audiodsp/digital_raw"))
     {
       CLog::Log(LOGERROR, "AML: no rw on /sys/class/audiodsp/digital_raw");
@@ -175,6 +189,23 @@ bool aml_support_hevc_4k2k()
       has_hevc_4k2k = (regexp.RegFind(valstr) >= 0) ? 1 : 0;
   }
   return (has_hevc_4k2k == 1);
+}
+
+bool aml_support_hevc_10bit()
+{
+  static int has_hevc_10bit = -1;
+
+  if (has_hevc_10bit == -1)
+  {
+    CRegExp regexp;
+    regexp.RegComp("hevc:.*10bit");
+    std::string valstr;
+    if (SysfsUtils::GetString("/sys/class/amstream/vcodec_profile", valstr) != 0)
+      has_hevc_10bit = 0;
+    else
+      has_hevc_10bit = (regexp.RegFind(valstr) >= 0) ? 1 : 0;
+  }
+  return (has_hevc_10bit == 1);
 }
 
 bool aml_support_h264_4k2k()
@@ -529,6 +560,7 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res)
   res->bFullScreen   = true;
   res->iSubtitles    = (int)(0.965 * res->iHeight);
   res->fPixelRatio   = 1.0f;
+  res->strId         = fromMode;
   res->strMode       = StringUtils::Format("%dx%d @ %.2f%s - Full Screen", res->iScreenWidth, res->iScreenHeight, res->fRefreshRate,
     res->dwFlags & D3DPRESENTFLAG_INTERLACED ? "i" : "");
 

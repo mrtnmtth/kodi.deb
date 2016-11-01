@@ -88,7 +88,6 @@ public:
   static const std::string SETTING_VIDEOLIBRARY_ACTORTHUMBS;
   static const std::string SETTING_MYVIDEOS_FLATTEN;
   static const std::string SETTING_VIDEOLIBRARY_FLATTENTVSHOWS;
-  static const std::string SETTING_VIDEOLIBRARY_REMOVE_DUPLICATES;
   static const std::string SETTING_VIDEOLIBRARY_TVSHOWSSELECTFIRSTUNWATCHEDITEM;
   static const std::string SETTING_VIDEOLIBRARY_TVSHOWSINCLUDEALLSEASONSANDSPECIALS;
   static const std::string SETTING_VIDEOLIBRARY_SHOWALLITEMS;
@@ -106,7 +105,6 @@ public:
   static const std::string SETTING_VIDEOPLAYER_SEEKSTEPS;
   static const std::string SETTING_VIDEOPLAYER_SEEKDELAY;
   static const std::string SETTING_VIDEOPLAYER_ADJUSTREFRESHRATE;
-  static const std::string SETTING_VIDEOPLAYER_PAUSEAFTERREFRESHCHANGE;
   static const std::string SETTING_VIDEOPLAYER_USEDISPLAYASCLOCK;
   static const std::string SETTING_VIDEOPLAYER_ERRORINASPECT;
   static const std::string SETTING_VIDEOPLAYER_STRETCH43;
@@ -117,6 +115,9 @@ public:
   static const std::string SETTING_VIDEOPLAYER_RENDERMETHOD;
   static const std::string SETTING_VIDEOPLAYER_HQSCALERS;
   static const std::string SETTING_VIDEOPLAYER_USEAMCODEC;
+  static const std::string SETTING_VIDEOPLAYER_USEAMCODECMPEG2;
+  static const std::string SETTING_VIDEOPLAYER_USEAMCODECMPEG4;
+  static const std::string SETTING_VIDEOPLAYER_USEAMCODECH264;
   static const std::string SETTING_VIDEOPLAYER_USEMEDIACODEC;
   static const std::string SETTING_VIDEOPLAYER_USEMEDIACODECSURFACE;
   static const std::string SETTING_VIDEOPLAYER_USEVDPAU;
@@ -132,11 +133,11 @@ public:
   static const std::string SETTING_VIDEOPLAYER_USEDXVA2;
   static const std::string SETTING_VIDEOPLAYER_USEOMXPLAYER;
   static const std::string SETTING_VIDEOPLAYER_USEOMX;
-  static const std::string SETTING_VIDEOPLAYER_USEVIDEOTOOLBOX;
-  static const std::string SETTING_VIDEOPLAYER_USEVDA;
+  static const std::string SETTING_VIDEOPLAYER_USEVTB;
   static const std::string SETTING_VIDEOPLAYER_USEMMAL;
   static const std::string SETTING_VIDEOPLAYER_USESTAGEFRIGHT;
   static const std::string SETTING_VIDEOPLAYER_LIMITGUIUPDATE;
+  static const std::string SETTING_VIDEOPLAYER_SUPPORTMVC;
   static const std::string SETTING_MYVIDEOS_SELECTACTION;
   static const std::string SETTING_MYVIDEOS_EXTRACTFLAGS;
   static const std::string SETTING_MYVIDEOS_EXTRACTCHAPTERTHUMBS;
@@ -171,7 +172,6 @@ public:
   static const std::string SETTING_SCRAPERS_MOVIESDEFAULT;
   static const std::string SETTING_SCRAPERS_TVSHOWSDEFAULT;
   static const std::string SETTING_SCRAPERS_MUSICVIDEOSDEFAULT;
-  static const std::string SETTING_PVRMANAGER_ENABLED;
   static const std::string SETTING_PVRMANAGER_HIDECONNECTIONLOSTWARNING;
   static const std::string SETTING_PVRMANAGER_SYNCCHANNELGROUPS;
   static const std::string SETTING_PVRMANAGER_BACKENDCHANNELORDER;
@@ -198,6 +198,7 @@ public:
   static const std::string SETTING_PVRPLAYBACK_CONFIRMCHANNELSWITCH;
   static const std::string SETTING_PVRPLAYBACK_CHANNELENTRYTIMEOUT;
   static const std::string SETTING_PVRPLAYBACK_FPS;
+  static const std::string SETTING_PVRRECORD_INSTANTRECORDACTION;
   static const std::string SETTING_PVRRECORD_INSTANTRECORDTIME;
   static const std::string SETTING_PVRRECORD_DEFAULTPRIORITY;
   static const std::string SETTING_PVRRECORD_DEFAULTLIFETIME;
@@ -205,6 +206,7 @@ public:
   static const std::string SETTING_PVRRECORD_MARGINEND;
   static const std::string SETTING_PVRRECORD_PREVENTDUPLICATEEPISODES;
   static const std::string SETTING_PVRRECORD_TIMERNOTIFICATIONS;
+  static const std::string SETTING_PVRRECORD_GROUPRECORDINGS;
   static const std::string SETTING_PVRPOWERMANAGEMENT_ENABLED;
   static const std::string SETTING_PVRPOWERMANAGEMENT_BACKENDIDLETIME;
   static const std::string SETTING_PVRPOWERMANAGEMENT_SETWAKEUPCMD;
@@ -215,7 +217,7 @@ public:
   static const std::string SETTING_PVRPARENTAL_PIN;
   static const std::string SETTING_PVRPARENTAL_DURATION;
   static const std::string SETTING_PVRCLIENT_MENUHOOK;
-  static const std::string SETTING_PVRTIMERS_TIMERTYPEFILTER;
+  static const std::string SETTING_PVRTIMERS_HIDEDISABLEDTIMERS;
   static const std::string SETTING_MUSICLIBRARY_SHOWCOMPILATIONARTISTS;
   static const std::string SETTING_MUSICLIBRARY_DOWNLOADINFO;
   static const std::string SETTING_MUSICLIBRARY_ALBUMSSCRAPER;
@@ -250,7 +252,6 @@ public:
   static const std::string SETTING_AUDIOCDS_ENCODER;
   static const std::string SETTING_AUDIOCDS_SETTINGS;
   static const std::string SETTING_AUDIOCDS_EJECTONRIP;
-  static const std::string SETTING_MYMUSIC_STARTWINDOW;
   static const std::string SETTING_MYMUSIC_SONGTHUMBINVIS;
   static const std::string SETTING_MYMUSIC_DEFAULTLIBVIEW;
   static const std::string SETTING_PICTURES_GENERATETHUMBS;
@@ -259,6 +260,7 @@ public:
   static const std::string SETTING_SLIDESHOW_STAYTIME;
   static const std::string SETTING_SLIDESHOW_DISPLAYEFFECTS;
   static const std::string SETTING_SLIDESHOW_SHUFFLE;
+  static const std::string SETTING_SLIDESHOW_HIGHQUALITYDOWNSCALING;
   static const std::string SETTING_WEATHER_CURRENTLOCATION;
   static const std::string SETTING_WEATHER_ADDON;
   static const std::string SETTING_WEATHER_ADDONSETTINGS;
@@ -296,19 +298,23 @@ public:
   static const std::string SETTING_VIDEOSCREEN_BLANKDISPLAYS;
   static const std::string SETTING_VIDEOSCREEN_STEREOSCOPICMODE;
   static const std::string SETTING_VIDEOSCREEN_PREFEREDSTEREOSCOPICMODE;
-  static const std::string SETTING_VIDEOSCREEN_VSYNC;
+  static const std::string SETTING_VIDEOSCREEN_NOOFBUFFERS;
+  static const std::string SETTING_VIDEOSCREEN_3DLUT;
+  static const std::string SETTING_VIDEOSCREEN_DISPLAYPROFILE;
   static const std::string SETTING_VIDEOSCREEN_GUICALIBRATION;
   static const std::string SETTING_VIDEOSCREEN_TESTPATTERN;
   static const std::string SETTING_VIDEOSCREEN_LIMITEDRANGE;
+  static const std::string SETTING_VIDEOSCREEN_FRAMEPACKING;
   static const std::string SETTING_AUDIOOUTPUT_AUDIODEVICE;
   static const std::string SETTING_AUDIOOUTPUT_CHANNELS;
   static const std::string SETTING_AUDIOOUTPUT_CONFIG;
   static const std::string SETTING_AUDIOOUTPUT_SAMPLERATE;
   static const std::string SETTING_AUDIOOUTPUT_STEREOUPMIX;
   static const std::string SETTING_AUDIOOUTPUT_MAINTAINORIGINALVOLUME;
-  static const std::string SETTING_AUDIOOUTPUT_NORMALIZELEVELS;
   static const std::string SETTING_AUDIOOUTPUT_PROCESSQUALITY;
+  static const std::string SETTING_AUDIOOUTPUT_ATEMPOTHRESHOLD;
   static const std::string SETTING_AUDIOOUTPUT_STREAMSILENCE;
+  static const std::string SETTING_AUDIOOUTPUT_STREAMNOISE;
   static const std::string SETTING_AUDIOOUTPUT_DSPADDONSENABLED;
   static const std::string SETTING_AUDIOOUTPUT_DSPSETTINGS;
   static const std::string SETTING_AUDIOOUTPUT_DSPRESETDB;
@@ -321,10 +327,12 @@ public:
   static const std::string SETTING_AUDIOOUTPUT_DTSPASSTHROUGH;
   static const std::string SETTING_AUDIOOUTPUT_TRUEHDPASSTHROUGH;
   static const std::string SETTING_AUDIOOUTPUT_DTSHDPASSTHROUGH;
-  static const std::string SETTING_AUDIOOUTPUT_SUPPORTSDTSHDCPUDECODING;
+  static const std::string SETTING_AUDIOOUTPUT_VOLUMESTEPS;
   static const std::string SETTING_INPUT_PERIPHERALS;
   static const std::string SETTING_INPUT_ENABLEMOUSE;
-  static const std::string SETTING_INPUT_ENABLEJOYSTICK;
+  static const std::string SETTING_INPUT_CONTROLLERCONFIG;
+  static const std::string SETTING_INPUT_TESTRUMBLE;
+  static const std::string SETTING_INPUT_CONTROLLERPOWEROFF;
   static const std::string SETTING_INPUT_APPLEREMOTEMODE;
   static const std::string SETTING_INPUT_APPLEREMOTEALWAYSON;
   static const std::string SETTING_INPUT_APPLEREMOTESEQUENCETIME;
@@ -360,10 +368,16 @@ public:
   static const std::string SETTING_CACHEDVD_LAN;
   static const std::string SETTING_CACHEUNKNOWN_INTERNET;
   static const std::string SETTING_SYSTEM_PLAYLISTSPATH;
-  static const std::string SETTING_GENERAL_ADDONUPDATES;
-  static const std::string SETTING_GENERAL_ADDONNOTIFICATIONS;
+  static const std::string SETTING_ADDONS_AUTOUPDATES;
+  static const std::string SETTING_ADDONS_NOTIFICATIONS;
+  static const std::string SETTING_ADDONS_SHOW_RUNNING;
+  static const std::string SETTING_ADDONS_MANAGE_DEPENDENCIES;
+  static const std::string SETTING_ADDONS_ALLOW_UNKNOWN_SOURCES;
   static const std::string SETTING_GENERAL_ADDONFOREIGNFILTER;
   static const std::string SETTING_GENERAL_ADDONBROKENFILTER;
+  static const std::string SETTING_SOURCE_VIDEOS;
+  static const std::string SETTING_SOURCE_MUSIC;
+  static const std::string SETTING_SOURCE_PICTURES;
 
   /*!
    \brief Creates a new settings wrapper around a new settings manager.

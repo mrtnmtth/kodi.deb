@@ -58,18 +58,30 @@ void CGUIWindowPVRSearch::GetContextButtons(int itemNumber, CContextButtons &but
     CPVRTimerInfoTagPtr timer(epg->Timer());
     if (timer)
     {
+      if (timer->GetTimerRuleId() != PVR_TIMER_NO_PARENT)
+      {
+        buttons.Add(CONTEXT_BUTTON_EDIT_TIMER_RULE, 19243); /* Edit timer rule */
+        buttons.Add(CONTEXT_BUTTON_DELETE_TIMER_RULE, 19295); /* Delete timer rule */
+      }
+
+      const CPVRTimerTypePtr timerType(timer->GetTimerType());
+      if (timerType && !timerType->IsReadOnly() && timer->GetTimerRuleId() == PVR_TIMER_NO_PARENT)
+        buttons.Add(CONTEXT_BUTTON_EDIT_TIMER, 19242);    /* Edit timer */
+      else
+        buttons.Add(CONTEXT_BUTTON_EDIT_TIMER, 19241);    /* View timer information */
+
       if (timer->IsRecording())
         buttons.Add(CONTEXT_BUTTON_STOP_RECORD, 19059);   /* Stop recording */
       else
       {
-        CPVRTimerTypePtr timerType(timer->GetTimerType());
         if (timerType && !timerType->IsReadOnly())
           buttons.Add(CONTEXT_BUTTON_DELETE_TIMER, 19060);  /* Delete timer */
       }
     }
-    else if (g_PVRClients->SupportsTimers() && epg->EndAsLocalTime() > CDateTime::GetCurrentDateTime())
+    else if (g_PVRClients->SupportsTimers())
     {
-      buttons.Add(CONTEXT_BUTTON_START_RECORD, 264);      /* Record */
+      if (epg->EndAsLocalTime() > CDateTime::GetCurrentDateTime())
+        buttons.Add(CONTEXT_BUTTON_START_RECORD, 264);      /* Record */
       buttons.Add(CONTEXT_BUTTON_ADD_TIMER, 19061);       /* Add timer */
     }
 
@@ -83,7 +95,6 @@ void CGUIWindowPVRSearch::GetContextButtons(int itemNumber, CContextButtons &but
   }
 
   CGUIWindowPVRBase::GetContextButtons(itemNumber, buttons);
-  CContextMenuManager::GetInstance().AddVisibleItems(pItem, buttons);
 }
 
 void CGUIWindowPVRSearch::OnWindowLoaded()
@@ -102,7 +113,10 @@ bool CGUIWindowPVRSearch::OnContextButton(int itemNumber, CONTEXT_BUTTON button)
       OnContextButtonInfo(pItem.get(), button) ||
       OnContextButtonStartRecord(pItem.get(), button) ||
       OnContextButtonStopRecord(pItem.get(), button) ||
+      OnContextButtonEditTimer(pItem.get(), button) ||
+      OnContextButtonEditTimerRule(pItem.get(), button) ||
       OnContextButtonDeleteTimer(pItem.get(), button) ||
+      OnContextButtonDeleteTimerRule(pItem.get(), button) ||
       OnContextButtonPlay(pItem.get(), button) ||
       CGUIWindowPVRBase::OnContextButton(itemNumber, button);
 }
@@ -155,10 +169,9 @@ void CGUIWindowPVRSearch::OnPrepareFileItems(CFileItemList &items)
 
   if (m_bSearchConfirmed)
   {
-    m_bSearchConfirmed = false;
-
     bAddSpecialSearchItem = true;
 
+    items.Clear();
     CGUIDialogProgress* dlgProgress = (CGUIDialogProgress*)g_windowManager.GetWindow(WINDOW_DIALOG_PROGRESS);
     if (dlgProgress)
     {
@@ -168,7 +181,7 @@ void CGUIWindowPVRSearch::OnPrepareFileItems(CFileItemList &items)
       dlgProgress->Progress();
     }
 
-    // TODO should we limit the find similar search to the selected group?
+    //! @todo should we limit the find similar search to the selected group?
     g_EpgContainer.GetEPGSearch(items, m_searchfilter);
 
     if (dlgProgress)
@@ -191,9 +204,6 @@ void CGUIWindowPVRSearch::OnPrepareFileItems(CFileItemList &items)
 
 bool CGUIWindowPVRSearch::OnMessage(CGUIMessage &message)
 {
-  if (!IsValidMessage(message))
-    return false;
-  
   if (message.GetMessage() == GUI_MSG_CLICKED)
   {
     if (message.GetSenderId() == m_viewControl.GetCurrentControl())
@@ -281,10 +291,14 @@ bool CGUIWindowPVRSearch::OnContextButtonStartRecord(CFileItem *item, CONTEXT_BU
 {
   bool bReturn = false;
 
-  if ((button == CONTEXT_BUTTON_START_RECORD) ||
-      (button == CONTEXT_BUTTON_ADD_TIMER))
+  if (button == CONTEXT_BUTTON_START_RECORD)
   {
-    AddTimer(item, button == CONTEXT_BUTTON_ADD_TIMER);
+    AddTimer(item);
+    bReturn = true;
+  }
+  else if (button == CONTEXT_BUTTON_ADD_TIMER)
+  {
+    AddTimerRule(item);
     bReturn = true;
   }
 

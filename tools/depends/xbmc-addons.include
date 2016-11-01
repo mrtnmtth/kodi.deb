@@ -27,12 +27,15 @@ endif
 
 ifneq ($(PREFIX),)
   ifneq (darwin, $(findstring darwin, $(HOST)))
-    INSTALL_PREFIX = $(PREFIX)
+    INSTALL_PREFIX = $(PREFIX) -DOVERRIDE_PATHS=ON
   endif
 
   CMAKE_EXTRA += -DAUTOCONF_FILES="$(CONFIG_SUB) $(CONFIG_GUESS)"
 endif
 
+ifneq ($(ADDON_SRC_PREFIX),)
+  SRC_OVERRIDE = -DADDON_SRC_PREFIX=$(ADDON_SRC_PREFIX)
+endif
 
 all: .installed-$(PLATFORM)
 
@@ -57,14 +60,14 @@ ifeq ($(CROSS_COMPILING),yes)
 endif
 	cd $(PLATFORM); \
          $(CMAKE) -DCMAKE_INSTALL_PREFIX=$(INSTALL_PREFIX) $(CMAKE_EXTRA) \
-         $(TOOLCHAIN) \
+         $(TOOLCHAIN) $(SRC_OVERRIDE) \
          -DADDONS_TO_BUILD="$(ADDONS)" $(ADDON_PROJECT_DIR) -DBUILD_DIR=$(BUILDDIR)/$(PLATFORM)/build ;\
          for addon in $$(make supported_addons | awk '/^ALL_ADDONS_BUILDING: .*$$/ { first = $$1; $$1 = ""; print $$0 }'); do \
            $(MAKE) $$addon && echo $$addon >> $(ADDON_PROJECT_DIR)/.success || echo $$addon >> $(ADDON_PROJECT_DIR)/.failure ;\
          done
 ifneq ($(CROSS_COMPILING),yes)
 	@[ -f $(ADDON_PROJECT_DIR)/.failure ] && echo "Following Addons failed to build:" $(shell cat $(ADDON_PROJECT_DIR)/.failure) || :
-	@[ -w $(INSTALL_PREFIX) ] || $(MAKE) -C $(PLATFORM) install
+	@cd $(PLATFORM); $(MAKE) need-sudo | grep -q TRUE && $(MAKE) sudo-install || :
 endif
 	touch $@
 

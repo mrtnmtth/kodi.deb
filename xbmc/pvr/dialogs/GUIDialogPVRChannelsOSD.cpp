@@ -47,8 +47,7 @@ using namespace KODI::MESSAGING;
 #define CONTROL_LIST                  11
 
 CGUIDialogPVRChannelsOSD::CGUIDialogPVRChannelsOSD() :
-    CGUIDialog(WINDOW_DIALOG_PVR_OSD_CHANNELS, "DialogPVRChannelsOSD.xml"),
-    Observer()
+    CGUIDialog(WINDOW_DIALOG_PVR_OSD_CHANNELS, "DialogPVRChannelsOSD.xml")
 {
   m_vecItems = new CFileItemList;
 }
@@ -57,10 +56,8 @@ CGUIDialogPVRChannelsOSD::~CGUIDialogPVRChannelsOSD()
 {
   delete m_vecItems;
 
-  if (IsObserving(g_infoManager))
-    g_infoManager.UnregisterObserver(this);
-  if (IsObserving(g_EpgContainer))
-    g_EpgContainer.UnregisterObserver(this);
+  g_infoManager.UnregisterObserver(this);
+  g_EpgContainer.UnregisterObserver(this);
 }
 
 bool CGUIDialogPVRChannelsOSD::OnMessage(CGUIMessage& message)
@@ -184,14 +181,11 @@ CPVRChannelGroupPtr CGUIDialogPVRChannelsOSD::GetPlayingGroup()
 
 void CGUIDialogPVRChannelsOSD::Update()
 {
+  g_infoManager.RegisterObserver(this);
+  g_EpgContainer.RegisterObserver(this);
+
   // lock our display, as this window is rendered from the player thread
   g_graphicsContext.Lock();
-
-  if (!IsObserving(g_infoManager))
-    g_infoManager.RegisterObserver(this);
-  if (!IsObserving(g_EpgContainer))
-    g_EpgContainer.RegisterObserver(this);
-
   m_viewControl.SetCurrentView(DEFAULT_VIEW_LIST);
 
   // empty the list ready for population
@@ -328,10 +322,8 @@ void CGUIDialogPVRChannelsOSD::ShowInfo(int item)
       return;
 
     /* inform dialog about the file item and open dialog window */
-    CFileItem *itemNow  = new CFileItem(epgnow);
-    pDlgInfo->SetProgInfo(itemNow);
+    pDlgInfo->SetProgInfo(epgnow);
     pDlgInfo->Open();
-    delete itemNow; /* delete previuosly created FileItem */
   }
 
   return;

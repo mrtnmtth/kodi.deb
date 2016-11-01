@@ -35,9 +35,9 @@
 #include "utils/auto_buffer.h"
 #include "IFileTypes.h"
 #include "PlatformDefs.h"
+#include "URL.h"
 
 class BitstreamStats;
-class CURL;
 
 namespace XFILE
 {
@@ -52,27 +52,6 @@ public:
   virtual ~IFileCallback() {};
 };
 
-/* indicate that caller can handle truncated reads, where function returns before entire buffer has been filled */
-#define READ_TRUNCATED    0x01
-
-/* indicate that that caller support read in the minimum defined chunk size, this disables internal cache then */
-#define READ_CHUNKED      0x02
-
-/* use cache to access this file */
-#define READ_CACHED       0x04
-
-/* open without caching. regardless to file type. */
-#define READ_NO_CACHE     0x08
-
-/* calcuate bitrate for file while reading */
-#define READ_BITRATE      0x10
-
-/* indicate to the caller we will seek between multiple streams in the file frequently */
-#define READ_MULTI_STREAM 0x20
-
-/* indicate to the caller file is audio and/or video (and e.g. may grow) */
-#define READ_AUDIO_VIDEO  0x40
-
 class CFileStreamBuffer;
 
 class CFile
@@ -81,12 +60,29 @@ public:
   CFile();
   ~CFile();
 
+  bool CURLCreate(const std::string &url);
+  bool CURLAddOption(XFILE::CURLOPTIONTYPE type, const char* name, const char * value);
+  bool CURLOpen(unsigned int flags);
+
+  /**
+  * Attempt to open an IFile instance.
+  * @param file reference to CCurl file description
+  * @param flags see IFileTypes.h
+  * @return true on success, false otherwise
+  *
+  * Remarks: Open can only be called once. Calling
+  * Open() on an already opened file will fail
+  * exept flag READ_REOPEN is set and the underlying
+  * file has an implementation of ReOpen().
+  */
   bool Open(const CURL& file, const unsigned int flags = 0);
+  bool Open(const std::string& strFileName, const unsigned int flags = 0);
+
   bool OpenForWrite(const CURL& file, bool bOverWrite = false);
+  bool OpenForWrite(const std::string& strFileName, bool bOverWrite = false);
+
   ssize_t LoadFile(const CURL &file, auto_buffer& outputBuffer);
 
-  bool Open(const std::string& strFileName, const unsigned int flags = 0);
-  bool OpenForWrite(const std::string& strFileName, bool bOverWrite = false);
   /**
    * Attempt to read bufSize bytes from currently opened file into buffer bufPtr.
    * @param bufPtr  pointer to buffer
@@ -186,12 +182,14 @@ public:
   static bool Rename(const std::string& strFileName, const std::string& strNewFileName);
   static bool Copy(const std::string& strFileName, const std::string& strDest, XFILE::IFileCallback* pCallback = NULL, void* pContext = NULL);
   static bool SetHidden(const std::string& fileName, bool hidden);
+  double GetDownloadSpeed();
 
 private:
-  unsigned int m_flags;
-  IFile* m_pFile;
-  CFileStreamBuffer* m_pBuffer;
-  BitstreamStats* m_bitStreamStats;
+  unsigned int        m_flags;
+  CURL                m_curl;
+  IFile*              m_pFile;
+  CFileStreamBuffer*  m_pBuffer;
+  BitstreamStats*     m_bitStreamStats;
 };
 
 // streambuf for file io, only supports buffered input currently

@@ -20,16 +20,20 @@
 
 #include "SeekHandler.h"
 
+#include <cmath>
 #include <stdlib.h>
 
 #include "Application.h"
+#include "cores/DataCacheCore.h"
 #include "FileItem.h"
 #include "guilib/GraphicContext.h"
 #include "guilib/LocalizeStrings.h"
+#include "ServiceBroker.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/lib/Setting.h"
 #include "settings/Settings.h"
 #include "utils/log.h"
+#include "utils/MathUtils.h"
 #include "utils/StringUtils.h"
 #include "utils/Variant.h"
 
@@ -78,7 +82,7 @@ void CSeekHandler::Configure()
     std::vector<CVariant> seekSteps = CSettings::GetInstance().GetList(it->second);
     for (std::vector<CVariant>::iterator it = seekSteps.begin(); it != seekSteps.end(); ++it)
     {
-      int stepSeconds = (*it).asInteger();
+      int stepSeconds = static_cast<int>((*it).asInteger());
       if (stepSeconds < 0)
         backwardSeekSteps.insert(backwardSeekSteps.begin(), stepSeconds);
       else
@@ -156,7 +160,7 @@ void CSeekHandler::Seek(bool forward, float amount, float duration /* = 0 */, bo
     if (totalTime < 0)
       totalTime = 0;
 
-    int seekSize = (amount * amount * speed) * totalTime / 100;
+    double seekSize = (amount * amount * speed) * totalTime / 100;
     if (forward)
       m_seekSize += seekSize;
     else
@@ -197,12 +201,12 @@ void CSeekHandler::SeekSeconds(int seconds)
 
 int CSeekHandler::GetSeekSize() const
 {
-  return m_seekSize;
+  return MathUtils::round_int(m_seekSize);
 }
 
 bool CSeekHandler::InProgress() const
 {
-  return m_requireSeek;
+  return m_requireSeek || CServiceBroker::GetDataCacheCore().IsSeeking();
 }
 
 void CSeekHandler::Process()

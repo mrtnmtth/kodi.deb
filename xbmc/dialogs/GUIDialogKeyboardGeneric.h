@@ -20,6 +20,9 @@
 
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include "guilib/GUIKeyboard.h"
 #include "guilib/GUIDialog.h"
 #include "input/KeyboardLayout.h"
@@ -84,7 +87,7 @@ class CGUIDialogKeyboardGeneric : public CGUIDialog, public CGUIKeyboard
     std::string m_strHeading;
     std::string m_text;       ///< current text
 
-    IInputCodingTable *m_codingtable;
+    IInputCodingTablePtr m_codingtable;
     std::vector<std::wstring> m_words;
     std::string m_hzcode;
     int         m_pos;

@@ -1,6 +1,6 @@
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      Copyright (C) 2005-2015 Team Kodi
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
+ *  along with Kodi; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
@@ -35,21 +35,20 @@ const CSkinVariableString* CSkinVariable::CreateFromXML(const TiXmlElement& node
     const TiXmlElement* valuenode = node.FirstChildElement("value");
     while (valuenode)
     {
-      if (valuenode->FirstChild())
-      {
-        CSkinVariableString::ConditionLabelPair pair;
-        const char *condition = valuenode->Attribute("condition");
-        if (condition)
-          pair.m_condition = g_infoManager.Register(condition, context);
+      CSkinVariableString::ConditionLabelPair pair;
+      const char *condition = valuenode->Attribute("condition");
+      if (condition)
+        pair.m_condition = g_infoManager.Register(condition, context);
 
-        pair.m_label = CGUIInfoLabel(valuenode->FirstChild()->ValueStr());
-        tmp->m_conditionLabelPairs.push_back(pair);
-        if (!pair.m_condition)
-          break; // once we reach default value (without condition) break iterating
-      }
+      auto label = valuenode->FirstChild() ? valuenode->FirstChild()->ValueStr() : "";
+      pair.m_label = CGUIInfoLabel(label);
+      tmp->m_conditionLabelPairs.push_back(pair);
+      if (!pair.m_condition)
+        break; // once we reach default value (without condition) break iterating
+
       valuenode = valuenode->NextSiblingElement("value");
     }
-    if (tmp->m_conditionLabelPairs.size() > 0)
+    if (!tmp->m_conditionLabelPairs.empty())
       return tmp;
     delete tmp;
   }

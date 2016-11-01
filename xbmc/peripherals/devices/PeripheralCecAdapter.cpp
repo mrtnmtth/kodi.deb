@@ -32,6 +32,7 @@
 #include "guilib/LocalizeStrings.h"
 #include "pictures/GUIWindowSlideShow.h"
 #include "settings/AdvancedSettings.h"
+#include "utils/JobManager.h"
 #include "utils/log.h"
 #include "utils/Variant.h"
 
@@ -81,8 +82,8 @@ class DllLibCEC : public DllDynamic, DllLibCECInterface
   END_METHOD_RESOLVE()
 };
 
-CPeripheralCecAdapter::CPeripheralCecAdapter(const PeripheralScanResult& scanResult) :
-  CPeripheralHID(scanResult),
+CPeripheralCecAdapter::CPeripheralCecAdapter(const PeripheralScanResult& scanResult, CPeripheralBus* bus) :
+  CPeripheralHID(scanResult, bus),
   CThread("CECAdapter"),
   m_dll(NULL),
   m_cecAdapter(NULL)
@@ -127,7 +128,7 @@ void CPeripheralCecAdapter::ResetMembers(void)
   m_lastKeypress             = 0;
   m_lastChange               = VOLUME_CHANGE_NONE;
   m_iExitCode                = EXITCODE_QUIT;
-  m_bIsMuted                 = false; // TODO fetch the correct initial value when system audiostatus is implemented in libCEC
+  m_bIsMuted                 = false; //! @todo fetch the correct initial value when system audiostatus is implemented in libCEC
   m_bGoingToStandby          = false;
   m_bIsRunning               = false;
   m_bDeviceRemoved           = false;
@@ -174,7 +175,7 @@ void CPeripheralCecAdapter::Announce(AnnouncementFlag flag, const char *sender, 
   else if (flag == GUI && !strcmp(sender, "xbmc") && !strcmp(message, "OnScreensaverActivated") && m_bIsReady)
   {
     // Don't put devices to standby if application is currently playing
-    if ((!g_application.m_pPlayer->IsPlaying() && !g_application.m_pPlayer->IsPaused()) && m_configuration.bPowerOffScreensaver == 1)
+    if (!g_application.m_pPlayer->IsPlaying() && m_configuration.bPowerOffScreensaver == 1)
     {
       // only power off when we're the active source
       if (m_cecAdapter->IsLibCECActiveSource())
@@ -593,6 +594,8 @@ void CPeripheralCecAdapter::SetMenuLanguage(const char *strLanguage)
   else if (!strcmp(strLanguage, "srp"))
     strGuiLanguage = "sr_rs@latin";
   else if (!strcmp(strLanguage, "slo"))
+    strGuiLanguage = "sk_sk";
+  else if (!strcmp(strLanguage, "slv"))
     strGuiLanguage = "sl_si";
   else if (!strcmp(strLanguage, "spa"))
     strGuiLanguage = "es_es";
@@ -734,7 +737,12 @@ int CPeripheralCecAdapter::CecAlert(void *cbParam, const libcec_alert alert, con
   }
 
   if (bReopenConnection)
-    adapter->ReopenConnection();
+  {
+    // Reopen the connection asynchronously. Otherwise a deadlock may occure.
+    // Reconnect means destruction and recreation of our libcec instance, but libcec
+    // calls this callback function synchronously and must not be destroyed meanwhile.
+    adapter->ReopenConnection(true);
+  }
 
   return 1;
 }
@@ -1177,7 +1185,8 @@ void CPeripheralCecAdapter::CecSourceActivated(void *cbParam, const CEC::cec_log
         // pause/resume player
         CApplicationMessenger::GetInstance().SendMsg(TMSG_MEDIA_PAUSE);
     }
-    else if (adapter->GetSettingInt("pause_or_stop_playback_on_deactivate") == LOCALISED_ID_STOP)
+    else if (bPlayingAndDeactivated
+      && adapter->GetSettingInt("pause_or_stop_playback_on_deactivate") == LOCALISED_ID_STOP)
     {
       if (pSlideShow)
         pSlideShow->OnAction(CAction(ACTION_STOP));
@@ -1667,8 +1676,35 @@ void CPeripheralCecAdapter::OnDeviceRemoved(void)
   m_bDeviceRemoved = true;
 }
 
-bool CPeripheralCecAdapter::ReopenConnection(void)
+namespace PERIPHERALS
 {
+
+class CPeripheralCecAdapterReopenJob : public CJob
+{
+public:
+  CPeripheralCecAdapterReopenJob(CPeripheralCecAdapter *adapter)
+    : m_adapter(adapter) {}
+  virtual ~CPeripheralCecAdapterReopenJob() {}
+
+  bool DoWork(void)
+  {
+    return m_adapter->ReopenConnection(false);
+  }
+
+private:
+  CPeripheralCecAdapter *m_adapter;
+};
+
+};
+
+bool CPeripheralCecAdapter::ReopenConnection(bool bAsync /* = false */)
+{
+  if (bAsync)
+  {
+    CJobManager::GetInstance().AddJob(new CPeripheralCecAdapterReopenJob(this), nullptr, CJob::PRIORITY_NORMAL);
+    return true;
+  }
+
   // stop running thread
   {
     CSingleLock lock(m_critSection);

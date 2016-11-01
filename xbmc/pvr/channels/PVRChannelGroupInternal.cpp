@@ -54,7 +54,7 @@ CPVRChannelGroupInternal::CPVRChannelGroupInternal(const CPVRChannelGroup &group
 CPVRChannelGroupInternal::~CPVRChannelGroupInternal(void)
 {
   Unload();
-  g_PVRManager.UnregisterObserver(this);
+  g_PVRManager.Events().Unsubscribe(this);
 }
 
 bool CPVRChannelGroupInternal::Load(void)
@@ -62,8 +62,7 @@ bool CPVRChannelGroupInternal::Load(void)
   if (CPVRChannelGroup::Load())
   {
     UpdateChannelPaths();
-    g_PVRManager.RegisterObserver(this);
-
+    g_PVRManager.Events().Subscribe(this, &CPVRChannelGroupInternal::OnPVRManagerEvent);
     return true;
   }
 
@@ -91,7 +90,7 @@ void CPVRChannelGroupInternal::UpdateChannelPaths(void)
   for (PVR_CHANNEL_GROUP_MEMBERS::iterator it = m_members.begin(); it != m_members.end(); ++it)
   {
     if (it->second.channel->IsHidden())
-      m_iHiddenChannels++;
+      ++m_iHiddenChannels;
     else
       it->second.channel->UpdatePath(this);
   }
@@ -342,17 +341,14 @@ bool CPVRChannelGroupInternal::CreateChannelEpgs(bool bForce /* = false */)
 
   if (HasChangedChannels())
   {
-    g_EpgContainer.MarkTablesForPersist();
     return Persist();
   }
 
   return true;
 }
 
-void CPVRChannelGroupInternal::Notify(const Observable &obs, const ObservableMessage msg)
+void CPVRChannelGroupInternal::OnPVRManagerEvent(const PVR::PVREvent& event)
 {
-  if (msg == ObservableMessageManagerStateChanged)
-  {
+  if (event == ManagerStarted)
     g_PVRManager.TriggerEpgsCreate();
-  }
 }

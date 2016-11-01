@@ -29,7 +29,6 @@
 
 CVideoSettings::CVideoSettings()
 {
-  m_DeinterlaceMode = VS_DEINTERLACEMODE_AUTO;
   m_InterlaceMethod = VS_INTERLACEMETHOD_AUTO;
   m_ScalingMethod = VS_SCALINGMETHOD_LINEAR;
   m_ViewMode = ViewModeNormal;
@@ -54,12 +53,12 @@ CVideoSettings::CVideoSettings()
   m_ResumeTime = 0;
   m_StereoMode = 0;
   m_StereoInvert = false;
+  m_VideoStream = -1;
 
 }
 
 bool CVideoSettings::operator!=(const CVideoSettings &right) const
 {
-  if (m_DeinterlaceMode != right.m_DeinterlaceMode) return true;
   if (m_InterlaceMethod != right.m_InterlaceMethod) return true;
   if (m_ScalingMethod != right.m_ScalingMethod) return true;
   if (m_ViewMode != right.m_ViewMode) return true;
@@ -84,5 +83,6 @@ bool CVideoSettings::operator!=(const CVideoSettings &right) const
   if (m_ResumeTime != right.m_ResumeTime) return true;
   if (m_StereoMode != right.m_StereoMode) return true;
   if (m_StereoInvert != right.m_StereoInvert) return true;
+  if (m_VideoStream != right.m_VideoStream) return true;
   return false;
 }

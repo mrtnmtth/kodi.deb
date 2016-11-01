@@ -20,7 +20,7 @@
 
 #ifdef TARGET_WINDOWS
 #include "Win32File.h"
-#include "win32/WIN32Util.h"
+#include "platform/win32/WIN32Util.h"
 #include "utils/win32/Win32Log.h"
 #include "utils/SystemInfo.h"
 #include "utils/auto_buffer.h"
@@ -393,7 +393,7 @@ bool CWin32File::Rename(const CURL& urlCurrentName, const CURL& urlNewName)
   if (m_smbFile)
     m_lastSMBFileErr = ERROR_INVALID_DATA; // used to indicate internal errors, cleared by successful file operation
 
-  // TODO: check whether it's file or directory
+  //! @todo check whether it's file or directory
   std::wstring curNameW(CWIN32Util::ConvertPathToWin32Form(urlCurrentName));
   if (curNameW.empty())
     return false;

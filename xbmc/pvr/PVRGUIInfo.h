@@ -19,7 +19,7 @@
  *
  */
 
-#include "addons/include/xbmc_pvr_types.h"
+#include "addons/kodi-addon-dev-kit/include/kodi/xbmc_pvr_types.h"
 #include "pvr/addons/PVRClients.h"
 #include "threads/CriticalSection.h"
 #include "threads/SystemClock.h"
@@ -27,6 +27,8 @@
 #include "utils/Observer.h"
 
 #include <atomic>
+#include <memory>
+#include <vector>
 
 namespace EPG
 {
@@ -92,6 +94,95 @@ namespace PVR
     std::string GetPlayingTVGroup();
 
   private:
+    class TimerInfo
+    {
+    public:
+      TimerInfo();
+      virtual ~TimerInfo() {}
+
+      void ResetProperties();
+
+      void UpdateTimersCache();
+      void UpdateTimersToggle();
+      void UpdateNextTimer();
+
+      void CharInfoActiveTimerTitle(std::string &strValue) const { strValue = m_strActiveTimerTitle; }
+      void CharInfoActiveTimerChannelName(std::string &strValue) const { strValue = m_strActiveTimerChannelName; }
+      void CharInfoActiveTimerChannelIcon(std::string &strValue) const { strValue = m_strActiveTimerChannelIcon; }
+      void CharInfoActiveTimerDateTime(std::string &strValue) const { strValue = m_strActiveTimerTime; }
+      void CharInfoNextTimerTitle(std::string &strValue) const { strValue = m_strNextRecordingTitle; }
+      void CharInfoNextTimerChannelName(std::string &strValue) const { strValue = m_strNextRecordingChannelName; }
+      void CharInfoNextTimerChannelIcon(std::string &strValue) const { strValue = m_strNextRecordingChannelIcon; }
+      void CharInfoNextTimerDateTime(std::string &strValue) const { strValue = m_strNextRecordingTime; }
+      void CharInfoNextTimer(std::string &strValue) const { strValue = m_strNextTimerInfo; }
+
+      bool HasTimers() const { return m_iTimerAmount > 0; }
+      bool HasRecordingTimers() const { return m_iRecordingTimerAmount > 0; }
+      bool HasNonRecordingTimers() const { return m_iTimerAmount - m_iRecordingTimerAmount > 0; }
+
+    private:
+      bool TimerInfoToggle();
+
+      virtual int AmountActiveTimers() = 0;
+      virtual int AmountActiveRecordings() = 0;
+      virtual std::vector<CFileItemPtr> GetActiveRecordings() = 0;
+      virtual CFileItemPtr GetNextActiveTimer() = 0;
+
+      unsigned int m_iTimerAmount;
+      unsigned int m_iRecordingTimerAmount;
+
+      std::string m_strActiveTimerTitle;
+      std::string m_strActiveTimerChannelName;
+      std::string m_strActiveTimerChannelIcon;
+      std::string m_strActiveTimerTime;
+      std::string m_strNextRecordingTitle;
+      std::string m_strNextRecordingChannelName;
+      std::string m_strNextRecordingChannelIcon;
+      std::string m_strNextRecordingTime;
+      std::string m_strNextTimerInfo;
+
+      unsigned int m_iTimerInfoToggleStart;
+      unsigned int m_iTimerInfoToggleCurrent;
+
+      CCriticalSection m_critSection;
+    };
+
+    class AnyTimerInfo : public TimerInfo
+    {
+    public:
+      AnyTimerInfo() {};
+
+    private:
+      int AmountActiveTimers() override;
+      int AmountActiveRecordings() override;
+      std::vector<CFileItemPtr> GetActiveRecordings() override;
+      CFileItemPtr GetNextActiveTimer() override;
+    };
+
+    class TVTimerInfo : public TimerInfo
+    {
+    public:
+      TVTimerInfo() {};
+
+    private:
+      int AmountActiveTimers() override;
+      int AmountActiveRecordings() override;
+      std::vector<CFileItemPtr> GetActiveRecordings() override;
+      CFileItemPtr GetNextActiveTimer() override;
+    };
+
+    class RadioTimerInfo : public TimerInfo
+    {
+    public:
+      RadioTimerInfo() {};
+
+    private:
+      int AmountActiveTimers() override;
+      int AmountActiveRecordings() override;
+      std::vector<CFileItemPtr> GetActiveRecordings() override;
+      CFileItemPtr GetNextActiveTimer() override;
+    };
+
     void ResetProperties(void);
     void ClearQualityInfo(PVR_SIGNAL_STATUS &qualityInfo);
     void Process(void);
@@ -104,26 +195,13 @@ namespace PVR
     void UpdateNextTimer(void);
     void UpdateTimeshift(void);
 
-    bool TimerInfoToggle(void);
     void UpdateTimersToggle(void);
     void ToggleShowInfo(void);
 
-    void CharInfoActiveTimerTitle(std::string &strValue) const;
-    void CharInfoActiveTimerChannelName(std::string &strValue) const;
-    void CharInfoActiveTimerChannelIcon(std::string &strValue) const;
-    void CharInfoActiveTimerDateTime(std::string &strValue) const;
-    void CharInfoNextTimerTitle(std::string &strValue) const;
-    void CharInfoNextTimerChannelName(std::string &strValue) const;
-    void CharInfoNextTimerChannelIcon(std::string &strValue) const;
-    void CharInfoNextTimerDateTime(std::string &strValue) const;
     void CharInfoPlayingDuration(std::string &strValue) const;
     void CharInfoPlayingTime(std::string &strValue) const;
-    void CharInfoNextTimer(std::string &strValue) const;
     void CharInfoBackendNumber(std::string &strValue) const;
     void CharInfoTotalDiskSpace(std::string &strValue) const;
-    void CharInfoVideoBR(std::string &strValue) const;
-    void CharInfoAudioBR(std::string &strValue) const;
-    void CharInfoDolbyBR(std::string &strValue) const;
     void CharInfoSignal(std::string &strValue) const;
     void CharInfoSNR(std::string &strValue) const;
     void CharInfoBER(std::string &strValue) const;
@@ -149,18 +227,12 @@ namespace PVR
 
     /** @name GUIInfoManager data */
     //@{
-    std::string                     m_strActiveTimerTitle;
-    std::string                     m_strActiveTimerChannelName;
-    std::string                     m_strActiveTimerChannelIcon;
-    std::string                     m_strActiveTimerTime;
-    std::string                     m_strNextTimerInfo;
-    std::string                     m_strNextRecordingTitle;
-    std::string                     m_strNextRecordingChannelName;
-    std::string                     m_strNextRecordingChannelIcon;
-    std::string                     m_strNextRecordingTime;
-    bool                            m_bHasRecordings;
-    unsigned int                    m_iTimerAmount;
-    unsigned int                    m_iRecordingTimerAmount;
+    AnyTimerInfo   m_anyTimersInfo; // tv + radio
+    TVTimerInfo    m_tvTimersInfo;
+    RadioTimerInfo m_radioTimersInfo;
+
+    bool                            m_bHasTVRecordings;
+    bool                            m_bHasRadioRecordings;
     unsigned int                    m_iCurrentActiveClient;
     std::string                     m_strPlayingClientName;
     std::string                     m_strBackendName;
@@ -173,8 +245,6 @@ namespace PVR
     long long                       m_iBackendDiskTotal;
     long long                       m_iBackendDiskUsed;
     unsigned int                    m_iDuration;
-
-    bool                            m_bHasNonRecordingTimers;
     bool                            m_bIsPlayingTV;
     bool                            m_bIsPlayingRadio;
     bool                            m_bIsPlayingRecording;
@@ -185,8 +255,6 @@ namespace PVR
     //@}
 
     PVR_SIGNAL_STATUS               m_qualityInfo;       /*!< stream quality information */
-    unsigned int                    m_iTimerInfoToggleStart;
-    unsigned int                    m_iTimerInfoToggleCurrent;
     XbmcThreads::EndTime            m_ToggleShowInfo;
     EPG::CEpgInfoTagPtr             m_playingEpgTag;
     std::vector<SBackend>           m_backendProperties;

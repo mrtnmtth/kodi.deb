@@ -2,7 +2,6 @@ SRCS=	\
 	TestAlarmClock.cpp \
 	TestAliasShortcutUtils.cpp \
 	TestArchive.cpp \
-	TestAsyncFileCopy.cpp \
 	TestBase64.cpp \
 	TestBitstreamStats.cpp \
 	TestCharsetConverter.cpp \
@@ -43,8 +42,6 @@ SRCS=	\
 	TestStreamUtils.cpp \
 	TestStringUtils.cpp \
 	TestSystemInfo.cpp \
-	TestTimeSmoother.cpp \
-	TestTimeUtils.cpp \
 	TestURIUtils.cpp \
 	TestUrlOptions.cpp \
 	TestVariant.cpp \

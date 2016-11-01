@@ -153,14 +153,10 @@ void CEventServer::Process()
 
 void CEventServer::Run()
 {
-  CAddress any_addr;
   CSocketListener listener;
   int packetSize = 0;
 
-  if (!CSettings::GetInstance().GetBool(CSettings::SETTING_SERVICES_ESALLINTERFACES))
-    any_addr.SetAddress("127.0.0.1");  // only listen on localhost
-
-  CLog::Log(LOGNOTICE, "ES: Starting UDP Event server on %s:%d", any_addr.Address(), m_iPort);
+  CLog::Log(LOGNOTICE, "ES: Starting UDP Event server on port %d", m_iPort);
 
   Cleanup();
 
@@ -186,7 +182,7 @@ void CEventServer::Run()
     CLog::Log(LOGERROR, "ES: Invalid port range specified %d, defaulting to 10", port_range);
     port_range = 10;
   }
-  if (!m_pSocket->Bind(any_addr, m_iPort, port_range))
+  if (!m_pSocket->Bind(!CSettings::GetInstance().GetBool(CSettings::SETTING_SERVICES_ESALLINTERFACES), m_iPort, port_range))
   {
     CLog::Log(LOGERROR, "ES: Could not listen on port %d", m_iPort);
     return;
@@ -367,7 +363,7 @@ bool CEventServer::ExecuteNextAction()
   return false;
 }
 
-unsigned int CEventServer::GetButtonCode(std::string& strMapName, bool& isAxis, float& fAmount)
+unsigned int CEventServer::GetButtonCode(std::string& strMapName, bool& isAxis, float& fAmount, bool &isJoystick)
 {
   CSingleLock lock(m_critSection);
   std::map<unsigned long, CEventClient*>::iterator iter = m_clients.begin();
@@ -375,7 +371,7 @@ unsigned int CEventServer::GetButtonCode(std::string& strMapName, bool& isAxis, 
 
   while (iter != m_clients.end())
   {
-    bcode = iter->second->GetButtonCode(strMapName, isAxis, fAmount);
+    bcode = iter->second->GetButtonCode(strMapName, isAxis, fAmount, isJoystick);
     if (bcode)
       return bcode;
     ++iter;

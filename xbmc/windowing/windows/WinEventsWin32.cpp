@@ -48,10 +48,12 @@
 #include "network/ZeroconfBrowser.h"
 #include "utils/StringUtils.h"
 #include "Util.h"
+#include "messaging/ApplicationMessenger.h"
 
 #ifdef TARGET_WINDOWS
 
 using namespace PERIPHERALS;
+using namespace KODI::MESSAGING;
 
 HWND g_hWnd = NULL;
 
@@ -449,9 +451,6 @@ LRESULT CALLBACK CWinEventsWin32::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
       break;
     case WM_ACTIVATE:
       {
-        if( WA_INACTIVE != wParam )
-          CInputManager::GetInstance().ReInitializeJoystick();
-
         bool active = g_application.GetRenderGUI();
         if (HIWORD(wParam))
         {
@@ -509,7 +508,7 @@ LRESULT CALLBACK CWinEventsWin32::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
           return(DefWindowProc(hWnd, uMsg, wParam, lParam));
         case VK_RETURN: //alt-return
           if ((lParam & REPEATED_KEYMASK) == 0)
-            g_graphicsContext.ToggleFullScreenRoot();
+            CApplicationMessenger::GetInstance().PostMsg(TMSG_TOGGLEFULLSCREEN);
           return 0;
       }
       //deliberate fallthrough
@@ -668,6 +667,26 @@ LRESULT CALLBACK CWinEventsWin32::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
         m_pEventFunc(newEvent);
       }
       return(0);
+    case WM_DISPLAYCHANGE:
+      CLog::Log(LOGDEBUG, __FUNCTION__": display change event");  
+      if (g_application.GetRenderGUI() && !g_Windowing.IsAlteringWindow() && GET_X_LPARAM(lParam) > 0 && GET_Y_LPARAM(lParam) > 0)  
+      {
+        g_Windowing.UpdateResolutions();
+        if (g_advancedSettings.m_fullScreen)  
+        {  
+          newEvent.type = XBMC_VIDEOMOVE;  
+          newEvent.move.x = 0;  
+          newEvent.move.y = 0;  
+        }  
+        else  
+        {  
+          newEvent.type = XBMC_VIDEORESIZE;  
+          newEvent.resize.w = GET_X_LPARAM(lParam);  
+          newEvent.resize.h = GET_Y_LPARAM(lParam);  
+        }  
+        m_pEventFunc(newEvent);  
+      }  
+      return(0);  
     case WM_SIZE:
       newEvent.type = XBMC_VIDEORESIZE;
       newEvent.resize.w = GET_X_LPARAM(lParam);
@@ -756,7 +775,6 @@ LRESULT CALLBACK CWinEventsWin32::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
             if (((_DEV_BROADCAST_HEADER*) lParam)->dbcd_devicetype == DBT_DEVTYP_DEVICEINTERFACE)
             {
               g_peripherals.TriggerDeviceScan(PERIPHERAL_BUS_USB);
-              CInputManager::GetInstance().ReInitializeJoystick();
             }
             // check if an usb or optical media was inserted or removed
             if (((_DEV_BROADCAST_HEADER*) lParam)->dbcd_devicetype == DBT_DEVTYP_VOLUME)

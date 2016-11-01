@@ -32,8 +32,9 @@
 #include <mach-o/arch.h>
 #endif // defined(__ppc__) || defined (TARGET_DARWIN_IOS)
 #ifdef TARGET_DARWIN_OSX
-#include "osx/smc.h"
+#include "platform/darwin/osx/smc.h"
 #endif
+#include "linux/LinuxResourceCounter.h"
 #endif
 
 #if defined(TARGET_FREEBSD)
@@ -51,11 +52,11 @@
 #endif
 
 #if defined(TARGET_ANDROID)
-#include "android/activity/AndroidFeatures.h"
+#include "platform/android/activity/AndroidFeatures.h"
 #endif
 
 #ifdef TARGET_WINDOWS
-#include "utils/CharsetConverter.h"
+#include "platform/win32/CharsetConverter.h"
 #include <algorithm>
 #include <intrin.h>
 #include <Pdh.h>
@@ -108,13 +109,15 @@ CCPUInfo::CCPUInfo(void)
   m_fProcStat = m_fProcTemperature = m_fCPUFreq = NULL;
   m_cpuInfoForFreq = false;
 #elif defined(TARGET_WINDOWS)
-  m_cpuQueryFreq = NULL;
-  m_cpuQueryLoad = NULL;
+  m_cpuQueryFreq = nullptr;
+  m_cpuQueryLoad = nullptr;
 #endif
   m_lastUsedPercentage = 0;
   m_cpuFeatures = 0;
 
 #if defined(TARGET_DARWIN)
+  m_pResourceCounter = new CLinuxResourceCounter();
+
   size_t len = 4;
   std::string cpuVendor;
   
@@ -151,6 +154,8 @@ CCPUInfo::CCPUInfo(void)
   }
 
 #elif defined(TARGET_WINDOWS)
+  using KODI::PLATFORM::WINDOWS::FromW;
+
   HKEY hKeyCpuRoot;
 
   if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"HARDWARE\\DESCRIPTION\\System\\CentralProcessor", 0, KEY_READ, &hKeyCpuRoot) == ERROR_SUCCESS)
@@ -159,7 +164,7 @@ CCPUInfo::CCPUInfo(void)
     std::vector<CoreInfo> cpuCores;
     wchar_t subKeyName[200]; // more than enough
     DWORD subKeyNameLen = sizeof(subKeyName) / sizeof(wchar_t);
-    while (RegEnumKeyExW(hKeyCpuRoot, num++, subKeyName, &subKeyNameLen, NULL, NULL, NULL, NULL) == ERROR_SUCCESS)
+    while (RegEnumKeyExW(hKeyCpuRoot, num++, subKeyName, &subKeyNameLen, nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS)
     {
       HKEY hCpuKey;
       if (RegOpenKeyExW(hKeyCpuRoot, subKeyName, 0, KEY_QUERY_VALUE, &hCpuKey) == ERROR_SUCCESS)
@@ -170,24 +175,24 @@ CCPUInfo::CCPUInfo(void)
         wchar_t buf[300]; // more than enough
         DWORD bufSize = sizeof(buf);
         DWORD valType;
-        if (RegQueryValueExW(hCpuKey, L"ProcessorNameString", NULL, &valType, (LPBYTE)buf, &bufSize) == ERROR_SUCCESS &&
+        if (RegQueryValueExW(hCpuKey, L"ProcessorNameString", nullptr, &valType, LPBYTE(buf), &bufSize) == ERROR_SUCCESS &&
             valType == REG_SZ)
         {
-          g_charsetConverter.wToUTF8(std::wstring(buf, bufSize / sizeof(wchar_t)), cpuCore.m_strModel);
+          cpuCore.m_strModel = FromW(buf, bufSize / sizeof(wchar_t));
           cpuCore.m_strModel = cpuCore.m_strModel.substr(0, cpuCore.m_strModel.find(char(0))); // remove extra null terminations
           StringUtils::RemoveDuplicatedSpacesAndTabs(cpuCore.m_strModel);
           StringUtils::Trim(cpuCore.m_strModel);
         }
         bufSize = sizeof(buf);
-        if (RegQueryValueExW(hCpuKey, L"VendorIdentifier", NULL, &valType, (LPBYTE)buf, &bufSize) == ERROR_SUCCESS &&
+        if (RegQueryValueExW(hCpuKey, L"VendorIdentifier", nullptr, &valType, LPBYTE(buf), &bufSize) == ERROR_SUCCESS &&
             valType == REG_SZ)
         {
-          g_charsetConverter.wToUTF8(std::wstring(buf, bufSize / sizeof(wchar_t)), cpuCore.m_strVendor);
+          cpuCore.m_strVendor = FromW(buf, bufSize / sizeof(wchar_t));
           cpuCore.m_strVendor = cpuCore.m_strVendor.substr(0, cpuCore.m_strVendor.find(char(0))); // remove extra null terminations
         }
         DWORD mhzVal;
         bufSize = sizeof(mhzVal);
-        if (RegQueryValueExW(hCpuKey, L"~MHz", NULL, &valType, (LPBYTE)&mhzVal, &bufSize) == ERROR_SUCCESS &&
+        if (RegQueryValueExW(hCpuKey, L"~MHz", nullptr, &valType, LPBYTE(&mhzVal), &bufSize) == ERROR_SUCCESS &&
             valType == REG_DWORD)
           cpuCore.m_fSpeed = double(mhzVal);
 
@@ -214,24 +219,24 @@ CCPUInfo::CCPUInfo(void)
   GetNativeSystemInfo(&siSysInfo);
   m_cpuCount = siSysInfo.dwNumberOfProcessors;
 
-  if (PdhOpenQueryW(NULL, 0, &m_cpuQueryFreq) == ERROR_SUCCESS)
+  if (PdhOpenQueryW(nullptr, 0, &m_cpuQueryFreq) == ERROR_SUCCESS)
   {
     if (PdhAddEnglishCounterW(m_cpuQueryFreq, L"\\Processor Information(0,0)\\Processor Frequency", 0, &m_cpuFreqCounter) != ERROR_SUCCESS)
-      m_cpuFreqCounter = NULL;
+      m_cpuFreqCounter = nullptr;
   }
   else
-    m_cpuQueryFreq = NULL;
+    m_cpuQueryFreq = nullptr;
   
-  if (PdhOpenQueryW(NULL, 0, &m_cpuQueryLoad) == ERROR_SUCCESS)
+  if (PdhOpenQueryW(nullptr, 0, &m_cpuQueryLoad) == ERROR_SUCCESS)
   {
     for (size_t i = 0; i < m_cores.size(); i++)
     {
       if (PdhAddEnglishCounterW(m_cpuQueryLoad, StringUtils::Format(L"\\Processor(%d)\\%% Idle Time", int(i)).c_str(), 0, &m_cores[i].m_coreCounter) != ERROR_SUCCESS)
-        m_cores[i].m_coreCounter = NULL;
+        m_cores[i].m_coreCounter = nullptr;
     }
   }
   else
-    m_cpuQueryLoad = NULL;
+    m_cpuQueryLoad = nullptr;
 #elif defined(TARGET_FREEBSD)
   size_t len;
   int i;
@@ -417,6 +422,14 @@ CCPUInfo::CCPUInfo(void)
 #if defined(TARGET_ANDROID)
     if (CAndroidFeatures::GetCPUCount() > m_cpuCount)
     {
+      for (int i = m_cpuCount; i < CAndroidFeatures::GetCPUCount(); i++)
+      {
+        // Copy info from cpu 0
+        CoreInfo core(m_cores[0]);
+        core.m_id = i;
+        m_cores[core.m_id] = core;
+      }
+
       m_cpuCount = CAndroidFeatures::GetCPUCount();
     }
 #endif
@@ -474,14 +487,21 @@ CCPUInfo::~CCPUInfo()
 
   if (m_cpuQueryLoad)
     PdhCloseQuery(m_cpuQueryLoad);
+#elif defined(TARGET_DARWIN)
+  delete m_pResourceCounter;
 #endif
 }
 
 int CCPUInfo::getUsedPercentage()
 {
+  int result = 0;
+
   if (!m_nextUsedReadTime.IsTimePast())
     return m_lastUsedPercentage;
 
+#if defined(TARGET_DARWIN)
+  result = m_pResourceCounter->GetCPUUsage();
+#else
   unsigned long long userTicks;
   unsigned long long niceTicks;
   unsigned long long systemTicks;
@@ -499,14 +519,14 @@ int CCPUInfo::getUsedPercentage()
 
   if(userTicks + niceTicks + systemTicks + idleTicks + ioTicks == 0)
     return m_lastUsedPercentage;
-  int result = (int) (double(userTicks + niceTicks + systemTicks) * 100.0 / double(userTicks + niceTicks + systemTicks + idleTicks + ioTicks) + 0.5);
+  result = static_cast<int>(double(userTicks + niceTicks + systemTicks) * 100.0 / double(userTicks + niceTicks + systemTicks + idleTicks + ioTicks) + 0.5);
 
   m_userTicks += userTicks;
   m_niceTicks += niceTicks;
   m_systemTicks += systemTicks;
   m_idleTicks += idleTicks;
   m_ioTicks += ioTicks;
-
+#endif
   m_lastUsedPercentage = result;
   m_nextUsedReadTime.Set(MINIMUM_TIME_BETWEEN_READS);
 
@@ -920,7 +940,7 @@ void CCPUInfo::ReadCPUFeatures()
   #endif
 #elif defined(LINUX)
 // empty on purpose, the implementation is in the constructor
-#elif !defined(__powerpc__) && !defined(__ppc__) && !defined(__arm__)
+#elif !defined(__powerpc__) && !defined(__ppc__) && !defined(__arm__) && !defined(__aarch64__)
   m_cpuFeatures |= CPU_FEATURE_MMX;
 #elif defined(__powerpc__) || defined(__ppc__)
   m_cpuFeatures |= CPU_FEATURE_ALTIVEC;

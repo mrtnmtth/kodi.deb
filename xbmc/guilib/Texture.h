@@ -23,6 +23,9 @@
 #include "system.h"
 #include "XBTF.h"
 #include "guilib/imagefactory.h"
+#ifdef TARGET_POSIX
+#include "linux/XMemUtils.h"
+#endif
 
 #pragma pack(1)
 struct COLOR {unsigned char b,g,r,x;};	// Windows GDI expects 4bytes per color
@@ -74,6 +77,9 @@ public:
   bool LoadPaletted(unsigned int width, unsigned int height, unsigned int pitch, unsigned int format, const unsigned char *pixels, const COLOR *palette);
 
   bool HasAlpha() const;
+
+  void SetMipmapping();
+  bool IsMipmapped() const;
 
   virtual void CreateTextureObject() = 0;
   virtual void DestroyTextureObject() = 0;
@@ -128,6 +134,7 @@ protected:
   unsigned int m_format;
   int m_orientation;
   bool m_hasAlpha;
+  bool m_mipmapping;
 };
 
 #if defined(HAS_OMXPLAYER)

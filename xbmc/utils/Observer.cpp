@@ -18,80 +18,26 @@
  *
  */
 
-#include "Application.h"
+
 #include "Observer.h"
 #include "threads/SingleLock.h"
 
 #include <algorithm>
 
-Observer::~Observer(void)
-{
-  StopObserving();
-}
-
-void Observer::StopObserving(void)
-{
-  CSingleLock lock(m_obsCritSection);
-  std::vector<Observable *> observables = m_observables;
-  for (unsigned int iObsPtr = 0; iObsPtr < observables.size(); iObsPtr++)
-    observables.at(iObsPtr)->UnregisterObserver(this);
-}
-
-bool Observer::IsObserving(const Observable &obs) const
-{
-  CSingleLock lock(m_obsCritSection);
-  return find(m_observables.begin(), m_observables.end(), &obs) != m_observables.end();
-}
-
-void Observer::RegisterObservable(Observable *obs)
-{
-  CSingleLock lock(m_obsCritSection);
-  if (!IsObserving(*obs))
-    m_observables.push_back(obs);
-}
-
-void Observer::UnregisterObservable(Observable *obs)
-{
-  CSingleLock lock(m_obsCritSection);
-  std::vector<Observable *>::iterator it = find(m_observables.begin(), m_observables.end(), obs);
-  if (it != m_observables.end())
-    m_observables.erase(it);
-}
-
-Observable::Observable() :
-    m_bObservableChanged(false)
-{
-}
-
-Observable::~Observable()
-{
-  StopObserver();
-}
-
 Observable &Observable::operator=(const Observable &observable)
 {
   CSingleLock lock(m_obsCritSection);
 
-  m_bObservableChanged = observable.m_bObservableChanged;
-  m_observers.clear();
-  for (unsigned int iObsPtr = 0; iObsPtr < observable.m_observers.size(); iObsPtr++)
-    m_observers.push_back(observable.m_observers.at(iObsPtr));
+  m_bObservableChanged = static_cast<bool>(observable.m_bObservableChanged);
+  m_observers = observable.m_observers;
 
   return *this;
-}
-
-void Observable::StopObserver(void)
-{
-  CSingleLock lock(m_obsCritSection);
-  std::vector<Observer *> observers = m_observers;
-  for (unsigned int iObsPtr = 0; iObsPtr < observers.size(); iObsPtr++)
-    observers.at(iObsPtr)->UnregisterObservable(this);
 }
 
 bool Observable::IsObserving(const Observer &obs) const
 {
   CSingleLock lock(m_obsCritSection);
-  return find(m_observers.begin(), m_observers.end(), &obs) != m_observers.end();
+  return std::find(m_observers.begin(), m_observers.end(), &obs) != m_observers.end();
 }
 
 void Observable::RegisterObserver(Observer *obs)
@@ -100,55 +46,38 @@ void Observable::RegisterObserver(Observer *obs)
   if (!IsObserving(*obs))
   {
     m_observers.push_back(obs);
-    obs->RegisterObservable(this);
   }
 }
 
 void Observable::UnregisterObserver(Observer *obs)
 {
   CSingleLock lock(m_obsCritSection);
-  std::vector<Observer *>::iterator it = find(m_observers.begin(), m_observers.end(), obs);
-  if (it != m_observers.end())
-  {
-    obs->UnregisterObservable(this);
-    m_observers.erase(it);
-  }
+  auto iter = std::remove(m_observers.begin(), m_observers.end(), obs);
+  if (iter != m_observers.end())
+    m_observers.erase(iter);
 }
 
 void Observable::NotifyObservers(const ObservableMessage message /* = ObservableMessageNone */)
 {
-  bool bNotify(false);
-  {
-    CSingleLock lock(m_obsCritSection);
-    if (m_bObservableChanged && !g_application.m_bStop)
-      bNotify = true;
-    m_bObservableChanged = false;
-  }
+  // Make sure the set/compare is atomic 
+  // so we don't clobber the variable in a race condition
+  auto bNotify = m_bObservableChanged.exchange(false);
 
   if (bNotify)
-    SendMessage(*this, message);
+    SendMessage(message);
 }
 
 void Observable::SetChanged(bool SetTo)
 {
-  CSingleLock lock(m_obsCritSection);
   m_bObservableChanged = SetTo;
 }
 
-void Observable::SendMessage(const Observable& obs, const ObservableMessage message)
+void Observable::SendMessage(const ObservableMessage message)
 {
-  CSingleLock lock(obs.m_obsCritSection);
-  for(int ptr = obs.m_observers.size() - 1; ptr >= 0; ptr--)
+  CSingleLock lock(m_obsCritSection);
+
+  for (auto& observer : m_observers)
   {
-    if (ptr < (int)obs.m_observers.size())
-    {
-      Observer *observer = obs.m_observers.at(ptr);
-      if (observer)
-      {
-        lock.Leave();
-        observer->Notify(obs, message);
-        lock.Enter();
-      }
-    }
+    observer->Notify(*this, message);
   }
 }

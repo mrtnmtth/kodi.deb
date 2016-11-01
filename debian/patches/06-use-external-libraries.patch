@@ -11,30 +11,11 @@ Forwarded: not-needed
 -BOOTSTRAP_SUBDIRS += lib/gtest/configure.ac
 +#BOOTSTRAP_SUBDIRS += lib/gtest/configure.ac
  
- ifneq ($(wildcard lib/libdvd/libdvdcss/configure.ac),)
- BOOTSTRAP_SUBDIRS += lib/libdvd/libdvdcss/configure.ac
+ BOOTSTRAP_TARGETS=$(basename $(BOOTSTRAP_SUBDIRS))
+ all: $(BOOTSTRAP_TARGETS)
 --- a/configure.ac
 +++ b/configure.ac
-@@ -1053,7 +1053,7 @@
- AC_CHECK_HEADER([jpeglib.h],,        AC_MSG_ERROR($missing_library))
- AC_CHECK_HEADER([ogg/ogg.h],,        AC_MSG_ERROR($missing_library))
- AC_CHECK_HEADER([vorbis/vorbisfile.h],, AC_MSG_ERROR($missing_library))
--PKG_CHECK_MODULES([LIBDCADEC], [dcadec],, AC_MSG_ERROR([libdcadec not found]))
-+#PKG_CHECK_MODULES([LIBDCADEC], [dcadec],, AC_MSG_ERROR([libdcadec not found]))
- 
- PKG_CHECK_MODULES([LIBCURL], [libcurl],, AC_MSG_ERROR([libcurl not found]))
- XB_FIND_SONAME([CURL], [curl])
-@@ -1190,6 +1190,9 @@
- PKG_CHECK_MODULES([TAGLIB],  [taglib >= 1.8],
-   [INCLUDES="$INCLUDES $TAGLIB_CFLAGS"; LIBS="$LIBS $TAGLIB_LIBS"],
-   AC_MSG_ERROR($missing_library))
-+PKG_CHECK_MODULES([DVDREAD],  [dvdread],
-+  [INCLUDES="$INCLUDES $DVDREAD_CFLAGS"; LIBS="$LIBS $DVDREAD_LIBS"],
-+  AC_MSG_ERROR($missing_library))
- 
- if test "$use_optical_drive" = "yes"; then
-   PKG_CHECK_MODULES([CDIO],       [libcdio],
-@@ -2642,18 +2645,11 @@
+@@ -2391,18 +2391,11 @@
  ], [0])
  
  XB_CONFIG_MODULE([lib/gtest], [
@@ -54,41 +35,8 @@ Forwarded: not-needed
  ], [$SKIP_CONFIG_GTEST])
  
  AC_OUTPUT
---- a/lib/cximage-6.0/Makefile.in
-+++ b/lib/cximage-6.0/Makefile.in
-@@ -4,8 +4,8 @@
- ARCHIVE=$(SO:.so=.a)
- SYSDIR=../../system
- SLIB=$(SYSDIR)/$(SO)
--DIRS=CxImage raw jbig
--SLIBS=CxImage/cximage.a raw/raw.a jbig/jbig.a
-+DIRS=CxImage raw
-+SLIBS=CxImage/cximage.a raw/raw.a
- 
- ifeq ($(findstring osx,$(ARCH)), osx)
- 	export ARCH
-@@ -21,7 +21,7 @@
- 		CxImage/*.o jasper/*/*.o jbig/*.o raw/*.o
- else
- 	$(CXX) $(CFLAGS) $(LDFLAGS) -shared -o $(SLIB) -Wl,--whole-archive $(SLIBS) \
--		-Wl,--no-whole-archive -lpng -ljasper -ljpeg -ltiff -lz -Wl,--unresolved-symbols=ignore-all
-+		-Wl,--no-whole-archive -ljbig -lpng -ljasper -ljpeg -ltiff -lz -Wl,--unresolved-symbols=ignore-all
- endif
- 
- $(SLIBS): compile 
---- a/Makefile.in
-+++ b/Makefile.in
-@@ -232,7 +232,7 @@
- 
- GTEST_DIR = lib/gtest
- GTEST_INCLUDES = -I$(GTEST_DIR)/include
--GTEST_LIBS = $(GTEST_DIR)/lib/.libs/libgtest.a
-+GTEST_LIBS = $(GTEST_DIR)/libgtest.a
- 
- CHECK_DIRS = xbmc/addons/test \
-              xbmc/filesystem/test \
---- a/xbmc/cores/dvdplayer/DVDInputStreams/DllDvdNav.h
-+++ b/xbmc/cores/dvdplayer/DVDInputStreams/DllDvdNav.h
+--- a/xbmc/cores/VideoPlayer/DVDInputStreams/DllDvdNav.h
++++ b/xbmc/cores/VideoPlayer/DVDInputStreams/DllDvdNav.h
 @@ -34,6 +34,8 @@
   #define HAVE_CONFIG_H
   #endif
@@ -116,3 +64,23 @@ Forwarded: not-needed
  endif
  ifeq ($(NATIVE_OS), android)
    EXTRA_CONFIGURE = --enable-static
+--- a/lib/libdvd/Makefile.in
++++ b/lib/libdvd/Makefile.in
+@@ -11,7 +11,7 @@
+ else
+   DVDNAV_A = @abs_top_srcdir@/tools/depends/target/libdvdnav/dvdnav-install/lib/libdvdnav.a
+   DVDREAD_A = @abs_top_srcdir@/tools/depends/target/libdvdread/dvdread-install/lib/libdvdread.a
+-  DVDCSS_A = @abs_top_srcdir@/tools/depends/target/libdvdcss/dvdcss-install/lib/libdvdcss.a
++  DVDCSS_A =
+ endif
+ 
+ SYSDIR = @abs_top_srcdir@/system/players/VideoPlayer
+@@ -35,7 +35,7 @@
+ ifeq ($(ARCH),arm-osx)
+   BUILD_DVDCSS = 0
+ else
+-  BUILD_DVDCSS = 1
++  BUILD_DVDCSS = 0
+ endif
+ ifeq ($(BUILD_DVDCSS),1)
+   SOS += libdvdcss-$(ARCH).so

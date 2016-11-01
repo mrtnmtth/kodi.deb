@@ -29,14 +29,11 @@
 #include "settings/DisplaySettings.h"
 #include "guilib/GUIWindowManager.h"
 #include "input/Key.h"
-#ifdef HAS_SDL_JOYSTICK
-#include "input/SDLJoystick.h"
-#endif
 #include "input/InputManager.h"
 #include "input/MouseStat.h"
 #include "WindowingFactory.h"
 #if defined(TARGET_DARWIN)
-#include "osx/CocoaInterface.h"
+#include "platform/darwin/osx/CocoaInterface.h"
 #endif
 
 #if defined(TARGET_POSIX) && !defined(TARGET_DARWIN) && !defined(TARGET_ANDROID)
@@ -232,19 +229,6 @@ bool CWinEventsSDL::MessagePump()
           CApplicationMessenger::GetInstance().PostMsg(TMSG_QUIT);
         break;
 
-#ifdef HAS_SDL_JOYSTICK
-      case SDL_JOYBUTTONUP:
-      case SDL_JOYBUTTONDOWN:
-      case SDL_JOYAXISMOTION:
-      case SDL_JOYBALLMOTION:
-      case SDL_JOYHATMOTION:
-      case SDL_JOYDEVICEADDED:
-      case SDL_JOYDEVICEREMOVED:
-        CInputManager::GetInstance().UpdateJoystick(event);
-        ret = true;
-        break;
-#endif
-
       case SDL_ACTIVEEVENT:
         //If the window was inconified or restored
         if( event.active.state & SDL_APPACTIVE )
@@ -371,16 +355,6 @@ bool CWinEventsSDL::MessagePump()
       }
       case SDL_VIDEORESIZE:
       {
-        // Under linux returning from fullscreen, SDL sends an extra event to resize to the desktop
-        // resolution causing the previous window dimensions to be lost. This is needed to rectify
-        // that problem.
-        if(!g_Windowing.IsFullScreen())
-        {
-          int RES_SCREEN = g_Windowing.DesktopResolution(g_Windowing.GetCurrentScreen());
-          if((event.resize.w == CDisplaySettings::GetInstance().GetResolutionInfo(RES_SCREEN).iWidth) &&
-              (event.resize.h == CDisplaySettings::GetInstance().GetResolutionInfo(RES_SCREEN).iHeight))
-            break;
-        }
         XBMC_Event newEvent;
         newEvent.type = XBMC_VIDEORESIZE;
         newEvent.resize.w = event.resize.w;

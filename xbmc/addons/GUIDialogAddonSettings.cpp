@@ -1,6 +1,6 @@
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      Copyright (C) 2005-2015 Team Kodi
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
+ *  along with Kodi; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
@@ -188,6 +188,11 @@ void CGUIDialogAddonSettings::OnInitWindow()
   CreateSections();
   CreateControls();
   CGUIDialogBoxBase::OnInitWindow();
+
+  SET_CONTROL_VISIBLE(ID_BUTTON_OK);
+  SET_CONTROL_VISIBLE(ID_BUTTON_CANCEL);
+  SET_CONTROL_VISIBLE(ID_BUTTON_DEFAULT);
+  SET_CONTROL_VISIBLE(CONTROL_HEADING_LABEL);
 }
 
 // \brief Show CGUIDialogOK dialog, then wait for user to dismiss it.
@@ -239,7 +244,7 @@ bool CGUIDialogAddonSettings::ShowVirtualKeyboard(int iControl)
       const std::string id = XMLUtils::GetAttribute(setting, "id");
       const std::string type = XMLUtils::GetAttribute(setting, "type");
 
-      //Special handling for actions: does not require id attribute. TODO: refactor me.
+      //! @todo Refactor me. Special handling for actions: does not require id attribute.
       if (control && control->GetControlType() == CGUIControl::GUICONTROL_BUTTON && type == "action")
       {
         const char *option = setting->Attribute("option");
@@ -319,7 +324,7 @@ bool CGUIDialogAddonSettings::ShowVirtualKeyboard(int iControl)
               {
                 if (i == (unsigned int)atoi(value.c_str()))
                   selected = i;
-                std::string localized = m_addon->GetString(atoi(valuesVec[i].c_str()));
+                std::string localized = g_localizeStrings.GetAddonString(m_addon->ID(), atoi(valuesVec[i].c_str()));
                 if (localized.empty())
                   localized = g_localizeStrings.Get(atoi(valuesVec[i].c_str()));
                 valuesVec[i] = localized;
@@ -337,7 +342,7 @@ bool CGUIDialogAddonSettings::ShowVirtualKeyboard(int iControl)
                 pDlg->SetSelected(i); // FIXME: the SetSelected() does not select "i", it always defaults to the first position
             }
             pDlg->Open();
-            int iSelected = pDlg->GetSelectedLabel();
+            int iSelected = pDlg->GetSelectedItem();
             if (iSelected >= 0)
             {
               if (setting->Attribute("lvalues"))
@@ -473,7 +478,7 @@ bool CGUIDialogAddonSettings::ShowVirtualKeyboard(int iControl)
               if (type != ADDON_UNKNOWN)
                 types.push_back(type);
             }
-            if (types.size() > 0)
+            if (!types.empty())
             {
               const char *strMultiselect = setting->Attribute("multiselect");
               bool multiSelect = strMultiselect && strcmpi(strMultiselect, "true") == 0;
@@ -534,7 +539,7 @@ void CGUIDialogAddonSettings::UpdateFromControls()
         case CGUIControl::GUICONTROL_SETTINGS_SLIDER:
           {
             std::string option = XMLUtils::GetAttribute(setting, "option");
-            if (option.size() == 0 || StringUtils::EqualsNoCase(option, "float"))
+            if (option.empty() || StringUtils::EqualsNoCase(option, "float"))
               value = StringUtils::Format("%f", ((CGUISettingsSliderControl *)control)->GetFloatValue());
             else
               value = StringUtils::Format("%i", ((CGUISettingsSliderControl *)control)->GetIntValue());
@@ -671,6 +676,9 @@ void CGUIDialogAddonSettings::CreateControls()
 
   // set our dialog heading
   SET_CONTROL_LABEL(CONTROL_HEADING_LABEL, m_strHeading);
+  
+  // set addon id as window property
+  SetProperty("Addon.ID", m_addon->ID());
 
   CGUIControl* pControl = NULL;
   int controlId = CONTROL_START_SETTING;
@@ -725,7 +733,7 @@ void CGUIDialogAddonSettings::CreateControls()
               int selected = atoi(value.c_str());
               if (selected >= 0 && selected < (int)valuesVec.size())
               {
-                std::string label = m_addon->GetString(atoi(valuesVec[selected].c_str()));
+                std::string label = g_localizeStrings.GetAddonString(m_addon->ID(), atoi(valuesVec[selected].c_str()));
                 if (label.empty())
                   label = g_localizeStrings.Get(atoi(valuesVec[selected].c_str()));
                 ((CGUIButtonControl *)pControl)->SetLabel2(label);
@@ -777,15 +785,18 @@ void CGUIDialogAddonSettings::CreateControls()
           int iAdd = i;
           if (entryVec.size() > i)
             iAdd = atoi(entryVec[i].c_str());
-          if (!lvalues.empty())
+          std::string replace;
+          if (!lvalues.empty() && std::all_of(valuesVec[i].begin(), valuesVec[i].end(), ::isdigit))
           {
-            std::string replace = m_addon->GetString(atoi(valuesVec[i].c_str()));
+            replace = g_localizeStrings.GetAddonString(m_addon->ID(), atoi(valuesVec[i].c_str()));
             if (replace.empty())
               replace = g_localizeStrings.Get(atoi(valuesVec[i].c_str()));
-            ((CGUISpinControlEx *)pControl)->AddLabel(replace, iAdd);
+            if (replace.empty())
+              replace = valuesVec[i];
           }
           else
-            ((CGUISpinControlEx *)pControl)->AddLabel(valuesVec[i], iAdd);
+            replace = valuesVec[i];
+          ((CGUISpinControlEx *)pControl)->AddLabel(replace, iAdd);
         }
         if (type == "labelenum")
         { // need to run through all our settings and find the one that matches
@@ -830,7 +841,7 @@ void CGUIDialogAddonSettings::CreateControls()
 
         std::string valueformat;
         if (setting->Attribute("valueformat"))
-          valueformat = m_addon->GetString(atoi(setting->Attribute("valueformat")));
+          valueformat = g_localizeStrings.GetAddonString(m_addon->ID(), atoi(setting->Attribute("valueformat")));
         for (int i = 0; i < elements; i++)
         {
           std::string valuestring;
@@ -1097,7 +1108,7 @@ std::string CGUIDialogAddonSettings::GetString(const char *value, bool subSettin
     return "";
   std::string prefix(subSetting ? "- " : "");
   if (StringUtils::IsNaturalNumber(value))
-    return prefix + m_addon->GetString(atoi(value));
+    return prefix + g_localizeStrings.GetAddonString(m_addon->ID(), atoi(value));
   return prefix + value;
 }
 

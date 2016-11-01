@@ -1,6 +1,10 @@
 usr/include/kodi/A*
 usr/include/kodi/D*
+usr/include/kodi/I*
 usr/include/kodi/kodi_*
 usr/include/kodi/lib*
 usr/include/kodi/xbmc_*
 usr/lib/*/kodi/*.cmake
+xbmc/cores/AudioEngine/Utils/AEChannelInfo.h usr/include/kodi/AudioEngine/
+xbmc/cores/AudioEngine/Utils/AEChannelData.h usr/include/kodi/AudioEngine/
+xbmc/cores/AudioEngine/Utils/AEStreamData.h usr/include/kodi/AudioEngine/

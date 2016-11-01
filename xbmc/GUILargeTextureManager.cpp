@@ -49,8 +49,11 @@ bool CImageLoader::DoWork()
   std::string loadPath;
 
   std::string texturePath = g_TextureManager.GetTexturePath(m_path);
+  if (texturePath.empty())
+    return false;
+
   if (m_use_cache)
-    loadPath = CTextureCache::GetInstance().CheckCachedImage(texturePath, true, needsChecking);
+    loadPath = CTextureCache::GetInstance().CheckCachedImage(texturePath, needsChecking);
   else
     loadPath = texturePath;
 
@@ -209,6 +212,9 @@ void CGUILargeTextureManager::ReleaseImage(const std::string &path, bool immedia
 // queue the image, and start the background loader if necessary
 void CGUILargeTextureManager::QueueImage(const std::string &path, bool useCache)
 {
+  if (path.empty())
+    return;
+
   CSingleLock lock(m_listSection);
   for (queueIterator it = m_queued.begin(); it != m_queued.end(); ++it)
   {

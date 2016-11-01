@@ -19,6 +19,7 @@
  */
 
 #include "GUIDialogKaiToast.h"
+#include "peripherals/Peripherals.h"
 #include "threads/SingleLock.h"
 #include "utils/TimeUtils.h"
 
@@ -30,7 +31,7 @@ CGUIDialogKaiToast::TOASTQUEUE CGUIDialogKaiToast::m_notifications;
 CCriticalSection CGUIDialogKaiToast::m_critical;
 
 CGUIDialogKaiToast::CGUIDialogKaiToast(void)
-  : CGUIDialog(WINDOW_DIALOG_KAI_TOAST, "DialogKaiToast.xml", DialogModalityType::MODELESS)
+  : CGUIDialog(WINDOW_DIALOG_KAI_TOAST, "DialogNotification.xml", DialogModalityType::MODELESS)
 {
   m_loadType = LOAD_ON_GUI_INIT;
   m_timer = 0;
@@ -133,6 +134,9 @@ bool CGUIDialogKaiToast::DoWork()
 
     //  Play the window specific init sound for each notification queued
     SetSound(toast.withSound);
+
+    // Activate haptics for this notification
+    PERIPHERALS::g_peripherals.OnUserNotification();
 
     ResetTimer();
     return true;

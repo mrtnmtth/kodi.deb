@@ -1,8 +1,19 @@
-kodi (17.0~beta4+dfsg1-3) UNRELEASED; urgency=medium
+kodi (17.0~beta5+dfsg1-1) unstable; urgency=medium
 
-  * 
+  [ Lukas Rechberger ]
+  * Make kodi depend on kodi-data of same version (Closes: #841937)
 
- -- Balint Reczey <balint@balintreczey.hu>  Mon, 31 Oct 2016 10:29:05 +0100
+  [ Balint Reczey ]
+  * Fix Kodi's FFmpeg API usage for allocating and freeing AVFrame
+    (Closes: #831591)
+  * New upstream beta release 17.0 Beta 5
+    See: https://kodi.tv/kodi-v17-krypton-beta-5/
+  * Refresh patches
+  * Run tests only for architecture dependent package builds
+  * Use Anonymous Pro font from ttf-anonymous-pro instead of from texlive-fonts-extra
+    (Closes: #842717)
+
+ -- Balint Reczey <balint@balintreczey.hu>  Wed, 02 Nov 2016 21:53:39 +0100
 
 kodi (17.0~beta4+dfsg1-2) experimental; urgency=medium
 

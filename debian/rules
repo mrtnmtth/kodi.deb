@@ -127,6 +127,12 @@ override_dh_auto_configure: configure
 		--prefix=$(CURDIR)/tools/depends/target/libdvdnav/dvdnav-install --disable-shared --enable-static --with-pic && \
 		$(MAKE) install)
 
+override_dh_auto_test-arch:
+	dh_auto_test -a
+
+# No tests for indep build.
+override_dh_auto_test-indep:
+
 override_dh_auto_install:
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
 	install -m 755 $(CURDIR)/tools/depends/native/TexturePacker/bin/TexturePacker \

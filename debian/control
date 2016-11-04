@@ -395,12 +395,6 @@ Depends: kodi-eventclients-wiiremote
 Description: transitional dummy package
  This is a transitional dummy package. It can safely be removed.
 
-Package: xbmc-eventclients-j2me
-Architecture: all
-Depends: kodi-eventclients-j2me
-Description: transitional dummy package
- This is a transitional dummy package. It can safely be removed.
-
 Package: xbmc-eventclients-ps3
 Architecture: all
 Depends: kodi-eventclients-ps3

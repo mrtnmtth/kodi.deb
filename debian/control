@@ -143,7 +143,7 @@ Depends: mesa-utils,
          libjs-jquery,
          libjs-iscroll,
          python-imaging,
-         ttf-anonymous-pro,
+         fonts-anonymous-pro | ttf-anonymous-pro,
          ${python:Depends},
          ${misc:Depends}
 Replaces: xbmc (<< 2:13.2+dfsg1-5~), kodi (<< 15.2~rc1+dfsg1-2~)

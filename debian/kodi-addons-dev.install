@@ -8,3 +8,6 @@ usr/lib/*/kodi/*.cmake
 xbmc/cores/AudioEngine/Utils/AEChannelInfo.h usr/include/kodi/AudioEngine/
 xbmc/cores/AudioEngine/Utils/AEChannelData.h usr/include/kodi/AudioEngine/
 xbmc/cores/AudioEngine/Utils/AEStreamData.h usr/include/kodi/AudioEngine/
+
+debian/dh-addon/kodiaddon.pm         usr/share/perl5/Debian/Debhelper/Sequence/
+debian/dh-addon/dh_kodiaddon_depends usr/bin/

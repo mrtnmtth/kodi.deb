@@ -87,6 +87,7 @@ override_dh_clean:
 		-d $(DVDNAV_COMPONENT) || true
 	ls $(CURDIR)/debian/patches/libdvdread-* | tac | xargs cat | patch -R --no-backup-if-mismatch -r - -s -p1 \
 		-d $(DVDREAD_COMPONENT) || true
+	rm -f debian/dh-addon/*.1
 
 override_dh_auto_clean:
 	dh_auto_clean
@@ -126,6 +127,12 @@ override_dh_auto_configure: configure
 		$(shell dpkg-buildflags --export=configure) PKG_CONFIG_PATH="$(CURDIR)/tools/depends/target/libdvdread/dvdread-install/lib/pkgconfig" ./configure \
 		--prefix=$(CURDIR)/tools/depends/target/libdvdnav/dvdnav-install --disable-shared --enable-static --with-pic && \
 		$(MAKE) install)
+
+override_dh_auto_build:
+	dh_auto_build
+	for file in $$(ls debian/dh-addon/dh_*); do \
+		pod2man --section=1 --utf8 $$file $$file.1; \
+	done
 
 override_dh_auto_test-arch:
 	dh_auto_test -a
@@ -189,6 +196,7 @@ override_dh_installinit:
 	@echo "Shipping systemd kodi.service file as an example only"
 
 override_dh_gencontrol:
+	debian/dh-addon/dh_kodiaddon_depends
 	dh_gencontrol -pxbmc -pxbmc-bin -pxbmc-eventclients-common \
 		-pxbmc-eventclients-dev -pxbmc-eventclients-wiiremote \
 		-pxbmc-eventclients-ps3 \

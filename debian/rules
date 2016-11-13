@@ -8,6 +8,10 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all,-bindnow
 
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
+# Use package's version in Kodi
+VERSION := $(shell dpkg-parsechangelog -S Version)
+UPSTREAM_VERSION := $(shell dpkg-parsechangelog -S Version| sed 's/-[^-]*$$//')
+
 DVDNAV_COMPONENT = libdvdnav-5-0-3
 DVDREAD_COMPONENT = libdvdread-5-0-3
 
@@ -93,9 +97,6 @@ override_dh_auto_clean:
 	dh_auto_clean
 	make -C $(DVDNAV_COMPONENT) clean || true
 	make -C $(DVDREAD_COMPONENT) clean || true
-
-# Use package's version in Kodi
-VERSION := $(shell dpkg-parsechangelog | sed -n 's/^Version: \(.*\)/\1/p')
 
 # fall back to old location of DejaVuSans.ttf if needed
 ifneq ("$(wildcard /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf)","")
@@ -206,7 +207,7 @@ override_dh_gencontrol:
 
 # extract and patch customized libdvdread and libdvdnav
 extract-components:
-	tar -xf $(CURDIR)/../kodi_17.0~beta5+dfsg1.orig-$(DVDNAV_COMPONENT).tar.bz2 && \
+	tar -xf $(CURDIR)/../kodi_"$(UPSTREAM_VERSION)".orig-$(DVDNAV_COMPONENT).tar.bz2 && \
 		mv libdvdnav-* $(CURDIR)/$(DVDNAV_COMPONENT)
-	tar -xf $(CURDIR)/../kodi_17.0~beta5+dfsg1.orig-$(DVDREAD_COMPONENT).tar.bz2 && \
+	tar -xf $(CURDIR)/../kodi_"$(UPSTREAM_VERSION)".orig-$(DVDREAD_COMPONENT).tar.bz2 && \
 		mv libdvdread-* $(CURDIR)/$(DVDREAD_COMPONENT)

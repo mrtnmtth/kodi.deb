@@ -99,7 +99,7 @@ Build-Depends: autoconf,
  yasm,
  zip,
  zlib1g-dev
-Standards-Version: 3.9.6
+Standards-Version: 3.9.8
 Homepage: http://kodi.tv/
 Vcs-Git: git://anonscm.debian.org/pkg-multimedia/kodi.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-multimedia/kodi.git

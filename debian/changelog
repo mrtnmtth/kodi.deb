@@ -1,3 +1,9 @@
+kodi (17.0~beta5+dfsg1-3) unstable; urgency=medium
+
+  * Generate addon API versions for architecture-specific builds only
+
+ -- Balint Reczey <balint@balintreczey.hu>  Mon, 14 Nov 2016 16:37:40 +0100
+
 kodi (17.0~beta5+dfsg1-2) unstable; urgency=medium
 
   [ Balint Reczey ]

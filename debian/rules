@@ -196,14 +196,18 @@ override_dh_strip:
 override_dh_installinit:
 	@echo "Shipping systemd kodi.service file as an example only"
 
-override_dh_gencontrol:
+override_dh_gencontrol-arch:
 	debian/dh-addon/dh_kodiaddon_depends
-	dh_gencontrol -pxbmc -pxbmc-bin -pxbmc-eventclients-common \
+	dh_gencontrol -a -pxbmc-bin -- -v2:"$(VERSION)"
+	dh_gencontrol -a --remaining-packages
+
+override_dh_gencontrol-indep:
+	dh_gencontrol -pxbmc -pxbmc-eventclients-common \
 		-pxbmc-eventclients-dev -pxbmc-eventclients-wiiremote \
 		-pxbmc-eventclients-ps3 \
 		-pxbmc-eventclients-xbmc-send -pxbmc-addons-dev \
 		-- -v2:"$(VERSION)"
-	dh_gencontrol --remaining-packages
+	dh_gencontrol -i --remaining-packages
 
 # extract and patch customized libdvdread and libdvdnav
 extract-components:

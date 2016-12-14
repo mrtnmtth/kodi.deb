@@ -7,11 +7,9 @@ Subject: [PATCH 2/2] [StringUtils] Fix format string
  xbmc/utils/StringUtils.cpp | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/xbmc/utils/StringUtils.cpp b/xbmc/utils/StringUtils.cpp
-index 197ae07..e5414a2 100644
 --- a/xbmc/utils/StringUtils.cpp
 +++ b/xbmc/utils/StringUtils.cpp
-@@ -1297,7 +1297,7 @@ std::string StringUtils::FormatFileSize(uint64_t bytes)
+@@ -1316,7 +1316,7 @@
  {
    const std::array<std::string, 6> units{"B", "kB", "MB", "GB", "TB", "PB"};
    if (bytes < 1000)
@@ -20,6 +18,3 @@ index 197ae07..e5414a2 100644
  
    int i = 0;
    double value = static_cast<double>(bytes);
--- 
-2.1.4
-

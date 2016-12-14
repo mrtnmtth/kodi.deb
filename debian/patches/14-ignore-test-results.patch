@@ -1,6 +1,6 @@
 --- a/Makefile.in
 +++ b/Makefile.in
-@@ -605,7 +605,7 @@
+@@ -611,7 +611,7 @@
  
  ifeq (1,@GTEST_CONFIGURED@)
  check: testsuite

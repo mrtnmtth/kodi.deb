@@ -8,11 +8,9 @@ Subject: [PATCH] Allocate and free AVFrames with the proper FFmpeg API
  .../VideoPlayer/VideoRenderers/HwDecRender/MMALRenderer.cpp   |  7 ++++---
  2 files changed, 7 insertions(+), 11 deletions(-)
 
-diff --git a/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxFFmpeg.cpp b/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxFFmpeg.cpp
-index ebb8fce..cf03738 100644
 --- a/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxFFmpeg.cpp
 +++ b/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxFFmpeg.cpp
-@@ -1871,16 +1871,11 @@ void CDVDDemuxFFmpeg::ParsePacket(AVPacket *pkt)
+@@ -1921,16 +1921,11 @@
      st->codec->skip_loop_filter = AVDISCARD_ALL;
  
      // We are looking for an IDR frame
@@ -32,11 +30,9 @@ index ebb8fce..cf03738 100644
    }
  }
  
-diff --git a/xbmc/cores/VideoPlayer/VideoRenderers/HwDecRender/MMALRenderer.cpp b/xbmc/cores/VideoPlayer/VideoRenderers/HwDecRender/MMALRenderer.cpp
-index 96a8e61..17d43be 100644
 --- a/xbmc/cores/VideoPlayer/VideoRenderers/HwDecRender/MMALRenderer.cpp
 +++ b/xbmc/cores/VideoPlayer/VideoRenderers/HwDecRender/MMALRenderer.cpp
-@@ -167,7 +167,7 @@ void CMMALPool::AlignedSize(AVCodecContext *avctx, uint32_t &width, uint32_t &he
+@@ -170,7 +170,7 @@
    if (!avctx)
      return;
    int w = width, h = height;
@@ -45,7 +41,7 @@ index 96a8e61..17d43be 100644
    int unaligned;
    int stride_align[AV_NUM_DATA_POINTERS];
  
-@@ -179,16 +179,17 @@ void CMMALPool::AlignedSize(AVCodecContext *avctx, uint32_t &width, uint32_t &he
+@@ -182,16 +182,17 @@
    do {
      // NOTE: do not align linesizes individually, this breaks e.g. assumptions
      // that linesize[0] == 2*linesize[1] in the MPEG-encoder for 4:2:2
@@ -65,6 +61,3 @@ index 96a8e61..17d43be 100644
  }
  
  CMMALBuffer *CMMALPool::GetBuffer(uint32_t timeout)
--- 
-2.1.4
-

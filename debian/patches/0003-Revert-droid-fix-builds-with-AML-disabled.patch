@@ -9,11 +9,9 @@ This reverts commit 4733383b8f1c1dd0b95e9e5358425d8a0b7ba8fc.
  xbmc/windowing/egl/EGLWrapper.cpp | 16 ++++++----------
  2 files changed, 6 insertions(+), 14 deletions(-)
 
-diff --git a/xbmc/utils/SystemInfo.cpp b/xbmc/utils/SystemInfo.cpp
-index 8f9107b..c0b4dff 100644
 --- a/xbmc/utils/SystemInfo.cpp
 +++ b/xbmc/utils/SystemInfo.cpp
-@@ -56,10 +56,8 @@
+@@ -57,10 +57,8 @@
  #include "utils/XMLUtils.h"
  #if defined(TARGET_ANDROID)
  #include "platform/android/jni/Build.h"
@@ -24,7 +22,7 @@ index 8f9107b..c0b4dff 100644
  
  /* Platform identification */
  #if defined(TARGET_DARWIN)
-@@ -870,11 +868,9 @@ bool CSysInfo::IsAeroDisabled()
+@@ -873,11 +871,9 @@
  bool CSysInfo::HasHW3DInterlaced()
  {
  #if defined(TARGET_ANDROID)
@@ -36,8 +34,6 @@ index 8f9107b..c0b4dff 100644
    return false;
  }
  
-diff --git a/xbmc/windowing/egl/EGLWrapper.cpp b/xbmc/windowing/egl/EGLWrapper.cpp
-index 30f5757..583d43a 100644
 --- a/xbmc/windowing/egl/EGLWrapper.cpp
 +++ b/xbmc/windowing/egl/EGLWrapper.cpp
 @@ -24,19 +24,15 @@
@@ -60,7 +56,7 @@ index 30f5757..583d43a 100644
  #include "EGLWrapper.h"
  
  #define CheckError() m_result = eglGetError(); if(m_result != EGL_SUCCESS) CLog::Log(LOGERROR, "EGL error in %s: %x",__FUNCTION__, m_result);
-@@ -91,15 +87,15 @@ bool CEGLWrapper::Initialize(const std::string &implementation)
+@@ -91,15 +87,15 @@
    // Try to create each backend in sequence and go with the first one
    // that we know will work
    if (
@@ -82,6 +78,3 @@ index 30f5757..583d43a 100644
        (nativeGuess = CreateEGLNativeType<CEGLNativeTypeAmlogic>(implementation))
  #endif
        )
--- 
-2.1.4
-

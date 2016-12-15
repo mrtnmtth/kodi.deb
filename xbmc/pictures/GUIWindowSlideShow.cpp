@@ -68,7 +68,6 @@ using namespace KODI::MESSAGING;
 #define ROTATION_SNAP_RANGE              10.0f
 
 #define LABEL_ROW1                          10
-#define LABEL_ROW2                          11
 #define CONTROL_PAUSE                       13
 
 static float zoomamount[10] = { 1.0f, 1.2f, 1.5f, 2.0f, 2.8f, 4.0f, 6.0f, 9.0f, 13.5f, 20.0f };
@@ -267,6 +266,7 @@ void CGUIWindowSlideShow::OnDeinitWindow(int nextWindowID)
     m_Image[1].Close();
   }
   g_infoManager.ResetCurrentSlide();
+  m_bSlideShow = false;
 
   CGUIDialog::OnDeinitWindow(nextWindowID);
 }
@@ -340,13 +340,13 @@ void CGUIWindowSlideShow::Select(const std::string& strPicture)
 
 void CGUIWindowSlideShow::GetSlideShowContents(CFileItemList &list)
 {
-  for (int index = 0; index < m_slides.size(); index++)
+  for (size_t index = 0; index < m_slides.size(); index++)
     list.Add(CFileItemPtr(new CFileItem(*m_slides.at(index))));
 }
 
 std::shared_ptr<const CFileItem> CGUIWindowSlideShow::GetCurrentSlide()
 {
-  if (m_iCurrentSlide >= 0 && m_iCurrentSlide < m_slides.size())
+  if (m_iCurrentSlide >= 0 && m_iCurrentSlide < static_cast<int>(m_slides.size()))
     return m_slides.at(m_iCurrentSlide);
   return CFileItemPtr();
 }
@@ -389,9 +389,9 @@ void CGUIWindowSlideShow::Process(unsigned int currentTime, CDirtyRegionList &re
   if (!HasProcessed())
     regions.push_back(CRect(0.0f, 0.0f, (float)g_graphicsContext.GetWidth(), (float)g_graphicsContext.GetHeight()));
 
-  if (m_iCurrentSlide < 0 || m_iCurrentSlide >= m_slides.size())
+  if (m_iCurrentSlide < 0 || m_iCurrentSlide >= static_cast<int>(m_slides.size()))
     m_iCurrentSlide = 0;
-  if (m_iNextSlide < 0 || m_iNextSlide >= m_slides.size())
+  if (m_iNextSlide < 0 || m_iNextSlide >= static_cast<int>(m_slides.size()))
     m_iNextSlide = GetNextSlide();
 
   // Create our background loader if necessary
@@ -558,7 +558,8 @@ void CGUIWindowSlideShow::Process(unsigned int currentTime, CDirtyRegionList &re
     }
     else if (m_Image[1 - m_iCurrentPic].IsLoaded())
     {
-      g_application.m_pPlayer->CloseFile();
+      if (g_application.m_pPlayer->IsPlayingVideo())
+        g_application.m_pPlayer->CloseFile();
       m_bPlayingVideo = false;
 
       // first time render the next image, make sure using current display effect.
@@ -632,6 +633,9 @@ void CGUIWindowSlideShow::Process(unsigned int currentTime, CDirtyRegionList &re
 
 void CGUIWindowSlideShow::Render()
 {
+  if (m_slides.empty())
+    return;
+
   g_graphicsContext.Clear(0xff000000);
 
   if (m_slides.at(m_iCurrentSlide)->IsVideo())
@@ -762,7 +766,8 @@ bool CGUIWindowSlideShow::OnAction(const CAction &action)
   case ACTION_STOP:
     if (m_slides.size())
       AnnouncePlayerStop(m_slides.at(m_iCurrentSlide));
-    g_application.m_pPlayer->CloseFile();
+    if (g_application.m_pPlayer->IsPlayingVideo())
+      g_application.m_pPlayer->CloseFile();
     Close();
     break;
 
@@ -1110,7 +1115,7 @@ void CGUIWindowSlideShow::OnLoadPic(int iPic, int iSlideNumber, const std::strin
   if (pTexture)
   {
     // set the pic's texture + size etc.
-    if (iSlideNumber >= m_slides.size() || GetPicturePath(m_slides.at(iSlideNumber).get()) != strFileName)
+    if (iSlideNumber >= static_cast<int>(m_slides.size()) || GetPicturePath(m_slides.at(iSlideNumber).get()) != strFileName)
     { // throw this away - we must have cleared the slideshow while we were still loading
       delete pTexture;
       return;
@@ -1131,9 +1136,12 @@ void CGUIWindowSlideShow::OnLoadPic(int iPic, int iSlideNumber, const std::strin
       }
     }
   }
-  else if (iSlideNumber >= m_slides.size() || GetPicturePath(m_slides.at(iSlideNumber).get()) != strFileName)
+  else if (iSlideNumber >= static_cast<int>(m_slides.size()) || GetPicturePath(m_slides.at(iSlideNumber).get()) != strFileName)
   { // Failed to load image. and not match values calling LoadPic, then something is changed, ignore.
-    CLog::Log(LOGDEBUG, "CGUIWindowSlideShow::OnLoadPic(%d, %d, %s) on failure not match current state (cur %d, next %d, curpic %d, pic[0, 1].slidenumber=%d, %d, %s)", iPic, iSlideNumber, strFileName.c_str(), m_iCurrentSlide, m_iNextSlide, m_iCurrentPic, m_Image[0].SlideNumber(), m_Image[1].SlideNumber(), iSlideNumber >= m_slides.size() ? "" : m_slides.at(iSlideNumber)->GetPath().c_str());
+    CLog::Log(LOGDEBUG, "CGUIWindowSlideShow::OnLoadPic(%d, %d, %s) on failure not match current state (cur %d, next %d, curpic %d, pic[0, 1].slidenumber=%d, %d, %s)",
+              iPic, iSlideNumber, strFileName.c_str(), m_iCurrentSlide,
+              m_iNextSlide, m_iCurrentPic, m_Image[0].SlideNumber(), m_Image[1].SlideNumber(),
+              iSlideNumber >= static_cast<int>(m_slides.size()) ? "" : m_slides.at(iSlideNumber)->GetPath().c_str());
   }
   else
   { // Failed to load image.  What should be done??

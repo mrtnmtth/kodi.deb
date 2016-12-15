@@ -222,6 +222,7 @@ When using the makefile builds a few extra targets are defined:
 
 - `make check` builds and executes the test suite.
 - `make check-valgrind` builds and executes the test suite with valgrind memcheck.
+- `make doc` builds the Doxygen documentation.
 
 Code coverage (with Gcov, LCOV and Gcovr) can be built on Linux:
 
@@ -250,7 +251,7 @@ so that the addon can be tested with self-compiled specific versions of Kodi.
 
 ```
 mkdir pvr.demo-build && cd pvr.demo-build
-cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=<KODI_BUILD_DIR>/build -DCORE_BUILD_DIR=<KODI_BUILD_DIR> <pvr.demo-SRC>
+cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=<KODI_BUILD_DIR>/build -DKODI_BUILD_DIR=<KODI_BUILD_DIR> <pvr.demo-SRC>
 make
 ```
 

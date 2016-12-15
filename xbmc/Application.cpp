@@ -144,6 +144,7 @@
 
 // Dialog includes
 #include "video/dialogs/GUIDialogVideoBookmarks.h"
+#include "video/dialogs/GUIDialogSubtitles.h"
 #include "dialogs/GUIDialogOK.h"
 #include "dialogs/GUIDialogKaiToast.h"
 #include "dialogs/GUIDialogSubMenu.h"
@@ -253,60 +254,55 @@ using KODI::MESSAGING::HELPERS::DialogResponse;
 //extern IDirectSoundRenderer* m_pAudioDecoder;
 CApplication::CApplication(void)
   : m_pPlayer(new CApplicationPlayer)
+  , m_iScreenSaveLock(0)
+  , m_bPlaybackStarting(false)
+  , m_ePlayState(PLAY_STATE_NONE)
+  , m_confirmSkinChange(true)
+  , m_ignoreSkinSettingChanges(false)
   , m_saveSkinOnUnloading(true)
   , m_autoExecScriptExecuted(false)
+  , m_bScreenSave(false)
+  , m_bInhibitIdleShutdown(false)
+  , m_dpms(nullptr)
+  , m_dpmsIsActive(false)
+  , m_dpmsIsManual(false)
   , m_itemCurrentFile(new CFileItem)
   , m_stackFileItemToUpdate(new CFileItem)
+  , m_threadID(0)
+  , m_bInitializing(true)
+  , m_bPlatformDirectories(true)
   , m_progressTrackingVideoResumeBookmark(*new CBookmark)
   , m_progressTrackingItem(new CFileItem)
+  , m_progressTrackingPlayCountUpdate(false)
+  , m_currentStackPosition(0)
+  , m_nextPlaylistItem(-1)
+  , m_lastRenderTime(0)
+  , m_skipGuiRender(false)
+  , m_bStandalone(false)
+  , m_bEnableLegacyRes(false)
+  , m_bTestMode(false)
+  , m_bSystemScreenSaverEnable(false)
   , m_musicInfoScanner(new CMusicInfoScanner)
+  , m_muted(false)
+  , m_volumeLevel(VOLUME_MAXIMUM)
+  , m_pInertialScrollingHandler(new CInertialScrollingHandler())
+  , m_network(nullptr)
   , m_fallbackLanguageLoaded(false)
   , m_WaitingExternalCalls(0)
   , m_ProcessedExternalCalls(0)
-  , m_ignoreSkinSettingChanges(false)
 {
-  m_network = NULL;
   TiXmlBase::SetCondenseWhiteSpace(false);
-  m_bInhibitIdleShutdown = false;
-  m_bScreenSave = false;
-  m_dpms = NULL;
-  m_dpmsIsActive = false;
-  m_dpmsIsManual = false;
-  m_iScreenSaveLock = 0;
-  m_bInitializing = true;
-  m_strPlayListFile = "";
-  m_nextPlaylistItem = -1;
-  m_bPlaybackStarting = false;
-  m_ePlayState = PLAY_STATE_NONE;
-  m_confirmSkinChange = true;
 
 #ifdef HAS_GLX
   XInitThreads();
 #endif
 
-
   /* for now always keep this around */
   m_currentStack = new CFileItemList;
 
-  m_bPlatformDirectories = true;
-
-  m_bStandalone = false;
-  m_bEnableLegacyRes = false;
-  m_bSystemScreenSaverEnable = false;
-  m_pInertialScrollingHandler = new CInertialScrollingHandler();
 #ifdef HAS_DVD_DRIVE
   m_Autorun = new CAutorun();
 #endif
-
-  m_threadID = 0;
-  m_progressTrackingPlayCountUpdate = false;
-  m_currentStackPosition = 0;
-  m_lastRenderTime = 0;
-  m_skipGuiRender = false;
-  m_bTestMode = false;
-
-  m_muted = false;
-  m_volumeLevel = VOLUME_MAXIMUM;
 }
 
 CApplication::~CApplication(void)
@@ -672,7 +668,6 @@ bool CApplication::Create()
   m_replayGainSettings.iType = CSettings::GetInstance().GetInt(CSettings::SETTING_MUSICPLAYER_REPLAYGAINTYPE);
   m_replayGainSettings.iPreAmp = CSettings::GetInstance().GetInt(CSettings::SETTING_MUSICPLAYER_REPLAYGAINPREAMP);
   m_replayGainSettings.iNoGainPreAmp = CSettings::GetInstance().GetInt(CSettings::SETTING_MUSICPLAYER_REPLAYGAINNOGAINPREAMP);
-  m_replayGainSettings.bAvoidClipping = CSettings::GetInstance().GetBool(CSettings::SETTING_MUSICPLAYER_REPLAYGAINAVOIDCLIPPING);
 
   // Create the Mouse, Keyboard, Remote, and Joystick devices
   // Initialize after loading settings to get joystick deadzone setting
@@ -1159,11 +1154,11 @@ bool CApplication::Initialize()
     event.Reset();
     std::atomic<bool> isMigratingAddons(false);
     CJobManager::GetInstance().Submit([&event, &incompatibleAddons, &isMigratingAddons]() {
-      incompatibleAddons = CAddonSystemSettings::GetInstance().MigrateAddons([&isMigratingAddons]() {
-        isMigratingAddons = true;
-      });
-      event.Set();
-    });
+        incompatibleAddons = CAddonSystemSettings::GetInstance().MigrateAddons([&isMigratingAddons]() {
+          isMigratingAddons = true;
+        });
+        event.Set();
+      }, CJob::PRIORITY_DEDICATED);
     localizedStr = g_localizeStrings.Get(24151);
     iDots = 1;
     while (!event.WaitMSec(1000))
@@ -1486,8 +1481,6 @@ void CApplication::OnSettingChanged(const CSetting *setting)
     m_replayGainSettings.iPreAmp = ((CSettingInt*)setting)->GetValue();
   else if (StringUtils::EqualsNoCase(settingId, CSettings::SETTING_MUSICPLAYER_REPLAYGAINNOGAINPREAMP))
     m_replayGainSettings.iNoGainPreAmp = ((CSettingInt*)setting)->GetValue();
-  else if (StringUtils::EqualsNoCase(settingId, CSettings::SETTING_MUSICPLAYER_REPLAYGAINAVOIDCLIPPING))
-    m_replayGainSettings.bAvoidClipping = ((CSettingBool*)setting)->GetValue();
 }
 
 void CApplication::OnSettingAction(const CSetting *setting)
@@ -3865,6 +3858,12 @@ void CApplication::StopPlaying()
   if ( m_pPlayer->IsPlaying() )
   {
     m_pPlayer->CloseFile();
+
+    // When playback stops we must clear the saved subtitle search from the SubtitleDialog since the dialog is preserved in memory
+    // Otherwise the next time the dialogs open any previous search from a previous movie will be shown
+    CGUIDialogSubtitles *dialog = (CGUIDialogSubtitles*)g_windowManager.GetWindow(WINDOW_DIALOG_SUBTITLES);
+    CGUIMessage msg(GUI_MSG_WINDOW_RESET, dialog->GetID(), 0);
+    dialog->OnMessage(msg);
 
     // turn off visualisation window when stopping
     if ((iWin == WINDOW_VISUALISATION

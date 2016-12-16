@@ -17,6 +17,10 @@ when building the package next to the build directory. Gbp is set up to extract
 them to the source tree or you can do it manually using debian/rules'
 extract-components target.
 
+Kodi replaced the default webinterface in 17.0 beta6 but the new interface contains
+many generated files without providing the source for them. The web interface
+is temporarily reverted to the one included in beta5 to restore GPL compliance.
+
 [1] http://metadata.ftp-master.debian.org/changelogs/main/libk/libkaz/unstable_copyright
 
- -- Balint Reczey <balint@balintreczey.hu>, Thu,  4 Aug 2016 01:32:27 +0200
+ -- Balint Reczey <rbalint@chaos.sz13.dyndns.org>, Fri, 16 Dec 2016 18:18:09 +0100

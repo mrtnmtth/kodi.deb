@@ -91,6 +91,7 @@ override_dh_clean:
 		-d $(DVDNAV_COMPONENT) || true
 	ls $(CURDIR)/debian/patches/libdvdread-* | tac | xargs cat | patch -R --no-backup-if-mismatch -r - -s -p1 \
 		-d $(DVDREAD_COMPONENT) || true
+	rm -f addons/webinterface.default
 	rm -f debian/dh-addon/*.1
 
 override_dh_auto_clean:
@@ -108,6 +109,7 @@ endif
 override_dh_auto_configure: configure
 	cat $(CURDIR)/debian/patches/libdvdnav-* | patch -p1 -d $(DVDNAV_COMPONENT)
 	cat $(CURDIR)/debian/patches/libdvdread-* | patch -p1 -d $(DVDREAD_COMPONENT)
+	cp -r $(CURDIR)/webinterface-default $(CURDIR)/addons/webinterface.default
 	sed -i 's/DEB_VERSION/"'$(VERSION)'"/' xbmc/Application.cpp xbmc/utils/SystemInfo.cpp
 	fontforge -script $(CURDIR)/debian/mergefonts.ff \
 		/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf \
@@ -203,9 +205,10 @@ override_dh_gencontrol-arch:
 override_dh_gencontrol-indep:
 	dh_gencontrol -i
 
-# extract and patch customized libdvdread and libdvdnav
+# extract and patch customized libdvdread and libdvdnav and webinterface from 17.0 beta5
 extract-components:
 	tar -xf $(CURDIR)/../kodi_"$(UPSTREAM_VERSION)".orig-$(DVDNAV_COMPONENT).tar.bz2 && \
 		mv libdvdnav-* $(CURDIR)/$(DVDNAV_COMPONENT)
 	tar -xf $(CURDIR)/../kodi_"$(UPSTREAM_VERSION)".orig-$(DVDREAD_COMPONENT).tar.bz2 && \
 		mv libdvdread-* $(CURDIR)/$(DVDREAD_COMPONENT)
+	tar -xf $(CURDIR)/../kodi_"$(UPSTREAM_VERSION)".orig-webinterface-default.tar.xz

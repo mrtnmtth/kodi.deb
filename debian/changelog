@@ -1,3 +1,16 @@
+kodi (2:17.0~beta6+dfsg1-1) unstable; urgency=medium
+
+  * Drop new built-in webinterface addon from beta 6.
+    The addon contains many generated files without source. It will
+    be packaged separately.
+  * Imported Upstream version 17.0~beta6+dfsg1
+  * Refresh patches
+  * Revert the webinterface.default addon to old web interface from beta5
+  * Update lintian override about MediaLibrary.js to match new packaging
+  * Revert to using libcec 3.1 until libcec4 becomes available in Debian
+
+ -- Balint Reczey <balint@balintreczey.hu>  Thu, 22 Dec 2016 02:00:46 +0100
+
 kodi (2:17.0~beta5+dfsg1-4) unstable; urgency=medium
 
   * Stop using different epoch for transitional xbmc packages

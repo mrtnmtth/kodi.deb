@@ -1,3 +1,3 @@
 # This is the source, but it happens to contain long lines
-kodi source: source-is-missing addons/webinterface.default/js/MediaLibrary.js *
+kodi source: source-is-missing webinterface-default/js/MediaLibrary.js *
 kodi source: debhelper-but-no-misc-depends xbmc*

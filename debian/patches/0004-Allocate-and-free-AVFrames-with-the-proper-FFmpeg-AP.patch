@@ -10,7 +10,7 @@ Subject: [PATCH] Allocate and free AVFrames with the proper FFmpeg API
 
 --- a/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxFFmpeg.cpp
 +++ b/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxFFmpeg.cpp
-@@ -1921,16 +1921,11 @@
+@@ -1922,16 +1922,11 @@
      st->codec->skip_loop_filter = AVDISCARD_ALL;
  
      // We are looking for an IDR frame

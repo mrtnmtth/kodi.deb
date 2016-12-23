@@ -1,3 +1,9 @@
+kodi (2:17.0~beta7+dfsg1-1) UNRELEASED; urgency=medium
+
+  * Imported Upstream version 17.0~beta7+dfsg1
+
+ -- Balint Reczey <balint@balintreczey.hu>  Fri, 23 Dec 2016 16:35:42 +0100
+
 kodi (2:17.0~beta6+dfsg1-1) unstable; urgency=medium
 
   * Drop new built-in webinterface addon from beta 6.

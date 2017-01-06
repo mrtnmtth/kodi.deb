@@ -3,6 +3,7 @@ Upstream-Name: Kodi
 Source: http://kodi.tv/
 Files-Excluded: addons/service.xbmc.versioncheck
  addons/skin.estuary/fonts/*.ttf
+ addons/skin.estouchy/fonts/*.ttf
  addons/webinterface.default
  lib/cpluff/doc/reference
  lib/cpluff/libcpluff/win32

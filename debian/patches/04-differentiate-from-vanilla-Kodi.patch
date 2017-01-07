@@ -52,22 +52,18 @@
    EXPECT_EQ(g_sysinfo.GetUserAgent().find(' '), g_sysinfo.GetUserAgent().find(" (")) << "Second parameter in 'GetUserAgent()' string must be in brackets";
 --- a/addons/skin.estuary/xml/Home.xml
 +++ b/addons/skin.estuary/xml/Home.xml
-@@ -916,6 +916,18 @@
- 						<param name="visible" value="Player.HasMedia" />
- 					</include>
+@@ -942,6 +942,14 @@
+ 					<height>36</height>
+ 					<texture>icons/logo-text.png</texture>
  				</control>
 +		                <control type="image">
-+			          <description>LOGO2</description>
-+			          <left>210</left>
-+			          <top>0</top>
++			          <left>150</left>
++				  <top>0</top>
 +			          <width>250</width>
-+			          <height>82</height>
-+			          <aspectratio aligny="top" align="left">keep</aspectratio>
++				  <height>56</height>
++			          <aspectratio>keep</aspectratio>
 +			          <texture>from-debian-logo.png</texture>
-+			          <include>VisibleFadeEffect</include>
-+			          <include>Window_OpenClose_Animation</include>
-+			          <visible>!Skin.HasSetting(homepageWeatherinfo)</visible>
 +		                </control>
  			</control>
- 			<include>BottomBar</include>
- 			<include content="TopBar">
+ 			<control type="group">
+ 				<animation effect="slide" end="0,90" time="300" tween="sine" easing="inout" condition="$EXP[infodialog_active]">conditional</animation>

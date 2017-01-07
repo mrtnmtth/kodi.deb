@@ -72,6 +72,7 @@ KODI_CONFIG_OPTIONS ?= --host=$(DEB_HOST_GNU_TYPE) \
   --disable-dvdcss \
   --disable-non-free \
   --enable-gtest \
+  --with-lirc-device=/var/run/lirc/lircd \
   $(ARCH_SPECIFIC_OPTIONS) \
   $(KODI_CONFIG_EXTRA_OPTIONS)
 

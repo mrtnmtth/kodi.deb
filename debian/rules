@@ -50,17 +50,13 @@ export DEB_CPPFLAGS_MAINT_APPEND = -D_XBMC
 # variable.
 KODI_CONFIG_OPTIONS ?= --host=$(DEB_HOST_GNU_TYPE) \
   $(GL_CONFIG_OPTIONS) \
-  --disable-vtbdecoder \
   --disable-openmax \
   --disable-tegra \
   $(DEBUG_CONFIG_OPTIONS) \
   --disable-profiling \
-  --enable-joystick \
   --enable-pulse \
-  --enable-rtmp \
   --disable-mid \
   --enable-avahi \
-  --disable-asap-codec \
   --enable-webserver \
   --enable-optical-drive \
   --enable-texturepacker \
@@ -69,7 +65,6 @@ KODI_CONFIG_OPTIONS ?= --host=$(DEB_HOST_GNU_TYPE) \
   --disable-airtunes \
   --with-ffmpeg=shared \
   --disable-dependency-tracking \
-  --disable-dvdcss \
   --disable-non-free \
   --enable-gtest \
   --with-lirc-device=/var/run/lirc/lircd \

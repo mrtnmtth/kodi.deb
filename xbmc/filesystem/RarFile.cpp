@@ -38,6 +38,10 @@
 #include <process.h>
 #endif
 
+#ifdef TARGET_POSIX
+#include "linux/XTimeUtils.h"
+#endif
+
 using namespace XFILE;
 
 #define SEEKTIMOUT 30000
@@ -271,7 +275,7 @@ int CRarFile::Stat(const CURL& url, struct __stat64* buffer)
   return -1;
 }
 
-bool CRarFile::OpenForWrite(const CURL& url)
+bool CRarFile::OpenForWrite(const CURL&, bool)
 {
   return false;
 }

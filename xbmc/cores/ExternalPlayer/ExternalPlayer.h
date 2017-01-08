@@ -38,8 +38,7 @@ public:
   virtual bool OpenFile(const CFileItem& file, const CPlayerOptions &options);
   virtual bool CloseFile(bool reopen = false);
   virtual bool IsPlaying() const;
-  virtual void Pause();
-  virtual bool IsPaused() const;
+  virtual void Pause() override;
   virtual bool HasVideo() const;
   virtual bool HasAudio() const;
   virtual void ToggleOSD() { }; // empty
@@ -55,9 +54,6 @@ public:
   virtual void SetBrightness(bool bPlus) {}
   virtual void SetHue(bool bPlus) {}
   virtual void SetSaturation(bool bPlus) {}
-  virtual void GetAudioInfo(std::string& strAudioInfo);
-  virtual void GetVideoInfo(std::string& strVideoInfo);
-  virtual void GetGeneralInfo(std::string& strVideoInfo);
   virtual void SwitchToNextAudioLanguage();
   virtual bool CanRecord() { return false; }
   virtual bool IsRecording() { return false; }
@@ -71,9 +67,10 @@ public:
   virtual void SeekTime(int64_t iTime);
   virtual int64_t GetTime();
   virtual int64_t GetTotalTime();
-  virtual void ToFFRW(int iSpeed);
+  virtual void SetSpeed(float iSpeed) override;
+  virtual float GetSpeed() override;
   virtual void ShowOSD(bool bOnoff);
-  virtual void DoAudioWork()                                    {}
+  virtual void DoAudioWork() {};
   
   virtual std::string GetPlayerState();
   virtual bool SetPlayerState(const std::string& state);

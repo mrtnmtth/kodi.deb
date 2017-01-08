@@ -108,8 +108,8 @@ public:
   void Render();
   
   /*! \brief Set the maximal extent of the label
-   Sets the maximal size and positioning that the label may render in.  Note that <textwidth> can override
-   this, and <textoffsetx> and <textoffsety> may also allow the label to be moved outside this rectangle.
+   Sets the maximal size and positioning that the label may render in.  Note that `textwidth>` can override
+   this, and `<textoffsetx>` and `<textoffsety>` may also allow the label to be moved outside this rectangle.
    */
   bool SetMaxRect(float x, float y, float w, float h);
 
@@ -236,7 +236,6 @@ private:
 
   bool           m_scrolling;
   OVER_FLOW      m_overflowType;
-  bool           m_selected;
   CScrollInfo    m_scrollInfo;
   CRect          m_renderRect;   ///< actual sizing of text
   CRect          m_maxRect;      ///< maximum sizing of text

@@ -20,23 +20,26 @@
  *
  */
 
+#include <memory>
 #include <string>
 
 class CGUIImage;
+class CGUITextLayout;
 
 class CSplash
 {
 public:
   static CSplash& GetInstance();
 
-  void Show();
+  void Show(const std::string& message = "");
 
 protected:
   CSplash();
   CSplash(const CSplash&);
   CSplash& operator=(CSplash const&);
-  virtual ~CSplash();
+  virtual ~CSplash() = default;
 
 private:
-  CGUIImage* m_image;
+  std::unique_ptr<CGUIImage> m_image;
+  std::unique_ptr<CGUITextLayout> m_messageLayout;
 };

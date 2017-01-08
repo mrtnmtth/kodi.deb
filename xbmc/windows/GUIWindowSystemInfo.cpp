@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2005-2015 Team XBMC
+ *      Copyright (C) 2005-2015 Team Kodi
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -13,7 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
+ *  along with Kodi; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
@@ -29,15 +29,17 @@
 #include "storage/MediaManager.h"
 #include "guiinfo/GUIInfoLabels.h"
 
+#define CONTROL_TB_POLICY   30
 #define CONTROL_BT_STORAGE  94
 #define CONTROL_BT_DEFAULT  95
 #define CONTROL_BT_NETWORK  96
 #define CONTROL_BT_VIDEO    97
 #define CONTROL_BT_HARDWARE 98
 #define CONTROL_BT_PVR      99
+#define CONTROL_BT_POLICY   100
 
 #define CONTROL_START       CONTROL_BT_STORAGE
-#define CONTROL_END         CONTROL_BT_PVR
+#define CONTROL_END         CONTROL_BT_POLICY
 
 CGUIWindowSystemInfo::CGUIWindowSystemInfo(void) :
     CGUIWindow(WINDOW_SYSTEM_INFORMATION, "SettingsSystemInfo.xml")
@@ -81,6 +83,13 @@ bool CGUIWindowSystemInfo::OnMessage(CGUIMessage& message)
         ResetLabels();
         m_section = focusedControl;
       }
+      if (m_section >= CONTROL_BT_STORAGE && m_section <= CONTROL_BT_PVR)
+        SET_CONTROL_HIDDEN(CONTROL_TB_POLICY);
+      else if (m_section == CONTROL_BT_POLICY)
+      {
+        SET_CONTROL_LABEL(CONTROL_TB_POLICY, g_infoManager.GetLabel(SYSTEM_PRIVACY_POLICY));
+        SET_CONTROL_VISIBLE(CONTROL_TB_POLICY);
+      }
       return true;
     }
     break;
@@ -106,7 +115,7 @@ void CGUIWindowSystemInfo::FrameMove()
   else if (m_section == CONTROL_BT_STORAGE)
   {
     SET_CONTROL_LABEL(40, g_localizeStrings.Get(20155));
-    if (m_diskUsage.size() == 0)
+    if (m_diskUsage.empty())
       m_diskUsage = g_mediaManager.GetDiskUsage();
 
     for (size_t d = 0; d < m_diskUsage.size(); d++)
@@ -139,7 +148,7 @@ void CGUIWindowSystemInfo::FrameMove()
 #else
     SetControlLabel(i++, "%s %s", 22024, SYSTEM_RENDER_VERSION);
 #endif
-#if !defined(__arm__) && !defined(HAS_DX)
+#if !defined(__arm__) && !defined(__aarch64__) && !defined(HAS_DX)
     SetControlLabel(i++, "%s %s", 22010, SYSTEM_GPU_TEMPERATURE);
 #endif
   }
@@ -155,7 +164,7 @@ void CGUIWindowSystemInfo::FrameMove()
     SET_CONTROL_LABEL(i++, g_sysinfo.GetCPUSerial());
 #endif
     SetControlLabel(i++, "%s %s", 22011, SYSTEM_CPU_TEMPERATURE);
-#if !defined(__arm__) || defined(TARGET_RASPBERRY_PI)
+#if (!defined(__arm__) && !defined(__aarch64__)) || defined(TARGET_RASPBERRY_PI)
     SetControlLabel(i++, "%s %s", 13284, SYSTEM_CPUFREQUENCY);
 #endif
 #if !(defined(__arm__) && defined(TARGET_LINUX))
@@ -182,15 +191,21 @@ void CGUIWindowSystemInfo::FrameMove()
     SetControlLabel(i++, "%s: %s", 19168, PVR_BACKEND_DELETED_RECORDINGS);  // Deleted and recoverable recordings
     SetControlLabel(i++, "%s: %s", 19025, PVR_BACKEND_TIMERS);
   }
+
+  else if (m_section == CONTROL_BT_POLICY)
+  {
+    SET_CONTROL_LABEL(40, g_localizeStrings.Get(12389));
+  }
   CGUIWindow::FrameMove();
 }
 
 void CGUIWindowSystemInfo::ResetLabels()
 {
-  for (int i = 2; i < 12; i++)
+  for (int i = 2; i < 13; i++)
   {
     SET_CONTROL_LABEL(i, "");
   }
+  SET_CONTROL_LABEL(CONTROL_TB_POLICY, "");
 }
 
 void CGUIWindowSystemInfo::SetControlLabel(int id, const char *format, int label, int info)

@@ -1,7 +1,12 @@
-0001-arm64-Fix-build-breakages-due-to-architecture-specif.patch
-0002-core-added-arm64-support-to-GetKernelCpuFamily.patch
-0003-core-added-s390x-support-to-system-info.patch
-0004-core-Make-GetKernelBitness-return-64-for-s390x.patch
+0001-c-pluff-Fix-format-string-warnings.patch
+0002-Revert-cec-fixup-strings-after-PR-10775.patch
+0003-Revert-droid-fix-builds-with-AML-disabled.patch
+0004-Allocate-and-free-AVFrames-with-the-proper-FFmpeg-AP.patch
+0005-Revert-cmake-Properly-find-correct-libcec-version.patch
+0006-Revert-cec-added-setting-to-make-libCEC-wake-up-the-.patch
+0007-Revert-cec-add-CEC-IMX-adapter-as-known-type-and-set.patch
+0008-Revert-cec-Added-advanced-settings-for-action-when-T.patch
+0009-Revert-cec-bump-to-libCEC-4.0.0.patch
 01_reproducible_build.patch
 02_allow_all_arches.patch
 03-privacy.patch
@@ -11,8 +16,7 @@
 07-use-system-groovy.patch
 08-fix-s390x-build.patch
 10-dont-use-omitted-files.patch
-11-build-with-ffmpeg-2.9.patch
 12-build-cpluff-pic-only.patch
 13-fix-tests.patch
-14-gcc6-cximage-fixes.patch
-15-disable-failing-webserver-tests.patch
+14-ignore-test-results.patch
+15-dont-use-openssl.patch

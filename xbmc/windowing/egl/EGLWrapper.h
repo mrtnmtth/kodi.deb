@@ -20,6 +20,9 @@
  *
  */
 
+#include <string>
+#include <vector>
+
 #include "guilib/Resolution.h"
 #include <EGL/egl.h>
 class CEGLNativeType;
@@ -63,8 +66,6 @@ public:
   bool IsExtSupported(const char* extension);
   bool GetConfigAttrib(EGLDisplay display, EGLConfig config, EGLint attribute, EGLint *value);
   bool SurfaceAttrib(EGLDisplay display, EGLSurface surface, EGLint  attribute, EGLint  value);
-
-  bool TrustSurfaceSize();
 
   static void* GetProcAddress(const char* function);
 

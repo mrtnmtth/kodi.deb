@@ -1,12 +1,140 @@
-kodi (16.1+dfsg1-2+mtt1) unstable; urgency=medium
+kodi (2:17.0~rc2+dfsg1-1) unstable; urgency=medium
 
-  * Non-maintainer upload.
-  * Update patch to fix FTBS (Closes: #833841)
-  * Enable rar support (non-free)
+  * Imported Upstream version 17.0~beta7+dfsg1
+    See: https://kodi.tv/kodi-v17-krypton-the-last-beta-7/
+  * Refresh patches
+  * Use NotoSans-Regular font from fonts-noto-hinted package
+  * Imported Upstream version 17.0~rc2+dfsg1
+    See: https://kodi.tv/kodi-v17-krypton-release-candidate-1/
+  * Fix positioning of the "from debian" text next to KODI logo
 
- -- mttronc <mattronic@gmx.de>  Mon, 24 Oct 2016 13:40:01 +0200
+ -- Balint Reczey <balint@balintreczey.hu>  Fri, 06 Jan 2017 18:39:14 +0100
 
-kodi (16.1+dfsg1-2) unstable; urgency=medium
+kodi (2:17.0~beta6+dfsg1-1) unstable; urgency=medium
+
+  * Drop new built-in webinterface addon from beta 6.
+    The addon contains many generated files without source. It will
+    be packaged separately.
+  * Imported Upstream version 17.0~beta6+dfsg1
+  * Refresh patches
+  * Revert the webinterface.default addon to old web interface from beta5
+  * Update lintian override about MediaLibrary.js to match new packaging
+  * Revert to using libcec 3.1 until libcec4 becomes available in Debian
+
+ -- Balint Reczey <balint@balintreczey.hu>  Thu, 22 Dec 2016 02:00:46 +0100
+
+kodi (2:17.0~beta5+dfsg1-4) unstable; urgency=medium
+
+  * Stop using different epoch for transitional xbmc packages
+  * Use 2: epoch for kodi packages (Closes: #844541)
+  * Handle original tarballs properly when epoch is present in the package version
+
+ -- Balint Reczey <balint@balintreczey.hu>  Thu, 17 Nov 2016 15:42:51 +0100
+
+kodi (17.0~beta5+dfsg1-3) unstable; urgency=medium
+
+  * Generate addon API versions for architecture-specific builds only
+
+ -- Balint Reczey <balint@balintreczey.hu>  Mon, 14 Nov 2016 16:37:40 +0100
+
+kodi (17.0~beta5+dfsg1-2) unstable; urgency=medium
+
+  [ Balint Reczey ]
+  * Stop providing xbmc-eventclients-j2me.
+    This was a transitional package originally, but Kodi stopped shipping
+    J2ME client. (Closes: #843169)
+  * Transition to depending on fonts-anonymous-pro.
+    Also accept ttf-anonymous-pro instead to support older releases
+  * Generate additional original source tarball names from current version
+  * Use more absolute paths in d/rules
+
+  [ Tobias Grimm ]
+  * Updated tarball versions in `debian/rules extract-components`
+  * Provide virtual packages for addon APIs and install a debhelper addon
+    to enable KODI addon packages to depend on these virtual packages.
+  * Standards-Version: 3.9.8
+
+ -- Balint Reczey <balint@balintreczey.hu>  Mon, 14 Nov 2016 11:32:17 +0100
+
+kodi (17.0~beta5+dfsg1-1) unstable; urgency=medium
+
+  [ Lukas Rechberger ]
+  * Make kodi depend on kodi-data of same version (Closes: #841937)
+
+  [ Balint Reczey ]
+  * Fix Kodi's FFmpeg API usage for allocating and freeing AVFrame
+    (Closes: #831591)
+  * New upstream beta release 17.0 Beta 5
+    See: https://kodi.tv/kodi-v17-krypton-beta-5/
+  * Refresh patches
+  * Run tests only for architecture dependent package builds
+  * Use Anonymous Pro font from ttf-anonymous-pro instead of from texlive-fonts-extra
+    (Closes: #842717)
+
+ -- Balint Reczey <balint@balintreczey.hu>  Wed, 02 Nov 2016 21:53:39 +0100
+
+kodi (17.0~beta4+dfsg1-2) experimental; urgency=medium
+
+  * Generate version of xbmc transitional packages dynamically
+    (Closes: #842141)
+  * Check installed headers only during architecture-specific builds
+
+ -- Balint Reczey <balint@balintreczey.hu>  Wed, 26 Oct 2016 13:37:42 +0200
+
+kodi (17.0~beta4+dfsg1-1) experimental; urgency=medium
+
+  * Ship additional headers referenced from already shipped ones
+  * Ensure all needed development headers are installed
+  * Use patches from libdvdread package
+  * Build-depend on libssh-gcrypt-dev instead of libssh-dev to avoid
+    transitive linking to libssl
+  * Build-depend on libgcrypt-dev instead of libssl-dev
+  * New upstream beta release 17.0 Beta 4
+    See: https://kodi.tv/kodi-v17-krypton-beta-4/
+  * Refresh patches
+  * Stop building with OpenSSL
+
+ -- Balint Reczey <balint@balintreczey.hu>  Mon, 10 Oct 2016 23:00:38 +0200
+
+kodi (17.0~beta3+dfsg1-1) experimental; urgency=medium
+
+  * New upstream beta release 17.0 Beta 3
+    See: https://kodi.tv/kodi-v17-krypton-beta-3/
+  * Refresh patches
+  * Use OpenGL ES and no VAAPI/VDAPU on arm64.
+    This fixes FTBFS on arm64
+  * Enable Google Tests on armel and mips, too.
+    The test results don't make the build fail anyway
+  * Build-depend on valgrind on amd64 and i386.
+    This makes tests use Valgrind on those popular and fast architectures
+  * Fix FTBFS on armel/armhf
+  * Properly set hardening options
+  * Re-enable TestSortUtils test
+  * Fix building tests
+  * Build-depend on default-libmysqlclient-dev to keep Lintian happy
+  * Adjust "from debian" logo placement
+
+ -- Balint Reczey <balint@balintreczey.hu>  Fri, 07 Oct 2016 10:27:11 +0200
+
+kodi (17.0~beta2+dfsg1-1) experimental; urgency=medium
+
+  * New upstream beta release 17.0 Beta 2
+    See: https://kodi.tv/kodi-v17-krypton-beta-2/
+  * Drop build-depenency on libjasper-dev (Closes: 818201)
+  * Adjust packaging to new skin's font requirements.
+    Add dependency on fonts-lato and texlive-fonts-extra, drop
+    dependency on fonts-roboto-hinted, make symlinks to new
+    fonts instead of shipping them.
+  * Add transitional dummy packages from xbmc
+  * Drop obsoleted dependencies and patches
+  * Silence Lintian complaining for missing misc:Depends of transitional
+    packages
+  * Ignore failed clean of components without Lintian noticing
+  * Build-depend on liblcms2-dev for Little CMS support
+
+ -- Balint Reczey <balint@balintreczey.hu>  Sat, 24 Sep 2016 14:57:31 +0200
+
+kodi (17.0~alpha3+dfsg1-1) experimental; urgency=medium
 
   [ Lukas Rechberger ]
   * Skip timestamps to make build reproducible (Closes: #825285)
@@ -14,14 +142,28 @@ kodi (16.1+dfsg1-2) unstable; urgency=medium
   [ Balint Reczey ]
   * Build depend on groovy instead of groovy2 (Closes: #824187)
   * Recommend kodi-visualization-spectrum
-  * Build-depend on libbluray-dev (>= 0.7.0) to match version
-    required by ./configure
+  * New upstream alpha release 17.0 Alpha 2
+    See: https://kodi.tv/kodi-v17-krypton-alpha-2/
+  * Stop excluding paths from orig tarball which are already removed
+  * Refresh patches and changed paths in d/rules
+  * Fix FTBFS due to format string warnings
+  * Disable building DVDCSS
+  * Build-depend on libbluray-dev (>= 0.7.0) to match version required by ./configure
+  * Derive embedded libdvdnav and libdvdread from additional original tarballs
+  * Fix building with Google Test
+  * Ignore failing tests but run them with Valgrind when it is available
+  * Update d/copyright
+  * Add information about multiple orig tarballs
+  * New upstream alpha release 17.0 Alpha 3
+    See: https://kodi.tv/kodi-v17-krypton-alpha-3/
+  * Refresh patches
+  * Really revert patches to embedded dvdnav and dvdread copies in clean target
+  * Drop J2ME client support in sync with upstream
+  * Don't crash on missing version checker addon
+  * Position "from Debian" image better on new skin
+  * Drop symlinks to fonts used in the replaced skin
 
-  [ Tobias Grimm ]
-  * Added gcc-6 fixes for CxImage code (Closes: #831137)
-  * Disabled failing webserver tests (Closes: #832857)
-
- -- Balint Reczey <balint@balintreczey.hu>  Thu, 18 Aug 2016 17:32:53 +0200
+ -- Balint Reczey <balint@balintreczey.hu>  Fri, 05 Aug 2016 01:23:53 +0200
 
 kodi (16.1+dfsg1-1) unstable; urgency=medium
 

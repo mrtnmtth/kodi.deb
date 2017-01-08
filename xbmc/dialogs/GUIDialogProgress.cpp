@@ -28,11 +28,8 @@
 #include "utils/log.h"
 #include "utils/Variant.h"
 
-#define CONTROL_CANCEL_BUTTON 10
-#define CONTROL_PROGRESS_BAR 20
-
 CGUIDialogProgress::CGUIDialogProgress(void)
-    : CGUIDialogBoxBase(WINDOW_DIALOG_PROGRESS, "DialogProgress.xml")
+    : CGUIDialogBoxBase(WINDOW_DIALOG_PROGRESS, "DialogConfirm.xml")
 {
   Reset();
 }
@@ -49,7 +46,7 @@ void CGUIDialogProgress::Reset()
   m_iCurrent = 0;
   m_iMax = 0;
   m_percentage = 0;
-  m_showProgress = false;
+  m_showProgress = true;
   m_bCanCancel = true;
   SetInvalid();
 }
@@ -67,7 +64,7 @@ void CGUIDialogProgress::Open(const std::string &param /* = "" */)
 
   {
     CSingleLock lock(g_graphicsContext);
-    ShowProgressBar(false);
+    ShowProgressBar(true);
   }
   
   CGUIDialog::Open_Internal(false, param);
@@ -88,15 +85,7 @@ void CGUIDialogProgress::Progress()
 {
   if (m_active)
   {
-    g_windowManager.ProcessRenderLoop();
-  }
-}
-
-void CGUIDialogProgress::ProgressKeys()
-{
-  if (m_active)
-  {
-    g_application.FrameMove(true);
+    ProcessRenderLoop();
   }
 }
 
@@ -112,7 +101,7 @@ bool CGUIDialogProgress::OnMessage(CGUIMessage& message)
   case GUI_MSG_CLICKED:
     {
       int iControl = message.GetSenderId();
-      if (iControl == CONTROL_CANCEL_BUTTON && m_bCanCancel && !m_bCanceled)
+      if (iControl == CONTROL_NO_BUTTON && m_bCanCancel && !m_bCanceled)
       {
         std::string strHeading = m_strHeading;
         strHeading.append(" : ");
@@ -201,16 +190,25 @@ void CGUIDialogProgress::Process(unsigned int currentTime, CDirtyRegionList &dir
     else
       SET_CONTROL_HIDDEN(CONTROL_PROGRESS_BAR);
     if (showCancel)
-      SET_CONTROL_VISIBLE(CONTROL_CANCEL_BUTTON);
+      SET_CONTROL_VISIBLE(CONTROL_NO_BUTTON);
     else
-      SET_CONTROL_HIDDEN(CONTROL_CANCEL_BUTTON);
+      SET_CONTROL_HIDDEN(CONTROL_NO_BUTTON);
   }
   CGUIDialogBoxBase::Process(currentTime, dirtyregions);
 }
 
+void CGUIDialogProgress::OnInitWindow()
+{
+  SET_CONTROL_HIDDEN(CONTROL_YES_BUTTON);
+  SET_CONTROL_HIDDEN(CONTROL_CUSTOM_BUTTON);
+  SET_CONTROL_FOCUS(CONTROL_NO_BUTTON, 0);
+
+  CGUIDialogBoxBase::OnInitWindow();
+}
+
 int CGUIDialogProgress::GetDefaultLabelID(int controlId) const
 {
-  if (controlId == CONTROL_CANCEL_BUTTON)
+  if (controlId == CONTROL_NO_BUTTON)
     return 222;
   return CGUIDialogBoxBase::GetDefaultLabelID(controlId);
 }

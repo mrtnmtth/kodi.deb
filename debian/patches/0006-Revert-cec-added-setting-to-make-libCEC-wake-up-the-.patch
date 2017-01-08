@@ -1,0 +1,61 @@
+From 34a6f4b2f2657b014df073862809a33df4c60b74 Mon Sep 17 00:00:00 2001
+From: Balint Reczey <balint@balintreczey.hu>
+Date: Sat, 17 Dec 2016 23:00:33 +0100
+Subject: [PATCH 6/9] Revert "[cec] added: setting to make libCEC wake up the
+ AVR explicitly when activating the source."
+
+This reverts commit cfcfb4c98cf1a6d756fc3962e6d803c297917684.
+
+Conflicts:
+	system/peripherals.xml
+---
+ addons/resource.language.en_gb/resources/strings.po | 7 +------
+ system/peripherals.xml                              | 3 +--
+ xbmc/peripherals/devices/PeripheralCecAdapter.cpp   | 1 -
+ 3 files changed, 2 insertions(+), 9 deletions(-)
+
+--- a/addons/resource.language.en_gb/resources/strings.po
++++ b/addons/resource.language.en_gb/resources/strings.po
+@@ -16534,12 +16534,7 @@
+ msgid "Pause Playback"
+ msgstr ""
+ 
+-#: system/peripherals.xml
+-msgctxt "#36046"
+-msgid "Force AVR to wake up when Kodi is activated"
+-msgstr ""
+-
+-#empty strings from id 36047 to 36098
++#empty strings from id 36046 to 36098
+ 
+ #: system/settings/settings.xml
+ msgctxt "#36099"
+--- a/system/peripherals.xml
++++ b/system/peripherals.xml
+@@ -16,7 +16,7 @@
+     <setting key="send_inactive_source" type="bool" value="1" label="36025" order="5" />
+     <setting key="cec_standby_screensaver" type="bool" value="0" label="36009" order="6" />
+     <setting key="cec_wake_screensaver" type="bool" value="1" label="36010" order="7" />
+-    <setting key="standby_pc_on_tv_standby" type="enum" value="13011" label="36029" order="8" lvalues="36028|13005|13011|13009|36044|36046" />
++    <setting key="standby_pc_on_tv_standby" type="enum" value="13011" label="36029" order="8" lvalues="36028|13005|13011|13009|36043|36045" />
+     <setting key="standby_tv_on_pc_standby" type="bool" value="1" label="36026" order="9" />
+     <setting key="use_tv_menu_language" type="bool" value="1" label="36018" order="10" />
+     <setting key="pause_playback_on_deactivate" type="bool" value="1" label="36033" configurable="0" />
+@@ -24,7 +24,6 @@
+     <setting key="connected_device" type="enum" label="36019" value="36037" lvalues="36037|36038" order="12" />
+     <setting key="cec_hdmi_port" type="int" value="1" min="1" max="15" label="36015" order="13" />
+     <setting key="physical_address" type="string" label="36021" value="0" order="14" />
+-    <setting key="power_avr_on_as" type="bool" label="36045" value="0" order="15" />
+ 
+     <setting key="tv_vendor" type="int" value="0" configurable="0" />
+     <setting key="device_name" type="string" value="Kodi" configurable="0" />
+--- a/xbmc/peripherals/devices/PeripheralCecAdapter.cpp
++++ b/xbmc/peripherals/devices/PeripheralCecAdapter.cpp
+@@ -1384,7 +1384,6 @@
+   m_bPowerOffScreensaver               = GetSettingBool("cec_standby_screensaver") ? 1 : 0;
+   m_bPowerOnScreensaver                = GetSettingBool("cec_wake_screensaver") ? 1 : 0;
+   m_bSendInactiveSource                = GetSettingBool("send_inactive_source") ? 1 : 0;
+-  m_configuration.bAutoWakeAVR         = GetSettingBool("power_avr_on_as") ? 1 : 0;
+ 
+   // read the mutually exclusive boolean settings
+   int iStandbyAction(GetSettingInt("standby_pc_on_tv_standby"));

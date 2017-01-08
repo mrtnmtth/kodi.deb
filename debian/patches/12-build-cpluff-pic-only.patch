@@ -1,13 +1,11 @@
-diff --git a/configure.ac b/configure.ac
-index 0bc167f..f63f358 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -2639,7 +2639,7 @@ XB_CONFIG_MODULE([lib/cpluff], [
+@@ -2385,7 +2385,7 @@
      --prefix="${prefix}" --includedir="${includedir}" --libdir="${libdir}" --datadir="${datadir}" \
      --host=$host_alias \
      --build=$build_alias \
 -    --target=$target_alias CFLAGS="$CFLAGS" CC="$CC" CXX="$CXX" LDFLAGS="$LDFLAGS" LIBS=""
 +    --target=$target_alias --with-pic=yes CFLAGS="$CFLAGS" CC="$CC" CXX="$CXX" LDFLAGS="$LDFLAGS" LIBS=""
-     #LDFLAGS="$LDFLAGS -Wl,-read_only_relocs,suppress"    
+     #LDFLAGS="$LDFLAGS -Wl,-read_only_relocs,suppress"
  ], [0])
  

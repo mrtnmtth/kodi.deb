@@ -106,7 +106,7 @@ static bool IsPathToThumbnail(const std::string& strPath )
 static time_t ParseDate(const std::string & strDate)
 {
   struct tm pubDate = {0};
-  // TODO: Handle time zone
+  //! @todo Handle time zone
   strptime(strDate.c_str(), "%a, %d %b %Y %H:%M:%S", &pubDate);
   // Check the difference between the time of last check and time of the item
   return mktime(&pubDate);
@@ -208,7 +208,7 @@ static void ParseItemMRSS(CFileItem* item, SResources& resources, TiXmlElement* 
   {
     std::string scheme = XMLUtils::GetAttribute(item_child, "scheme");
     if(scheme == "urn:user")
-      vtag->m_fRating = (float)atof(text.c_str());
+      vtag->SetRating((float)atof(text.c_str()));
     else
       vtag->m_strMPAARating = text;
   }
@@ -326,9 +326,9 @@ static void ParseItemVoddler(CFileItem* item, SResources& resources, TiXmlElemen
     resources.push_back(res);
   }
   else if(name == "year")
-    vtag->m_iYear = atoi(text.c_str());
+    vtag->SetYear(atoi(text.c_str()));
   else if(name == "rating")
-    vtag->m_fRating = (float)atof(text.c_str());
+    vtag->SetRating((float)atof(text.c_str()));
   else if(name == "tagline")
     vtag->m_strTagLine = text;
   else if(name == "posterwall")
@@ -379,7 +379,7 @@ static void ParseItemZink(CFileItem* item, SResources& resources, TiXmlElement* 
   else if(name == "airdate")
     vtag->m_firstAired.SetFromDateString(text);
   else if(name == "userrating")
-    vtag->m_fRating = (float)atof(text.c_str());
+    vtag->SetRating((float)atof(text.c_str()));
   else if(name == "duration")
     vtag->m_duration = atoi(text.c_str());
   else if(name == "durationstr")

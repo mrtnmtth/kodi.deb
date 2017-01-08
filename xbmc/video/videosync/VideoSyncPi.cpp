@@ -39,7 +39,7 @@ bool CVideoSyncPi::Setup(PUPDATECLOCK func)
   return true;
 }
 
-void CVideoSyncPi::Run(volatile bool& stop)
+void CVideoSyncPi::Run(std::atomic<bool>& stop)
 {
   /* This shouldn't be very busy and timing is important so increase priority */
   CThread::GetCurrentThread()->SetPriority(CThread::GetCurrentThread()->GetPriority()+1);
@@ -48,7 +48,7 @@ void CVideoSyncPi::Run(volatile bool& stop)
   {
     g_RBP.WaitVsync();
     uint64_t now = CurrentHostCounter();
-    UpdateClock(1, now);
+    UpdateClock(1, now, m_refClock);
   }
 }
 
@@ -65,7 +65,7 @@ float CVideoSyncPi::GetFps()
   return m_fps;
 }
 
-void CVideoSyncPi::OnResetDevice()
+void CVideoSyncPi::OnResetDisplay()
 {
   m_abort = true;
 }

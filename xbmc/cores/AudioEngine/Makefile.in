@@ -6,8 +6,8 @@ INCLUDES += -I@abs_top_srcdir@/xbmc/linux
 INCLUDES += -I@abs_top_srcdir@/xbmc/utils
 INCLUDES += -I@abs_top_srcdir@/xbmc/guilib
 INCLUDES += -I@abs_top_srcdir@/xbmc/cores
-INCLUDES += -I@abs_top_srcdir@/xbmc/cores/dvdplayer
-INCLUDES += -I@abs_top_srcdir@/xbmc/cores/dvdplayer/Codecs/ffmpeg
+INCLUDES += -I@abs_top_srcdir@/xbmc/cores/VideoPlayer
+INCLUDES += -I@abs_top_srcdir@/xbmc/cores/VideoPlayer/Codecs/ffmpeg
 
 OSSLIBDIR=0
 -include /etc/oss.conf
@@ -17,6 +17,13 @@ ifneq (0,${OSSLIBDIR})
 endif
 
 CXXFLAGS += -D__STDC_LIMIT_MACROS
+ifeq (@HAVE_SSE@,1)
+  CXXFLAGS += -DHAVE_SSE -msse
+endif
+ifeq (@HAVE_SSE2@,1)
+  CXXFLAGS += -DHAVE_SSE2 -msse2
+endif
+
 
 SRCS  = AEFactory.cpp
 
@@ -34,6 +41,7 @@ SRCS += Engines/ActiveAE/ActiveAESound.cpp
 SRCS += Engines/ActiveAE/ActiveAEResampleFFMPEG.cpp
 SRCS += Engines/ActiveAE/ActiveAEResamplePi.cpp
 SRCS += Engines/ActiveAE/ActiveAEBuffer.cpp
+SRCS += Engines/ActiveAE/ActiveAEFilter.cpp
 
 ifeq (@USE_ANDROID@,1)
 SRCS += Sinks/AESinkAUDIOTRACK.cpp
@@ -57,14 +65,13 @@ SRCS += Sinks/AESinkPULSE.cpp
 endif
 endif
 
-SRCS += DSPAddons/ActiveAEDSP.cpp
-SRCS += DSPAddons/ActiveAEDSPMode.cpp
-SRCS += DSPAddons/ActiveAEDSPAddon.cpp
-SRCS += DSPAddons/ActiveAEDSPDatabase.cpp
-SRCS += DSPAddons/ActiveAEDSPProcess.cpp
+SRCS += Engines/ActiveAE/AudioDSPAddons/ActiveAEDSP.cpp
+SRCS += Engines/ActiveAE/AudioDSPAddons/ActiveAEDSPMode.cpp
+SRCS += Engines/ActiveAE/AudioDSPAddons/ActiveAEDSPAddon.cpp
+SRCS += Engines/ActiveAE/AudioDSPAddons/ActiveAEDSPDatabase.cpp
+SRCS += Engines/ActiveAE/AudioDSPAddons/ActiveAEDSPProcess.cpp
 
 SRCS += Utils/AEChannelInfo.cpp
-SRCS += Utils/AEBuffer.cpp
 SRCS += Utils/AEUtil.cpp
 SRCS += Utils/AEStreamInfo.cpp
 SRCS += Utils/AEPackIEC61937.cpp

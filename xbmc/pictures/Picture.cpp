@@ -26,6 +26,7 @@
 #include <algorithm>
 
 #include "Picture.h"
+#include "URL.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/Settings.h"
 #include "FileItem.h"
@@ -72,7 +73,7 @@ bool CPicture::GetThumbnailFromSurface(const unsigned char* buffer, int width, i
 
 bool CPicture::CreateThumbnailFromSurface(const unsigned char *buffer, int width, int height, int stride, const std::string &thumbFile)
 {
-  CLog::Log(LOGDEBUG, "cached image '%s' size %dx%d", thumbFile.c_str(), width, height);
+  CLog::Log(LOGDEBUG, "cached image '%s' size %dx%d", CURL::GetRedacted(thumbFile).c_str(), width, height);
   if (URIUtils::HasExtension(thumbFile, ".jpg"))
   {
 #if defined(HAS_OMXPLAYER)
@@ -86,7 +87,7 @@ bool CPicture::CreateThumbnailFromSurface(const unsigned char *buffer, int width
   IImage* pImage = ImageFactory::CreateLoader(thumbFile);
   if(pImage == NULL || !pImage->CreateThumbnailFromSurface((BYTE *)buffer, width, height, XB_FMT_A8R8G8B8, stride, thumbFile.c_str(), thumb, thumbsize))
   {
-    CLog::Log(LOGERROR, "Failed to CreateThumbnailFromSurface for %s", thumbFile.c_str());
+    CLog::Log(LOGERROR, "Failed to CreateThumbnailFromSurface for %s", CURL::GetRedacted(thumbFile).c_str());
     delete pImage;
     return false;
   }
@@ -119,7 +120,7 @@ bool CThumbnailWriter::DoWork()
 
   if (!CPicture::CreateThumbnailFromSurface(m_buffer, m_width, m_height, m_stride, m_thumbFile))
   {
-    CLog::Log(LOGERROR, "CThumbnailWriter::DoWork unable to write %s", m_thumbFile.c_str());
+    CLog::Log(LOGERROR, "CThumbnailWriter::DoWork unable to write %s", CURL::GetRedacted(m_thumbFile).c_str());
     success = false;
   }
 
@@ -277,13 +278,13 @@ bool CPicture::CreateTiledThumb(const std::vector<std::string> &files, const std
   unsigned int num_across = (unsigned int)ceil(sqrt((float)files.size()));
   unsigned int num_down = (files.size() + num_across - 1) / num_across;
 
-  unsigned int tile_width = g_advancedSettings.GetThumbSize() / num_across;
-  unsigned int tile_height = g_advancedSettings.GetThumbSize() / num_down;
+  unsigned int tile_width = g_advancedSettings.m_imageRes / num_across;
+  unsigned int tile_height = g_advancedSettings.m_imageRes / num_down;
   unsigned int tile_gap = 1;
   bool success = false;
 
   // create a buffer for the resulting thumb
-  uint32_t *buffer = (uint32_t *)calloc(g_advancedSettings.GetThumbSize() * g_advancedSettings.GetThumbSize(), 4);
+  uint32_t *buffer = (uint32_t *)calloc(g_advancedSettings.m_imageRes * g_advancedSettings.m_imageRes, 4);
   for (unsigned int i = 0; i < files.size(); ++i)
   {
     int x = i % num_across;
@@ -306,12 +307,12 @@ bool CPicture::CreateTiledThumb(const std::vector<std::string> &files, const std
           // drop into the texture
           unsigned int posX = x*tile_width + (tile_width - width)/2;
           unsigned int posY = y*tile_height + (tile_height - height)/2;
-          uint32_t *dest = buffer + posX + posY*g_advancedSettings.GetThumbSize();
+          uint32_t *dest = buffer + posX + posY*g_advancedSettings.m_imageRes;
           uint32_t *src = scaled;
           for (unsigned int y = 0; y < height; ++y)
           {
             memcpy(dest, src, width*4);
-            dest += g_advancedSettings.GetThumbSize();
+            dest += g_advancedSettings.m_imageRes;
             src += width;
           }
         }
@@ -322,8 +323,8 @@ bool CPicture::CreateTiledThumb(const std::vector<std::string> &files, const std
   }
   // now save to a file
   if (success)
-    success = CreateThumbnailFromSurface((uint8_t *)buffer, g_advancedSettings.GetThumbSize(), g_advancedSettings.GetThumbSize(),
-                                      g_advancedSettings.GetThumbSize() * 4, thumb);
+    success = CreateThumbnailFromSurface((uint8_t *)buffer, g_advancedSettings.m_imageRes, g_advancedSettings.m_imageRes,
+                                      g_advancedSettings.m_imageRes * 4, thumb);
 
   free(buffer);
   return success;
@@ -342,9 +343,9 @@ bool CPicture::ScaleImage(uint8_t *in_pixels, unsigned int in_width, unsigned in
                           uint8_t *out_pixels, unsigned int out_width, unsigned int out_height, unsigned int out_pitch,
                           CPictureScalingAlgorithm::Algorithm scalingAlgorithm /* = CPictureScalingAlgorithm::NoAlgorithm */)
 {
-  struct SwsContext *context = sws_getContext(in_width, in_height, PIX_FMT_BGRA,
-                                                         out_width, out_height, PIX_FMT_BGRA,
-                                                         CPictureScalingAlgorithm::ToSwscale(scalingAlgorithm) | SwScaleCPUFlags(), NULL, NULL, NULL);
+  struct SwsContext *context = sws_getContext(in_width, in_height, AV_PIX_FMT_BGRA,
+                                                         out_width, out_height, AV_PIX_FMT_BGRA,
+                                                         CPictureScalingAlgorithm::ToSwscale(scalingAlgorithm), NULL, NULL, NULL);
 
   uint8_t *src[] = { in_pixels, 0, 0, 0 };
   int     srcStride[] = { (int)in_pitch, 0, 0, 0 };

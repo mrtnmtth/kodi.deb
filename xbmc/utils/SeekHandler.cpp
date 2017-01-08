@@ -20,16 +20,20 @@
 
 #include "SeekHandler.h"
 
+#include <cmath>
 #include <stdlib.h>
 
 #include "Application.h"
+#include "cores/DataCacheCore.h"
 #include "FileItem.h"
 #include "guilib/GraphicContext.h"
 #include "guilib/LocalizeStrings.h"
+#include "ServiceBroker.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/lib/Setting.h"
 #include "settings/Settings.h"
 #include "utils/log.h"
+#include "utils/MathUtils.h"
 #include "utils/StringUtils.h"
 #include "utils/Variant.h"
 
@@ -78,7 +82,7 @@ void CSeekHandler::Configure()
     std::vector<CVariant> seekSteps = CSettings::GetInstance().GetList(it->second);
     for (std::vector<CVariant>::iterator it = seekSteps.begin(); it != seekSteps.end(); ++it)
     {
-      int stepSeconds = (*it).asInteger();
+      int stepSeconds = static_cast<int>((*it).asInteger());
       if (stepSeconds < 0)
         backwardSeekSteps.insert(backwardSeekSteps.begin(), stepSeconds);
       else
@@ -96,6 +100,7 @@ void CSeekHandler::Reset()
   m_analogSeek = false;
   m_seekStep = 0;
   m_seekSize = 0;
+  m_timeCodePosition = 0;
 }
 
 int CSeekHandler::GetSeekStepSize(SeekType type, int step)
@@ -156,7 +161,7 @@ void CSeekHandler::Seek(bool forward, float amount, float duration /* = 0 */, bo
     if (totalTime < 0)
       totalTime = 0;
 
-    int seekSize = (amount * amount * speed) * totalTime / 100;
+    double seekSize = (amount * amount * speed) * totalTime / 100;
     if (forward)
       m_seekSize += seekSize;
     else
@@ -197,15 +202,15 @@ void CSeekHandler::SeekSeconds(int seconds)
 
 int CSeekHandler::GetSeekSize() const
 {
-  return m_seekSize;
+  return MathUtils::round_int(m_seekSize);
 }
 
 bool CSeekHandler::InProgress() const
 {
-  return m_requireSeek;
+  return m_requireSeek || CServiceBroker::GetDataCacheCore().IsSeeking();
 }
 
-void CSeekHandler::Process()
+void CSeekHandler::FrameMove()
 {
   if (m_timer.GetElapsedMilliseconds() >= m_seekDelay && m_requireSeek)
   {
@@ -215,6 +220,11 @@ void CSeekHandler::Process()
     g_application.m_pPlayer->SeekTimeRelative(static_cast<int64_t>(m_seekSize * 1000));
 
     Reset();
+  }
+
+  if (m_timeCodePosition > 0 && m_timerTimeCode.GetElapsedMilliseconds() >= 2500)
+  {
+    m_timeCodePosition = 0;
   }
 }
 
@@ -251,6 +261,9 @@ bool CSeekHandler::OnAction(const CAction &action)
     return false;
 
   SeekType type = g_application.CurrentFileItem().IsAudio() ? SEEK_TYPE_MUSIC : SEEK_TYPE_VIDEO;
+
+  if (SeekTimeCode(action))
+    return true;
 
   switch (action.GetID())
   {
@@ -294,9 +307,115 @@ bool CSeekHandler::OnAction(const CAction &action)
         Seek(action.GetID() == ACTION_ANALOG_SEEK_FORWARD, action.GetAmount(), action.GetRepeat(), true);
       return true;
     }
+    case REMOTE_0:
+    case REMOTE_1:
+    case REMOTE_2:
+    case REMOTE_3:
+    case REMOTE_4:
+    case REMOTE_5:
+    case REMOTE_6:
+    case REMOTE_7:
+    case REMOTE_8:
+    case REMOTE_9:
+    case ACTION_JUMP_SMS2:
+    case ACTION_JUMP_SMS3:
+    case ACTION_JUMP_SMS4:
+    case ACTION_JUMP_SMS5:
+    case ACTION_JUMP_SMS6:
+    case ACTION_JUMP_SMS7:
+    case ACTION_JUMP_SMS8:
+    case ACTION_JUMP_SMS9:
+    {
+      if (!g_application.CurrentFileItem().IsLiveTV())
+      {
+        ChangeTimeCode(action.GetID());
+        return true;
+      }
+    }
+    break;
     default:
       break;
   }
 
   return false;
+}
+
+bool CSeekHandler::SeekTimeCode(const CAction &action)
+{
+  if (m_timeCodePosition <= 0)
+    return false;
+
+  switch (action.GetID())
+  {
+    case ACTION_SELECT_ITEM:
+    case ACTION_PLAYER_PLAY:
+    case ACTION_PAUSE:
+    {
+      CSingleLock lock(m_critSection);
+
+      g_application.m_pPlayer->SeekTime(GetTimeCodeSeconds() * 1000);
+      Reset();
+      return true;
+    }
+    case ACTION_SMALL_STEP_BACK:
+    case ACTION_STEP_BACK:
+    case ACTION_BIG_STEP_BACK:
+    case ACTION_CHAPTER_OR_BIG_STEP_BACK:
+    {
+      SeekSeconds(-GetTimeCodeSeconds());
+      return true;
+    }
+    case ACTION_STEP_FORWARD:
+    case ACTION_BIG_STEP_FORWARD:
+    case ACTION_CHAPTER_OR_BIG_STEP_FORWARD:
+    {
+      SeekSeconds(GetTimeCodeSeconds());
+      return true;
+    }
+    default:
+      break;
+  }
+  return false;
+}
+
+void CSeekHandler::ChangeTimeCode(int remote)
+{
+  if (remote >= ACTION_JUMP_SMS2 && remote <= ACTION_JUMP_SMS9)
+  {
+    // cast to REMOTE_X
+    remote -= (ACTION_JUMP_SMS2 - REMOTE_2);
+  }
+  if (remote >= REMOTE_0 && remote <= REMOTE_9)
+  {
+    m_timerTimeCode.StartZero();
+
+    if (m_timeCodePosition < 6)
+      m_timeCodeStamp[m_timeCodePosition++] = remote - REMOTE_0;
+    else
+    {
+      // rotate around
+      for (int i = 0; i < 5; i++)
+        m_timeCodeStamp[i] = m_timeCodeStamp[i + 1];
+      m_timeCodeStamp[5] = remote - REMOTE_0;
+    }
+   }
+ }
+
+int CSeekHandler::GetTimeCodeSeconds() const
+{
+  if (m_timeCodePosition > 0)
+  {
+    // Convert the timestamp into an integer
+    int tot = 0;
+    for (int i = 0; i < m_timeCodePosition; i++)
+      tot = tot * 10 + m_timeCodeStamp[i];
+
+    // Interpret result as HHMMSS
+    int s = tot % 100; tot /= 100;
+    int m = tot % 100; tot /= 100;
+    int h = tot % 100;
+
+    return h * 3600 + m * 60 + s;
+  }
+  return 0;
 }

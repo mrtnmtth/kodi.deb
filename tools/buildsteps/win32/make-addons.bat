@@ -24,9 +24,9 @@ FOR %%b IN (%*) DO (
 SETLOCAL DisableDelayedExpansion
 
 rem set Visual C++ build environment
-call "%VS120COMNTOOLS%..\..\VC\bin\vcvars32.bat"
+call "%VS140COMNTOOLS%..\..\VC\bin\vcvars32.bat"
 
-SET WORKDIR=%WORKSPACE%
+SET WORKDIR=%base_dir%
 
 IF "%WORKDIR%" == "" (
   rem resolve the relative path
@@ -82,7 +82,7 @@ CD "%ADDONS_BUILD_PATH%"
 
 rem determine the proper install path for the built addons
 IF %install% == true (
-  SET ADDONS_INSTALL_PATH=%WORKDIR%\addons
+  SET ADDONS_INSTALL_PATH=%WORKSPACE%\addons
 ) ELSE (
   SET ADDONS_INSTALL_PATH=%WORKDIR%\project\Win32BuildSetup\BUILD_WIN32\addons
 )
@@ -105,12 +105,12 @@ IF "%addon%" NEQ "" (
 rem execute cmake to generate makefiles processable by nmake
 cmake "%ADDONS_PATH%" -G "NMake Makefiles" ^
       -DCMAKE_BUILD_TYPE=Release ^
-      -DCMAKE_USER_MAKE_RULES_OVERRIDE="%SCRIPTS_PATH%/c-flag-overrides.cmake" ^
-      -DCMAKE_USER_MAKE_RULES_OVERRIDE_CXX="%SCRIPTS_PATH%/cxx-flag-overrides.cmake" ^
+      -DCMAKE_USER_MAKE_RULES_OVERRIDE="%SCRIPTS_PATH%/CFlagOverrides.cmake" ^
+      -DCMAKE_USER_MAKE_RULES_OVERRIDE_CXX="%SCRIPTS_PATH%/CXXFlagOverrides.cmake" ^
       -DCMAKE_INSTALL_PREFIX=%ADDONS_INSTALL_PATH% ^
-      -DAPP_ROOT=%WORKDIR% ^
+      -DCORE_SOURCE_DIR=%WORKDIR% ^
       -DBUILD_DIR=%ADDONS_BUILD_PATH% ^
-      -DDEPENDS_PATH=%ADDON_DEPENDS_PATH% ^
+      -DADDON_DEPENDS_PATH=%ADDON_DEPENDS_PATH% ^
       -DPACKAGE_ZIP=ON ^
       -DADDONS_TO_BUILD="%ADDONS_TO_BUILD%"
 IF ERRORLEVEL 1 (

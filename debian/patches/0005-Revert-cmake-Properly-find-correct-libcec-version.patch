@@ -1,0 +1,44 @@
+From fe100a985d4027777a60fa9ec5c9c15cce8b8437 Mon Sep 17 00:00:00 2001
+From: Balint Reczey <balint@balintreczey.hu>
+Date: Sat, 17 Dec 2016 21:54:25 +0100
+Subject: [PATCH 5/9] Revert "[cmake] Properly find correct libcec version"
+
+This reverts commit ec17ed2ed0e04795d8de60d425c34c670e0a6cba.
+---
+ project/cmake/modules/FindCEC.cmake | 16 +++-------------
+ 1 file changed, 3 insertions(+), 13 deletions(-)
+
+diff --git a/project/cmake/modules/FindCEC.cmake b/project/cmake/modules/FindCEC.cmake
+index bd6fd1d..9891d18 100644
+--- a/project/cmake/modules/FindCEC.cmake
++++ b/project/cmake/modules/FindCEC.cmake
+@@ -15,23 +15,13 @@
+ #   CEC::CEC   - The libCEC library
+ 
+ if(PKG_CONFIG_FOUND)
+-  pkg_check_modules(PC_CEC libcec QUIET)
++  pkg_check_modules(PC_CEC libcec>=4.0.0 QUIET)
+ endif()
+ 
+-find_path(CEC_INCLUDE_DIR NAMES libcec/cec.h libCEC/CEC.h
++find_path(CEC_INCLUDE_DIR libcec/cec.h libCEC/CEC.h
+                           PATHS ${PC_CEC_INCLUDEDIR})
+ 
+-if(PC_CEC_VERSION)
+-  set(CEC_VERSION ${PC_CEC_VERSION})
+-elseif(CEC_INCLUDE_DIR AND EXISTS "${CEC_INCLUDE_DIR}/libcec/version.h")
+-  file(STRINGS "${CEC_INCLUDE_DIR}/libcec/version.h" cec_version_str REGEX "^[\t ]+LIBCEC_VERSION_TO_UINT\\(.*\\)")
+-  string(REGEX REPLACE "^[\t ]+LIBCEC_VERSION_TO_UINT\\(([0-9]+), ([0-9]+), ([0-9]+)\\)" "\\1.\\2.\\3" CEC_VERSION "${cec_version_str}")
+-  unset(cec_version_str)
+-endif()
+-
+-if(NOT CEC_FIND_VERSION)
+-  set(CEC_FIND_VERSION 4.0.0)
+-endif()
++set(CEC_VERSION ${PC_CEC_VERSION})
+ 
+ include(FindPackageHandleStandardArgs)
+ if(NOT WIN32)
+-- 
+2.1.4
+

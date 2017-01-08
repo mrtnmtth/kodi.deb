@@ -64,11 +64,11 @@ bool CTextureCache::IsCachedImage(const std::string &url) const
 {
   if (url != "-" && !CURL::IsFullPath(url))
     return true;
-  if (URIUtils::IsInPath(url, "special://skin/") ||
-      URIUtils::IsInPath(url, "special://temp/") ||
-      URIUtils::IsInPath(url, "resource://") ||
-      URIUtils::IsInPath(url, "androidapp://")   ||
-      URIUtils::IsInPath(url, CProfilesManager::GetInstance().GetThumbnailsFolder()))
+  if (URIUtils::PathHasParent(url, "special://skin", true) ||
+      URIUtils::PathHasParent(url, "special://temp", true) ||
+      URIUtils::PathHasParent(url, "resource://", true) ||
+      URIUtils::PathHasParent(url, "androidapp://", true)   ||
+      URIUtils::PathHasParent(url, CProfilesManager::GetInstance().GetThumbnailsFolder(), true))
     return true;
   return false;
 }
@@ -102,40 +102,40 @@ bool CTextureCache::CanCacheImageURL(const CURL &url)
   return (url.GetUserName().empty() || url.GetUserName() == "music");
 }
 
-std::string CTextureCache::CheckCachedImage(const std::string &url, bool returnDDS, bool &needsRecaching)
+std::string CTextureCache::CheckCachedImage(const std::string &url, bool &needsRecaching)
 {
   CTextureDetails details;
   std::string path(GetCachedImage(url, details, true));
   needsRecaching = !details.hash.empty();
   if (!path.empty())
-  {
-    if (!needsRecaching && returnDDS && !URIUtils::IsInPath(url, "special://skin/")) // TODO: should skin images be .dds'd (currently they're not necessarily writeable)
-    { // check for dds version
-      std::string ddsPath = URIUtils::ReplaceExtension(path, ".dds");
-      if (CFile::Exists(ddsPath))
-        return ddsPath;
-      if (g_advancedSettings.m_useDDSFanart)
-        AddJob(new CTextureDDSJob(path));
-    }
     return path;
-  }
   return "";
 }
 
 void CTextureCache::BackgroundCacheImage(const std::string &url)
 {
+  if (url.empty())
+    return;
+
   CTextureDetails details;
   std::string path(GetCachedImage(url, details));
   if (!path.empty() && details.hash.empty())
     return; // image is already cached and doesn't need to be checked further
 
+  path = CTextureUtils::UnwrapImageURL(url);
+  if (path.empty())
+    return;
+
   // needs (re)caching
-  AddJob(new CTextureCacheJob(CTextureUtils::UnwrapImageURL(url), details.hash));
+  AddJob(new CTextureCacheJob(path, details.hash));
 }
 
 std::string CTextureCache::CacheImage(const std::string &image, CBaseTexture **texture /* = NULL */, CTextureDetails *details /* = NULL */)
 {
   std::string url = CTextureUtils::UnwrapImageURL(image);
+  if (url.empty())
+    return "";
+
   CSingleLock lock(m_processingSection);
   if (m_processinglist.find(url) == m_processinglist.end())
   {
@@ -178,7 +178,7 @@ bool CTextureCache::CacheImage(const std::string &image, CTextureDetails &detail
 
 void CTextureCache::ClearCachedImage(const std::string &url, bool deleteSource /*= false */)
 {
-  // TODO: This can be removed when the texture cache covers everything.
+  //! @todo This can be removed when the texture cache covers everything.
   std::string path = deleteSource ? url : "";
   std::string cachedFile;
   if (ClearCachedTexture(url, cachedFile))
@@ -251,9 +251,8 @@ bool CTextureCache::ClearCachedTexture(int id, std::string &cachedURL)
 
 std::string CTextureCache::GetCacheFile(const std::string &url)
 {
-  Crc32 crc;
-  crc.ComputeFromLowerCase(url);
-  std::string hex = StringUtils::Format("%08x", (unsigned int)crc);
+  auto crc = Crc32::ComputeFromLowerCase(url);
+  std::string hex = StringUtils::Format("%08x", crc);
   std::string hash = StringUtils::Format("%c/%s", hex[0], hex.c_str());
   return hash;
 }
@@ -281,10 +280,6 @@ void CTextureCache::OnCachingComplete(bool success, CTextureCacheJob *job)
   }
 
   m_completeEvent.Set();
-
-  // TODO: call back to the UI indicating that it can update it's image...
-  if (success && g_advancedSettings.m_useDDSFanart && !job->m_details.file.empty())
-    AddJob(new CTextureDDSJob(GetCachedPath(job->m_details.file)));
 }
 
 void CTextureCache::OnJobComplete(unsigned int jobID, bool success, CJob *job)

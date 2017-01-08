@@ -60,13 +60,13 @@ void CKeyboardStat::Initialize()
 
 bool CKeyboardStat::LookupSymAndUnicodePeripherals(XBMC_keysym &keysym, uint8_t *key, char *unicode)
 {
-  std::vector<CPeripheral *> hidDevices;
+  PeripheralVector hidDevices;
   if (g_peripherals.GetPeripheralsWithFeature(hidDevices, FEATURE_HID))
   {
-    for (unsigned int iDevicePtr = 0; iDevicePtr < hidDevices.size(); iDevicePtr++)
+    for (auto& peripheral : hidDevices)
     {
-      CPeripheralHID *hidDevice = (CPeripheralHID *) hidDevices.at(iDevicePtr);
-      if (hidDevice && hidDevice->LookupSymAndUnicode(keysym, key, unicode))
+      std::shared_ptr<CPeripheralHID> hidDevice = std::static_pointer_cast<CPeripheralHID>(peripheral);
+      if (hidDevice->LookupSymAndUnicode(keysym, key, unicode))
         return true;
     }
   }
@@ -225,11 +225,20 @@ std::string CKeyboardStat::GetKeyName(int KeyID)
 // Now get the key name
 
   keyid = KeyID & 0xFF;
-  if (KeyTableLookupVKeyName(keyid, &keytable))
+  bool VKeyFound = KeyTableLookupVKeyName(keyid, &keytable);
+  if (VKeyFound)
     keyname.append(keytable.keyname);
   else
     keyname += StringUtils::Format("%i", keyid);
-  keyname += StringUtils::Format(" (0x%02x)", KeyID);
+  
+  // in case this might be an universalremote keyid
+  // we also print the possile corresponding obc code
+  // so users can easily find it in their universalremote
+  // map xml
+  if (VKeyFound || keyid > 255)
+    keyname += StringUtils::Format(" (0x%02x)", KeyID);
+  else// obc keys are 255 -rawid
+    keyname += StringUtils::Format(" (0x%02x, obc%i)", KeyID, 255 - KeyID);
 
   return keyname;
 }

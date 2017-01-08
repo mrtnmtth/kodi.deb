@@ -1,6 +1,6 @@
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      Copyright (C) 2005-2015 Team Kodi
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
+ *  along with Kodi; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
@@ -43,7 +43,7 @@
   #include "Windows.h"
 #endif
 #if defined(TARGET_ANDROID)
-  #include "android/activity/XBMCApp.h"
+  #include "platform/android/activity/XBMCApp.h"
 #endif
 
 // If the process ends in less than this time (ms), we assume it's a launcher
@@ -166,7 +166,7 @@ void CExternalPlayer::Process()
     }
   }
 
-  if (m_filenameReplacers.size() > 0)
+  if (!m_filenameReplacers.empty())
   {
     for (unsigned int i = 0; i < m_filenameReplacers.size(); i++)
     {
@@ -498,11 +498,6 @@ void CExternalPlayer::Pause()
 {
 }
 
-bool CExternalPlayer::IsPaused() const
-{
-  return false;
-}
-
 bool CExternalPlayer::HasVideo() const
 {
   return true;
@@ -528,21 +523,6 @@ bool CExternalPlayer::CanSeek()
 
 void CExternalPlayer::Seek(bool bPlus, bool bLargeStep, bool bChapterOverride)
 {
-}
-
-void CExternalPlayer::GetAudioInfo(std::string& strAudioInfo)
-{
-  strAudioInfo = "CExternalPlayer:GetAudioInfo";
-}
-
-void CExternalPlayer::GetVideoInfo(std::string& strVideoInfo)
-{
-  strVideoInfo = "CExternalPlayer:GetVideoInfo";
-}
-
-void CExternalPlayer::GetGeneralInfo(std::string& strGeneralInfo)
-{
-  strGeneralInfo = "CExternalPlayer:GetGeneralInfo";
 }
 
 void CExternalPlayer::SwitchToNextAudioLanguage()
@@ -604,9 +584,14 @@ int64_t CExternalPlayer::GetTotalTime() // in milliseconds
   return (int64_t)m_totalTime * 1000;
 }
 
-void CExternalPlayer::ToFFRW(int iSpeed)
+void CExternalPlayer::SetSpeed(float iSpeed)
 {
-  m_speed = iSpeed;
+  m_speed = static_cast<int>(iSpeed);
+}
+
+float CExternalPlayer::GetSpeed()
+{
+  return m_speed;
 }
 
 void CExternalPlayer::ShowOSD(bool bOnoff)

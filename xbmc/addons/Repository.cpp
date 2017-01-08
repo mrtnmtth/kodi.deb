@@ -54,178 +54,155 @@ using namespace KODI::MESSAGING;
 
 using KODI::MESSAGING::HELPERS::DialogResponse;
 
-AddonPtr CRepository::Clone() const
+std::unique_ptr<CRepository> CRepository::FromExtension(AddonProps props, const cp_extension_t* ext)
 {
-  return AddonPtr(new CRepository(*this));
-}
-
-CRepository::CRepository(const AddonProps& props) :
-  CAddon(props)
-{
-}
-
-CRepository::CRepository(const cp_extension_t *ext)
-  : CAddon(ext)
-{
-  // read in the other props that we need
-  if (ext)
+  DirList dirs;
+  AddonVersion version("0.0.0");
+  AddonPtr addonver;
+  if (CAddonMgr::GetInstance().GetAddon("xbmc.addon", addonver))
+    version = addonver->Version();
+  for (size_t i = 0; i < ext->configuration->num_children; ++i)
   {
-    AddonVersion version("0.0.0");
-    AddonPtr addonver;
-    if (CAddonMgr::GetInstance().GetAddon("xbmc.addon", addonver))
-      version = addonver->Version();
-    for (size_t i = 0; i < ext->configuration->num_children; ++i)
+    if(ext->configuration->children[i].name &&
+       strcmp(ext->configuration->children[i].name, "dir") == 0)
     {
-      if(ext->configuration->children[i].name &&
-         strcmp(ext->configuration->children[i].name, "dir") == 0)
+      AddonVersion min_version(CAddonMgr::GetInstance().GetExtValue(&ext->configuration->children[i], "@minversion"));
+      if (min_version <= version)
       {
-        AddonVersion min_version(CAddonMgr::GetInstance().GetExtValue(&ext->configuration->children[i], "@minversion"));
-        if (min_version <= version)
-        {
-          DirInfo dir;
-          dir.version    = min_version;
-          dir.checksum   = CAddonMgr::GetInstance().GetExtValue(&ext->configuration->children[i], "checksum");
-          dir.compressed = CAddonMgr::GetInstance().GetExtValue(&ext->configuration->children[i], "info@compressed") == "true";
-          dir.info       = CAddonMgr::GetInstance().GetExtValue(&ext->configuration->children[i], "info");
-          dir.datadir    = CAddonMgr::GetInstance().GetExtValue(&ext->configuration->children[i], "datadir");
-          dir.zipped     = CAddonMgr::GetInstance().GetExtValue(&ext->configuration->children[i], "datadir@zip") == "true";
-          dir.hashes     = CAddonMgr::GetInstance().GetExtValue(&ext->configuration->children[i], "hashes") == "true";
-          m_dirs.push_back(dir);
-        }
+        DirInfo dir;
+        dir.version = min_version;
+        dir.checksum = CAddonMgr::GetInstance().GetExtValue(&ext->configuration->children[i], "checksum");
+        dir.info = CAddonMgr::GetInstance().GetExtValue(&ext->configuration->children[i], "info");
+        dir.datadir = CAddonMgr::GetInstance().GetExtValue(&ext->configuration->children[i], "datadir");
+        dir.hashes = CAddonMgr::GetInstance().GetExtValue(&ext->configuration->children[i], "hashes") == "true";
+        dirs.push_back(std::move(dir));
       }
     }
-    // backward compatibility
-    if (!CAddonMgr::GetInstance().GetExtValue(ext->configuration, "info").empty())
-    {
-      DirInfo info;
-      info.checksum   = CAddonMgr::GetInstance().GetExtValue(ext->configuration, "checksum");
-      info.compressed = CAddonMgr::GetInstance().GetExtValue(ext->configuration, "info@compressed") == "true";
-      info.info       = CAddonMgr::GetInstance().GetExtValue(ext->configuration, "info");
-      info.datadir    = CAddonMgr::GetInstance().GetExtValue(ext->configuration, "datadir");
-      info.zipped     = CAddonMgr::GetInstance().GetExtValue(ext->configuration, "datadir@zip") == "true";
-      info.hashes     = CAddonMgr::GetInstance().GetExtValue(ext->configuration, "hashes") == "true";
-      m_dirs.push_back(info);
-    }
   }
-}
-
-CRepository::CRepository(const CRepository &rhs)
-  : CAddon(rhs), m_dirs(rhs.m_dirs)
-{
-}
-
-CRepository::~CRepository()
-{
-}
-
-std::string CRepository::FetchChecksum(const std::string& url)
-{
-  CFile file;
-  try
+  if (!CAddonMgr::GetInstance().GetExtValue(ext->configuration, "info").empty())
   {
-    if (file.Open(url))
-    {    
-      // we intentionally avoid using file.GetLength() for 
-      // Transfer-Encoding: chunked servers.
-      std::stringstream str;
-      char temp[1024];
-      int read;
-      while ((read=file.Read(temp, sizeof(temp))) > 0)
-        str.write(temp, read);
-      return str.str();
-    }
-    return "";
+    DirInfo info;
+    info.checksum = CAddonMgr::GetInstance().GetExtValue(ext->configuration, "checksum");
+    info.info = CAddonMgr::GetInstance().GetExtValue(ext->configuration, "info");
+    info.datadir = CAddonMgr::GetInstance().GetExtValue(ext->configuration, "datadir");
+    info.hashes = CAddonMgr::GetInstance().GetExtValue(ext->configuration, "hashes") == "true";
+    dirs.push_back(std::move(info));
   }
-  catch (...)
-  {
-    return "";
-  }
+  return std::unique_ptr<CRepository>(new CRepository(std::move(props), std::move(dirs)));
 }
 
-std::string CRepository::GetAddonHash(const AddonPtr& addon) const
+CRepository::CRepository(AddonProps props, DirList dirs)
+    : CAddon(std::move(props)), m_dirs(std::move(dirs))
 {
-  std::string checksum;
+}
+
+
+bool CRepository::GetAddonHash(const AddonPtr& addon, std::string& checksum) const
+{
   DirList::const_iterator it;
   for (it = m_dirs.begin();it != m_dirs.end(); ++it)
-    if (URIUtils::IsInPath(addon->Path(), it->datadir))
+    if (URIUtils::PathHasParent(addon->Path(), it->datadir, true))
       break;
-  if (it != m_dirs.end() && it->hashes)
+
+  if (it != m_dirs.end())
   {
-    checksum = FetchChecksum(addon->Path()+".md5");
-    size_t pos = checksum.find_first_of(" \n");
-    if (pos != std::string::npos)
-      return checksum.substr(0, pos);
-  }
-  return checksum;
-}
-
-#define SET_IF_NOT_EMPTY(x,y) \
-  { \
-    if (!x.empty()) \
-       x = y; \
-  }
-
-
-bool CRepository::FetchIndex(const std::string& url, VECADDONS& addons)
-{
-  XFILE::CCurlFile http;
-  http.SetContentEncoding("gzip");
-
-  std::string content;
-  if (!http.Get(url, content))
-    return false;
-
-  if (URIUtils::HasExtension(url, ".gz")
-      || CMime::GetFileTypeFromMime(http.GetMimeType()) == CMime::EFileType::FileTypeGZip)
-  {
-    CLog::Log(LOGDEBUG, "CRepository '%s' is gzip. decompressing", url.c_str());
-    std::string buffer;
-    if (!CZipFile::DecompressGzip(content, buffer))
-      return false;
-    content = std::move(buffer);
-  }
-
-  CXBMCTinyXML doc;
-  if (!doc.Parse(content) || !doc.RootElement()
-      || !CAddonMgr::GetInstance().AddonsFromRepoXML(doc.RootElement(), addons))
-  {
-    CLog::Log(LOGERROR, "CRepository: Failed to parse addons.xml. Malformated.");
-    return false;
-  }
-  return true;
-}
-
-bool CRepository::Parse(const DirInfo& dir, VECADDONS& addons)
-{
-  if (!FetchIndex(dir.info, addons))
-    return false;
-
-    for (IVECADDONS i = addons.begin(); i != addons.end(); ++i)
+    if (!it->hashes)
     {
-      AddonPtr addon = *i;
-      if (dir.zipped)
+      checksum = "";
+      return true;
+    }
+    if (FetchChecksum(addon->Path() + ".md5", checksum))
+    {
+      size_t pos = checksum.find_first_of(" \n");
+      if (pos != std::string::npos)
       {
-        std::string file = StringUtils::Format("%s/%s-%s.zip", addon->ID().c_str(), addon->ID().c_str(), addon->Version().asString().c_str());
-        addon->Props().path = URIUtils::AddFileToFolder(dir.datadir,file);
-        SET_IF_NOT_EMPTY(addon->Props().icon,URIUtils::AddFileToFolder(dir.datadir,addon->ID()+"/icon.png"))
-        file = StringUtils::Format("%s/changelog-%s.txt", addon->ID().c_str(), addon->Version().asString().c_str());
-        SET_IF_NOT_EMPTY(addon->Props().changelog,URIUtils::AddFileToFolder(dir.datadir,file))
-        SET_IF_NOT_EMPTY(addon->Props().fanart,URIUtils::AddFileToFolder(dir.datadir,addon->ID()+"/fanart.jpg"))
-      }
-      else
-      {
-        addon->Props().path = URIUtils::AddFileToFolder(dir.datadir,addon->ID()+"/");
-        SET_IF_NOT_EMPTY(addon->Props().icon,URIUtils::AddFileToFolder(dir.datadir,addon->ID()+"/icon.png"))
-        SET_IF_NOT_EMPTY(addon->Props().changelog,URIUtils::AddFileToFolder(dir.datadir,addon->ID()+"/changelog.txt"))
-        SET_IF_NOT_EMPTY(addon->Props().fanart,URIUtils::AddFileToFolder(dir.datadir,addon->ID()+"/fanart.jpg"))
+        checksum = checksum.substr(0, pos);
+        return true;
       }
     }
+  }
+  return false;
+}
+
+bool CRepository::FetchChecksum(const std::string& url, std::string& checksum) noexcept
+{
+  CFile file;
+  if (!file.Open(url))
+    return false;
+
+  // we intentionally avoid using file.GetLength() for
+  // Transfer-Encoding: chunked servers.
+  std::stringstream ss;
+  char temp[1024];
+  int read;
+  while ((read = file.Read(temp, sizeof(temp))) > 0)
+    ss.write(temp, read);
+  if (read <= -1)
+    return false;
+  checksum = ss.str();
   return true;
 }
 
+bool CRepository::FetchIndex(const DirInfo& repo, VECADDONS& addons) noexcept
+{
+  XFILE::CCurlFile http;
+  http.SetAcceptEncoding("gzip");
+
+  std::string response;
+  if (!http.Get(repo.info, response))
+  {
+    CLog::Log(LOGERROR, "CRepository: failed to read %s", repo.info.c_str());
+    return false;
+  }
+
+  if (URIUtils::HasExtension(repo.info, ".gz")
+      || CMime::GetFileTypeFromMime(http.GetMimeType()) == CMime::EFileType::FileTypeGZip)
+  {
+    CLog::Log(LOGDEBUG, "CRepository '%s' is gzip. decompressing", repo.info.c_str());
+    std::string buffer;
+    if (!CZipFile::DecompressGzip(response, buffer))
+    {
+      CLog::Log(LOGERROR, "CRepository: failed to decompress gzip from '%s'", repo.info.c_str());
+      return false;
+    }
+    response = std::move(buffer);
+  }
+
+  return CAddonMgr::GetInstance().AddonsFromRepoXML(repo, response, addons);
+}
+
+CRepository::FetchStatus CRepository::FetchIfChanged(const std::string& oldChecksum,
+    std::string& checksum, VECADDONS& addons) const
+{
+  checksum = "";
+  for (const auto& dir : m_dirs)
+  {
+    if (!dir.checksum.empty())
+    {
+      std::string part;
+      if (!FetchChecksum(dir.checksum, part))
+      {
+        CLog::Log(LOGERROR, "CRepository: failed read '%s'", dir.checksum.c_str());
+        return STATUS_ERROR;
+      }
+      checksum += part;
+    }
+  }
+
+  if (oldChecksum == checksum && !oldChecksum.empty())
+    return STATUS_NOT_MODIFIED;
+
+  for (const auto& dir : m_dirs)
+  {
+    VECADDONS tmp;
+    if (!FetchIndex(dir, tmp))
+      return STATUS_ERROR;
+    addons.insert(addons.end(), tmp.begin(), tmp.end());
+  }
+  return STATUS_OK;
+}
 
 CRepositoryUpdateJob::CRepositoryUpdateJob(const RepositoryPtr& repo) : m_repo(repo) {}
-
 
 bool CRepositoryUpdateJob::DoWork()
 {
@@ -239,17 +216,17 @@ bool CRepositoryUpdateJob::DoWork()
 
   std::string newChecksum;
   VECADDONS addons;
-  auto status = FetchIfChanged(oldChecksum, newChecksum, addons);
+  auto status = m_repo->FetchIfChanged(oldChecksum, newChecksum, addons);
 
   database.SetLastChecked(m_repo->ID(), m_repo->Version(),
       CDateTime::GetCurrentDateTime().GetAsDBDateTime());
 
   MarkFinished();
 
-  if (status == STATUS_ERROR)
+  if (status == CRepository::STATUS_ERROR)
     return false;
 
-  if (status == STATUS_NOT_MODIFIED)
+  if (status == CRepository::STATUS_NOT_MODIFIED)
   {
     CLog::Log(LOGDEBUG, "CRepositoryUpdateJob[%s] checksum not changed.", m_repo->ID().c_str());
     return true;
@@ -266,117 +243,62 @@ bool CRepositoryUpdateJob::DoWork()
       AddonPtr oldAddon;
       if (database.GetAddon(addon->ID(), oldAddon) && addon->Version() > oldAddon->Version())
       {
-        if (!addon->Props().icon.empty() || !addon->Props().fanart.empty())
+        if (!oldAddon->Icon().empty() || !oldAddon->FanArt().empty() || !oldAddon->Screenshots().empty())
           CLog::Log(LOGDEBUG, "CRepository: invalidating cached art for '%s'", addon->ID().c_str());
-        if (!addon->Props().icon.empty())
-          textureDB.InvalidateCachedTexture(addon->Props().icon);
-        if (!addon->Props().fanart.empty())
-          textureDB.InvalidateCachedTexture(addon->Props().fanart);
+        if (!oldAddon->Icon().empty())
+          textureDB.InvalidateCachedTexture(oldAddon->Icon());
+        if (!oldAddon->FanArt().empty())
+          textureDB.InvalidateCachedTexture(oldAddon->Icon());
+        for (const auto& path : oldAddon->Screenshots())
+          textureDB.InvalidateCachedTexture(path);
       }
     }
     textureDB.CommitMultipleExecute();
   }
 
-  database.AddRepository(m_repo->ID(), addons, newChecksum, m_repo->Version());
+  database.UpdateRepositoryContent(m_repo->ID(), m_repo->Version(), newChecksum, addons);
 
-  //Update broken status
-  database.BeginMultipleExecute();
+  //Notify about broken status changes
   for (const auto& addon : addons)
   {
     AddonPtr localAddon;
-    CAddonMgr::GetInstance().GetAddon(addon->ID(), localAddon);
+    if (!CAddonMgr::GetInstance().GetAddon(addon->ID(), localAddon))
+      continue;
 
     if (localAddon && localAddon->Version() > addon->Version())
-      //We have a newer verison locally
+      //We have a newer version locally
       continue;
+
+    AddonPtr oldAddon;
+    database.GetAddon(addon->ID(), oldAddon);
 
     if (database.GetAddonVersion(addon->ID()).first > addon->Version())
       //Newer version in db (ie. in a different repo)
       continue;
 
-    bool depsMet = CAddonInstaller::GetInstance().CheckDependencies(addon);
-    if (!depsMet && addon->Props().broken.empty())
-      addon->Props().broken = "DEPSNOTMET";
-
-    if (localAddon)
+    std::string broken = addon->Broken();
+    bool isBroken = !addon->Broken().empty();
+    bool isBrokenInDb = oldAddon && !oldAddon->Broken().empty();
+    if (isBroken && !isBrokenInDb)
     {
-      bool brokenInDb = !database.IsAddonBroken(addon->ID()).empty();
-      if (!addon->Props().broken.empty() && !brokenInDb)
+      //newly broken
+      if (HELPERS::ShowYesNoDialogLines(CVariant{addon->Name()}, CVariant{24096}, CVariant{24097}, CVariant{""})
+        == DialogResponse::YES)
       {
-        //newly broken
-        int line = 24096;
-        if (addon->Props().broken == "DEPSNOTMET")
-          line = 24104;
-        if (HELPERS::ShowYesNoDialogLines(CVariant{addon->Name()}, CVariant{line}, CVariant{24097}, CVariant{""}) 
-          == DialogResponse::YES)
-        {
-          CAddonMgr::GetInstance().DisableAddon(addon->ID());
-        }
-
-        CLog::Log(LOGDEBUG, "CRepositoryUpdateJob[%s] addon '%s' marked broken. reason: \"%s\"",
-             m_repo->ID().c_str(), addon->ID().c_str(), addon->Props().broken.c_str());
-
-        CEventLog::GetInstance().Add(EventPtr(new CAddonManagementEvent(addon, 24096)));
+        CAddonMgr::GetInstance().DisableAddon(addon->ID());
       }
-      else if (addon->Props().broken.empty() && brokenInDb)
-      {
-        //Unbroken
-        CLog::Log(LOGDEBUG, "CRepositoryUpdateJob[%s] addon '%s' unbroken",
-            m_repo->ID().c_str(), addon->ID().c_str());
-      }
+
+      CLog::Log(LOGDEBUG, "CRepositoryUpdateJob[%s] addon '%s' marked broken. reason: \"%s\"",
+           m_repo->ID().c_str(), addon->ID().c_str(), broken.c_str());
+
+      CEventLog::GetInstance().Add(EventPtr(new CAddonManagementEvent(addon, 24096)));
     }
-
-    //Update broken status
-    database.BreakAddon(addon->ID(), addon->Props().broken);
+    else if (!isBroken && isBrokenInDb)
+    {
+      //Unbroken
+      CLog::Log(LOGDEBUG, "CRepositoryUpdateJob[%s] addon '%s' unbroken",
+          m_repo->ID().c_str(), addon->ID().c_str());
+    }
   }
-  database.CommitMultipleExecute();
   return true;
 }
-
-CRepositoryUpdateJob::FetchStatus CRepositoryUpdateJob::FetchIfChanged(const std::string& oldChecksum,
-    std::string& checksum, VECADDONS& addons)
-{
-  SetText(StringUtils::Format(g_localizeStrings.Get(24093).c_str(), m_repo->Name().c_str()));
-  const unsigned int total = m_repo->m_dirs.size() * 2;
-
-  checksum = "";
-  for (auto it = m_repo->m_dirs.cbegin(); it != m_repo->m_dirs.cend(); ++it)
-  {
-    if (!it->checksum.empty())
-    {
-      if (ShouldCancel(std::distance(m_repo->m_dirs.cbegin(), it), total))
-        return STATUS_ERROR;
-
-      auto dirsum = CRepository::FetchChecksum(it->checksum);
-      if (dirsum.empty())
-      {
-        CLog::Log(LOGERROR, "CRepositoryUpdateJob[%s] failed read checksum for "
-            "directory '%s'", m_repo->ID().c_str(), it->info.c_str());
-        return STATUS_ERROR;
-      }
-      checksum += dirsum;
-    }
-  }
-
-  if (oldChecksum == checksum && !oldChecksum.empty())
-    return STATUS_NOT_MODIFIED;
-
-  for (auto it = m_repo->m_dirs.cbegin(); it != m_repo->m_dirs.cend(); ++it)
-  {
-    if (ShouldCancel(m_repo->m_dirs.size() + std::distance(m_repo->m_dirs.cbegin(), it), total))
-      return STATUS_ERROR;
-
-    VECADDONS tmp;
-    if (!CRepository::Parse(*it, tmp))
-    {
-      CLog::Log(LOGERROR, "CRepositoryUpdateJob[%s] failed to read or parse "
-          "directory '%s'", m_repo->ID().c_str(), it->info.c_str());
-      return STATUS_ERROR;
-    }
-    addons.insert(addons.end(), tmp.begin(), tmp.end());
-  }
-
-  SetProgress(total, total);
-  return STATUS_OK;
-}
-

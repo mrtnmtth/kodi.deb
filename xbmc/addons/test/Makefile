@@ -1,5 +1,8 @@
 SRCS=	\
-	TestAddonVersion.cpp
+  TestAddonBuilder.cpp \
+  TestAddonDatabase.cpp \
+  TestAddonFactory.cpp \
+  TestAddonVersion.cpp
 
 LIB=addonsTest.a
 

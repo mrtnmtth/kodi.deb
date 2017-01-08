@@ -31,12 +31,10 @@
 #include "utils/log.h"
 #include "utils/Variant.h"
 
-#define CONTROL_BUTTON_DEFAULTS 50
-
 using namespace PERIPHERALS;
 
 CGUIDialogPeripheralSettings::CGUIDialogPeripheralSettings()
-  : CGUIDialogSettingsManualBase(WINDOW_DIALOG_PERIPHERAL_SETTINGS, "DialogPeripheralSettings.xml"),
+  : CGUIDialogSettingsManualBase(WINDOW_DIALOG_PERIPHERAL_SETTINGS, "DialogSettings.xml"),
     m_item(NULL),
     m_initialising(false)
 { }
@@ -52,7 +50,7 @@ CGUIDialogPeripheralSettings::~CGUIDialogPeripheralSettings()
 bool CGUIDialogPeripheralSettings::OnMessage(CGUIMessage &message)
 {
   if (message.GetMessage() == GUI_MSG_CLICKED &&
-      message.GetSenderId() == CONTROL_BUTTON_DEFAULTS)
+      message.GetSenderId() == CONTROL_SETTINGS_CUSTOM_BUTTON)
   {
     OnResetSettings();
     return true;
@@ -93,8 +91,8 @@ void CGUIDialogPeripheralSettings::Save()
   if (m_item == NULL || m_initialising)
     return;
 
-  CPeripheral *peripheral = g_peripherals.GetByPath(m_item->GetPath());
-  if (peripheral == NULL)
+  PeripheralPtr peripheral = g_peripherals.GetByPath(m_item->GetPath());
+  if (!peripheral)
     return;
 
   peripheral->PersistSettings();
@@ -105,8 +103,8 @@ void CGUIDialogPeripheralSettings::OnResetSettings()
   if (m_item == NULL)
     return;
 
-  CPeripheral *peripheral = g_peripherals.GetByPath(m_item->GetPath());
-  if (peripheral == NULL)
+  PeripheralPtr peripheral = g_peripherals.GetByPath(m_item->GetPath());
+  if (!peripheral)
     return;
 
   if (!CGUIDialogYesNo::ShowAndGetInput(CVariant{10041}, CVariant{10042}))
@@ -124,6 +122,9 @@ void CGUIDialogPeripheralSettings::SetupView()
   CGUIDialogSettingsManualBase::SetupView();
 
   SetHeading(m_item->GetLabel());
+  SET_CONTROL_LABEL(CONTROL_SETTINGS_OKAY_BUTTON, 186);
+  SET_CONTROL_LABEL(CONTROL_SETTINGS_CANCEL_BUTTON, 222);
+  SET_CONTROL_LABEL(CONTROL_SETTINGS_CUSTOM_BUTTON, 409);
 }
 
 void CGUIDialogPeripheralSettings::InitializeSettings()
@@ -137,8 +138,8 @@ void CGUIDialogPeripheralSettings::InitializeSettings()
   m_initialising = true;
   bool usePopup = g_SkinInfo->HasSkinFile("DialogSlider.xml");
 
-  CPeripheral *peripheral = g_peripherals.GetByPath(m_item->GetPath());
-  if (peripheral == NULL)
+  PeripheralPtr peripheral = g_peripherals.GetByPath(m_item->GetPath());
+  if (!peripheral)
   {
     CLog::Log(LOGDEBUG, "%s - no peripheral", __FUNCTION__);
     m_initialising = false;
@@ -220,7 +221,7 @@ void CGUIDialogPeripheralSettings::InitializeSettings()
       }
 
       default:
-        // TODO: add more types if needed
+        //! @todo add more types if needed
         CLog::Log(LOGDEBUG, "%s - unknown type", __FUNCTION__);
         break;
     }

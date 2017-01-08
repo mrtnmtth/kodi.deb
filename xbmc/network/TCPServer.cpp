@@ -1,6 +1,6 @@
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      Copyright (C) 2005-2015 Team Kodi
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
+ *  along with Kodi; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
@@ -67,7 +67,20 @@ bool CTCPServer::StartServer(int port, bool nonlocal)
   ServerInstance = new CTCPServer(port, nonlocal);
   if (ServerInstance->Initialize())
   {
-    ServerInstance->Create();
+    size_t thread_stacksize = 0;
+#if defined(TARGET_DARWIN_TVOS)
+    void *stack_addr;
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
+    pthread_attr_getstack(&attr, &stack_addr, &thread_stacksize);
+    pthread_attr_destroy(&attr);
+    // double the stack size under tvos, not sure why yet
+    // but it stoped crashing using Kodi json -> play video.
+    // non-tvos will pass a value of zero which means 'system default'
+    thread_stacksize *= 2;
+  CLog::Log(LOGDEBUG, "CTCPServer: increasing thread stack to %zu", thread_stacksize);
+#endif
+    ServerInstance->Create(false, thread_stacksize);
     return true;
   }
   else
@@ -152,7 +165,7 @@ void CTCPServer::Process()
             {
               CWebSocket *websocket = CWebSocketManager::Handle(buffer, nread, response);
 
-              if (response.size() > 0)
+              if (!response.empty())
                 m_connections[i]->Send(response.c_str(), response.size());
 
               if (websocket != NULL)

@@ -23,7 +23,7 @@
 #endif //!TARGET_WINDOWS
 
 #include "Win32InterfaceForCLog.h"
-#include "win32/WIN32Util.h"
+#include "platform/win32/WIN32Util.h"
 #include "utils/StringUtils.h"
 #include "utils/auto_buffer.h"
 
@@ -110,11 +110,12 @@ void CWin32InterfaceForCLog::PrintDebugString(const std::string& debugString)
 #endif // _DEBUG
 }
 
-void CWin32InterfaceForCLog::GetCurrentLocalTime(int& hour, int& minute, int& second)
+void CWin32InterfaceForCLog::GetCurrentLocalTime(int& hour, int& minute, int& second, double& millisecond)
 {
   SYSTEMTIME time;
   GetLocalTime(&time);
   hour = time.wHour;
   minute = time.wMinute;
   second = time.wSecond;
+  millisecond = static_cast<double>(time.wMilliseconds);
 }

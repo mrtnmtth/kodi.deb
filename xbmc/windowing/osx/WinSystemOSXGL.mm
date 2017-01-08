@@ -37,19 +37,19 @@ CWinSystemOSXGL::~CWinSystemOSXGL()
 {
 }
 
-bool CWinSystemOSXGL::PresentRenderImpl(const CDirtyRegionList &dirty)
+void CWinSystemOSXGL::PresentRenderImpl(bool rendered)
 {
-  return FlushBuffer();
+  if (rendered)
+    FlushBuffer();
 }
 
 void CWinSystemOSXGL::SetVSyncImpl(bool enable)
 {
   EnableVSync(false);
   
-  if (enable && m_iVSyncMode == 0)
+  if (enable)
   {
     EnableVSync(true);
-    m_iVSyncMode = 10;
   }
 }
 

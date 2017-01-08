@@ -18,12 +18,12 @@
  *
  */
 
-#include "../../../addons/library.kodi.guilib/libKODI_guilib.h"
+#include "addons/kodi-addon-dev-kit/include/kodi/libKODI_guilib.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-#include "addons/AddonCallbacks.h"
+#include "addons/binary/interfaces/api1/GUI/AddonCallbacksGUI.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -33,6 +33,7 @@
 #endif
 
 using namespace std;
+using namespace V1::KodiAPI::GUI;
 
 extern "C"
 {
@@ -44,7 +45,7 @@ DLLEXPORT void* GUI_register_me(void *hdl)
     fprintf(stderr, "libXBMC_gui-ERROR: GUILib_register_me is called with NULL handle !!!\n");
   else
   {
-    cb = ((AddonCB*)hdl)->GUILib_RegisterMe(((AddonCB*)hdl)->addonData);
+    cb = (CB_GUILib*)((AddonCB*)hdl)->GUILib_RegisterMe(((AddonCB*)hdl)->addonData);
     if (!cb)
       fprintf(stderr, "libXBMC_gui-ERROR: GUILib_register_me can't get callback table from XBMC !!!\n");
   }
@@ -272,9 +273,13 @@ CAddonGUIWindow::CAddonGUIWindow(void *hdl, void *cb, const char *xmlFilename, c
  : m_Handle(hdl)
  , m_cb(cb)
 {
-  CBOnInit = NULL;
-  CBOnClick = NULL;
-  CBOnFocus = NULL;
+  CBOnInit = nullptr;
+  CBOnClick = nullptr;
+  CBOnFocus = nullptr;
+  CBOnAction = nullptr;
+  m_WindowHandle = nullptr;
+  m_cbhdl = nullptr;
+
   if (hdl && cb)
   {
     m_WindowHandle = ((CB_GUILib*)m_cb)->Window_New(((AddonCB*)m_Handle)->addonData, xmlFilename, defaultSkin, forceFallback, asDialog);
@@ -471,7 +476,6 @@ DLLEXPORT void GUI_control_release_spin(CAddonGUISpinControl* p)
 
 CAddonGUISpinControl::CAddonGUISpinControl(void *hdl, void *cb, CAddonGUIWindow *window, int controlId)
  : m_Window(window)
- , m_ControlId(controlId)
 {
   m_Handle = hdl;
   m_cb = cb;
@@ -531,7 +535,6 @@ DLLEXPORT void GUI_control_release_radiobutton(CAddonGUIRadioButton* p)
 
 CAddonGUIRadioButton::CAddonGUIRadioButton(void *hdl, void *cb, CAddonGUIWindow *window, int controlId)
  : m_Window(window)
- , m_ControlId(controlId)
  , m_Handle(hdl)
  , m_cb(cb)
 {
@@ -580,7 +583,6 @@ DLLEXPORT void GUI_control_release_progress(CAddonGUIProgressControl* p)
 
 CAddonGUIProgressControl::CAddonGUIProgressControl(void *hdl, void *cb, CAddonGUIWindow *window, int controlId)
  : m_Window(window)
- , m_ControlId(controlId)
  , m_Handle(hdl)
  , m_cb(cb)
 {
@@ -639,7 +641,6 @@ DLLEXPORT void GUI_control_release_slider(CAddonGUISliderControl* p)
 
 CAddonGUISliderControl::CAddonGUISliderControl(void *hdl, void *cb, CAddonGUIWindow *window, int controlId)
  : m_Window(window)
- , m_ControlId(controlId)
  , m_Handle(hdl)
  , m_cb(cb)
 {
@@ -740,7 +741,6 @@ DLLEXPORT void GUI_control_release_settings_slider(CAddonGUISettingsSliderContro
 
 CAddonGUISettingsSliderControl::CAddonGUISettingsSliderControl(void *hdl, void *cb, CAddonGUIWindow *window, int controlId)
  : m_Window(window)
- , m_ControlId(controlId)
  , m_Handle(hdl)
  , m_cb(cb)
 {
@@ -957,10 +957,14 @@ DLLEXPORT bool GUI_control_rendering_dirty(GUIHANDLE handle)
 }
 
 CAddonGUIRenderingControl::CAddonGUIRenderingControl(void *hdl, void *cb, CAddonGUIWindow *window, int controlId)
- : m_Window(window)
- , m_ControlId(controlId)
- , m_Handle(hdl)
- , m_cb(cb)
+  : m_cbhdl(nullptr)
+  , CBCreate(nullptr)
+  , CBRender(nullptr)
+  , CBStop(nullptr)
+  , CBDirty(nullptr)
+  , m_Window(window)
+  , m_Handle(hdl)
+  , m_cb(cb)
 {
   m_RenderingHandle = ((CB_GUILib*)m_cb)->Window_GetControl_RenderAddon(((AddonCB*)m_Handle)->addonData, m_Window->m_WindowHandle, controlId);
 }

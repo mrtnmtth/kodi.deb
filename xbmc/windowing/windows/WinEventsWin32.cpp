@@ -48,10 +48,12 @@
 #include "network/ZeroconfBrowser.h"
 #include "utils/StringUtils.h"
 #include "Util.h"
+#include "messaging/ApplicationMessenger.h"
 
 #ifdef TARGET_WINDOWS
 
 using namespace PERIPHERALS;
+using namespace KODI::MESSAGING;
 
 HWND g_hWnd = NULL;
 
@@ -399,6 +401,18 @@ LRESULT CALLBACK CWinEventsWin32::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
   ZeroMemory(&newEvent, sizeof(newEvent));
   static HDEVNOTIFY hDeviceNotify;
 
+#if 0
+  if (uMsg == WM_NCCREATE)
+  {
+    // if available, enable DPI scaling of non-client portion of window (title bar, etc.) 
+    if (g_Windowing.PtrEnableNonClientDpiScaling != NULL)
+    {
+      g_Windowing.PtrEnableNonClientDpiScaling(hWnd);
+    }
+    return DefWindowProc(hWnd, uMsg, wParam, lParam);
+  }
+#endif
+
   if (uMsg == WM_CREATE)
   {
     g_hWnd = hWnd;
@@ -449,9 +463,6 @@ LRESULT CALLBACK CWinEventsWin32::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
       break;
     case WM_ACTIVATE:
       {
-        if( WA_INACTIVE != wParam )
-          CInputManager::GetInstance().ReInitializeJoystick();
-
         bool active = g_application.GetRenderGUI();
         if (HIWORD(wParam))
         {
@@ -509,7 +520,7 @@ LRESULT CALLBACK CWinEventsWin32::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
           return(DefWindowProc(hWnd, uMsg, wParam, lParam));
         case VK_RETURN: //alt-return
           if ((lParam & REPEATED_KEYMASK) == 0)
-            g_graphicsContext.ToggleFullScreenRoot();
+            CApplicationMessenger::GetInstance().PostMsg(TMSG_TOGGLEFULLSCREEN);
           return 0;
       }
       //deliberate fallthrough
@@ -668,6 +679,39 @@ LRESULT CALLBACK CWinEventsWin32::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
         m_pEventFunc(newEvent);
       }
       return(0);
+    case WM_DPICHANGED:
+      // This message tells the program that most of its window is on a
+      // monitor with a new DPI. The wParam contains the new DPI, and the 
+      // lParam contains a rect which defines the window rectangle scaled 
+      // the new DPI. 
+      if (g_application.GetRenderGUI() && !g_Windowing.IsAlteringWindow())
+      {
+        // get the suggested size of the window on the new display with a different DPI
+        unsigned short  dpi = LOWORD(wParam);
+        RECT resizeRect = *((RECT*)lParam);
+        g_Windowing.DPIChanged(dpi, resizeRect);
+      }
+      return(0);
+    case WM_DISPLAYCHANGE:
+      CLog::Log(LOGDEBUG, __FUNCTION__": display change event");  
+      if (g_application.GetRenderGUI() && !g_Windowing.IsAlteringWindow() && GET_X_LPARAM(lParam) > 0 && GET_Y_LPARAM(lParam) > 0)  
+      {
+        g_Windowing.UpdateResolutions();
+        if (g_advancedSettings.m_fullScreen)  
+        {  
+          newEvent.type = XBMC_VIDEOMOVE;  
+          newEvent.move.x = 0;  
+          newEvent.move.y = 0;  
+        }  
+        else  
+        {  
+          newEvent.type = XBMC_VIDEORESIZE;  
+          newEvent.resize.w = GET_X_LPARAM(lParam);  
+          newEvent.resize.h = GET_Y_LPARAM(lParam);  
+        }
+        m_pEventFunc(newEvent);
+      }
+      return(0);  
     case WM_SIZE:
       newEvent.type = XBMC_VIDEORESIZE;
       newEvent.resize.w = GET_X_LPARAM(lParam);
@@ -756,7 +800,6 @@ LRESULT CALLBACK CWinEventsWin32::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
             if (((_DEV_BROADCAST_HEADER*) lParam)->dbcd_devicetype == DBT_DEVTYP_DEVICEINTERFACE)
             {
               g_peripherals.TriggerDeviceScan(PERIPHERAL_BUS_USB);
-              CInputManager::GetInstance().ReInitializeJoystick();
             }
             // check if an usb or optical media was inserted or removed
             if (((_DEV_BROADCAST_HEADER*) lParam)->dbcd_devicetype == DBT_DEVTYP_VOLUME)

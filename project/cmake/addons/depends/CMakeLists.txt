@@ -1,6 +1,5 @@
+cmake_minimum_required(VERSION 3.1)
 project(kodi-addons-depends)
-
-cmake_minimum_required(VERSION 2.8)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
 
@@ -14,13 +13,13 @@ endif()
 
 include(ExternalProject)
 
-if(NOT DEPENDS_PATH)
-  set(DEPENDS_PATH ${PROJECT_SOURCE_DIR}/../build/depends)
+if(NOT ADDON_DEPENDS_PATH)
+  set(ADDON_DEPENDS_PATH ${PROJECT_SOURCE_DIR}/../build/depends)
 else()
-  file(TO_CMAKE_PATH "${DEPENDS_PATH}" DEPENDS_PATH)
+  file(TO_CMAKE_PATH "${ADDON_DEPENDS_PATH}" ADDON_DEPENDS_PATH)
 endif()
-get_filename_component(DEPENDS_PATH "${DEPENDS_PATH}" ABSOLUTE)
-list(APPEND CMAKE_PREFIX_PATH ${DEPENDS_PATH})
+get_filename_component(ADDON_DEPENDS_PATH "${ADDON_DEPENDS_PATH}" ABSOLUTE)
+list(APPEND CMAKE_PREFIX_PATH ${ADDON_DEPENDS_PATH})
 
 if(NOT BUILD_DIR)
     set(BUILD_DIR "${CMAKE_BINARY_DIR}/build")
@@ -30,7 +29,7 @@ endif()
 get_filename_component(BUILD_DIR "${BUILD_DIR}" ABSOLUTE)
 
 ## use add_addon_depends to handle the cmake based dependencies
-include(${APP_ROOT}/project/cmake/scripts/common/handle-depends.cmake)
+include(${CORE_SOURCE_DIR}/project/cmake/scripts/common/HandleDepends.cmake)
 add_addon_depends(depends "${PROJECT_SOURCE_DIR}")
 
 ## if there's a platform-specific sub-directory containing a CMakeLists.txt, add it to the build as well

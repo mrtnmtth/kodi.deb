@@ -1,6 +1,6 @@
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      Copyright (C) 2005-2015 Team Kodi
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
+ *  along with Kodi; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
@@ -28,7 +28,6 @@
 #include "guilib/GUIFadeLabelControl.h"
 #include "guilib/GUITextBox.h"
 #include "guilib/GUIButtonControl.h"
-#include "guilib/GUICheckMarkControl.h"
 #include "guilib/GUIImage.h"
 #include "guilib/GUIListContainer.h"
 #include "guilib/GUIProgressControl.h"
@@ -312,115 +311,6 @@ namespace XBMCAddon
 
     // ============================================================
     // ============================================================
-    ControlCheckMark::ControlCheckMark(long x, long y, long width, long height, const String& label,
-                                       const char* focusTexture, const char* noFocusTexture,
-                                       long _checkWidth, long _checkHeight,
-                                       long _alignment, const char* font,
-                                       const char* _textColor, const char* _disabledColor) :
-      strFont("font13"), checkWidth(_checkWidth), checkHeight(_checkHeight),
-      align(_alignment), textColor(0xffffffff), disabledColor(0x60ffffff)
-    {
-      dwPosX = x;
-      dwPosY = y;
-      dwWidth = width;
-      dwHeight = height;
-
-      strText = label;
-      if (font) strFont = font;
-      if (_textColor) sscanf(_textColor, "%x", &textColor);
-      if (_disabledColor) sscanf( _disabledColor, "%x", &disabledColor );
-
-      strTextureFocus = focusTexture ?  focusTexture :
-        XBMCAddonUtils::getDefaultImage((char*)"checkmark", (char*)"texturefocus", (char*)"check-box.png");
-      strTextureNoFocus = noFocusTexture ? noFocusTexture :
-        XBMCAddonUtils::getDefaultImage((char*)"checkmark", (char*)"texturenofocus", (char*)"check-boxNF.png");
-    }
-
-    bool ControlCheckMark::getSelected()
-    {
-      bool isSelected = false;
-
-      if (pGUIControl)
-      {
-        LOCKGUI;
-        isSelected = ((CGUICheckMarkControl*)pGUIControl)->GetSelected();
-      }
-
-      return isSelected;
-    }
-
-    void ControlCheckMark::setSelected(bool selected)
-    {
-      if (pGUIControl)
-      {
-        LOCKGUI;
-        ((CGUICheckMarkControl*)pGUIControl)->SetSelected(selected);
-      }
-    }
-
-    void ControlCheckMark::setLabel(const String& label,
-                                    const char* font,
-                                    const char* _textColor,
-                                    const char* _disabledColor,
-                                    const char* _shadowColor,
-                                    const char* _focusedColor,
-                                    const String& label2)
-    {
-
-      if (font) strFont = font;
-      if (_textColor) sscanf(_textColor, "%x", &textColor);
-      if (_disabledColor) sscanf(_disabledColor, "%x", &disabledColor);
-
-      if (pGUIControl)
-      {
-        LOCKGUI;
-        ((CGUICheckMarkControl*)pGUIControl)->PythonSetLabel(strFont,strText,textColor);
-        ((CGUICheckMarkControl*)pGUIControl)->PythonSetDisabledColor(disabledColor);
-      }
-    }
-
-    void ControlCheckMark::setDisabledColor(const char* color)
-    {
-      if (color) sscanf(color, "%x", &disabledColor);
-
-      if (pGUIControl)
-      {
-        LOCKGUI;
-        ((CGUICheckMarkControl*)pGUIControl)->PythonSetDisabledColor( disabledColor );
-      }
-    }
-
-    CGUIControl* ControlCheckMark::Create()
-    {
-      CLabelInfo label;
-      label.disabledColor = disabledColor;
-      label.textColor = label.focusedColor = textColor;
-      label.font = g_fontManager.GetFont(strFont);
-      label.align = align;
-      CTextureInfo imageFocus(strTextureFocus);
-      CTextureInfo imageNoFocus(strTextureNoFocus);
-      pGUIControl = new CGUICheckMarkControl(
-        iParentId,
-        iControlId,
-        (float)dwPosX,
-        (float)dwPosY,
-        (float)dwWidth,
-        (float)dwHeight,
-        imageFocus, imageNoFocus,
-        (float)checkWidth,
-        (float)checkHeight,
-        label );
-
-      CGUICheckMarkControl* pGuiCheckMarkControl = (CGUICheckMarkControl*)pGUIControl;
-      pGuiCheckMarkControl->SetLabel(strText);
-
-      return pGUIControl;
-    }
-
-    // ============================================================
-
-    // ============================================================
-    // ============================================================
     ControlImage::ControlImage(long x, long y, long width, long height,
                                const char* filename, long aRatio,
                                const char* _colorDiffuse):
@@ -533,12 +423,13 @@ namespace XBMCAddon
     ControlSlider::ControlSlider(long x, long y, long width, long height,
                                  const char* textureback,
                                  const char* texture,
-                                 const char* texturefocus)
+                                 const char* texturefocus, int orientation)
     {
       dwPosX = x;
       dwPosY = y;
       dwWidth = width;
       dwHeight = height;
+      iOrientation = orientation;
 
       // if texture is supplied use it, else get default ones
       strTextureBack = textureback ? textureback :
@@ -565,7 +456,7 @@ namespace XBMCAddon
       pGUIControl = new CGUISliderControl(iParentId, iControlId,(float)dwPosX, (float)dwPosY,
                                           (float)dwWidth,(float)dwHeight,
                                           CTextureInfo(strTextureBack),CTextureInfo(strTexture),
-                                          CTextureInfo(strTextureFoc),0);
+                                          CTextureInfo(strTextureFoc), 0, ORIENTATION(iOrientation));
 
       return pGUIControl;
     }
@@ -1305,7 +1196,7 @@ namespace XBMCAddon
       long pos = -1;
 
       // send message
-      if ((vecItems.size() > 0) && pGUIControl)
+      if (!vecItems.empty() && pGUIControl)
       {
         pGUIControl->OnMessage(msg);
         pos = msg.GetParam1();
@@ -1324,7 +1215,7 @@ namespace XBMCAddon
       AddonClass::Ref<ListItem> pListItem = NULL;
 
       // send message
-      if ((vecItems.size() > 0) && pGUIControl)
+      if (!vecItems.empty() && pGUIControl)
       {
         pGUIControl->OnMessage(msg);
         if (msg.GetParam1() >= 0 && (size_t)msg.GetParam1() < vecItems.size())

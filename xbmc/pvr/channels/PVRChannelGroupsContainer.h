@@ -23,6 +23,8 @@
 
 #include "PVRChannelGroups.h"
 
+class CURL;
+
 namespace PVR
 {
   class CPVRManager;
@@ -51,6 +53,12 @@ namespace PVR
      * @return True if all groups were loaded, false otherwise.
      */
     bool Load(void);
+
+    /*!
+     * @brief Checks whether groups were already loaded.
+     * @return True if groups were successfully loaded, false otherwise.
+     */
+    bool Loaded(void) const;
 
     /*!
      * @brief Unload and destruct all channel groups and all channels in them.
@@ -141,12 +149,6 @@ namespace PVR
     bool GetDirectory(const std::string& strPath, CFileItemList &results) const;
 
     /*!
-     * @brief The total amount of unique channels in all containers.
-     * @return The total amount of unique channels in all containers.
-     */
-    int GetNumChannelsFromAll(void) const;
-
-    /*!
      * @brief Get the group that is currently selected in the UI.
      * @param bRadio True to get the selected radio group, false to get the selected TV group.
      * @return The selected group.
@@ -215,5 +217,9 @@ namespace PVR
   private :
     CPVRChannelGroupsContainer& operator=(const CPVRChannelGroupsContainer&);
     CPVRChannelGroupsContainer(const CPVRChannelGroupsContainer&);
+
+    bool FilterDirectory(const CURL &url, CFileItemList &results) const;
+
+    bool m_bLoaded;
   };
 }

@@ -29,6 +29,7 @@
 #include "GUIPassword.h"
 #include "GUIUserMessages.h"
 #include "PlayListPlayer.h"
+#include "cores/playercorefactory/PlayerCoreFactory.h"
 #include "filesystem/StackDirectory.h"
 #include "filesystem/Directory.h"
 #include "filesystem/DirectoryFactory.h"
@@ -125,7 +126,7 @@ bool CAutorun::PlayDisc(const std::string& path, bool bypassSettings, bool start
     g_windowManager.SendMessage( msg );
     g_playlistPlayer.SetCurrentPlaylist(PLAYLIST_MUSIC);
     // Start playing the items we inserted
-    return g_playlistPlayer.Play(nSize);
+    return g_playlistPlayer.Play(nSize, "");
   }
 
   return bPlaying;
@@ -194,13 +195,13 @@ bool CAutorun::RunDisc(IDirectory* pDir, const std::string& strDrive, int& nAdde
           g_playlistPlayer.SetShuffle (PLAYLIST_VIDEO, false);
           g_playlistPlayer.Add(PLAYLIST_VIDEO, item);
           g_playlistPlayer.SetCurrentPlaylist(PLAYLIST_VIDEO);
-          g_playlistPlayer.Play(0);
+          g_playlistPlayer.Play(0, "");
           return true;
         }
 
         // Check if the current foldername indicates a Blu-Ray structure (default is "BDMV").
         // A BR should also include an "AACS" folder for encryption, Sony-BRs can also include update folders for PS3 (PS3_UPDATE / PS3_VPRM).
-        // ToDo: for the time beeing, the DVD autorun settings are used to determine if the BR should be started automatically.
+        //! @todo for the time beeing, the DVD autorun settings are used to determine if the BR should be started automatically.
         if (StringUtils::EqualsNoCase(name, "BDMV") && bAllowVideo
         && (bypassSettings || CSettings::GetInstance().GetBool(CSettings::SETTING_DVDS_AUTORUN)))
         {
@@ -215,13 +216,13 @@ bool CAutorun::RunDisc(IDirectory* pDir, const std::string& strDrive, int& nAdde
           g_playlistPlayer.SetShuffle (PLAYLIST_VIDEO, false);
           g_playlistPlayer.Add(PLAYLIST_VIDEO, item);
           g_playlistPlayer.SetCurrentPlaylist(PLAYLIST_VIDEO);
-          g_playlistPlayer.Play(0);
+          g_playlistPlayer.Play(0, "");
           return true;
         }
 
         // Check if the current foldername indicates a HD DVD structure (default is "HVDVD_TS").
         // Most HD DVD will also include an "ADV_OBJ" folder for advanced content. This folder should be handled first.
-        // ToDo: for the time beeing, the DVD autorun settings are used to determine if the HD DVD should be started automatically.
+        //! @todo for the time beeing, the DVD autorun settings are used to determine if the HD DVD should be started automatically.
         CFileItemList items, sitems;
         
         // Advanced Content HD DVD (most discs?)
@@ -304,14 +305,14 @@ bool CAutorun::RunDisc(IDirectory* pDir, const std::string& strDrive, int& nAdde
             item.m_lStartOffset = STARTOFFSET_RESUME;
 
             // get playername
-            std::string hddvdplayer = CPlayerCoreFactory::GetInstance().GetPlayerName(CPlayerCoreFactory::GetInstance().GetDefaultPlayer(item));
+            std::string hdVideoPlayer = CPlayerCoreFactory::GetInstance().GetDefaultPlayer(item);
             
             // Single *.xpl or *.ifo files require an external player to handle playback.
-            // If no matching rule was found, DVDPlayer will be default player.
-            if (hddvdplayer != "DVDPlayer")
+            // If no matching rule was found, VideoPlayer will be default player.
+            if (hdVideoPlayer != "VideoPlayer")
             {
               CLog::Log(LOGINFO,"HD DVD: External singlefile playback initiated: %s",hddvdname.c_str());
-              g_application.PlayFile(item, false);
+              g_application.PlayFile(item, hdVideoPlayer, false);
               return true;
             } else
               CLog::Log(LOGINFO,"HD DVD: No external player found. Fallback to internal one.");
@@ -323,7 +324,7 @@ bool CAutorun::RunDisc(IDirectory* pDir, const std::string& strDrive, int& nAdde
           g_playlistPlayer.SetShuffle (PLAYLIST_VIDEO, false);
           g_playlistPlayer.Add(PLAYLIST_VIDEO, items);
           g_playlistPlayer.SetCurrentPlaylist(PLAYLIST_VIDEO);
-          g_playlistPlayer.Play(0);
+          g_playlistPlayer.Play(0, "");
           return true;
         }
 				
@@ -346,7 +347,7 @@ bool CAutorun::RunDisc(IDirectory* pDir, const std::string& strDrive, int& nAdde
             g_playlistPlayer.ClearPlaylist(PLAYLIST_VIDEO);
             g_playlistPlayer.Add(PLAYLIST_VIDEO, items);
             g_playlistPlayer.SetCurrentPlaylist(PLAYLIST_VIDEO);
-            g_playlistPlayer.Play(0);
+            g_playlistPlayer.Play(0, "");
             return true;
           }
         }
@@ -382,7 +383,7 @@ bool CAutorun::RunDisc(IDirectory* pDir, const std::string& strDrive, int& nAdde
         bPlaying = true;
         if (pItem->IsStack())
         {
-          // TODO: remove this once the app/player is capable of handling stacks immediately
+          //! @todo remove this once the app/player is capable of handling stacks immediately
           CStackDirectory dir;
           CFileItemList items;
           dir.GetDirectory(pItem->GetURL(), items);
@@ -399,14 +400,13 @@ bool CAutorun::RunDisc(IDirectory* pDir, const std::string& strDrive, int& nAdde
         if (!bypassSettings)
           return false;
 
-        if (g_windowManager.GetActiveWindow() != WINDOW_VIDEO_FILES)
-          if (!g_passwordManager.IsMasterLockUnlocked(true))
-            return false;
+        if (!g_passwordManager.IsMasterLockUnlocked(true))
+          return false;
       }
       g_playlistPlayer.ClearPlaylist(PLAYLIST_VIDEO);
       g_playlistPlayer.Add(PLAYLIST_VIDEO, itemlist);
       g_playlistPlayer.SetCurrentPlaylist(PLAYLIST_VIDEO);
-      g_playlistPlayer.Play(0);
+      g_playlistPlayer.Play(0, "");
     }
   }
   // then music

@@ -60,7 +60,7 @@ public:
   static std::string GetTitleFromPath(const std::string& strFileNameAndPath, bool bIsFolder = false);
   static void GetQualifiedFilename(const std::string &strBasePath, std::string &strFilename);
   static void RunShortcut(const char* szPath);
-  static void GetHomePath(std::string& strPath, const std::string& strTarget = ""); // default target is "KODI_HOME"
+  static std::string GetHomePath(std::string strTarget = "KODI_HOME"); // default target is "KODI_HOME"
   static bool IsPVR(const std::string& strFile);
   static bool IsHTSP(const std::string& strFile);
   static bool IsLiveTV(const std::string& strFile);
@@ -83,11 +83,24 @@ public:
 
   static void ClearSubtitles();
   static void ScanForExternalSubtitles(const std::string& strMovie, std::vector<std::string>& vecSubtitles );
-  static void GetExternalStreamDetailsFromFilename(const std::string& strMovie, const std::string& strSubtitles, ExternalStreamInfo& info); 
+
+  /** \brief Retrieves stream info of external associated files, e.g., subtitles, for a given video.
+  *   \param[in] videoPath The full path of the video file.
+  *   \param[in] associatedFile A file that provides additional streams for the given video file.
+  *   \return stream info for the given associatedFile
+  */
+  static ExternalStreamInfo GetExternalStreamDetailsFromFilename(const std::string& videoPath, const std::string& associatedFile);
   static bool FindVobSubPair( const std::vector<std::string>& vecSubtitles, const std::string& strIdxPath, std::string& strSubPath );
   static bool IsVobSub(const std::vector<std::string>& vecSubtitles, const std::string& strSubPath);
   static std::string GetVobSubSubFromIdx(const std::string& vobSubIdx);
   static std::string GetVobSubIdxFromSub(const std::string& vobSub);
+  
+  /** \brief Retrieves paths of external audio files for a given video.
+  *   \param[in] videoPath The full path of the video file.
+  *   \param[out] vecAudio A vector containing the full paths of all found external audio files.
+  */
+  static void ScanForExternalAudio(const std::string& videoPath, std::vector<std::string>& vecAudio);
+  static void ScanForExternalDemuxSub(const std::string& videoPath, std::vector<std::string>& vecSubtitles);
   static int64_t ToInt64(uint32_t high, uint32_t low);
   static std::string GetNextFilename(const std::string &fn_template, int max);
   static std::string GetNextPathname(const std::string &path_template, int max);

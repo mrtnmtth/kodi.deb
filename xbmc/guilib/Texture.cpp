@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2005-2013 Team XBMC
+ *      Copyright (C) 2005-2015 Team XBMC
  *      http://xbmc.org
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -29,18 +29,22 @@
 #if defined(TARGET_DARWIN_IOS)
 #include <ImageIO/ImageIO.h>
 #include "filesystem/File.h"
-#include "osx/DarwinUtils.h"
+#include "platform/darwin/DarwinUtils.h"
 #endif
 #if defined(TARGET_ANDROID)
 #include "URL.h"
 #include "filesystem/AndroidAppFile.h"
+#endif
+#ifdef TARGET_POSIX
+#include "linux/XMemUtils.h"
 #endif
 
 /************************************************************************/
 /*                                                                      */
 /************************************************************************/
 CBaseTexture::CBaseTexture(unsigned int width, unsigned int height, unsigned int format)
- : m_hasAlpha( true )
+ : m_hasAlpha( true ),
+   m_mipmapping( false )
 {
   m_pixels = NULL;
   m_loadedToGPU = false;
@@ -49,7 +53,8 @@ CBaseTexture::CBaseTexture(unsigned int width, unsigned int height, unsigned int
 
 CBaseTexture::~CBaseTexture()
 {
-  delete[] m_pixels;
+  _aligned_free(m_pixels);
+  m_pixels = NULL;
 }
 
 void CBaseTexture::Allocate(unsigned int width, unsigned int height, unsigned int format)
@@ -98,11 +103,17 @@ void CBaseTexture::Allocate(unsigned int width, unsigned int height, unsigned in
   CLAMP(m_imageWidth, m_textureWidth);
   CLAMP(m_imageHeight, m_textureHeight);
 
-  delete[] m_pixels;
+  _aligned_free(m_pixels);
   m_pixels = NULL;
   if (GetPitch() * GetRows() > 0)
   {
-    m_pixels = new unsigned char[GetPitch() * GetRows()];
+    size_t size = GetPitch() * GetRows();
+    m_pixels = (unsigned char*) _aligned_malloc(size, 32);
+
+    if (m_pixels == nullptr)
+    {
+      CLog::Log(LOGERROR, "%s - Could not allocate %zu bytes. Out of memory.", __FUNCTION__, size);
+    }
   }
 }
 
@@ -111,32 +122,30 @@ void CBaseTexture::Update(unsigned int width, unsigned int height, unsigned int 
   if (pixels == NULL)
     return;
 
-  if (format & XB_FMT_DXT_MASK && !g_Windowing.SupportsDXT())
-  { // compressed format that we don't support
-    Allocate(width, height, XB_FMT_A8R8G8B8);
-    CDDSImage::Decompress(m_pixels, std::min(width, m_textureWidth), std::min(height, m_textureHeight), GetPitch(m_textureWidth), pixels, format);
-  }
+  if (format & XB_FMT_DXT_MASK)
+    return;
+
+  Allocate(width, height, format);
+  
+  if (m_pixels == nullptr)
+    return;
+
+  unsigned int srcPitch = pitch ? pitch : GetPitch(width);
+  unsigned int srcRows = GetRows(height);
+  unsigned int dstPitch = GetPitch(m_textureWidth);
+  unsigned int dstRows = GetRows(m_textureHeight);
+
+  if (srcPitch == dstPitch)
+    memcpy(m_pixels, pixels, srcPitch * std::min(srcRows, dstRows));
   else
   {
-    Allocate(width, height, format);
-
-    unsigned int srcPitch = pitch ? pitch : GetPitch(width);
-    unsigned int srcRows = GetRows(height);
-    unsigned int dstPitch = GetPitch(m_textureWidth);
-    unsigned int dstRows = GetRows(m_textureHeight);
-
-    if (srcPitch == dstPitch)
-      memcpy(m_pixels, pixels, srcPitch * std::min(srcRows, dstRows));
-    else
+    const unsigned char *src = pixels;
+    unsigned char* dst = m_pixels;
+    for (unsigned int y = 0; y < srcRows && y < dstRows; y++)
     {
-      const unsigned char *src = pixels;
-      unsigned char* dst = m_pixels;
-      for (unsigned int y = 0; y < srcRows && y < dstRows; y++)
-      {
-        memcpy(dst, src, std::min(srcPitch, dstPitch));
-        src += srcPitch;
-        dst += dstPitch;
-      }
+      memcpy(dst, src, std::min(srcPitch, dstPitch));
+      src += srcPitch;
+      dst += dstPitch;
     }
   }
   ClampToEdge();
@@ -147,6 +156,9 @@ void CBaseTexture::Update(unsigned int width, unsigned int height, unsigned int 
 
 void CBaseTexture::ClampToEdge()
 {
+  if (m_pixels == nullptr)
+    return;
+
   unsigned int imagePitch = GetPitch(m_imageWidth);
   unsigned int imageRows = GetRows(m_imageHeight);
   unsigned int texturePitch = GetPitch(m_textureWidth);
@@ -267,14 +279,9 @@ bool CBaseTexture::LoadFromFileInternal(const std::string& texturePath, unsigned
 
   if (!LoadIImage(pImage, (unsigned char *)buf.get(), buf.size(), width, height))
   {
+    CLog::Log(LOGDEBUG, "%s - Load of %s failed.", __FUNCTION__, CURL::GetRedacted(texturePath).c_str());
     delete pImage;
-    pImage = ImageFactory::CreateFallbackLoader(texturePath);
-    if (!LoadIImage(pImage, (unsigned char *)buf.get(), buf.size(), width, height))
-    {
-      CLog::Log(LOGDEBUG, "%s - Load of %s failed.", __FUNCTION__, CURL::GetRedacted(texturePath).c_str());
-      delete pImage;
-      return false;
-    }
+    return false;
   }
   delete pImage;
 
@@ -293,12 +300,7 @@ bool CBaseTexture::LoadFromFileInMem(unsigned char* buffer, size_t size, const s
   if(!LoadIImage(pImage, buffer, size, width, height))
   {
     delete pImage;
-    pImage = ImageFactory::CreateFallbackLoader(mimeType);
-    if(!LoadIImage(pImage, buffer, size, width, height))
-    {
-      delete pImage;
-      return false;
-    }
+    return false;
   }
   delete pImage;
   return true;
@@ -311,13 +313,15 @@ bool CBaseTexture::LoadIImage(IImage *pImage, unsigned char* buffer, unsigned in
     if (pImage->Width() > 0 && pImage->Height() > 0)
     {
       Allocate(pImage->Width(), pImage->Height(), XB_FMT_A8R8G8B8);
-      if (pImage->Decode(m_pixels, GetTextureWidth(), GetRows(), GetPitch(), XB_FMT_A8R8G8B8))
+      if (m_pixels != nullptr && pImage->Decode(m_pixels, GetTextureWidth(), GetRows(), GetPitch(), XB_FMT_A8R8G8B8))
       {
         if (pImage->Orientation())
           m_orientation = pImage->Orientation() - 1;
         m_hasAlpha = pImage->hasAlpha();
         m_originalWidth = pImage->originalWidth();
         m_originalHeight = pImage->originalHeight();
+        m_imageWidth = pImage->Width();
+        m_imageHeight = pImage->Height();
         ClampToEdge();
         return true;
       }
@@ -440,4 +444,14 @@ unsigned int CBaseTexture::GetBlockSize() const
 bool CBaseTexture::HasAlpha() const
 {
   return m_hasAlpha;
+}
+
+void CBaseTexture::SetMipmapping()
+{
+  m_mipmapping = true;
+}
+
+bool CBaseTexture::IsMipmapped() const
+{
+  return m_mipmapping;
 }

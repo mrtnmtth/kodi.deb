@@ -23,6 +23,8 @@
 #include <memory>
 
 #include "addons/AddonManager.h"
+#include "addons/AddonInstaller.h"
+#include "addons/AddonSystemSettings.h"
 #include "addons/GUIDialogAddonSettings.h"
 #include "addons/GUIWindowAddonBrowser.h"
 #include "addons/PluginSource.h"
@@ -38,10 +40,24 @@
 
 #if defined(TARGET_DARWIN)
 #include "filesystem/SpecialProtocol.h"
-#include "osx/CocoaInterface.h"
+#include "platform/darwin/osx/CocoaInterface.h"
 #endif
 
 using namespace ADDON;
+
+/*! \brief Install an addon.
+ *  \param params The parameters.
+ *  \details params[0] = add-on id.
+ */
+static int InstallAddon(const std::vector<std::string>& params)
+{
+  const std::string& addonid = params[0];
+
+  AddonPtr addon;
+  CAddonInstaller::GetInstance().InstallModal(addonid, addon);
+
+  return 0;
+}
 
 /*! \brief Run a plugin.
  *  \param params The parameters.
@@ -206,7 +222,7 @@ static int OpenDefaultSettings(const std::vector<std::string>& params)
 {
   AddonPtr addon;
   ADDON::TYPE type = TranslateType(params[0]);
-  if (CAddonMgr::GetInstance().GetDefault(type, addon))
+  if (CAddonSystemSettings::GetInstance().GetActive(type, addon))
   {
     bool changed = CGUIDialogAddonSettings::ShowAndGetInput(addon);
     if (type == ADDON_VIZ && changed)
@@ -231,7 +247,7 @@ static int SetDefaultAddon(const std::vector<std::string>& params)
   if (type != ADDON_UNKNOWN && 
       CGUIWindowAddonBrowser::SelectAddonID(type,addonID,allowNone))
   {
-    CAddonMgr::GetInstance().SetDefault(type,addonID);
+    CAddonSystemSettings::GetInstance().SetActive(type, addonID);
     if (type == ADDON_VIZ)
       g_windowManager.SendMessage(GUI_MSG_VISUALISATION_RELOAD, 0, 0);
   }
@@ -260,8 +276,8 @@ static int AddonSettings(const std::vector<std::string>& params)
  */
 static int StopScript(const std::vector<std::string>& params)
 {
-  // FIXME: This does not work for addons with multiple extension points!
-  // Are there any use for this? TODO: Fix hack in CScreenSaver::Destroy() and deprecate.
+  //! @todo FIXME: This does not work for addons with multiple extension points!
+  //! Are there any use for this? TODO: Fix hack in CScreenSaver::Destroy() and deprecate.
   std::string scriptpath(params[0]);
   // Test to see if the param is an addon ID
   AddonPtr script;
@@ -292,12 +308,113 @@ static int UpdateLocals(const std::vector<std::string>& params)
   return 0;
 }
 
+// Note: For new Texts with comma add a "\" before!!! Is used for table text.
+//
+/// \page page_List_of_built_in_functions List of build in functions
+/// \section built_in_functions_1 Add-on built-in's
+///
+/// -----------------------------------------------------------------------------
+///
+/// \table_start
+///   \table_h2_l{
+///     Function,
+///     Description }
+///   \table_row2_l{
+///     <b>`Addon.Default.OpenSettings(extensionpoint)`</b>
+///     ,
+///     Open a settings dialog for the default addon of the given type
+///     (extensionpoint)
+///     @param[in] extensionpoint        The add-on type
+///   }
+///   \table_row2_l{
+///     <b>`Addon.Default.Set(extensionpoint)`</b>
+///     ,
+///     Open a select dialog to allow choosing the default addon of the given type
+///     (extensionpoint)
+///     @param[in] extensionpoint        The add-on type
+///   }
+///   \table_row2_l{
+///     <b>`Addon.OpenSettings(id)`</b>
+///     ,
+///     Open a settings dialog for the addon of the given id
+///     @param[in] id                    The add-on ID
+///   }
+///   \table_row2_l{
+///     <b>`InstallAddon(id)`</b>
+///     ,
+///     Install the specified plugin/script
+///     @param[in] id                    The add-on id
+///   }
+///   \table_row2_l{
+///     <b>`RunAddon(id[\,opt])`</b>
+///     ,
+///     Runs the specified plugin/script
+///     @param[in] id                    The add-on id.
+///     @param[in] opt                   is blank for no add-on parameters\n
+///     or
+///     @param[in] opt                   Add-on parameters in url format\n
+///     or
+///     @param[in] opt[\,...]            Additional parameters in format param=value.
+///   }
+///   \table_row2_l{
+///     <b>`RunAppleScript(script[\,args]*)`</b>
+///     ,
+///     Run the specified AppleScript command
+///     @param[in] script                Is the URL to the apple script\n
+///     or
+///     @param[in] script                Is the addon-ID to the script add-on\n
+///     or
+///     @param[in] script                Is the URL to the python script.
+///
+///     @note Set the OnlyApple template parameter to true to only attempt
+///     execution of applescripts.
+///   }
+///   \table_row2_l{
+///     <b>`RunPlugin(plugin)`</b>
+///     ,
+///     Runs the plugin. Full path must be specified. Does not work for folder
+///     plugins
+///     @param[in] plugin                plugin:// URL to script.
+///   }
+///   \table_row2_l{
+///     <b>`RunScript(script[\,args]*)`</b>
+///     ,
+///     Runs the python script. You must specify the full path to the script. If
+///     the script is an add-on\, you can also execute it using its add-on id. As
+///     of 2007/02/24\, all extra parameters are passed to the script as arguments
+///     and can be accessed by python using sys.argv
+///     @param[in] script                Is the addon-ID to the script add-on\n
+///     or
+///     @param[in] script                Is the URL to the python script.
+///   }
+///   \table_row2_l{
+///     <b>`StopScript(id)`</b>
+///     ,
+///     Stop the script by ID or path\, if running
+///     @param[in] id                    The add-on ID of the script to stop\n
+///     or
+///     @param[in] id                    The URL of the script to stop.
+///   }
+///   \table_row2_l{
+///     <b>`UpdateAddonRepos`</b>
+///     ,
+///     Triggers a forced update of enabled add-on repositories.
+///   }
+///   \table_row2_l{
+///     <b>`UpdateLocalAddons`</b>
+///     ,
+///     Triggers a scan of local add-on directories.
+///   }
+///  \table_end
+///
+
 CBuiltins::CommandMap CAddonBuiltins::GetOperations() const
 {
   return {
            {"addon.default.opensettings", {"Open a settings dialog for the default addon of the given type", 1, OpenDefaultSettings}},
            {"addon.default.set",          {"Open a select dialog to allow choosing the default addon of the given type", 1, SetDefaultAddon}},
            {"addon.opensettings",         {"Open a settings dialog for the addon of the given id", 1, AddonSettings}},
+           {"installaddon",               {"Install the specified plugin/script", 1, InstallAddon}},
            {"runaddon",                   {"Run the specified plugin/script", 1, RunAddon}},
 #ifdef TARGET_DARWIN
            {"runapplescript",             {"Run the specified AppleScript command", 1, RunScript<true>}},

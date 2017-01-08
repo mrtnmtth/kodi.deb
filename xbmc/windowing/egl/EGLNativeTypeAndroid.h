@@ -20,7 +20,12 @@
  *
  */
 
+#include <string>
+#include <vector>
+
 #include "EGLNativeType.h"
+#include "platform/android/jni/Display.h"
+
 class CEGLNativeTypeAndroid : public CEGLNativeType
 {
 public:
@@ -30,7 +35,7 @@ public:
   virtual bool  CheckCompatibility();
   virtual void  Initialize();
   virtual void  Destroy();
-  virtual int   GetQuirks() { return EGL_QUIRK_NEED_WINDOW_FOR_RES | EGL_QUIRK_DESTROY_NATIVE_WINDOW_WITH_SURFACE; };
+  virtual int   GetQuirks() { return EGL_QUIRK_DESTROY_NATIVE_WINDOW_WITH_SURFACE; };
 
   virtual bool  CreateNativeDisplay();
   virtual bool  CreateNativeWindow();
@@ -46,4 +51,8 @@ public:
   virtual bool  GetPreferredResolution(RESOLUTION_INFO *res) const;
 
   virtual bool  ShowWindow(bool show);
+
+protected:
+  int m_width;
+  int m_height;
 };

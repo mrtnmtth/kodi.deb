@@ -28,6 +28,7 @@
 #include "threads/SingleLock.h"
 #include "utils/log.h"
 #include "utils/StringUtils.h"
+#include "utils/URIUtils.h"
 #include "network/DNSNameCache.h"
 #include "threads/SystemClock.h"
 
@@ -125,12 +126,13 @@ void CNfsConnection::clearMembers()
     // NOTE - DON'T CLEAR m_exportList HERE!
     // splitUrlIntoExportAndPath checks for m_exportList.empty()
     // and would query the server in an excessive unwanted fashion
+    // also don't clear m_KeepAliveTimeouts here because we
+    // would loose any "paused" file handles during export change
     m_exportPath.clear();
     m_hostName.clear();
     m_writeChunkSize = 0;
     m_readChunkSize = 0;  
     m_pNfsContext = NULL;
-    m_KeepAliveTimeouts.clear();
 }
 
 void CNfsConnection::destroyOpenContexts()
@@ -260,12 +262,13 @@ bool CNfsConnection::splitUrlIntoExportAndPath(const CURL& url,std::string &expo
       for(it=exportList.begin();it!=exportList.end();++it)
       {
         //if path starts with the current export path
-        if(StringUtils::StartsWith(path, *it))
+        if(URIUtils::PathHasParent(path, *it))
         {
-          //its possible that StartsWith may not find the correct match first
-          //as an example, if /path/ & and /path/sub/ are exported, but
-          //the user specifies the path /path/subdir/ (from /path/ export).
-          //If the path is longer than the exportpath, make sure / is next.
+          /* It's possible that PathHasParent() may not find the correct match first/
+           * As an example, if /path/ & and /path/sub/ are exported, but
+           * the user specifies the path /path/subdir/ (from /path/ export).
+           * If the path is longer than the exportpath, make sure / is next.
+           */
           if( (path.length() > (*it).length()) &&
               (path[(*it).length()] != '/') && (*it) != "/")
             continue;
@@ -344,6 +347,8 @@ void CNfsConnection::Deinit()
     m_pLibNfs->Unload();    
   }        
   clearMembers();
+  // clear any keep alive timouts on deinit
+  m_KeepAliveTimeouts.clear();
 }
 
 /* This is called from CApplication::ProcessSlow() and is used to tell if nfs have been idle for too long */
@@ -400,7 +405,15 @@ void CNfsConnection::resetKeepAlive(std::string _exportPath, struct nfsfh  *_pFi
 {
   CSingleLock lock(keepAliveLock);
   //refresh last access time of the context aswell
-  getContextFromMap(_exportPath, true);
+  struct nfs_context *pContext = getContextFromMap(_exportPath, true);
+  
+  // if we keep alive using m_pNfsContext we need to mark
+  // its last access time too here
+  if (m_pNfsContext == pContext)
+  {
+    m_lastAccessedTime = XbmcThreads::SystemClockMillis();
+  }
+  
   //adds new keys - refreshs existing ones
   m_KeepAliveTimeouts[_pFileHandle].exportPath = _exportPath;
   m_KeepAliveTimeouts[_pFileHandle].refreshCounter = KEEP_ALIVE_TIMEOUT;
@@ -611,7 +624,7 @@ int CNFSFile::Stat(const CURL& url, struct __stat64* buffer)
   {  
     if(buffer)
     {
-#if defined(TARGET_WINDOWS)// TODO get rid of this define after gotham
+#if defined(TARGET_WINDOWS)//! @todo get rid of this define after gotham v13
       memcpy(buffer, &tmpBuffer, sizeof(struct __stat64));
 #else
       memset(buffer, 0, sizeof(struct __stat64));

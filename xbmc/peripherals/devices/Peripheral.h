@@ -19,17 +19,28 @@
  *
  */
 
+#include <map>
 #include <set>
 #include <string>
+#include <vector>
 #include "peripherals/PeripheralTypes.h"
 
 class TiXmlDocument;
-
 class CSetting;
+
+namespace JOYSTICK
+{
+  class IActionMap;
+  class IButtonMapper;
+  class IDriverHandler;
+  class IDriverReceiver;
+  class IInputHandler;
+}
 
 namespace PERIPHERALS
 {
   class CGUIDialogPeripheralSettings;
+  class CPeripheralBus;
 
   typedef enum
   {
@@ -43,7 +54,7 @@ namespace PERIPHERALS
     friend class CGUIDialogPeripheralSettings;
 
   public:
-    CPeripheral(const PeripheralScanResult& scanResult);
+    CPeripheral(const PeripheralScanResult& scanResult, CPeripheralBus* bus);
     virtual ~CPeripheral(void);
 
     bool operator ==(const CPeripheral &right) const;
@@ -63,6 +74,12 @@ namespace PERIPHERALS
     bool IsHidden(void) const                      { return m_bHidden; }
     void SetHidden(bool bSetTo = true)             { m_bHidden = bSetTo; }
     const std::string &GetVersionInfo(void) const   { return m_strVersionInfo; }
+
+    /*!
+     * @brief Get an icon for this peripheral
+     * @return Path to an icon, or skin icon file name
+     */
+    virtual std::string GetIcon() const;
 
     /*!
      * @brief Check whether this device has the given feature.
@@ -91,6 +108,18 @@ namespace PERIPHERALS
     virtual bool InitialiseFeature(const PeripheralFeature feature) { return true; }
 
     /*!
+    * @brief Briefly activate a feature to notify the user
+    */
+    virtual void OnUserNotification() { }
+
+    /*!
+     * @brief Briefly test one of the features of this peripheral.
+     * @param feature The feature to test.
+     * @return True if the test succeeded, false otherwise.
+     */
+    virtual bool TestFeature(PeripheralFeature feature) { return false; }
+
+    /*!
      * @brief Called when a setting changed.
      * @param strChangedSetting The changed setting.
      */
@@ -105,7 +134,7 @@ namespace PERIPHERALS
      * @brief Get all subdevices if this device is multifunctional.
      * @param subDevices The subdevices.
      */
-    virtual void GetSubdevices(std::vector<CPeripheral *> &subDevices) const;
+    virtual void GetSubdevices(PeripheralVector &subDevices) const;
 
     /*!
      * @return True when this device is multifunctional, false otherwise.
@@ -163,6 +192,19 @@ namespace PERIPHERALS
 
     virtual bool ErrorOccured(void) const { return m_bError; }
 
+    virtual void RegisterJoystickDriverHandler(JOYSTICK::IDriverHandler* handler, bool bPromiscuous) { }
+    virtual void UnregisterJoystickDriverHandler(JOYSTICK::IDriverHandler* handler) { }
+
+    virtual void RegisterJoystickInputHandler(JOYSTICK::IInputHandler* handler);
+    virtual void UnregisterJoystickInputHandler(JOYSTICK::IInputHandler* handler);
+
+    virtual void RegisterJoystickButtonMapper(JOYSTICK::IButtonMapper* mapper);
+    virtual void UnregisterJoystickButtonMapper(JOYSTICK::IButtonMapper* mapper);
+
+    virtual JOYSTICK::IDriverReceiver* GetDriverReceiver() { return nullptr; }
+
+    virtual JOYSTICK::IActionMap* GetActionMap() { return nullptr; }
+
   protected:
     virtual void ClearSettings(void);
 
@@ -182,8 +224,11 @@ namespace PERIPHERALS
     bool                             m_bHidden;
     bool                             m_bError;
     std::vector<PeripheralFeature>   m_features;
-    std::vector<CPeripheral *>       m_subDevices;
+    PeripheralVector                 m_subDevices;
     std::map<std::string, PeripheralDeviceSetting> m_settings;
     std::set<std::string>             m_changedSettings;
+    CPeripheralBus*                  m_bus;
+    std::map<JOYSTICK::IInputHandler*, std::unique_ptr<JOYSTICK::IDriverHandler>> m_inputHandlers;
+    std::map<JOYSTICK::IButtonMapper*, JOYSTICK::IDriverHandler*> m_buttonMappers;
   };
 }

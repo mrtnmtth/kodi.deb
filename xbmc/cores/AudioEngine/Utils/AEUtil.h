@@ -28,21 +28,21 @@ extern "C" {
 }
 
 #ifdef TARGET_WINDOWS
-#if _M_IX86_FP>0 && !defined(__SSE__)
-#define __SSE__
-#if _M_IX86_FP>1 && !defined(__SSE2__)
-#define __SSE2__
+#if _M_IX86_FP>0 && !defined(HAVE_SSE)
+#define HAVE_SSE
+#if _M_IX86_FP>1 && !defined(HAVE_SSE2)
+#define HAVE_SSE2
 #endif
 #endif
 #endif
 
-#ifdef __SSE__
+#if defined(HAVE_SSE) && defined(__SSE__)
 #include <xmmintrin.h>
 #else
 #define __m128 void
 #endif
 
-#ifdef __SSE2__
+#if defined(HAVE_SSE2) && defined(__SSE2__)
 #include <emmintrin.h>
 #endif
 
@@ -55,8 +55,7 @@ extern "C" {
 // AV sync options
 enum AVSync
 {
-  SYNC_DISCON   = 0,
-  SYNC_SKIPDUP,
+  SYNC_DISCON = 0,
   SYNC_RESAMPLE
 };
 
@@ -139,7 +138,7 @@ class CAEUtil
 {
 private:
   static unsigned int m_seed;
-  #ifdef __SSE2__
+  #if defined(HAVE_SSE2) && defined(__SSE2__)
     static __m128i m_sseSeed;
   #endif
 
@@ -152,6 +151,7 @@ public:
   static const unsigned int      DataFormatToUsedBits (const enum AEDataFormat dataFormat);
   static const unsigned int      DataFormatToDitherBits(const enum AEDataFormat dataFormat);
   static const char*             DataFormatToStr   (const enum AEDataFormat dataFormat);
+  static const char* StreamTypeToStr(const enum CAEStreamInfo::DataType dataType);
 
   /*! \brief convert a volume percentage (as a proportion) to a dB gain
    We assume a dB range of 60dB, i.e. assume that 0% volume corresponds
@@ -211,7 +211,7 @@ public:
     return 20*log10(scale);
   }
 
-  #ifdef __SSE__
+  #if defined(HAVE_SSE) && defined(__SSE__)
   static void SSEMulArray     (float *data, const float mul, uint32_t count);
   static void SSEMulAddArray  (float *data, float *add, const float mul, uint32_t count);
   #endif
@@ -227,7 +227,7 @@ public:
 
   static bool S16NeedsByteSwap(AEDataFormat in, AEDataFormat out);
 
-  static uint64_t GetAVChannelLayout(CAEChannelInfo &info);
+  static uint64_t GetAVChannelLayout(const CAEChannelInfo &info);
   static CAEChannelInfo GetAEChannelLayout(uint64_t layout);
   static AVSampleFormat GetAVSampleFormat(AEDataFormat format);
   static uint64_t GetAVChannel(enum AEChannel aechannel);

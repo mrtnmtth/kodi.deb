@@ -1,6 +1,6 @@
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      Copyright (C) 2005-2015 Team Kodi
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,12 +13,13 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
+ *  along with Kodi; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
 
 #include "system.h"
+#include "Application.h"
 #include "RarManager.h"
 #include "Util.h"
 #include "utils/CharsetConverter.h"
@@ -40,20 +41,19 @@
 
 #include <set>
 
+#ifdef TARGET_POSIX
+#include "linux/XFileUtils.h"
+#endif
+
 #define EXTRACTION_WARN_SIZE 50*1024*1024
 
 using namespace XFILE;
 
 CFileInfo::CFileInfo()
-{
-  m_strCachedPath.clear();
-  m_bAutoDel = true;
-  m_iUsed = 0;
-  m_iIsSeekable = -1;
-  m_iOffset = 0;
-}
-
-CFileInfo::~CFileInfo()
+  : m_bAutoDel{true}
+  , m_iUsed{0}
+  , m_iOffset{0}
+  , m_iIsSeekable{-1}
 {
 }
 
@@ -75,7 +75,7 @@ public:
   }
   ~progress_info()
   {
-    if (shown)
+    if (shown && g_application.IsCurrentThread())
     {
       // close progress dialog
       CGUIDialogProgress* dlg = (CGUIDialogProgress*)g_windowManager.GetWindow(WINDOW_DIALOG_PROGRESS);
@@ -89,7 +89,7 @@ public:
   bool progress(int progress, const char *text)
   {
     bool cont(true);
-    if (shown || showTime.IsTimePast())
+    if ((shown || showTime.IsTimePast()) && g_application.IsCurrentThread())
     {
       // grab the busy and show it
       CGUIDialogProgress* dlg = (CGUIDialogProgress*)g_windowManager.GetWindow(WINDOW_DIALOG_PROGRESS);
@@ -206,8 +206,9 @@ bool CRarManager::CacheRarredFile(std::string& strPathInCache, const std::string
   StringUtils::Replace(strPath, '/', '\\');
 #endif
   //g_charsetConverter.unknownToUTF8(strPath);
-  std::string strCachedPath = URIUtils::AddFileToFolder(strDir + "rarfolder%04d",
-                                           URIUtils::GetFileName(strPathInRar));
+  std::string strCachedPath = URIUtils::AddFileToFolder(
+                                 CSpecialProtocol::TranslatePath(strDir), "rarfolder%04d",
+                                 URIUtils::GetFileName(strPathInRar));
   strCachedPath = CUtil::GetNextPathname(strCachedPath, 9999);
   if (strCachedPath.empty())
   {
@@ -374,7 +375,7 @@ bool CRarManager::GetFilesInRar(CFileItemList& vecpItems, const std::string& str
     {
       if (vec.size() == iDepth+1 || !bMask)
       {
-        if (vec.size() == 0)
+        if (vec.empty())
           pFileItem.reset(new CFileItem(strName));
         else
           pFileItem.reset(new CFileItem(vec[iDepth]));

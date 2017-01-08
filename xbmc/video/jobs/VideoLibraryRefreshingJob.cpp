@@ -102,8 +102,8 @@ bool CVideoLibraryRefreshingJob::Work(CVideoDatabase &db)
 
 
       // if we are performing a forced refresh ask the user to choose between using a valid NFO and a valid scraper
-      if (needsRefresh && IsModal() && !scraper->IsNoop() &&
-         (nfoResult == CNfoFile::URL_NFO || nfoResult == CNfoFile::COMBINED_NFO || nfoResult == CNfoFile::FULL_NFO))
+      if (needsRefresh && IsModal() && !scraper->IsNoop()
+          && nfoResult != CNfoFile::ERROR_NFO)
       {
         int heading = 20159;
         if (scraper->Content() == CONTENT_MOVIES)
@@ -166,7 +166,7 @@ bool CVideoLibraryRefreshingJob::Work(CVideoDatabase &db)
             selectDialog->Open();
 
             // check if the user has chosen one of the results
-            int selectedItem = selectDialog->GetSelectedLabel();
+            int selectedItem = selectDialog->GetSelectedItem();
             if (selectedItem >= 0)
               scraperUrl = itemResultList.at(selectedItem);
             // the user hasn't chosen one of the results and but has chosen to manually enter a title to use
@@ -233,7 +233,7 @@ bool CVideoLibraryRefreshingJob::Work(CVideoDatabase &db)
     {
       // for a tvshow we need to handle all paths of it
       std::vector<std::string> tvshowPaths;
-      if (MediaTypes::IsMediaType(m_item->GetVideoInfoTag()->m_type, MediaTypeTvShow) && m_refreshAll &&
+      if (CMediaTypes::IsMediaType(m_item->GetVideoInfoTag()->m_type, MediaTypeTvShow) && m_refreshAll &&
           db.GetPathsLinkedToTvShow(m_item->GetVideoInfoTag()->m_iDbId, tvshowPaths))
       {
         for (const auto& tvshowPath : tvshowPaths)
@@ -292,7 +292,10 @@ bool CVideoLibraryRefreshingJob::Work(CVideoDatabase &db)
     }
 
     // finally download the information for the item
-    if (!scanner.RetrieveVideoInfo(items, scanSettings.parent_name, scraper->Content(), !ignoreNfo, &scraperUrl, m_refreshAll, GetProgressDialog()))
+    if (!scanner.RetrieveVideoInfo(items, scanSettings.parent_name,
+                                   scraper->Content(), !ignoreNfo,
+                                   scraperUrl.m_url.empty() ? NULL : &scraperUrl,
+                                   m_refreshAll, GetProgressDialog()))
     {
       // something went wrong
       MarkFinished();

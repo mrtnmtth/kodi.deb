@@ -1,6 +1,5 @@
+cmake_minimum_required(VERSION 3.1)
 project(kodi-addons-depends-windows)
-
-cmake_minimum_required(VERSION 2.8)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
 
@@ -10,13 +9,13 @@ endif()
 
 include(ExternalProject)
 
-if(NOT DEPENDS_PATH)
-  message(FATAL_ERROR "DEPENDS_PATH (${DEPENDS_PATH}) is not a valid target directory.")
+if(NOT ADDON_DEPENDS_PATH)
+  message(FATAL_ERROR "ADDON_DEPENDS_PATH (${ADDON_DEPENDS_PATH}) is not a valid target directory.")
 else()
-  file(TO_CMAKE_PATH "${DEPENDS_PATH}" DEPENDS_PATH)
+  file(TO_CMAKE_PATH "${ADDON_DEPENDS_PATH}" ADDON_DEPENDS_PATH)
 endif()
-get_filename_component(DEPENDS_PATH "${DEPENDS_PATH}" ABSOLUTE)
-list(APPEND CMAKE_PREFIX_PATH ${DEPENDS_PATH})
+get_filename_component(ADDON_DEPENDS_PATH "${ADDON_DEPENDS_PATH}" ABSOLUTE)
+list(APPEND CMAKE_PREFIX_PATH ${ADDON_DEPENDS_PATH})
 
 if(NOT DEPENDS_TO_BUILD)
   set(DEPENDS_TO_BUILD "all")
@@ -31,19 +30,17 @@ function(add_internal id url inputfile)
                       INSTALL_COMMAND ${CMAKE_COMMAND}
                                       -DINPUTDIR=${PROJECT_BINARY_DIR}/build/${id}/src/${id}
                                       -DINPUTFILE=${inputfile}
-                                      -DDESTDIR=${DEPENDS_PATH}
-                                      -P ${PROJECT_SOURCE_DIR}/install.cmake
+                                      -DDESTDIR=${ADDON_DEPENDS_PATH}
+                                      -P ${PROJECT_SOURCE_DIR}/Install.cmake
                      )
 endfunction()
-
-#find_package(7Zip REQUIRED)
 
 file(GLOB_RECURSE download_input_files prebuilt/*.txt)
 foreach(file ${download_input_files})
   if(NOT file MATCHES install.txt)
     file(STRINGS ${file} def)
-    get_filename_component(dir ${file} PATH)
-    separate_arguments(def)
+    get_filename_component(dir ${file} DIRECTORY)
+    string(REPLACE " " ";" def ${def})
     list(GET def 0 id)
 
     list(FIND DEPENDS_TO_BUILD ${id} idx)

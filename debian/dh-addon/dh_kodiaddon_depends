@@ -1,0 +1,96 @@
+#! /usr/bin/perl -w
+
+=head1 NAME
+
+dh_kodiaddon_depends - Provides substvars for Kodi addons
+
+=cut
+
+use strict;
+use Debian::Debhelper::Dh_Lib;
+
+=head1 SYNOPSIS
+
+B<dh_kodiaddon_depends> [S<I<debhelper options>>]
+
+=head1 DESCRIPTION
+
+dh_kodiaddon_depends is a debhelper program, that is responsible for setting substvars
+providing the Kodi addon-API dependencies. Kodi provides a virtual package for each API
+which might be used by an addon. The following substvars will be set to a dependency
+clause which can be used directly in the "Depends"-line of the addons debian/control:
+
+${kodi:PVRAPI}    (XBMC_PVR_API_VERSION)
+${kodi:GUILIBAPI} (KODI_GUILIB_API_VERSION)
+
+=head1 EXAMPLES
+
+dh_kodiaddon_depends is usually called indirectly in a rules file via the dh command.
+
+	%:
+		dh $@ --with kodiaddon
+
+It can also be called directly, prior to calling dh_gencontrol.
+
+=head1 CONFORMS TO
+
+Debian policy, version 3.8.1
+
+=cut
+
+init ();
+
+no locale;
+
+sub get_api_version {
+  my $headerFileName = $_[0];
+  my $defineName = $_[1];
+  my $apiVersion;
+
+  open(HEADERFILE, "<$headerFileName") or die "$!";
+  while (<HEADERFILE>) {
+    if ($_ =~ /^#define $defineName "(.*)"/) {
+      $apiVersion = $1;
+      last;
+    }
+  }
+  close(HEADERFILE);
+  $apiVersion or die "Could not find '$defineName' in $headerFileName";
+}
+
+sub create_substvar {
+  my $substvarName = $_[0];
+  my $substvarValue = $_[1];
+  foreach my $package (@{$dh{DOPACKAGES}}) {
+    delsubstvar($package, $substvarName);
+    addsubstvar($package, $substvarName, $substvarValue);
+  }
+}
+
+my $baseDir = "debian/kodi-addons-dev";
+if (! -d $baseDir) {
+  $baseDir = ""
+}
+
+my @apis = (
+  ["kodi-api-pvr", "kodi:PVRAPI", "$baseDir/usr/include/kodi/xbmc_pvr_types.h", "XBMC_PVR_API_VERSION"],
+  ["kodi-api-guilib", "kodi:GUILIBAPI", "$baseDir/usr/include/kodi/libKODI_guilib.h", "KODI_GUILIB_API_VERSION"]
+);
+
+foreach my $api (@apis) {
+  my ($apiName, $apiSubstvar, $apiHeader, $apiDefine) = @$api;
+  my $apiVersion = get_api_version($apiHeader, $apiDefine);
+  create_substvar($apiSubstvar, "$apiName (= $apiVersion)");
+}
+
+=head1 SEE ALSO
+
+L<debhelper(7)>
+
+This program is not a part of debhelper.
+
+=head1 AUTHOR
+
+Tobias Grimm <tobias.grimm@e-tobi.net>
+
+=cut

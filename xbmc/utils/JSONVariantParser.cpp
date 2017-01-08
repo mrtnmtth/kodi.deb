@@ -1,6 +1,6 @@
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      Copyright (C) 2005-2015 Team Kodi
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
+ *  along with Kodi; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
@@ -55,6 +55,11 @@ CJSONVariantParser::~CJSONVariantParser()
 void CJSONVariantParser::push_buffer(const unsigned char *buffer, unsigned int length)
 {
   yajl_parse(m_handler, buffer, length);
+}
+
+CVariant CJSONVariantParser::Parse(const std::string& json)
+{
+  return Parse(reinterpret_cast<const unsigned char*>(json.c_str()), json.length());
 }
 
 CVariant CJSONVariantParser::Parse(const unsigned char *json, unsigned int length)
@@ -175,7 +180,7 @@ void CJSONVariantParser::PushObject(CVariant variant)
     temp->push_back(variant);
     m_parse.push_back(&(*temp)[temp->size() - 1]);
   }
-  else if (m_parse.size() == 0)
+  else if (m_parse.empty())
   {
     m_parse.push_back(new CVariant(variant));
   }

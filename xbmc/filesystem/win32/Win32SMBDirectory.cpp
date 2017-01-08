@@ -22,7 +22,7 @@
 
 #include "Win32SMBDirectory.h"
 #include "FileItem.h"
-#include "win32/WIN32Util.h"
+#include "platform/win32/WIN32Util.h"
 #include "utils/SystemInfo.h"
 #include "utils/CharsetConverter.h"
 #include "URL.h"
@@ -111,7 +111,7 @@ bool CWin32SMBDirectory::GetDirectory(const CURL& url, CFileItemList &items)
   if (searchMask.empty())
     return false;
 
-  // TODO: support m_strFileMask, require rewrite of internal caching
+  //! @todo support m_strFileMask, require rewrite of internal caching
   if (searchMask.back() == '\\')
     searchMask += L'*';
   else
@@ -263,7 +263,7 @@ bool CWin32SMBDirectory::RealExists(const CURL& url, bool tryToConnect)
   if (url.GetHostName().empty())
     return true; // 'root' of network is always exist
     
-  // TODO: use real caseless string comparison everywhere in this function
+  //! @todo use real caseless string comparison everywhere in this function
   if (url.GetShareName().empty() || url.GetShareName() == url.GetFileName())
   {
     if (!url.GetShareName().empty())

@@ -26,7 +26,6 @@ CGUILabel::CGUILabel(float posX, float posY, float width, float height, const CL
     , m_textLayout(labelInfo.font, overflow == OVER_FLOW_WRAP, height)
     , m_scrolling(overflow == OVER_FLOW_SCROLL)
     , m_overflowType(overflow)
-    , m_selected(false)
     , m_scrollInfo(50, 0, labelInfo.scrollSpeed, labelInfo.scrollSuffix)
     , m_renderRect()
     , m_maxRect(posX, posY, posX + width, posY + height)
@@ -88,7 +87,7 @@ color_t CGUILabel::GetColor() const
 
 bool CGUILabel::Process(unsigned int currentTime)
 {
-  // TODO Add the correct processing
+  //! @todo Add the correct processing
 
   bool overFlows = (m_renderRect.Width() + 0.5f < m_textLayout.GetTextWidth()); // 0.5f to deal with floating point rounding issues
   bool renderSolid = (m_color == COLOR_DISABLED);

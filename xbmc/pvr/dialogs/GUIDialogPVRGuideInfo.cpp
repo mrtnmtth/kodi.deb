@@ -24,12 +24,13 @@
 #include "epg/EpgInfoTag.h"
 #include "guilib/GUIWindowManager.h"
 #include "guilib/LocalizeStrings.h"
+#include "messaging/ApplicationMessenger.h"
 #include "utils/StringUtils.h"
 #include "utils/Variant.h"
 
 #include "pvr/PVRManager.h"
+#include "pvr/addons/PVRClients.h"
 #include "pvr/channels/PVRChannelGroupsContainer.h"
-#include "pvr/timers/PVRTimers.h"
 #include "pvr/timers/PVRTimerInfoTag.h"
 #include "pvr/windows/GUIWindowPVRBase.h"
 
@@ -39,16 +40,17 @@
 
 using namespace PVR;
 using namespace EPG;
+using namespace KODI::MESSAGING;
 
 #define CONTROL_BTN_FIND                4
 #define CONTROL_BTN_SWITCH              5
 #define CONTROL_BTN_RECORD              6
 #define CONTROL_BTN_OK                  7
 #define CONTROL_BTN_PLAY_RECORDING      8
+#define CONTROL_BTN_ADD_TIMER           9
 
 CGUIDialogPVRGuideInfo::CGUIDialogPVRGuideInfo(void)
     : CGUIDialog(WINDOW_DIALOG_PVR_GUIDE_INFO, "DialogPVRInfo.xml")
-    , m_progItem(new CFileItem)
 {
 }
 
@@ -61,7 +63,7 @@ bool CGUIDialogPVRGuideInfo::ActionStartTimer(const CEpgInfoTagPtr &tag)
   bool bReturn = false;
 
   CFileItemPtr item(new CFileItem(tag));
-  bReturn = CGUIWindowPVRBase::AddTimer(item.get(), false);
+  bReturn = CGUIWindowPVRBase::AddTimer(item.get());
 
   if (bReturn)
     Close();
@@ -77,6 +79,19 @@ bool CGUIDialogPVRGuideInfo::ActionCancelTimer(const CFileItemPtr &timer)
     bReturn = CGUIWindowPVRBase::StopRecordFile(timer.get());
   else
     bReturn = CGUIWindowPVRBase::DeleteTimer(timer.get());
+
+  if (bReturn)
+    Close();
+
+  return bReturn;
+}
+
+bool CGUIDialogPVRGuideInfo::ActionAddTimerRule(const CEpgInfoTagPtr &tag)
+{
+  bool bReturn = false;
+
+  const CFileItemPtr item(new CFileItem(tag));
+  bReturn = CGUIWindowPVRBase::AddTimerRule(item.get(), true);
 
   if (bReturn)
     Close();
@@ -105,8 +120,7 @@ bool CGUIDialogPVRGuideInfo::OnClickButtonRecord(CGUIMessage &message)
   {
     bReturn = true;
 
-    const CEpgInfoTagPtr tag(m_progItem->GetEPGInfoTag());
-    if (!tag || !tag->HasPVRChannel())
+    if (!m_progItem || !m_progItem->HasPVRChannel())
     {
       /* invalid channel */
       CGUIDialogOK::ShowAndGetInput(CVariant{19033}, CVariant{19067});
@@ -114,13 +128,26 @@ bool CGUIDialogPVRGuideInfo::OnClickButtonRecord(CGUIMessage &message)
       return bReturn;
     }
 
-    CFileItemPtr timerTag = g_PVRTimers->GetTimerForEpgTag(m_progItem.get());
-    bool bHasTimer = timerTag != NULL && timerTag->HasPVRTimerInfoTag();
-
-    if (!bHasTimer)
-      ActionStartTimer(tag);
+    CPVRTimerInfoTagPtr timerTag = m_progItem->Timer();
+    if (timerTag)
+      ActionCancelTimer(CFileItemPtr(new CFileItem(timerTag)));
     else
-      ActionCancelTimer(timerTag);
+      ActionStartTimer(m_progItem);
+  }
+
+  return bReturn;
+}
+
+bool CGUIDialogPVRGuideInfo::OnClickButtonAddTimer(CGUIMessage &message)
+{
+  bool bReturn = false;
+
+  if (message.GetSenderId() == CONTROL_BTN_ADD_TIMER)
+  {
+    if (m_progItem && !m_progItem->Timer())
+      ActionAddTimerRule(m_progItem);
+
+    bReturn = true;
   }
 
   return bReturn;
@@ -133,28 +160,30 @@ bool CGUIDialogPVRGuideInfo::OnClickButtonPlay(CGUIMessage &message)
   if (message.GetSenderId() == CONTROL_BTN_SWITCH || message.GetSenderId() == CONTROL_BTN_PLAY_RECORDING)
   {
     Close();
-    PlayBackRet ret = PLAYBACK_CANCELED;
-    CEpgInfoTagPtr epgTag(m_progItem->GetEPGInfoTag());
 
-    if (epgTag)
+    if (m_progItem)
     {
-      if (message.GetSenderId() == CONTROL_BTN_PLAY_RECORDING && epgTag->HasRecording())
-        ret = g_application.PlayFile(CFileItem(epgTag->Recording()));
-      else if (epgTag->HasPVRChannel())
-        ret = g_application.PlayFile(CFileItem(epgTag->ChannelTag()));
-    }
-    else
-      ret = PLAYBACK_FAIL;
+      if (message.GetSenderId() == CONTROL_BTN_PLAY_RECORDING && m_progItem->HasRecording())
+        g_application.PlayFile(CFileItem(m_progItem->Recording()), "videoplayer");
+      else if (m_progItem->HasPVRChannel())
+      {
+        CPVRChannelPtr channel = m_progItem->ChannelTag();
+        // try a fast switch
+        bool bSwitchSuccessful = false;
+        if ((g_PVRManager.IsPlayingTV() || g_PVRManager.IsPlayingRadio()) &&
+            (channel->IsRadio() == g_PVRManager.IsPlayingRadio()))
+        {
+          if (channel->StreamURL().empty())
+            bSwitchSuccessful = g_application.m_pPlayer->SwitchChannel(channel);
+        }
 
-    if (ret == PLAYBACK_FAIL)
-    {
-      std::string msg = StringUtils::Format(g_localizeStrings.Get(19035).c_str(), g_localizeStrings.Get(19029).c_str()); // Channel could not be played. Check the log for details.
-      CGUIDialogOK::ShowAndGetInput(CVariant{19033}, CVariant{std::move(msg)});
+        if (!bSwitchSuccessful)
+        {
+          CApplicationMessenger::GetInstance().PostMsg(TMSG_MEDIA_PLAY, 0, 0, static_cast<void*>(new CFileItem(channel)), "videoplayer");
+        }
+      }
     }
-    else if (ret == PLAYBACK_OK)
-    {
-      bReturn = true;
-    }
+    bReturn = true;
   }
 
   return bReturn;
@@ -166,16 +195,15 @@ bool CGUIDialogPVRGuideInfo::OnClickButtonFind(CGUIMessage &message)
 
   if (message.GetSenderId() == CONTROL_BTN_FIND)
   {
-    const CEpgInfoTagPtr tag(m_progItem->GetEPGInfoTag());
-    if (tag && tag->HasPVRChannel())
+    if (m_progItem && m_progItem->HasPVRChannel())
     {
-      int windowSearchId = tag->ChannelTag()->IsRadio() ? WINDOW_RADIO_SEARCH : WINDOW_TV_SEARCH;
+      int windowSearchId = m_progItem->ChannelTag()->IsRadio() ? WINDOW_RADIO_SEARCH : WINDOW_TV_SEARCH;
       CGUIWindowPVRBase *windowSearch = (CGUIWindowPVRBase*) g_windowManager.GetWindow(windowSearchId);
       if (windowSearch)
       {
         Close();
         g_windowManager.ActivateWindow(windowSearchId);
-        bReturn = windowSearch->OnContextButton(*m_progItem.get(), CONTEXT_BUTTON_FIND);
+        bReturn = windowSearch->OnContextButton(CFileItem(m_progItem), CONTEXT_BUTTON_FIND);
       }
     }
   }
@@ -191,59 +219,71 @@ bool CGUIDialogPVRGuideInfo::OnMessage(CGUIMessage& message)
     return OnClickButtonOK(message) ||
            OnClickButtonRecord(message) ||
            OnClickButtonPlay(message) ||
-           OnClickButtonFind(message);
+           OnClickButtonFind(message) ||
+           OnClickButtonAddTimer(message);
   }
 
   return CGUIDialog::OnMessage(message);
 }
 
-void CGUIDialogPVRGuideInfo::SetProgInfo(const CFileItem *item)
+bool CGUIDialogPVRGuideInfo::OnInfo(int actionID)
 {
-  *m_progItem = *item;
+  Close();
+  return true;
+}
+
+void CGUIDialogPVRGuideInfo::SetProgInfo(const EPG::CEpgInfoTagPtr &tag)
+{
+  m_progItem = tag;
 }
 
 CFileItemPtr CGUIDialogPVRGuideInfo::GetCurrentListItem(int offset)
 {
-  return m_progItem;
+  return CFileItemPtr(new CFileItem(m_progItem));
 }
 
 void CGUIDialogPVRGuideInfo::OnInitWindow()
 {
   CGUIDialog::OnInitWindow();
 
-  const CEpgInfoTagPtr tag(m_progItem->GetEPGInfoTag());
-  if (!tag)
+  if (!m_progItem)
   {
     /* no epg event selected */
     return;
   }
 
-  if (!tag->HasRecording())
+  if (!m_progItem->HasRecording())
   {
     /* not recording. hide the play recording button */
     SET_CONTROL_HIDDEN(CONTROL_BTN_PLAY_RECORDING);
   }
 
   bool bHideRecord(true);
-  if (tag->HasTimer())
+  bool bHideAddTimer(true);
+
+  if (m_progItem->HasTimer())
   {
-    if (tag->Timer()->IsRecording())
+    if (m_progItem->Timer()->IsRecording())
     {
       SET_CONTROL_LABEL(CONTROL_BTN_RECORD, 19059); /* Stop recording */
       bHideRecord = false;
     }
-    else if (tag->Timer()->HasTimerType() && !tag->Timer()->GetTimerType()->IsReadOnly())
+    else if (m_progItem->Timer()->HasTimerType() && !m_progItem->Timer()->GetTimerType()->IsReadOnly())
     {
       SET_CONTROL_LABEL(CONTROL_BTN_RECORD, 19060); /* Delete timer */
       bHideRecord = false;
     }
   }
-  else if (tag->EndAsLocalTime() > CDateTime::GetCurrentDateTime())
+  else if (g_PVRClients->SupportsTimers() && m_progItem->EndAsLocalTime() > CDateTime::GetCurrentDateTime())
   {
     SET_CONTROL_LABEL(CONTROL_BTN_RECORD, 264);     /* Record */
     bHideRecord = false;
+    bHideAddTimer = false;
   }
 
   if (bHideRecord)
     SET_CONTROL_HIDDEN(CONTROL_BTN_RECORD);
+
+  if (bHideAddTimer)
+    SET_CONTROL_HIDDEN(CONTROL_BTN_ADD_TIMER);
 }

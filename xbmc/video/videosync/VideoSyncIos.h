@@ -26,11 +26,11 @@
 class CVideoSyncIos : public CVideoSync, IDispResource
 {
 public:
-  CVideoSyncIos() : m_LastVBlankTime(0), m_abort(false){}
+  CVideoSyncIos(CVideoReferenceClock *clock) : CVideoSync(clock), m_LastVBlankTime(0), m_abort(false){}
   
   // CVideoSync interface
   virtual bool Setup(PUPDATECLOCK func);
-  virtual void Run(volatile bool& stop);
+  virtual void Run(std::atomic<bool>& stop);
   virtual void Cleanup();
   virtual float GetFps();
   

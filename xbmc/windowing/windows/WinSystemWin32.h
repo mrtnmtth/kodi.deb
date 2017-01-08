@@ -21,8 +21,12 @@
 #ifndef WINDOW_SYSTEM_WIN32_H
 #define WINDOW_SYSTEM_WIN32_H
 
+#include "guilib/DispResource.h"
+#include "threads/CriticalSection.h"
+#include "threads/SystemClock.h"
 #include "windowing/WinSystem.h"
 #include <string>
+#include <vector>
 
 struct MONITOR_DETAILS
 {
@@ -153,17 +157,20 @@ public:
   // CWinSystemWin32
   HWND GetHwnd() { return m_hWnd; }
   bool IsAlteringWindow() { return m_IsAlteringWindow; }
+  bool DPIChanged(WORD dpi, RECT windowRect);
 
   // touchscreen support
   typedef BOOL (WINAPI *pGetGestureInfo)(HGESTUREINFO, PGESTUREINFO);
   typedef BOOL (WINAPI *pSetGestureConfig)(HWND, DWORD, UINT, PGESTURECONFIG, UINT);
   typedef BOOL (WINAPI *pCloseGestureInfoHandle)(HGESTUREINFO);
+  typedef BOOL(WINAPI *pEnableNonClientDpiScaling)(HWND);
   pGetGestureInfo         PtrGetGestureInfo;
   pSetGestureConfig       PtrSetGestureConfig;
   pCloseGestureInfoHandle PtrCloseGestureInfoHandle;
+  pEnableNonClientDpiScaling PtrEnableNonClientDpiScaling;
 
 protected:
-  bool ChangeResolution(RESOLUTION_INFO res, bool forceChange = false);
+  bool ChangeResolution(const RESOLUTION_INFO& res, bool forceChange = false);
   virtual bool ResizeInternal(bool forceRefresh = false);
   virtual bool UpdateResolutionsInternal();
   virtual bool CreateBlankWindows();
@@ -177,6 +184,14 @@ protected:
    */
   void AddResolution(const RESOLUTION_INFO &res);
 
+  virtual void Register(IDispResource *resource);
+  virtual void Unregister(IDispResource *resource);
+  void OnDisplayLost();
+  void OnDisplayReset();
+  void OnDisplayBack();
+  void ResolutionChanged();
+  void SetForegroundWindowInternal(HWND hWnd);
+
   HWND m_hWnd;
   std::vector<HWND> m_hBlankWindows;
   HDC m_hDC;
@@ -186,6 +201,11 @@ protected:
   int m_nPrimary;
   bool m_ValidWindowedPosition;
   bool m_IsAlteringWindow;
+
+  CCriticalSection m_resourceSection;
+  std::vector<IDispResource*> m_resources;
+  bool m_delayDispReset;
+  XbmcThreads::EndTime m_dispResetTimer;
 };
 
 extern HWND g_hWnd;

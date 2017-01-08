@@ -39,10 +39,10 @@ protected:
   }
 };
 
-TEST_F(TestURIUtils, IsInPath)
+TEST_F(TestURIUtils, PathHasParent)
 {
-  EXPECT_TRUE(URIUtils::IsInPath("/path/to/movie.avi", "/path/to/"));
-  EXPECT_FALSE(URIUtils::IsInPath("/path/to/movie.avi", "/path/2/"));
+  EXPECT_TRUE(URIUtils::PathHasParent("/path/to/movie.avi", "/path/to/"));
+  EXPECT_FALSE(URIUtils::PathHasParent("/path/to/movie.avi", "/path/2/"));
 }
 
 TEST_F(TestURIUtils, GetDirectory)
@@ -314,7 +314,7 @@ TEST_F(TestURIUtils, IsISO9660)
 
 TEST_F(TestURIUtils, IsLiveTV)
 {
-  EXPECT_TRUE(URIUtils::IsLiveTV("sap://path/to/file"));
+  EXPECT_TRUE(URIUtils::IsLiveTV("whatever://path/to/file.pvr"));
 }
 
 TEST_F(TestURIUtils, IsMultiPath)
@@ -452,7 +452,7 @@ TEST_F(TestURIUtils, CreateArchivePath)
 {
   std::string ref, var;
 
-  ref = "zip://%2fpath%2fto%2f/file";
+  ref = "zip://%2Fpath%2Fto%2F/file";
   var = URIUtils::CreateArchivePath("zip", CURL("/path/to/"), "file").Get();
   EXPECT_STREQ(ref.c_str(), var.c_str());
 }
@@ -461,6 +461,10 @@ TEST_F(TestURIUtils, AddFileToFolder)
 {
   std::string ref = "/path/to/file";
   std::string var = URIUtils::AddFileToFolder("/path/to", "file");
+  EXPECT_STREQ(ref.c_str(), var.c_str());
+
+  ref = "/path/to/file/and/more";
+  var = URIUtils::AddFileToFolder("/path", "to", "file", "and", "more");
   EXPECT_STREQ(ref.c_str(), var.c_str());
 }
 

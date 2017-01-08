@@ -558,7 +558,6 @@ bool XBPython::OnScriptInitialized(ILanguageInvoker *invoker)
     }
 #endif
 
-
     // Darwin packs .pyo files, we need PYTHONOPTIMIZE on in order to load them.
     // linux built with unified builds only packages the pyo files so need it
 #if defined(TARGET_DARWIN) || defined(TARGET_LINUX)
@@ -594,9 +593,6 @@ bool XBPython::OnScriptInitialized(ILanguageInvoker *invoker)
     CEnvironment::putenv(buf);
     buf = "OS=win32";
     CEnvironment::putenv(buf);
-
-#elif defined(TARGET_ANDROID)
-    // Set earlier to avoid random crashes
 #endif
 
     if (PyEval_ThreadsInitialized())

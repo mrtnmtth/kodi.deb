@@ -1,11 +1,5 @@
+cmake_minimum_required(VERSION 3.1)
 project(kodi-addons)
-
-if(WIN32)
-  # there seems to be a bug in the CMake generator implementation in CMake 2.8.x releases for WIN32
-  cmake_minimum_required(VERSION 3.0)
-else()
-  cmake_minimum_required(VERSION 2.8)
-endif()
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
 
@@ -31,14 +25,17 @@ endif()
 include(ExternalProject)
 
 ### setup all the necessary paths
-if(NOT APP_ROOT AND NOT XBMCROOT)
-  set(APP_ROOT ${PROJECT_SOURCE_DIR}/../../..)
-elseif(NOT APP_ROOT)
-  file(TO_CMAKE_PATH "${XBMCROOT}" APP_ROOT)
-else()
-  file(TO_CMAKE_PATH "${APP_ROOT}" APP_ROOT)
+if(APP_ROOT)
+  set(CORE_SOURCE_DIR ${APP_ROOT})
+  unset(APP_ROOT)
+  message(WARNING "APP_ROOT is deprecated. Please use CORE_SOURCE_DIR instead.")
 endif()
-get_filename_component(APP_ROOT "${APP_ROOT}" ABSOLUTE)
+if(NOT CORE_SOURCE_DIR)
+  set(CORE_SOURCE_DIR ${PROJECT_SOURCE_DIR}/../../..)
+else()
+  file(TO_CMAKE_PATH "${CORE_SOURCE_DIR}" CORE_SOURCE_DIR)
+endif()
+get_filename_component(CORE_SOURCE_DIR "${CORE_SOURCE_DIR}" ABSOLUTE)
 
 if(NOT BUILD_DIR)
   set(BUILD_DIR "${CMAKE_BINARY_DIR}/build")
@@ -47,29 +44,29 @@ else()
 endif()
 get_filename_component(BUILD_DIR "${BUILD_DIR}" ABSOLUTE)
 
-if(NOT DEPENDS_PATH)
-  set(DEPENDS_PATH "${BUILD_DIR}/depends")
+if(NOT ADDON_DEPENDS_PATH)
+  set(ADDON_DEPENDS_PATH "${BUILD_DIR}/depends")
 else()
-  file(TO_CMAKE_PATH "${DEPENDS_PATH}" DEPENDS_PATH)
+  file(TO_CMAKE_PATH "${ADDON_DEPENDS_PATH}" ADDON_DEPENDS_PATH)
 endif()
-get_filename_component(DEPENDS_PATH "${DEPENDS_PATH}" ABSOLUTE)
+get_filename_component(ADDON_DEPENDS_PATH "${ADDON_DEPENDS_PATH}" ABSOLUTE)
 
 if(NOT PLATFORM_DIR)
-  set(PLATFORM_DIR ${APP_ROOT}/project/cmake/platform/${CORE_SYSTEM_NAME})
+  set(PLATFORM_DIR ${CORE_SOURCE_DIR}/project/cmake/platform/${CORE_SYSTEM_NAME})
   file(TO_CMAKE_PATH "${PLATFORM_DIR}" PLATFORM_DIR)
 endif()
 
 # make sure CMAKE_PREFIX_PATH is set
 if(NOT CMAKE_PREFIX_PATH)
-  set(CMAKE_PREFIX_PATH "${DEPENDS_PATH}")
+  set(CMAKE_PREFIX_PATH "${ADDON_DEPENDS_PATH}")
 else()
   file(TO_CMAKE_PATH "${CMAKE_PREFIX_PATH}" CMAKE_PREFIX_PATH)
-  list(APPEND CMAKE_PREFIX_PATH "${DEPENDS_PATH}")
+  list(APPEND CMAKE_PREFIX_PATH "${ADDON_DEPENDS_PATH}")
 endif()
 
 # check for autoconf stuff to pass on
 if(AUTOCONF_FILES)
-  separate_arguments(AUTOCONF_FILES)
+  string(REPLACE " " ";" AUTOCONF_FILES ${AUTOCONF_FILES})
   set(CROSS_AUTOCONF "yes")
 endif()
 
@@ -80,8 +77,9 @@ list(APPEND CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX})
 
 set(BUILD_ARGS -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
                -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-               -DPACKAGE_CONFIG_PATH=${DEPENDS_PATH}/lib/pkgconfig
-               -DDEPENDS_PATH=${DEPENDS_PATH}
+               -DPACKAGE_CONFIG_PATH=${ADDON_DEPENDS_PATH}/lib/pkgconfig
+               -DADDON_DEPENDS_PATH=${ADDON_DEPENDS_PATH}
+               -DOVERRIDE_PATHS=${OVERRIDE_PATHS}
                -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                -DCMAKE_USER_MAKE_RULES_OVERRIDE=${CMAKE_USER_MAKE_RULES_OVERRIDE}
                -DCMAKE_USER_MAKE_RULES_OVERRIDE_CXX=${CMAKE_USER_MAKE_RULES_OVERRIDE_CXX}
@@ -108,20 +106,21 @@ if(PACKAGE_ZIP)
   endif()
   list(APPEND BUILD_ARGS -DPACKAGE_DIR=${PACKAGE_DIR})
 
-  MESSAGE(STATUS "ZIP packaging enabled (destination: ${PACKAGE_DIR})")
+  message(STATUS "ZIP packaging enabled (destination: ${PACKAGE_DIR})")
 endif()
 
 if(CMAKE_TOOLCHAIN_FILE)
   list(APPEND BUILD_ARGS -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
-  MESSAGE(STATUS "Toolchain specified")
-  MESSAGE(STATUS ${BUILD_ARGS})
+  message(STATUS "Toolchain specified")
+  message(STATUS ${BUILD_ARGS})
 endif()
 
 if(NOT ADDONS_TO_BUILD)
   set(ADDONS_TO_BUILD "all")
 else()
+  string(STRIP "${ADDONS_TO_BUILD}" ADDONS_TO_BUILD)
   message(STATUS "Building following addons: ${ADDONS_TO_BUILD}")
-  separate_arguments(ADDONS_TO_BUILD)
+  string(REPLACE " " ";" ADDONS_TO_BUILD ${ADDONS_TO_BUILD})
 endif()
 
 if(NOT ADDONS_DEFINITION_DIR)
@@ -132,12 +131,14 @@ endif()
 get_filename_component(ADDONS_DEFINITION_DIR "${ADDONS_DEFINITION_DIR}" ABSOLUTE)
 
 if(ADDON_SRC_PREFIX)
-  get_filename_component(ADDON_SRC_PREFIX "${ADDON_SRC_PREFIX}" ABSOLUTE)
+  if(NOT IS_ABSOLUTE ${ADDON_SRC_PREFIX})
+    get_filename_component(ADDON_SRC_PREFIX "${CMAKE_BINARY_DIR}/${ADDON_SRC_PREFIX}" ABSOLUTE)
+  endif()
   message(STATUS "Overriding addon source directory prefix: ${ADDON_SRC_PREFIX}")
 endif()
 
 if(NOT APP_LIB_DIR)
-  set(APP_LIB_DIR "${DEPENDS_PATH}/lib/kodi")
+  set(APP_LIB_DIR "${ADDON_DEPENDS_PATH}/lib/kodi")
 else()
   file(TO_CMAKE_PATH "${APP_LIB_DIR}" APP_LIB_DIR)
 endif()
@@ -154,7 +155,7 @@ if(EXISTS ${PLATFORM_DIR}/defines.txt)
 endif()
 
 # include check_target_platform() function
-include(${APP_ROOT}/project/cmake/scripts/common/check_target_platform.cmake)
+include(${CORE_SOURCE_DIR}/project/cmake/scripts/common/CheckTargetPlatform.cmake)
 
 set(ADDON_INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
 if(NOT WIN32)
@@ -163,21 +164,23 @@ if(NOT WIN32)
   if(NOT ${can_write} AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(NEED_SUDO TRUE)
     set(ADDON_INSTALL_DIR ${CMAKE_BINARY_DIR}/.install)
-    message(STATUS "NEED_SUDO: ${NEED_SUDO}")
+    list(APPEND BUILD_ARGS -DOVERRIDE_PATHS=ON)
+    message(STATUS "NEED_SUDO: ${NEED_SUDO} (no write permission for ${CMAKE_INSTALL_PREFIX})")
   endif()
 endif()
 
 ### prepare the build environment for the binary addons
-# copy the prepare-env.cmake script to the depends path so that we can include it
-file(COPY ${APP_ROOT}/project/cmake/scripts/common/prepare-env.cmake DESTINATION ${APP_LIB_DIR})
+# copy the PrepareEnv.cmake script to the depends path so that we can include it
+file(COPY ${CORE_SOURCE_DIR}/project/cmake/scripts/common/PrepareEnv.cmake DESTINATION ${APP_LIB_DIR})
 
-# add the location of prepare-env.cmake to CMAKE_MODULE_PATH so that it is found
+# add the location of PrepareEnv.cmake to CMAKE_MODULE_PATH so that it is found
 list(APPEND CMAKE_MODULE_PATH ${APP_LIB_DIR})
 
-# include prepare-env.cmake which contains the logic to install the addon header bindings etc
-include(prepare-env)
+# include PrepareEnv.cmake which contains the logic to install the addon header bindings etc
+include(PrepareEnv)
 
 ### add the depends subdirectory for any general dependencies
+message(STATUS "\n-- ---- Preparing general dependencies ----")
 add_subdirectory(depends)
 
 # add a custom target "package-addons" which will package and install all addons
@@ -197,12 +200,13 @@ if(NOT addons)
     file(MAKE_DIRECTORY ${BOOTSTRAP_BUILD_DIR})
   endif()
 
+  string(REPLACE ";" " " ADDONS_TO_BUILD_STR "${ADDONS_TO_BUILD}")
   # generate the bootstrap buildsystem
   execute_process(COMMAND ${CMAKE_COMMAND} ${PROJECT_SOURCE_DIR}/bootstrap
-                                           -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                                            -DCMAKE_INSTALL_PREFIX:PATH=${ADDONS_DEFINITION_DIR}
                                            -DBUILD_DIR:PATH=${BOOTSTRAP_BUILD_DIR}
-                                           -DADDONS_TO_BUILD=${ADDONS_TO_BUILD}
+                                           -DADDONS_TO_BUILD:STRING=${ADDONS_TO_BUILD_STR}
+                                           -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
                   WORKING_DIRECTORY ${BOOTSTRAP_BUILD_DIR})
 
   # execute the generated bootstrap buildsystem
@@ -217,10 +221,14 @@ if(NOT addons)
   endif()
 endif()
 
+# Track if at least one addon has been found. Everything else is likely an
+# error either in ADDONS_TO_BUILD or in the directory configuration.
+set(SUPPORTED_ADDON_FOUND FALSE)
+
 foreach(addon ${addons})
   if(NOT (addon MATCHES platforms.txt))
     file(STRINGS ${addon} def)
-    separate_arguments(def)
+    string(REPLACE " " ";" def ${def})
     list(GET def 0 id)
 
     set(ADDON_FOUND FALSE)
@@ -235,17 +243,18 @@ foreach(addon ${addons})
     endif()
 
     if(ADDON_FOUND)
-      get_filename_component(dir ${addon} PATH)
+      message(STATUS "\n-- ---- Configuring addon ${addon} ----")
+      set(SUPPORTED_ADDON_FOUND TRUE)
+
+      get_filename_component(dir ${addon} DIRECTORY)
 
       # check if the addon has a platforms.txt
       set(platform_found FALSE)
       check_target_platform(${dir} ${CORE_SYSTEM_NAME} platform_found)
 
-      if (${platform_found})
+      if(${platform_found})
         # make sure the output directory is clean
-        if(EXISTS "${CMAKE_INSTALL_PREFIX}/${id}")
-          file(REMOVE_RECURSE "${CMAKE_INSTALL_PREFIX}/${id}/")
-        endif()
+        file(REMOVE_RECURSE "${CMAKE_INSTALL_PREFIX}/${id}/")
 
         # get the URL and revision of the addon
         list(LENGTH def deflength)
@@ -323,9 +332,7 @@ foreach(addon ${addons})
           endif()
 
           # remove any previously extracted version of the addon
-          if(EXISTS "${BUILD_DIR}/${id}")
-            file(REMOVE_RECURSE "${BUILD_DIR}/${id}")
-          endif()
+          file(REMOVE_RECURSE "${BUILD_DIR}/${id}")
 
           # extract the addon from the archive
           execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzvf ${BUILD_DIR}/download/${archive_name}.tar.gz
@@ -364,7 +371,7 @@ foreach(addon ${addons})
           set(${id}_DEPENDS_DIR ${SOURCE_DIR}/depends)
 
           if(EXISTS ${${id}_DEPENDS_DIR})
-            include(${APP_ROOT}/project/cmake/scripts/common/handle-depends.cmake)
+            include(${CORE_SOURCE_DIR}/project/cmake/scripts/common/HandleDepends.cmake)
             add_addon_depends(${id} ${${id}_DEPENDS_DIR})
             if(${id}_DEPS AND NOT "${${id}_DEPS}" STREQUAL "")
               message(STATUS "${id} DEPENDENCIES: ${${id}_DEPS}")
@@ -400,16 +407,28 @@ foreach(addon ${addons})
     endif()
   endif()
 endforeach()
+message(STATUS "")
 
 if(NEED_SUDO)
-  add_custom_target(install
-                    COMMAND ${CMAKE_COMMAND} -E echo "\n\n"
-                    COMMAND ${CMAKE_COMMAND} -E echo "WARNING: sudo rights needed to install to ${CMAKE_INSTALL_PREFIX}\n"
+  add_custom_target(sudo-install
+                    COMMAND ${CMAKE_COMMAND} -E echo "sudo rights needed to install to ${CMAKE_INSTALL_PREFIX}\n"
                     COMMAND sudo ${CMAKE_COMMAND} -E copy_directory ${ADDON_INSTALL_DIR}/ ${CMAKE_INSTALL_PREFIX}/
-                    COMMAND sudo ${CMAKE_COMMAND} -E remove_directory ${ADDON_INSTALL_DIR}/
                     COMMAND sudo -k)
+
+  foreach(_id ${ALL_ADDONS_BUILDING})
+    add_dependencies(sudo-install ${_id})
+  endforeach()
+  message(WARNING "sudo rights needed to install to ${CMAKE_INSTALL_PREFIX}")
+  message(STATUS "\nplease type \"make sudo-install\"\n\n")
+endif()
+
+if(NOT SUPPORTED_ADDON_FOUND)
+  message(FATAL_ERROR "${ADDONS_TO_BUILD} did not match any of the supported addons. \
+                       A list of supported addons can be viewed by building the 'supported_addons' target. \
+                       Addon definitions are loaded from ADDONS_DEFINITION_DIR (${ADDONS_DEFINITION_DIR}).")
 endif()
 
 # add custom target "supported_addons" that returns all addons that are supported on this platform
 string(REPLACE ";" " " ALL_ADDONS_BUILDING "${ALL_ADDONS_BUILDING}")
 add_custom_target(supported_addons COMMAND ${CMAKE_COMMAND} -E echo "ALL_ADDONS_BUILDING: ${ALL_ADDONS_BUILDING}" VERBATIM)
+add_custom_target(need-sudo COMMAND ${CMAKE_COMMAND} -E echo ${NEED_SUDO} VERBATIM)

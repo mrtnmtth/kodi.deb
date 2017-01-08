@@ -40,63 +40,49 @@ Build-Depends: autoconf,
  libcec-dev (>= 3.1),
  libp8-platform-dev,
  libcommons-lang-java,
- libcrystalhd-dev [i386 amd64],
  libcurl4-gnutls-dev | libcurl-dev,
  libcwiid-dev [linux-any],
  libdbus-1-dev,
  libcrossguid-dev,
- libdvdnav-dev,
- libdvdread-dev,
- libenca-dev,
- libflac-dev,
+# libdvdnav-dev, use patched embedded version
+# libdvdread-dev, use patched embedded version
  libfontconfig-dev,
  libfreetype6-dev,
  libfribidi-dev,
- libftgl-dev,
  libgif-dev,
- libgles2-mesa-dev [armel armhf] | libgl1-mesa-dev | libgl-dev,
- libglew-dev,
+ libgles2-mesa-dev [armel armhf arm64] | libgl1-mesa-dev | libgl-dev,
  libglu1-mesa-dev | libglu-dev,
  libgtest-dev,
  libiso9660-dev,
- libjasper-dev,
  libjpeg-dev,
+ liblcms2-dev,
  libltdl-dev,
  liblzo2-dev,
- libmad0-dev,
  libmicrohttpd-dev,
  libmodplug-dev,
- libmp3lame-dev,
- libmpeg2-4-dev,
- libmysqlclient-dev,
+ default-libmysqlclient-dev,
  libnfs-dev,
- libogg-dev,
- libomxil-bellagio-dev [armel armhf mipsel mips],
+ libomxil-bellagio-dev [armel armhf arm64 mipsel mips],
  libpcre3-dev,
  libplist-dev,
  libpng-dev,
  libpostproc-dev (>= 7:2.7.1),
  libpulse-dev,
- librtmp-dev,
- libsamplerate-dev,
  libsdl2-dev,
  libsdl2-image-dev,
  libsdl2-mixer-dev,
  libshairport-dev,
- libsidplay2-dev,
  libsmbclient-dev,
  libsqlite3-dev,
- libssh-dev,
- libssl-dev,
+ libssh-gcrypt-dev,
+ libgcrypt-dev,
  libswscale-dev (>= 7:2.7.1),
  libtag1-dev (>= 1.8),
- libtiff-dev,
  libtinyxml-dev (>= 2.6.2),
  libtool,
  libudev-dev,
- libva-dev [!armel !armhf !mipsel !mips],
- libvdpau-dev [!armel !armhf !mipsel !mips],
- libvorbis-dev,
+ libva-dev [!armel !armhf !arm64 !mipsel !mips],
+ libvdpau-dev [!armel !armhf !arm64 !mipsel !mips],
  libxmu-dev,
  libxrandr-dev,
  libxslt1-dev,
@@ -106,14 +92,14 @@ Build-Depends: autoconf,
  python-dev (>= 2.6.6-3~),
  python-imaging,
  swig,
- ttf-bitstream-vera,
  udev,
  unzip,
  uuid-dev,
+ valgrind [amd64 i386],
  yasm,
  zip,
  zlib1g-dev
-Standards-Version: 3.9.6
+Standards-Version: 3.9.8
 Homepage: http://kodi.tv/
 Vcs-Git: git://anonscm.debian.org/pkg-multimedia/kodi.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-multimedia/kodi.git
@@ -122,11 +108,12 @@ Package: kodi
 Architecture: any
 Depends: kodi-bin (>= ${source:Version}),
          kodi-bin (<< ${source:Version}.1~),
-         kodi-data,
+         kodi-data (>= ${source:Version}),
          ${misc:Depends}
 Recommends: kodi-visualization-spectrum
 Replaces: xbmc (<< 2:13.2+dfsg1-5~)
 Breaks: xbmc (<< 2:13.2+dfsg1-5~)
+Provides: ${kodi:PVRAPI}, ${kodi:GUILIBAPI}
 Description: Open Source Home Theatre (executable binaries)
  Kodi, formerly known as XBMC is an award winning free and
  open source software media-player and entertainment hub for all your digital
@@ -153,10 +140,12 @@ Multi-Arch: foreign
 Depends: mesa-utils,
          x11-utils,
          fonts-dejavu-core,
-         fonts-roboto-hinted,
+         fonts-lato,
+         fonts-noto-hinted,
          libjs-jquery,
          libjs-iscroll,
          python-imaging,
+         fonts-anonymous-pro | ttf-anonymous-pro,
          ${python:Depends},
          ${misc:Depends}
 Replaces: xbmc (<< 2:13.2+dfsg1-5~), kodi (<< 15.2~rc1+dfsg1-2~)
@@ -288,33 +277,6 @@ Description: Open Source Home Theatre (Event Client WII Remote support package)
  .
  This package is the Wii Remote client package for Kodi.
 
-Package: kodi-eventclients-j2me
-Architecture: all
-Depends: kodi-eventclients-common (= ${binary:Version}),
-         ${python:Depends},
-         python-bluez | python-lightblue,
-         ${misc:Depends}
-Description: Open Source Home Theatre (Event Client J2ME package)
- Kodi, formerly known as XBMC is an award winning free and
- open source software media-player and entertainment hub for all your digital
- media. Kodi is available for Linux, Mac OS X (Leopard, Tiger and Apple TV)
- and Microsoft Windows, as well as the original Xbox game console. Created in
- 2003 by a group of like minded programmers, Kodi is a non-profit project run
- and developed by volunteers located around the world. More than 50 software
- developers have contributed to Kodi, and 100-plus translators have worked to
- expand its reach, making it available in more than 30 languages.
- .
- While Kodi functions very well as a standard media player application for
- your computer, it has been designed to be the perfect companion for your
- HTPC. Supporting an almost endless range of remote controls, and combined
- with its beautiful interface and powerful skinning engine, Kodi feels very
- natural to use from the couch and is the ideal solution for your home
- theater. Once installed, your computer will become a fully functional
- multimedia jukebox.
- .
- This package is the J2ME package for Kodi Event Client. This is meant to
- provide a server that communicate with a mobile tool supporting Java ME.
-
 Package: kodi-eventclients-ps3
 Architecture: all
 Multi-Arch: foreign
@@ -396,4 +358,60 @@ Description: Open Source Home Theatre (Addons Dev package)
  .
  This package contains independent headers for building Addons
  without the whole Kodi source tree.
+
+# transitional packages from xbmc
+Package: xbmc
+Architecture: all
+Depends: kodi,
+Provides: xbmc-standalone, xbmc-data, xbmc-skin-confluence, xbmc-live
+Replaces: xbmc-standalone, xbmc-data, xbmc-skin-confluence, xbmc-live
+Breaks: xbmc-standalone (<< 2:11.0~git20111222.22ad8e4),
+        xbmc-data (<< 2:11.0~git20111222.22ad8e4),
+        xbmc-skin-confluence (<< 2:11.0~git20111222.22ad8e4)
+Description: transitional dummy package
+ This is a transitional dummy package. It can safely be removed.
+
+Package: xbmc-bin
+Architecture: any
+Depends: kodi-bin,
+Provides: xbmc-common
+Replaces: xbmc-common
+Description: transitional dummy package
+ This is a transitional dummy package. It can safely be removed.
+
+Package: xbmc-eventclients-common
+Architecture: all
+Depends: kodi-eventclients-common
+Description: transitional dummy package
+ This is a transitional dummy package. It can safely be removed.
+
+Package: xbmc-eventclients-dev
+Architecture: all
+Depends: kodi-eventclients-dev
+Description: transitional dummy package
+ This is a transitional dummy package. It can safely be removed.
+
+Package: xbmc-eventclients-wiiremote
+Architecture: any
+Depends: kodi-eventclients-wiiremote
+Description: transitional dummy package
+ This is a transitional dummy package. It can safely be removed.
+
+Package: xbmc-eventclients-ps3
+Architecture: all
+Depends: kodi-eventclients-ps3
+Description: transitional dummy package
+ This is a transitional dummy package. It can safely be removed.
+
+Package: xbmc-eventclients-xbmc-send
+Architecture: all
+Depends: kodi-eventclients-kodi-send
+Description: transitional dummy package
+ This is a transitional dummy package. It can safely be removed.
+
+Package: xbmc-addons-dev
+Architecture: all
+Depends: kodi-addons-dev
+Description: transitional dummy package
+ This is a transitional dummy package. It can safely be removed.
 

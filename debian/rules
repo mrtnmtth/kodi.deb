@@ -4,9 +4,16 @@
 export DH_OPTIONS
 
 # bindnow breaks wrappers used in with libdvdread
-export DEB_BUILD_MAINT_OPTIONS = hardening=+all-bindnow
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all,-bindnow
 
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+
+# Use package's version in Kodi
+VERSION := $(shell dpkg-parsechangelog -S Version)
+UPSTREAM_VERSION := $(shell dpkg-parsechangelog -S Version| sed 's/[0-9]*://;s/-[^-]*$$//')
+
+DVDNAV_COMPONENT = libdvdnav-5-0-3
+DVDREAD_COMPONENT = libdvdread-5-0-3
 
 GL_CONFIG_OPTIONS = --enable-gl --disable-gles --enable-vdpau
 ARCH_SPECIFIC_LIB_RECOMMENDS_ADD = -lvdpau
@@ -18,9 +25,9 @@ else
 DEBUG_CONFIG_OPTIONS += --disable-debug
 endif
 
-# Enable gles for armel, armhf
+# Enable gles for armel, armhf and arm64
 # Also disable VDPAU and VAAPI there since they break the build with gles
-ifneq (,$(filter armel armhf,$(DEB_HOST_ARCH)))
+ifneq (,$(filter armel armhf arm64,$(DEB_HOST_ARCH)))
 GL_CONFIG_OPTIONS = --disable-gl --enable-gles --disable-vdpau --disable-vaapi
 ARCH_SPECIFIC_LIB_RECOMMENDS_ADD =
 else
@@ -31,17 +38,12 @@ ARCH_SPECIFIC_LIB_RECOMMENDS_ADD =
 endif
 endif
 
-# The following tests are failing:
-# TestArchive.CharArchive crashes on armel
-# TestAsyncFileCopy.General crashes on mips
-ifneq (,$(filter armel mips,$(DEB_HOST_ARCH)))
-ARCH_SPECIFIC_OPTIONS = --disable-gtest
-endif
-
 ARCH_SPECIFIC_LIB_RECOMMENDS += $(ARCH_SPECIFIC_LIB_RECOMMENDS_ADD)
 
 # Various environment variables to set
 export DEB_LDFLAGS_MAINT_APPEND = -latomic
+# for embedded libdvd*:
+export DEB_CPPFLAGS_MAINT_APPEND = -D_XBMC
 
 # List of options to pass to configure. Can be overridden.
 # Extra options can simply be passed using KODI_CONFIG_EXTRA_OPTIONS env
@@ -83,9 +85,18 @@ override_dh_clean:
 	dh_clean libtool xbmc/config.h xbmc/stamp-h1
 	find . -name config.status -o -name config.cache -o -name config.log \
 		-exec rm -f "{}" \;
+	rm -rf tools/depends/target; \
+	ls $(CURDIR)/debian/patches/libdvdnav-* | tac | xargs cat | patch -R --no-backup-if-mismatch -r - -s -p1 \
+		-d $(DVDNAV_COMPONENT) || true
+	ls $(CURDIR)/debian/patches/libdvdread-* | tac | xargs cat | patch -R --no-backup-if-mismatch -r - -s -p1 \
+		-d $(DVDREAD_COMPONENT) || true
+	rm -f addons/webinterface.default
+	rm -f debian/dh-addon/*.1
 
-# Use package's version in Kodi
-VERSION := $(shell dpkg-parsechangelog | sed -n 's/^Version: \(.*\)/\1/p')
+override_dh_auto_clean:
+	dh_auto_clean
+	make -C $(DVDNAV_COMPONENT) clean || true
+	make -C $(DVDREAD_COMPONENT) clean || true
 
 # fall back to old location of DejaVuSans.ttf if needed
 ifneq ("$(wildcard /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf)","")
@@ -95,16 +106,41 @@ DEJAVUSANS=/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf
 endif
 
 override_dh_auto_configure: configure
+	cat $(CURDIR)/debian/patches/libdvdnav-* | patch -p1 -d $(DVDNAV_COMPONENT)
+	cat $(CURDIR)/debian/patches/libdvdread-* | patch -p1 -d $(DVDREAD_COMPONENT)
+	cp -r $(CURDIR)/webinterface-default $(CURDIR)/addons/webinterface.default
 	sed -i 's/DEB_VERSION/"'$(VERSION)'"/' xbmc/Application.cpp xbmc/utils/SystemInfo.cpp
 	fontforge -script $(CURDIR)/debian/mergefonts.ff \
 		/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf \
 		$(DEJAVUSANS) \
 		$(CURDIR)/media/Fonts/arial.ttf
-	cp -r /usr/src/gtest ./lib/
+	cp -r /usr/src/gtest/ $(CURDIR)/lib/
+	mkdir -p $(CURDIR)/lib/gtest/lib/.libs
+	ln -s ../../libgtest.a $(CURDIR)/lib/gtest/lib/.libs/
 	./bootstrap
 	dh_auto_configure -- $(KODI_CONFIG_OPTIONS)
 	# Add "from Debian" next to Kodi's original logo
-	inkscape -z --export-png=addons/skin.confluence/media/from-debian-logo.png debian/from-debian-logo.svg
+	inkscape -z -w 250 -h 82 --export-png=addons/skin.estuary/media/from-debian-logo.png debian/from-debian-logo.svg
+	(cd $(DVDREAD_COMPONENT) && autoreconf -vif && \
+		$(shell dpkg-buildflags --export=configure) ./configure \
+		--prefix=$(CURDIR)/tools/depends/target/libdvdread/dvdread-install --disable-shared --enable-static --with-pic && \
+		$(MAKE) install) && \
+	(cd $(DVDNAV_COMPONENT) && autoreconf -vif && \
+		$(shell dpkg-buildflags --export=configure) PKG_CONFIG_PATH="$(CURDIR)/tools/depends/target/libdvdread/dvdread-install/lib/pkgconfig" ./configure \
+		--prefix=$(CURDIR)/tools/depends/target/libdvdnav/dvdnav-install --disable-shared --enable-static --with-pic && \
+		$(MAKE) install)
+
+override_dh_auto_build:
+	dh_auto_build
+	for file in $$(ls debian/dh-addon/dh_*); do \
+		pod2man --section=1 --utf8 $$file $$file.1; \
+	done
+
+override_dh_auto_test-arch:
+	dh_auto_test -a
+
+# No tests for indep build.
+override_dh_auto_test-indep:
 
 override_dh_auto_install:
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
@@ -113,12 +149,24 @@ override_dh_auto_install:
 	$(MAKE) eventclients DESTDIR=$(CURDIR)/debian/tmp \
 		WII_EXTRA_OPTS=-DCWIID_OLD
 
-override_dh_install:
-	dh_install -XLICENCE -XLICENSE \
-		-XLicence.txt -XLicense.txt -XLiberationSans-Regular.ttf \
-		-XDejaVuSans.ttf -XDejaVuSans-Bold.ttf -XLICENSE.txt \
-		-XRoboto-Bold.ttf -XRoboto-Regular.ttf -XNOTICE.txt \
+override_dh_install-indep:
+	dh_link -pkodi-data usr/share/fonts/truetype/anonymous-pro/Anonymous\ Pro.ttf usr/share/kodi/addons/skin.estuary/fonts/AnonymousPro.ttf
+	dh_install -i -XLICENCE -XLICENSE \
+		-XLicence.txt -XLicense.txt -XLato-Bold.ttf \
+		-XLato-Regular.ttf -XDejaVuSans-Bold.ttf -XLICENSE.txt \
+		-XAnonymousPro -XNOTICE.txt \
 		-Xjquery-1.8.2.min.js -Xiscroll-min.js
+
+override_dh_install-arch:
+	dh_install -a -XLICENCE -XLICENSE -XLicence.txt -XLicense.txt \
+		-XLICENSE.txt -XNOTICE.txt
+	# check if all needed headers are included
+	$(CXX) -c debian/headers-check.c -DBUILD_KODI_ADDON \
+	$(shell dpkg-buildflags --get CPPFLAGS) \
+	$(shell dpkg-buildflags --get CXXFLAGS) \
+	-Idebian/kodi-addons-dev/usr/include \
+	-Idebian/kodi-addons-dev/usr/include/kodi \
+	-o /dev/null
 
 override_dh_shlibdeps: debian/tmp/kodi-bin-depends-dummy.so debian/tmp/kodi-bin-recommends-dummy.so
 	dh_shlibdeps -a -O--parallel \
@@ -138,18 +186,9 @@ debian/tmp/kodi-bin-recommends-dummy.so:
 		-lass \
 		-lbluray \
 		-lcec \
-		-lFLAC \
-		-lmad \
 		-lmodplug \
-		-lmp3lame \
-		-lmpeg2 \
 		-lnfs \
-		-logg \
 		-lplist \
-		-lrtmp \
-		-lvorbis \
-		-lvorbisenc \
-		-lvorbisfile \
 		$(ARCH_SPECIFIC_LIB_RECOMMENDS)
 
 override_dh_strip:
@@ -157,3 +196,18 @@ override_dh_strip:
 
 override_dh_installinit:
 	@echo "Shipping systemd kodi.service file as an example only"
+
+override_dh_gencontrol-arch:
+	debian/dh-addon/dh_kodiaddon_depends
+	dh_gencontrol -a
+
+override_dh_gencontrol-indep:
+	dh_gencontrol -i
+
+# extract and patch customized libdvdread and libdvdnav and webinterface from 17.0 beta5
+extract-components:
+	tar -xf $(CURDIR)/../kodi_"$(UPSTREAM_VERSION)".orig-$(DVDNAV_COMPONENT).tar.bz2 && \
+		mv libdvdnav-* $(CURDIR)/$(DVDNAV_COMPONENT)
+	tar -xf $(CURDIR)/../kodi_"$(UPSTREAM_VERSION)".orig-$(DVDREAD_COMPONENT).tar.bz2 && \
+		mv libdvdread-* $(CURDIR)/$(DVDREAD_COMPONENT)
+	tar -xf $(CURDIR)/../kodi_"$(UPSTREAM_VERSION)".orig-webinterface-default.tar.xz

@@ -207,6 +207,20 @@ class CJobManager
     CJob::PRIORITY m_priority;
   };
 
+  template<typename F>
+  class CLambdaJob : public CJob
+  {
+  public:
+    CLambdaJob(F&& f) : m_f(std::forward<F>(f)) {};
+    bool DoWork() override
+    {
+      m_f();
+      return true;
+    }
+  private:
+    F m_f;
+  };
+
 public:
   /*!
    \brief The only way through which the global instance of the CJobManager should be accessed.
@@ -223,6 +237,15 @@ public:
    \sa CJob, IJobCallback, CancelJob()
    */
   unsigned int AddJob(CJob *job, IJobCallback *callback, CJob::PRIORITY priority = CJob::PRIORITY_LOW);
+
+  /*!
+   \brief Add a function f to this job manager for asynchronously execution.
+   */
+  template<typename F>
+  void Submit(F&& f, CJob::PRIORITY priority = CJob::PRIORITY_LOW)
+  {
+    AddJob(new CLambdaJob<F>(std::forward<F>(f)), nullptr, priority);
+  }
 
   /*!
    \brief Cancel a job with the given id.
@@ -327,7 +350,7 @@ private:
   typedef std::vector<CWorkItem>   Processing;
   typedef std::vector<CJobWorker*> Workers;
 
-  JobQueue   m_jobQueue[CJob::PRIORITY_HIGH+1];
+  JobQueue   m_jobQueue[CJob::PRIORITY_DEDICATED + 1];
   bool       m_pauseJobs;
   Processing m_processing;
   Workers    m_workers;

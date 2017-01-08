@@ -39,11 +39,13 @@ public:
 
   virtual bool CanExecute() const { return !GetExecutionLabel().empty(); }
 
+  virtual void ToSortable(SortItem& sortable, Field field) const;
+
 protected:
-  CBaseEvent(const std::string& identifier, const CVariant& label, const CVariant& description, EventLevel level = EventLevelInformation);
-  CBaseEvent(const std::string& identifier, const CVariant& label, const CVariant& description, const std::string& icon, EventLevel level = EventLevelInformation);
-  CBaseEvent(const std::string& identifier, const CVariant& label, const CVariant& description, const std::string& icon, const CVariant& details, EventLevel level = EventLevelInformation);
-  CBaseEvent(const std::string& identifier, const CVariant& label, const CVariant& description, const std::string& icon, const CVariant& details, const CVariant& executionLabel, EventLevel level = EventLevelInformation);
+  CBaseEvent(const std::string& identifier, const CVariant& label, const CVariant& description, EventLevel level = EventLevel::Information);
+  CBaseEvent(const std::string& identifier, const CVariant& label, const CVariant& description, const std::string& icon, EventLevel level = EventLevel::Information);
+  CBaseEvent(const std::string& identifier, const CVariant& label, const CVariant& description, const std::string& icon, const CVariant& details, EventLevel level = EventLevel::Information);
+  CBaseEvent(const std::string& identifier, const CVariant& label, const CVariant& description, const std::string& icon, const CVariant& details, const CVariant& executionLabel, EventLevel level = EventLevel::Information);
 
   EventLevel m_level;
   std::string m_identifier;
@@ -55,6 +57,8 @@ protected:
 
 private:
   static std::string VariantToLocalizedString(const CVariant& variant);
+  static uint64_t GetInternalTimestamp();
 
-  CDateTime m_dateTime;
+  uint64_t m_timestamp; // high res internal time stamp
+  CDateTime m_dateTime; // user interface time stamp
 };

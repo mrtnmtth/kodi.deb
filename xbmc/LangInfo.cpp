@@ -1,6 +1,6 @@
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      Copyright (C) 2005-2015 Team Kodi
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,13 +13,14 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
+ *  along with Kodi; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
 
 #include "LangInfo.h"
 
+#include <stdexcept>
 #include <algorithm>
 
 #include "addons/AddonInstaller.h"
@@ -43,7 +44,6 @@
 #include "utils/Weather.h"
 #include "utils/XBMCTinyXML.h"
 #include "utils/XMLUtils.h"
-
 
 using namespace PVR;
 using namespace KODI::MESSAGING;
@@ -215,6 +215,9 @@ CLangInfo::CRegion::CRegion(const CRegion& region):
   m_strMeridiemSymbols[MeridiemSymbolAM] = region.m_strMeridiemSymbols[MeridiemSymbolAM];
   m_tempUnit=region.m_tempUnit;
   m_speedUnit=region.m_speedUnit;
+  m_cThousandsSep = region.m_cThousandsSep;
+  m_strGrouping = region.m_strGrouping;
+  m_cDecimalSep = region.m_cDecimalSep;
 }
 
 CLangInfo::CRegion::CRegion()
@@ -256,8 +259,6 @@ void CLangInfo::CRegion::SetTimeZone(const std::string& strTimeZone)
   m_strTimeZone = strTimeZone;
 }
 
-// set the locale associated with this region global. This affects string
-// sorting & transformations
 void CLangInfo::CRegion::SetGlobalLocale()
 {
   std::string strLocale;
@@ -275,6 +276,7 @@ void CLangInfo::CRegion::SetGlobalLocale()
     strLocale += ".UTF-8";
 #endif
   }
+  g_langInfo.m_originalLocale = std::locale(std::locale::classic(), new custom_numpunct(m_cDecimalSep, m_cThousandsSep, m_strGrouping));
 
   CLog::Log(LOGDEBUG, "trying to set locale to %s", strLocale.c_str());
 
@@ -308,11 +310,16 @@ void CLangInfo::CRegion::SetGlobalLocale()
     strLocale = "C";
   }
 
-  g_langInfo.m_systemLocale = current_locale; // TODO: move to CLangInfo class
+  g_langInfo.m_systemLocale = current_locale; //! @todo move to CLangInfo class
   std::locale::global(current_locale);
 #endif
   g_charsetConverter.resetSystemCharset();
   CLog::Log(LOGINFO, "global locale set to %s", strLocale.c_str());
+
+#ifdef TARGET_ANDROID
+  // Force UTF8 for, e.g., vsnprintf
+  setlocale(LC_ALL, "C.UTF-8");
+#endif
 }
 
 CLangInfo::CLangInfo()
@@ -407,7 +414,6 @@ bool CLangInfo::Load(const std::string& strLanguage)
   m_strDVDSubtitleLanguage = m_languageAddon->GetDvdSubtitleLanguage();
   m_sortTokens = m_languageAddon->GetSortTokens();
 
-
   TiXmlElement* pRootElement = xmlDoc.RootElement();
   if (pRootElement->ValueStr() != "language")
   {
@@ -493,6 +499,33 @@ bool CLangInfo::Load(const std::string& strLanguage)
       if (pTimeZone && !pTimeZone->NoChildren())
         region.SetTimeZone(pTimeZone->FirstChild()->ValueStr());
 
+      const TiXmlElement *pThousandsSep = pRegion->FirstChildElement("thousandsseparator");
+      if (pThousandsSep)
+      {
+        if (!pThousandsSep->NoChildren())
+        {
+          region.m_cThousandsSep = pThousandsSep->FirstChild()->Value()[0];
+          if (pThousandsSep->Attribute("groupingformat"))
+            region.m_strGrouping = StringUtils::BinaryStringToString(pThousandsSep->Attribute("groupingformat"));
+          else
+            region.m_strGrouping = "\3";
+        }
+      }
+      else
+      {
+        region.m_cThousandsSep = ',';
+        region.m_strGrouping = "\3";
+      }
+
+      const TiXmlElement *pDecimalSep = pRegion->FirstChildElement("decimalseparator");
+      if (pDecimalSep)
+      {
+        if (!pDecimalSep->NoChildren())
+          region.m_cDecimalSep = pDecimalSep->FirstChild()->Value()[0];
+      }
+      else
+        region.m_cDecimalSep = '.';
+
       m_regions.insert(PAIR_REGIONS(region.m_strName, region));
 
       pRegion=pRegion->NextSiblingElement("region");
@@ -569,7 +602,7 @@ void CLangInfo::SetDefaults()
   m_strDVDAudioLanguage = "en";
   m_strDVDSubtitleLanguage = "en";
   m_sortTokens.clear();
-  
+
   m_languageCodeGeneral = "eng";
 }
 
@@ -639,7 +672,20 @@ bool CLangInfo::SetLanguage(bool& fallback, const std::string &strLanguage /* = 
     }
   }
 
-  LanguageResourcePtr languageAddon = GetLanguageAddon(language);
+  LanguageResourcePtr languageAddon;
+  {
+    std::string addonId = ADDON::CLanguageResource::GetAddonId(language);
+    if (addonId.empty())
+      addonId = CSettings::GetInstance().GetString(CSettings::SETTING_LOCALE_LANGUAGE);
+
+    ADDON::AddonPtr addon;
+    if (ADDON::CAddonMgr::GetInstance().GetAddon(addonId, addon, ADDON::ADDON_RESOURCE_LANGUAGE, false))
+    {
+      languageAddon = std::static_pointer_cast<ADDON::CLanguageResource>(addon);
+      ADDON::CAddonMgr::GetInstance().EnableAddon(languageAddon->ID());
+    }
+  }
+
   if (languageAddon == NULL)
   {
     CLog::Log(LOGWARNING, "CLangInfo: unable to load language \"%s\". Trying to determine matching language addon...", language.c_str());
@@ -658,12 +704,14 @@ bool CLangInfo::SetLanguage(bool& fallback, const std::string &strLanguage /* = 
       if (addondb.Open())
       {
         // update the addon repositories to check if there's a matching language addon available for download
-        ADDON::CRepositoryUpdater::GetInstance().CheckForUpdates();
-        ADDON::CRepositoryUpdater::GetInstance().Await();
+        if (ADDON::CRepositoryUpdater::GetInstance().CheckForUpdates())
+          ADDON::CRepositoryUpdater::GetInstance().Await();
 
         ADDON::VECADDONS languageAddons;
-        if (addondb.GetAddons(languageAddons, ADDON::ADDON_RESOURCE_LANGUAGE) && !languageAddons.empty())
+        if (addondb.GetRepositoryContent(languageAddons) && !languageAddons.empty())
         {
+          languageAddons.erase(std::remove_if(languageAddons.begin(), languageAddons.end(),
+              [](const ADDON:: AddonPtr& addon){ return !addon->IsType(ADDON::ADDON_RESOURCE_LANGUAGE); }), languageAddons.end());
           // try to get the proper language addon by its name from all available language addons
           if (ADDON::CLanguageResource::FindLanguageAddonByName(language, newLanguage, languageAddons))
           {
@@ -712,6 +760,17 @@ bool CLangInfo::SetLanguage(bool& fallback, const std::string &strLanguage /* = 
   {
     CLog::LogF(LOGFATAL, "CLangInfo: failed to load %s language strings", language.c_str());
     return false;
+  }
+
+  ADDON::VECADDONS addons;
+  if (ADDON::CAddonMgr::GetInstance().GetInstalledAddons(addons))
+  {
+    auto locale = CSettings::GetInstance().GetString(CSettings::SETTING_LOCALE_LANGUAGE);
+    for (const auto& addon : addons)
+    {
+      auto path = URIUtils::AddFileToFolder(addon->Path(), "resources", "language/");
+      g_localizeStrings.LoadAddonStrings(path, locale, addon->ID());
+    }
   }
 
   if (reloadServices)
@@ -767,7 +826,7 @@ const std::string CLangInfo::GetDVDMenuLanguage() const
   std::string code;
   if (!g_LangCodeExpander.ConvertToISO6391(m_currentRegion->m_strLangLocaleName, code))
     code = m_strDVDMenuLanguage;
-  
+
   return code;
 }
 
@@ -777,7 +836,7 @@ const std::string CLangInfo::GetDVDAudioLanguage() const
   std::string code;
   if (!g_LangCodeExpander.ConvertToISO6391(m_audioLanguage, code))
     code = m_strDVDAudioLanguage;
-  
+
   return code;
 }
 
@@ -787,7 +846,7 @@ const std::string CLangInfo::GetDVDSubtitleLanguage() const
   std::string code;
   if (!g_LangCodeExpander.ConvertToISO6391(m_subtitleLanguage, code))
     code = m_strDVDSubtitleLanguage;
-  
+
   return code;
 }
 
@@ -803,6 +862,11 @@ const CLocale& CLangInfo::GetLocale() const
 const std::string& CLangInfo::GetRegionLocale() const
 {
   return m_currentRegion->m_strRegionLocaleName;
+}
+
+const std::locale& CLangInfo::GetOriginalLocale() const
+{
+  return m_originalLocale;
 }
 
 // Returns the format string for the date of the current language
@@ -936,7 +1000,7 @@ void CLangInfo::GetRegionNames(std::vector<std::string>& array)
     std::string strName=it->first;
     if (strName=="N/A")
       strName=g_localizeStrings.Get(416);
-    array.push_back(strName);
+    array.emplace_back(std::move(strName));
   }
 }
 
@@ -1122,11 +1186,11 @@ void CLangInfo::SettingOptionsLanguageNamesFiller(const CSetting *setting, std::
 {
   // find languages...
   ADDON::VECADDONS addons;
-  if (!ADDON::CAddonMgr::GetInstance().GetAddons(ADDON::ADDON_RESOURCE_LANGUAGE, addons, true))
+  if (!ADDON::CAddonMgr::GetInstance().GetAddons(addons, ADDON::ADDON_RESOURCE_LANGUAGE))
     return;
 
   for (ADDON::VECADDONS::const_iterator addon = addons.begin(); addon != addons.end(); ++addon)
-    list.push_back(make_pair((*addon)->Name(), (*addon)->Name()));
+    list.emplace_back((*addon)->Name(), (*addon)->Name());
 
   sort(list.begin(), list.end(), SortLanguage());
 }
@@ -1137,31 +1201,31 @@ void CLangInfo::SettingOptionsISO6391LanguagesFiller(const CSetting *setting, st
   std::vector<std::string> languages = g_LangCodeExpander.GetLanguageNames(CLangCodeExpander::ISO_639_1, true);
   sort(languages.begin(), languages.end(), sortstringbyname());
   for (std::vector<std::string>::const_iterator language = languages.begin(); language != languages.end(); ++language)
-    list.push_back(std::make_pair(*language, *language));
+    list.emplace_back(*language, *language);
 }
 
 void CLangInfo::SettingOptionsAudioStreamLanguagesFiller(const CSetting *setting, std::vector< std::pair<std::string, std::string> > &list, std::string &current, void *data)
 {
-  list.push_back(make_pair(g_localizeStrings.Get(308), "original"));
-  list.push_back(make_pair(g_localizeStrings.Get(309), "default"));
+  list.emplace_back(g_localizeStrings.Get(308), "original");
+  list.emplace_back(g_localizeStrings.Get(309), "default");
 
   AddLanguages(list);
 }
 
 void CLangInfo::SettingOptionsSubtitleStreamLanguagesFiller(const CSetting *setting, std::vector< std::pair<std::string, std::string> > &list, std::string &current, void *data)
 {
-  list.push_back(make_pair(g_localizeStrings.Get(231), "none"));
-  list.push_back(make_pair(g_localizeStrings.Get(13207), "forced_only"));
-  list.push_back(make_pair(g_localizeStrings.Get(308), "original"));
-  list.push_back(make_pair(g_localizeStrings.Get(309), "default"));
+  list.emplace_back(g_localizeStrings.Get(231), "none");
+  list.emplace_back(g_localizeStrings.Get(13207), "forced_only");
+  list.emplace_back(g_localizeStrings.Get(308), "original");
+  list.emplace_back(g_localizeStrings.Get(309), "default");
 
   AddLanguages(list);
 }
 
 void CLangInfo::SettingOptionsSubtitleDownloadlanguagesFiller(const CSetting *setting, std::vector< std::pair<std::string, std::string> > &list, std::string &current, void *data)
 {
-  list.push_back(make_pair(g_localizeStrings.Get(308), "original"));
-  list.push_back(make_pair(g_localizeStrings.Get(309), "default"));
+  list.emplace_back(g_localizeStrings.Get(308), "original");
+  list.emplace_back(g_localizeStrings.Get(309), "default");
 
   AddLanguages(list);
 }
@@ -1176,7 +1240,7 @@ void CLangInfo::SettingOptionsRegionsFiller(const CSetting *setting, std::vector
   for (unsigned int i = 0; i < regions.size(); ++i)
   {
     std::string region = regions[i];
-    list.push_back(std::make_pair(region, region));
+    list.emplace_back(region, region);
 
     if (!match && region == ((CSettingString*)setting)->GetValue())
     {
@@ -1185,7 +1249,7 @@ void CLangInfo::SettingOptionsRegionsFiller(const CSetting *setting, std::vector
     }
   }
 
-  if (!match && regions.size() > 0)
+  if (!match && !regions.empty())
     current = regions[0];
 }
 

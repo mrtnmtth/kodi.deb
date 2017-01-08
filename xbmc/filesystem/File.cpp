@@ -31,7 +31,6 @@
 #include "utils/URIUtils.h"
 #include "utils/BitstreamStats.h"
 #include "Util.h"
-#include "URL.h"
 #include "utils/StringUtils.h"
 
 #include "commons/Exception.h"
@@ -105,19 +104,27 @@ bool CFile::Copy(const CURL& url2, const CURL& dest, XFILE::IFileCallback* pCall
 #else
         pathsep = "/";
 #endif
-        StringUtils::Tokenize(url.GetFileName(),tokens,pathsep.c_str());
-        std::string strCurrPath;
-        // Handle special
-        if (!url.GetProtocol().empty()) {
-          pathsep = "/";
-          strCurrPath += url.GetProtocol() + "://";
-        } // If the directory has a / at the beginning, don't forget it
-        else if (strDirectory[0] == pathsep[0])
-          strCurrPath += pathsep;
-        for (std::vector<std::string>::iterator iter=tokens.begin();iter!=tokens.end();++iter)
+        // Try to use the recursive creation first, if it fails
+        // it might not be implemented for that subsystem so let's
+        // fall back to the old method in that case
+        if (!CDirectory::Create(url))
         {
-          strCurrPath += *iter+pathsep;
-          CDirectory::Create(strCurrPath);
+          StringUtils::Tokenize(url.GetFileName(), tokens, pathsep.c_str());
+          std::string strCurrPath;
+          // Handle special
+          if (!url.GetProtocol().empty())
+          {
+            pathsep = "/";
+            strCurrPath += url.GetProtocol() + "://";
+          } // If the directory has a / at the beginning, don't forget it
+          else if (strDirectory[0] == pathsep[0])
+            strCurrPath += pathsep;
+
+          for (std::vector<std::string>::iterator iter = tokens.begin(); iter != tokens.end(); ++iter)
+          {
+            strCurrPath += *iter + pathsep;
+            CDirectory::Create(strCurrPath);
+          }
         }
       }
     }
@@ -209,6 +216,44 @@ bool CFile::Copy(const CURL& url2, const CURL& dest, XFILE::IFileCallback* pCall
 }
 
 //*********************************************************************************************
+
+bool CFile::CURLCreate(const std::string &url)
+{
+  m_curl.Parse(url);
+  return true;
+}
+
+bool CFile::CURLAddOption(XFILE::CURLOPTIONTYPE type, const char* name, const char * value)
+{
+  switch (type){
+  case XFILE::CURL_OPTION_CREDENTIALS:
+  {
+    m_curl.SetUserName(name);
+    m_curl.SetPassword(value);
+    break;
+  }
+  case XFILE::CURL_OPTION_PROTOCOL:
+  case XFILE::CURL_OPTION_HEADER:
+  {
+    m_curl.SetProtocolOption(name, value);
+    break;
+  }
+  case XFILE::CURL_OPTION_OPTION:
+  {
+    m_curl.SetOption(name, value);
+    break;
+  }
+  default:
+    return false;
+  }
+  return true;
+}
+
+bool CFile::CURLOpen(unsigned int flags)
+{
+  return Open(m_curl, flags);
+}
+
 bool CFile::Open(const std::string& strFileName, const unsigned int flags)
 {
   const CURL pathToUrl(strFileName);
@@ -217,22 +262,34 @@ bool CFile::Open(const std::string& strFileName, const unsigned int flags)
 
 bool CFile::Open(const CURL& file, const unsigned int flags)
 {
+  if (m_pFile)
+  {
+    if ((flags & READ_REOPEN) == 0)
+    {
+      CLog::Log(LOGERROR, "File::Open - already open: %s", file.GetRedacted().c_str());
+      return false;      
+    }
+    else
+    {
+      return m_pFile->ReOpen(URIUtils::SubstitutePath(file));
+    }
+  }
+
   m_flags = flags;
   try
   {
     bool bPathInCache;
-    CURL url2(URIUtils::SubstitutePath(file));
-    if (url2.IsProtocol("apk"))
+
+    CURL url(URIUtils::SubstitutePath(file)), url2(url);
+
+    if (url2.IsProtocol("apk") || url2.IsProtocol("zip") )
       url2.SetOptions("");
-    if (url2.IsProtocol("zip"))
-      url2.SetOptions("");
+
     if (!g_directoryCache.FileExists(url2.Get(), bPathInCache) )
     {
       if (bPathInCache)
         return false;
     }
-
-    CURL url(URIUtils::SubstitutePath(file));
 
     if (!(m_flags & READ_NO_CACHE))
     {
@@ -244,11 +301,15 @@ bool CFile::Open(const CURL& file, const unsigned int flags)
       {
         // for internet stream, if it contains multiple stream, file cache need handle it specially.
         m_pFile = new CFileCache(m_flags);
+
+        if (!m_pFile)
+          return false;
+
         return m_pFile->Open(url);
       }
     }
-
     m_pFile = CFileFactory::CreateLoader(url);
+
     if (!m_pFile)
       return false;
 
@@ -333,6 +394,7 @@ bool CFile::OpenForWrite(const CURL& file, bool bOverWrite)
     CURL url = URIUtils::SubstitutePath(file);
 
     m_pFile = CFileFactory::CreateLoader(url);
+
     if (m_pFile && m_pFile->OpenForWrite(url, bOverWrite))
     {
       // add this file to our directory cache (if it's stored)
@@ -977,6 +1039,13 @@ ssize_t CFile::LoadFile(const CURL& file, auto_buffer& outputBuffer)
   outputBuffer.resize(total_read);
 
   return total_read;
+}
+
+double CFile::GetDownloadSpeed()
+{
+  if (m_pFile)
+    return m_pFile->GetDownloadSpeed();
+  return 0.0f;
 }
 
 //*********************************************************************************************

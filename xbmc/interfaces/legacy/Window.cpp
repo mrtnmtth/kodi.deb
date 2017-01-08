@@ -22,7 +22,6 @@
 #include "WindowInterceptor.h"
 #include "guilib/GUIButtonControl.h"
 #include "guilib/GUIEditControl.h"
-#include "guilib/GUICheckMarkControl.h"
 #include "guilib/GUIRadioButtonControl.h"
 #include "guilib/GUIWindowManager.h"
 #include "Application.h"
@@ -144,8 +143,14 @@ namespace XBMCAddon
     {
       XBMC_TRACE;
 
-      // this is called from non-scripting-language callstacks. Don't use the delayed call guard.
-      CSingleLock lock(g_graphicsContext);
+      //! @todo rework locking
+      // Python GIL and g_graphicsContext are deadlock happy
+      // dispose is called from GUIWindowManager and in this case DelayGuard must not be used.
+      if (!g_application.IsCurrentThread())
+      {
+        SingleLockWithDelayGuard gslock(g_graphicsContext, languageHook);
+      }
+
       if (!isDisposed)
       {
         isDisposed = true;
@@ -169,13 +174,13 @@ namespace XBMCAddon
         }
         else
         {
-          // BUG:
-          // This is an existing window, so no resources are free'd.  Note that
-          // THIS WILL FAIL for any controls newly created by python - they will
-          // remain after the script ends.  Ideally this would be remedied by
-          // a flag in Control that specifies that it was python created - any python
-          // created controls could then be removed + free'd from the window.
-          // how this works with controlgroups though could be a bit tricky.
+          //! @bug
+          //! This is an existing window, so no resources are free'd.  Note that
+          //! THIS WILL FAIL for any controls newly created by python - they will
+          //! remain after the script ends.  Ideally this would be remedied by
+          //! a flag in Control that specifies that it was python created - any python
+          //! created controls could then be removed + free'd from the window.
+          //! how this works with controlgroups though could be a bit tricky.
         }
 
         // and free our list of controls
@@ -277,7 +282,7 @@ namespace XBMCAddon
 
       Control* pControl = NULL;
 
-      // TODO: Yuck! Should probably be done with a Factory pattern
+      //! @todo Yuck! Should probably be done with a Factory pattern
       switch(pGUIControl->GetControlType())
       {
       case CGUIControl::GUICONTROL_BUTTON:
@@ -293,18 +298,6 @@ namespace XBMCAddon
         if (li.font) ((ControlButton*)pControl)->strFont = li.font->GetFontName();
         ((ControlButton*)pControl)->align = li.align;
         break;
-      case CGUIControl::GUICONTROL_CHECKMARK:
-        pControl = new ControlCheckMark();
-
-        li = ((CGUICheckMarkControl *)pGUIControl)->GetLabelInfo();
-
-        // note: conversion to plain colors from infocolors.
-        ((ControlCheckMark*)pControl)->disabledColor = li.disabledColor;
-        //((ControlCheckMark*)pControl)->shadowColor = li.shadowColor;
-        ((ControlCheckMark*)pControl)->textColor  = li.textColor;
-        if (li.font) ((ControlCheckMark*)pControl)->strFont = li.font->GetFontName();
-        ((ControlCheckMark*)pControl)->align = li.align;
-        break;
       case CGUIControl::GUICONTROL_LABEL:
         pControl = new ControlLabel();
         break;
@@ -318,6 +311,7 @@ namespace XBMCAddon
         pControl = new ControlTextBox();
         break;
       case CGUIControl::GUICONTROL_IMAGE:
+      case CGUIControl::GUICONTROL_BORDEREDIMAGE:
         pControl = new ControlImage();
         break;
       case CGUIControl::GUICONTROL_PROGRESS:
@@ -691,9 +685,9 @@ namespace XBMCAddon
 
         while (bModal && !g_application.m_bStop)
         {
-// TODO: garbear added this code to the pythin window.cpp class and
-//  commented in XBPyThread.cpp. I'm not sure how to handle this 
-//  in this native implementation.
+//! @todo garbear added this code to the pythin window.cpp class and
+//!  commented in XBPyThread.cpp. I'm not sure how to handle this 
+//! in this native implementation.
 //          // Check if XBPyThread::stop() raised a SystemExit exception
 //          if (PyThreadState_Get()->async_exc == PyExc_SystemExit)
 //          {

@@ -1,9 +1,10 @@
 abs_top_srcdir=@abs_top_srcdir@
 
+DEBUG_BUILD=@use_debug@
 TOOLCHAIN=@use_toolchain@
 NDKROOT=@use_ndk@
 SDKROOT=@use_sdk_path@
-XBMCROOT=$(abspath $(abs_top_srcdir)/../../)
+CORE_SOURCE_DIR=$(abspath $(abs_top_srcdir)/../../)
 TARBALLS_LOCATION=@use_tarballs@
 PLATFORM=@deps_dir@
 HOST=@use_host@
@@ -20,7 +21,7 @@ NATIVE_OS=@build_os@
 CROSS_COMPILING=@cross_compiling@
 ARCH_DEFINES=@ARCH_DEFINES@
 NATIVE_ARCH_DEFINES=@NATIVE_ARCH_DEFINES@
-TARGET_PLATFORM=@use_platform@
+TARGET_PLATFORM=@target_platform@
 XCODE_VERSION=@use_xcode@
 AAPT=@AAPT@
 DX=@DX@
@@ -38,8 +39,8 @@ BASE_URL=$(KODI_MIRROR)/build-deps/sources
 endif
 RETRIEVE_TOOL_FLAGS=-Ls --create-dirs -f -O
 ARCHIVE_TOOL_FLAGS=--strip-components=1 -xf
-CONFIG_SUB=@prefix@/@tool_dir@/share/automake-1.11/config.sub
-CONFIG_GUESS=@prefix@/@tool_dir@/share/automake-1.11/config.guess
+CONFIG_SUB=@prefix@/@tool_dir@/share/automake-1.15/config.sub
+CONFIG_GUESS=@prefix@/@tool_dir@/share/automake-1.15/config.guess
 
 RPL=@prefix@/@tool_dir@/bin/python @prefix@/@tool_dir@/bin/rpl
 
@@ -57,7 +58,7 @@ OBJDUMP=@OBJDUMP@
 
 CMAKE=@prefix@/@tool_dir@/bin/cmake -DCMAKE_TOOLCHAIN_FILE=$(PREFIX)/share/Toolchain.cmake -DCMAKE_INSTALL_PREFIX=$(PREFIX)
 CFLAGS=@platform_cflags@ @platform_includes@ -isystem @prefix@/@deps_dir@/include
-LDFLAGS=-L@prefix@/@deps_dir@/lib @platform_ldflags@
+LDFLAGS=-L@prefix@/@deps_dir@/lib -L@prefix@/@deps_dir@/lib64 @platform_ldflags@
 CXXFLAGS=@platform_cxxflags@ @platform_includes@ -isystem @prefix@/@deps_dir@/include
 CPPFLAGS=@platform_cflags@ @platform_includes@ -isystem @prefix@/@deps_dir@/include
 
@@ -82,6 +83,9 @@ NATIVE_CPPFLAGS=-I@prefix@/@tool_dir@/include
 NATIVE_CXXFLAGS=-I@prefix@/@tool_dir@/include
 
 
+ifeq ($(CPU), arm64)
+  export GASPP_FIX_XCODE5=1
+endif
 export AUTOM4TE=@prefix@/@tool_dir@/bin/autom4te
 export AUTOMAKE=@prefix@/@tool_dir@/bin/automake
 export AUTOCONF=@prefix@/@tool_dir@/bin/autoconf

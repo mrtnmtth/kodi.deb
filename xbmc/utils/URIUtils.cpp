@@ -1,6 +1,6 @@
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://xbmc.org
+ *      Copyright (C) 2005-2015 Team Kodi
+ *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
+ *  along with Kodi; see the file COPYING.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
@@ -35,14 +35,6 @@
 #include <arpa/inet.h>
 
 using namespace XFILE;
-
-bool URIUtils::IsInPath(const std::string &uri, const std::string &baseURI)
-{
-  std::string uriPath = CSpecialProtocol::TranslatePath(uri);
-  std::string basePath = CSpecialProtocol::TranslatePath(baseURI);
-
-  return !basePath.empty() && StringUtils::StartsWith(uriPath, basePath);
-}
 
 /* returns filename extension including period of filename */
 std::string URIUtils::GetExtension(const CURL& url)
@@ -140,9 +132,9 @@ void URIUtils::RemoveExtension(std::string& strFileName)
     strFileMask += "|" + g_advancedSettings.m_videoExtensions;
     strFileMask += "|" + g_advancedSettings.m_subtitlesExtensions;
 #if defined(TARGET_DARWIN)
-    strFileMask += "|.py|.xml|.milk|.xpr|.xbt|.cdg|.app|.applescript|.workflow";
+    strFileMask += "|.py|.xml|.milk|.xbt|.cdg|.app|.applescript|.workflow";
 #else
-    strFileMask += "|.py|.xml|.milk|.xpr|.xbt|.cdg";
+    strFileMask += "|.py|.xml|.milk|.xbt|.cdg";
 #endif
     strFileMask += "|";
 
@@ -360,9 +352,9 @@ bool URIUtils::GetParentPath(const std::string& strPath, std::string& strParent)
     if(strFile.rfind('/') == std::string::npos)
       return false;
   }
-  else if (strFile.size() == 0)
+  else if (strFile.empty())
   {
-    if (url.GetHostName().size() > 0)
+    if (!url.GetHostName().empty())
     {
       // we have an share with only server or workgroup name
       // set hostname to "" and return true to get back to root
@@ -517,23 +509,32 @@ bool URIUtils::IsProtocol(const std::string& url, const std::string &type)
   return StringUtils::StartsWithNoCase(url, type + "://");
 }
 
-bool URIUtils::PathStarts(const std::string& url, const char *start)
+bool URIUtils::PathHasParent(std::string path, std::string parent, bool translate /* = false */)
 {
-  return StringUtils::StartsWith(url, start);
+  if (translate)
+  {
+    path = CSpecialProtocol::TranslatePath(path);
+    parent = CSpecialProtocol::TranslatePath(parent);
+  }
+
+  if (parent.empty())
+    return false;
+
+  if (path == parent)
+    return true;
+
+  // Make sure parent has a trailing slash
+  AddSlashAtEnd(parent);
+
+  return StringUtils::StartsWith(path, parent);
 }
 
-bool URIUtils::PathEquals(const std::string& url, const std::string &start, bool ignoreTrailingSlash /* = false */, bool ignoreURLOptions /* = false */)
+bool URIUtils::PathEquals(std::string path1, std::string path2, bool ignoreTrailingSlash /* = false */, bool ignoreURLOptions /* = false */)
 {
-  std::string path1, path2;
   if (ignoreURLOptions)
   {
-    path1 = CURL(url).GetWithoutOptions();
-    path2 = CURL(start).GetWithoutOptions();
-  }
-  else
-  {
-    path1 = url;
-    path2 = start;
+    path1 = CURL(path1).GetWithoutOptions();
+    path2 = CURL(path2).GetWithoutOptions();
   }
 
   if (ignoreTrailingSlash)
@@ -542,7 +543,7 @@ bool URIUtils::PathEquals(const std::string& url, const std::string &start, bool
     RemoveSlashAtEnd(path2);
   }
 
-  return path1 == path2;
+  return (path1 == path2);
 }
 
 bool URIUtils::IsRemote(const std::string& strFile)
@@ -784,12 +785,10 @@ bool URIUtils::IsArchive(const std::string& strFile)
 
 bool URIUtils::IsSpecial(const std::string& strFile)
 {
-  std::string strFile2(strFile);
-
   if (IsStack(strFile))
-    strFile2 = CStackDirectory::GetFirstStackedFile(strFile);
+    return IsSpecial(CStackDirectory::GetFirstStackedFile(strFile));
 
-  return IsProtocol(strFile2, "special");
+  return IsProtocol(strFile, "special");
 }
 
 bool URIUtils::IsPlugin(const std::string& strFile)
@@ -880,39 +879,33 @@ bool URIUtils::IsHTTP(const std::string& strFile)
 
 bool URIUtils::IsUDP(const std::string& strFile)
 {
-  std::string strFile2(strFile);
-
   if (IsStack(strFile))
-    strFile2 = CStackDirectory::GetFirstStackedFile(strFile);
+    return IsUDP(CStackDirectory::GetFirstStackedFile(strFile));
 
-  return IsProtocol(strFile2, "udp");
+  return IsProtocol(strFile, "udp");
 }
 
 bool URIUtils::IsTCP(const std::string& strFile)
 {
-  std::string strFile2(strFile);
-
   if (IsStack(strFile))
-    strFile2 = CStackDirectory::GetFirstStackedFile(strFile);
+    return IsTCP(CStackDirectory::GetFirstStackedFile(strFile));
 
-  return IsProtocol(strFile2, "tcp");
+  return IsProtocol(strFile, "tcp");
 }
 
 bool URIUtils::IsPVRChannel(const std::string& strFile)
 {
-  std::string strFile2(strFile);
-
   if (IsStack(strFile))
-    strFile2 = CStackDirectory::GetFirstStackedFile(strFile);
+    return IsPVRChannel(CStackDirectory::GetFirstStackedFile(strFile));
 
-  return StringUtils::StartsWithNoCase(strFile2, "pvr://channels");
+  return StringUtils::StartsWithNoCase(strFile, "pvr://channels");
 }
 
 bool URIUtils::IsPVRGuideItem(const std::string& strFile)
 {
   if (IsStack(strFile))
     return IsPVRGuideItem(CStackDirectory::GetFirstStackedFile(strFile));
-  
+
   return StringUtils::StartsWithNoCase(strFile, "pvr://guide");
 }
 
@@ -977,8 +970,7 @@ bool URIUtils::IsLiveTV(const std::string& strFile)
   std::string strFileWithoutSlash(strFile);
   RemoveSlashAtEnd(strFileWithoutSlash);
 
-  if (IsProtocol(strFile, "sap")
-  ||(StringUtils::EndsWithNoCase(strFileWithoutSlash, ".pvr") && !PathStarts(strFileWithoutSlash, "pvr://recordings")))
+  if (StringUtils::EndsWithNoCase(strFileWithoutSlash, ".pvr") && !StringUtils::StartsWith(strFileWithoutSlash, "pvr://recordings"))
     return true;
 
   return false;
@@ -990,7 +982,7 @@ bool URIUtils::IsPVRRecording(const std::string& strFile)
   RemoveSlashAtEnd(strFileWithoutSlash);
 
   return StringUtils::EndsWithNoCase(strFileWithoutSlash, ".pvr") &&
-         PathStarts(strFile, "pvr://recordings");
+         StringUtils::StartsWith(strFile, "pvr://recordings");
 }
 
 bool URIUtils::IsMusicDb(const std::string& strFile)
@@ -1097,6 +1089,10 @@ bool URIUtils::HasSlashAtEnd(const std::string& strFile, bool checkURL /* = fals
 
 void URIUtils::RemoveSlashAtEnd(std::string& strFolder)
 {
+  // performance optimization. pvr guide items are mass objects, uri never has a slash at end, and this method is quite expensive...
+  if (IsPVRGuideItem(strFolder))
+    return;
+
   if (IsURL(strFolder))
   {
     CURL url(strFolder);

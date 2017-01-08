@@ -27,9 +27,11 @@
 #include <conio.h>
 #else
 #include <sys/utsname.h>
+#include "linux/XFileUtils.h"
 #endif
 #include "guiinfo/GUIInfoLabels.h"
 #include "filesystem/CurlFile.h"
+#include "filesystem/File.h"
 #include "network/Network.h"
 #include "Application.h"
 #include "windowing/WindowingFactory.h"
@@ -47,15 +49,17 @@
 #include "utils/CharsetConverter.h"
 #endif
 #if defined(TARGET_DARWIN)
-#include "osx/DarwinUtils.h"
-#include "osx/CocoaInterface.h"
+#include "platform/darwin/DarwinUtils.h"
+#include "platform/darwin/osx/CocoaInterface.h"
 #endif
 #include "powermanagement/PowerManager.h"
 #include "utils/StringUtils.h"
 #include "utils/XMLUtils.h"
 #if defined(TARGET_ANDROID)
-#include "android/jni/Build.h"
+#include "platform/android/jni/Build.h"
+#if defined(HAS_LIBAMCODEC)
 #include "utils/AMLUtils.h"
+#endif
 #endif
 
 /* Platform identification */
@@ -76,6 +80,8 @@
 /* Expand macro before stringify */
 #define STR_MACRO(x) #x
 #define XSTR_MACRO(x) STR_MACRO(x)
+
+using namespace XFILE;
 
 #ifdef TARGET_WINDOWS
 static bool sysGetVersionExWByRef(OSVERSIONINFOEXW& osVerInfo)
@@ -217,6 +223,7 @@ static std::string getValueFromLsb_release(enum lsb_rel_info_type infoType)
   default:
     return "";
   }
+  command += " 2>/dev/null";
   FILE* lsb_rel = popen(command.c_str(), "r");
   if (lsb_rel == NULL)
     return "";
@@ -866,8 +873,10 @@ bool CSysInfo::IsAeroDisabled()
 bool CSysInfo::HasHW3DInterlaced()
 {
 #if defined(TARGET_ANDROID)
+#if defined(HAS_LIBAMCODEC)
   if (aml_hw3d_present())
     return true;
+#endif
 #endif
   return false;
 }
@@ -944,7 +953,7 @@ int CSysInfo::GetKernelBitness(void)
     {
       std::string machine(un.machine);
       if (machine == "x86_64" || machine == "amd64" || machine == "arm64" || machine == "aarch64" || machine == "ppc64" ||
-          machine == "ia64" || machine == "mips64")
+          machine == "ia64" || machine == "mips64" || machine == "s390x")
         kernelBitness = 64;
       else
         kernelBitness = 32;
@@ -991,12 +1000,14 @@ const std::string& CSysInfo::GetKernelCpuFamily(void)
     if (uname(&un) == 0)
     {
       std::string machine(un.machine);
-      if (machine.compare(0, 3, "arm", 3) == 0)
+      if (machine.compare(0, 3, "arm", 3) == 0 || machine.compare(0, 7, "aarch64", 7) == 0)
         kernelCpuFamily = "ARM";
       else if (machine.compare(0, 4, "mips", 4) == 0)
         kernelCpuFamily = "MIPS";
       else if (machine.compare(0, 4, "i686", 4) == 0 || machine == "i386" || machine == "amd64" ||  machine.compare(0, 3, "x86", 3) == 0)
         kernelCpuFamily = "x86";
+      else if (machine.compare(0, 4, "s390", 4) == 0)
+        kernelCpuFamily = "s390";
       else if (machine.compare(0, 3, "ppc", 3) == 0 || machine.compare(0, 5, "power", 5) == 0)
         kernelCpuFamily = "PowerPC";
     }
@@ -1009,16 +1020,7 @@ const std::string& CSysInfo::GetKernelCpuFamily(void)
 
 int CSysInfo::GetXbmcBitness(void)
 {
-#if defined (__aarch64__) || defined(__arm64__) || defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(_M_X64) || \
-  defined(_M_AMD64) || defined(__ppc64__) || defined(__mips64)
-  return 64;
-#elif defined(__thumb__) || defined(_M_ARMT) || defined(__arm__) || defined(_M_ARM) || defined(__mips__) || defined(mips) || defined(__mips) || defined(i386) || \
-  defined(__i386) || defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__) || defined(_M_IX86) || defined(_X86_) || defined(__powerpc) || \
-  defined(__powerpc__) || defined(__ppc__) || defined(_M_PPC)
-  return 32;
-#else
-  return 0; // Unknown
-#endif
+  return static_cast<int>(sizeof(void*) * 8);
 }
 
 bool CSysInfo::HasInternet()
@@ -1372,6 +1374,8 @@ std::string CSysInfo::GetBuildTargetCpuFamily(void)
 #elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(_M_X64) || defined(_M_AMD64) || \
    defined(i386) || defined(__i386) || defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__) || defined(_M_IX86) || defined(_X86_)
   return "x86";
+#elif defined(__s390x__)
+  return "s390";
 #elif defined(__powerpc) || defined(__powerpc__) || defined(__powerpc64__) || defined(__ppc__) || defined(__ppc64__) || defined(_M_PPC)
   return "PowerPC";
 #else
@@ -1406,6 +1410,22 @@ std::string CSysInfo::GetUsedCompilerNameAndVer(void)
 #endif
 }
 
+std::string CSysInfo::GetPrivacyPolicy()
+{
+  if (m_privacyPolicy.empty())
+  {
+    CFile file;
+    XFILE::auto_buffer buf;
+    if (file.LoadFile("special://xbmc/privacy-policy.txt", buf) > 0)
+    {
+      std::string strBuf(buf.get(), buf.length());
+      m_privacyPolicy = strBuf;
+    }
+    else
+      m_privacyPolicy = g_localizeStrings.Get(19055);
+  }
+  return m_privacyPolicy;
+}
 
 CJob *CSysInfo::GetJob() const
 {

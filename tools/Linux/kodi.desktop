@@ -1,7 +1,7 @@
 [Desktop Entry]
 Version=1.0
-Name=Kodi media center
-GenericName=Media center
+Name=Kodi
+GenericName=Media Center
 Comment=Manage and view your media
 Exec=kodi
 Icon=kodi
@@ -14,9 +14,7 @@ Actions=Fullscreen;Standalone;
 [Desktop Action Fullscreen]
 Name=Open in fullscreen
 Exec=kodi -fs
-OnlyShowIn=Unity;
 
 [Desktop Action Standalone]
 Name=Open in standalone mode
 Exec=kodi --standalone
-OnlyShowIn=Unity;

@@ -19,12 +19,12 @@
  *
  */
 
+#include <vector>
+
 #include "dbwrappers/Database.h"
 #include "utils/log.h"
 
 #include "pvr/PVRManager.h"
-
-class CVideoSettings;
 
 namespace PVR
 {
@@ -72,13 +72,6 @@ namespace PVR
      * @return True if all channels were removed, false otherwise.
      */
     bool DeleteChannels(void);
-
-    /*!
-     * @brief Remove all channels from a client from the database.
-     * @param client The client to delete the channels for.
-     * @return True if the channels were deleted, false otherwise.
-     */
-    bool DeleteClientChannels(const CPVRClient &client);
 
     /*!
      * @brief Add or update a channel entry in the database
@@ -173,7 +166,6 @@ namespace PVR
     void CreateTables();
     void CreateAnalytics();
 
-    bool DeleteChannelsFromGroup(const CPVRChannelGroup &group);
     bool DeleteChannelsFromGroup(const CPVRChannelGroup &group, const std::vector<int> &channelsToDelete);
 
     bool GetCurrentGroupMembers(const CPVRChannelGroup &group, std::vector<int> &members);
@@ -192,20 +184,4 @@ namespace PVR
 
     bool RemoveChannelsFromGroup(const CPVRChannelGroup &group);
   };
-
-  /*!
-   * @brief Try to open the PVR database.
-   * @return The opened database or NULL if the database failed to open.
-   */
-  inline CPVRDatabase *GetPVRDatabase(void)
-  {
-    CPVRDatabase *database = g_PVRManager.GetTVDatabase();
-    if (!database || !database->IsOpen())
-    {
-      CLog::Log(LOGERROR, "PVR - failed to open the database");
-      database = NULL;
-    }
-
-    return database;
-  }
 }

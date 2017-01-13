@@ -139,13 +139,11 @@ Architecture: all
 Multi-Arch: foreign
 Depends: mesa-utils,
          x11-utils,
-         fonts-dejavu-core,
-         fonts-lato,
          fonts-noto-hinted,
+         fonts-roboto-hinted,
          libjs-jquery,
          libjs-iscroll,
          python-imaging,
-         fonts-anonymous-pro | ttf-anonymous-pro,
          ${python:Depends},
          ${misc:Depends}
 Replaces: xbmc (<< 2:13.2+dfsg1-5~), kodi (<< 15.2~rc1+dfsg1-2~)

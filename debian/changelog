@@ -1,6 +1,11 @@
-kodi (2:17.0~rc2+dfsg1-2) UNRELEASED; urgency=medium
+kodi (2:17.0~rc3+dfsg1-1) UNRELEASED; urgency=medium
 
-  *
+  * Make default lirc device match lirc package's default (Closes: #850467)
+  * Stop passing ./configure flags which are not supported anymore
+  * Update fonts and font dependencies
+  * Imported Upstream version 17.0~rc3+dfsg1
+    See: https://kodi.tv/kodi-v17-0-krypton-release-candidate-3/
+  * Refresh patches
 
  -- Balint Reczey <balint@balintreczey.hu>  Sat, 07 Jan 2017 02:47:10 +0100
 

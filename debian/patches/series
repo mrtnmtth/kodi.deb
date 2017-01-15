@@ -7,6 +7,7 @@
 0007-Revert-cec-add-CEC-IMX-adapter-as-known-type-and-set.patch
 0008-Revert-cec-Added-advanced-settings-for-action-when-T.patch
 0009-Revert-cec-bump-to-libCEC-4.0.0.patch
+0010-Autotools-Fake-empty-AE-override.patch
 01_reproducible_build.patch
 02_allow_all_arches.patch
 03-privacy.patch

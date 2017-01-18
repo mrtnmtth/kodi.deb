@@ -76,7 +76,7 @@ show-kodi-config-options:
 	$(info $(KODI_CONFIG_OPTIONS))
 
 %:
-	dh $@ --with autoreconf --with python2 --parallel
+	dh $@ --with python2
 
 override_dh_clean:
 	dh_clean libtool xbmc/config.h xbmc/stamp-h1

@@ -87,7 +87,7 @@ override_dh_clean:
 		-d $(DVDNAV_COMPONENT) || true
 	ls $(CURDIR)/debian/patches/libdvdread-* | tac | xargs cat | patch -R --no-backup-if-mismatch -r - -s -p1 \
 		-d $(DVDREAD_COMPONENT) || true
-	rm -f addons/webinterface.default
+	rm -rf $(CURDIR)/addons/webinterface.default
 	rm -f debian/dh-addon/*.1
 
 override_dh_auto_clean:

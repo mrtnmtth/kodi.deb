@@ -1,8 +1,12 @@
-kodi (2:17.0~rc3+dfsg1-2) UNRELEASED; urgency=medium
+kodi (2:17.0~rc3+dfsg1-2) unstable; urgency=medium
 
-  *
+  * Bump debhelper compat level to 10.
+    Remove --parallel and --with autoreconf since those are now defaults
+  * Build-depend on libcec-dev >= 4~ (Closes: #852216)
+  * Fix make clean in debian/rules
+  * Use real dlopen() for opening libdvdcss (Closes: #784578)
 
- -- Balint Reczey <balint@balintreczey.hu>  Wed, 18 Jan 2017 16:04:41 +0100
+ -- Balint Reczey <balint@balintreczey.hu>  Wed, 25 Jan 2017 21:23:22 +0100
 
 kodi (2:17.0~rc3+dfsg1-1) unstable; urgency=medium
 

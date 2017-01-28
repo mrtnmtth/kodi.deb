@@ -1,12 +1,7 @@
 0001-c-pluff-Fix-format-string-warnings.patch
-0002-Revert-cec-fixup-strings-after-PR-10775.patch
 0003-Revert-droid-fix-builds-with-AML-disabled.patch
 0004-Allocate-and-free-AVFrames-with-the-proper-FFmpeg-AP.patch
-0005-Revert-cmake-Properly-find-correct-libcec-version.patch
-0006-Revert-cec-added-setting-to-make-libCEC-wake-up-the-.patch
-0007-Revert-cec-add-CEC-IMX-adapter-as-known-type-and-set.patch
-0008-Revert-cec-Added-advanced-settings-for-action-when-T.patch
-0009-Revert-cec-bump-to-libCEC-4.0.0.patch
+0010-Autotools-Fake-empty-AE-override.patch
 01_reproducible_build.patch
 02_allow_all_arches.patch
 03-privacy.patch

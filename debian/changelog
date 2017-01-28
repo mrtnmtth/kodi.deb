@@ -1,3 +1,25 @@
+kodi (2:17.0~rc3+dfsg1-2) unstable; urgency=medium
+
+  * Bump debhelper compat level to 10.
+    Remove --parallel and --with autoreconf since those are now defaults
+  * Build-depend on libcec-dev >= 4~ (Closes: #852216)
+  * Fix make clean in debian/rules
+  * Use real dlopen() for opening libdvdcss (Closes: #784578)
+
+ -- Balint Reczey <balint@balintreczey.hu>  Wed, 25 Jan 2017 21:23:22 +0100
+
+kodi (2:17.0~rc3+dfsg1-1) unstable; urgency=medium
+
+  * Make default lirc device match lirc package's default (Closes: #850467)
+  * Stop passing ./configure flags which are not supported anymore
+  * Update fonts and font dependencies
+  * Imported Upstream version 17.0~rc3+dfsg1
+    See: https://kodi.tv/kodi-v17-0-krypton-release-candidate-3/
+  * Refresh patches
+  * Fix FTBFS due to missing AEDefines_override.h
+
+ -- Balint Reczey <balint@balintreczey.hu>  Mon, 16 Jan 2017 21:41:03 +0100
+
 kodi (2:17.0~rc2+dfsg1-1) unstable; urgency=medium
 
   * Imported Upstream version 17.0~beta7+dfsg1

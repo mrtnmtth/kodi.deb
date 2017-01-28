@@ -50,17 +50,13 @@ export DEB_CPPFLAGS_MAINT_APPEND = -D_XBMC
 # variable.
 KODI_CONFIG_OPTIONS ?= --host=$(DEB_HOST_GNU_TYPE) \
   $(GL_CONFIG_OPTIONS) \
-  --disable-vtbdecoder \
   --disable-openmax \
   --disable-tegra \
   $(DEBUG_CONFIG_OPTIONS) \
   --disable-profiling \
-  --enable-joystick \
   --enable-pulse \
-  --enable-rtmp \
   --disable-mid \
   --enable-avahi \
-  --disable-asap-codec \
   --enable-webserver \
   --enable-optical-drive \
   --enable-texturepacker \
@@ -69,8 +65,8 @@ KODI_CONFIG_OPTIONS ?= --host=$(DEB_HOST_GNU_TYPE) \
   --disable-airtunes \
   --with-ffmpeg=shared \
   --disable-dependency-tracking \
-  --disable-dvdcss \
   --enable-gtest \
+  --with-lirc-device=/var/run/lirc/lircd \
   $(ARCH_SPECIFIC_OPTIONS) \
   $(KODI_CONFIG_EXTRA_OPTIONS)
 
@@ -79,7 +75,7 @@ show-kodi-config-options:
 	$(info $(KODI_CONFIG_OPTIONS))
 
 %:
-	dh $@ --with autoreconf --with python2 --parallel
+	dh $@ --with python2
 
 override_dh_clean:
 	dh_clean libtool xbmc/config.h xbmc/stamp-h1
@@ -90,7 +86,7 @@ override_dh_clean:
 		-d $(DVDNAV_COMPONENT) || true
 	ls $(CURDIR)/debian/patches/libdvdread-* | tac | xargs cat | patch -R --no-backup-if-mismatch -r - -s -p1 \
 		-d $(DVDREAD_COMPONENT) || true
-	rm -rf addons/webinterface.default
+	rm -rf $(CURDIR)/addons/webinterface.default
 	rm -rf lib/gtest
 	rm -f debian/dh-addon/*.1
 
@@ -151,11 +147,9 @@ override_dh_auto_install:
 		WII_EXTRA_OPTS=-DCWIID_OLD
 
 override_dh_install-indep:
-	dh_link -pkodi-data usr/share/fonts/truetype/anonymous-pro/Anonymous\ Pro.ttf usr/share/kodi/addons/skin.estuary/fonts/AnonymousPro.ttf
 	dh_install -i -XLICENCE -XLICENSE \
-		-XLicence.txt -XLicense.txt -XLato-Bold.ttf \
-		-XLato-Regular.ttf -XDejaVuSans-Bold.ttf -XLICENSE.txt \
-		-XAnonymousPro -XNOTICE.txt \
+		-XLicence.txt -XLicense.txt -XLICENSE.txt \
+		-XNOTICE.txt \
 		-Xjquery-1.8.2.min.js -Xiscroll-min.js
 
 override_dh_install-arch:

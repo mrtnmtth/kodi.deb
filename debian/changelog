@@ -1,3 +1,12 @@
+kodi (2:17.0~rc3+dfsg1-2+mtt1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Enable rar support (non-free)
+  * Fix dh_clean
+  * Use default web interface
+
+ -- mttronc <mrtn.mtth@gmx.de>  Sun, 29 Jan 2017 21:41:50 +0100
+
 kodi (2:17.0~rc3+dfsg1-2) unstable; urgency=medium
 
   * Bump debhelper compat level to 10.

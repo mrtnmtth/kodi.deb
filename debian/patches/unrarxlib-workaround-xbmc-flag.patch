@@ -1,0 +1,13 @@
+diff --git a/lib/UnrarXLib/raros.hpp b/lib/UnrarXLib/raros.hpp
+index 3483da35..9c7b6225 100644
+--- a/lib/UnrarXLib/raros.hpp
++++ b/lib/UnrarXLib/raros.hpp
+@@ -1,7 +1,7 @@
+ #ifndef _RAR_RAROS_
+ #define _RAR_RAROS_
+ 
+-#if defined(_XBMC)
++#if defined(_XBMC) && !defined(TARGET_POSIX)
+ #ifndef _WIN_32
+   #define _WIN_32
+ #endif

@@ -1,8 +1,12 @@
-kodi (2:17.0~rc3+dfsg1-3) UNRELEASED; urgency=medium
+kodi (2:17.0~rc4+dfsg1-1) experimental; urgency=medium
 
-  *
+  * Imported Upstream version 17.0~rc4+dfsg1
+    See: https://kodi.tv/kodi-v17-0-krypton-release-candidate-4/
+  * Refresh patches
+  * Remove spaces around '=' in service file.
+    Also convert service file to use Unix line ending
 
- -- Balint Reczey <balint@balintreczey.hu>  Sat, 04 Feb 2017 08:47:22 +0100
+ -- Balint Reczey <balint@balintreczey.hu>  Sun, 05 Feb 2017 01:27:27 +0100
 
 kodi (2:17.0~rc3+dfsg1-2) unstable; urgency=medium
 

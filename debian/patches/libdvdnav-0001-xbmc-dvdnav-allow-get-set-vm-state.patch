@@ -12,8 +12,8 @@ Subject: [PATCH 01/10] [xbmc][dvdnav] allow get/set vm state
 
 diff --git a/src/dvdnav_internal.h b/src/dvdnav_internal.h
 index 534ccb8..6d936e9 100644
---- a/src/dvdnav_internal.h
-+++ b/src/dvdnav_internal.h
+--- a/libdvdnav-5-0-3/src/dvdnav_internal.h
++++ b/libdvdnav-5-0-3/src/dvdnav_internal.h
 @@ -222,6 +222,18 @@ struct dvdnav_s {
  /* converts a dvd_time_t to PTS ticks */
  int64_t dvdnav_convert_time(dvd_time_t *time);
@@ -35,8 +35,8 @@ index 534ccb8..6d936e9 100644
  #ifdef __GNUC__
 diff --git a/src/searching.c b/src/searching.c
 index f638b61..fd28fb3 100644
---- a/src/searching.c
-+++ b/src/searching.c
+--- a/libdvdnav-5-0-3/src/searching.c
++++ b/libdvdnav-5-0-3/src/searching.c
 @@ -731,6 +731,64 @@ fail:
    return retval;
  }
@@ -104,8 +104,8 @@ index f638b61..fd28fb3 100644
              int32_t *admap_len) {
 diff --git a/src/vm/vm.c b/src/vm/vm.c
 index 869dd05..35d08d5 100644
---- a/src/vm/vm.c
-+++ b/src/vm/vm.c
+--- a/libdvdnav-5-0-3/src/vm/vm.c
++++ b/libdvdnav-5-0-3/src/vm/vm.c
 @@ -1104,3 +1104,44 @@ void vm_ifo_close(ifo_handle_t *ifo)
  {
    ifoClose(ifo);
@@ -153,8 +153,8 @@ index 869dd05..35d08d5 100644
 +}
 diff --git a/src/vm/vm.h b/src/vm/vm.h
 index e4b01c2..a6fdbf9 100644
---- a/src/vm/vm.h
-+++ b/src/vm/vm.h
+--- a/libdvdnav-5-0-3/src/vm/vm.h
++++ b/libdvdnav-5-0-3/src/vm/vm.h
 @@ -161,6 +161,9 @@ subp_attr_t  vm_get_subp_attr(vm_t *vm, int streamN);
  ifo_handle_t *vm_get_title_ifo(vm_t *vm, uint32_t title);
  void vm_ifo_close(ifo_handle_t *ifo);

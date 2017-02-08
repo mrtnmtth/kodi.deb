@@ -83,10 +83,6 @@ override_dh_clean:
 	find . -name config.status -o -name config.cache -o -name config.log \
 		-exec rm -f "{}" \;
 	rm -rf tools/depends/target; \
-	ls $(CURDIR)/debian/patches/libdvdnav-* | tac | xargs cat | patch -R --no-backup-if-mismatch -r - -s -p1 \
-		-d $(DVDNAV_COMPONENT) || true
-	ls $(CURDIR)/debian/patches/libdvdread-* | tac | xargs cat | patch -R --no-backup-if-mismatch -r - -s -p1 \
-		-d $(DVDREAD_COMPONENT) || true
 	rm -rf $(CURDIR)/addons/webinterface.default
 	rm -f debian/dh-addon/*.1
 
@@ -103,8 +99,6 @@ DEJAVUSANS=/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf
 endif
 
 override_dh_auto_configure: configure
-	cat $(CURDIR)/debian/patches/libdvdnav-* | patch -p1 -d $(DVDNAV_COMPONENT)
-	cat $(CURDIR)/debian/patches/libdvdread-* | patch -p1 -d $(DVDREAD_COMPONENT)
 	cp -r $(CURDIR)/webinterface-default $(CURDIR)/addons/webinterface.default
 	sed -i 's/DEB_VERSION/"'$(VERSION)'"/' xbmc/Application.cpp xbmc/utils/SystemInfo.cpp
 	fontforge -script $(CURDIR)/debian/mergefonts.ff \
@@ -199,7 +193,7 @@ override_dh_gencontrol-arch:
 override_dh_gencontrol-indep:
 	dh_gencontrol -i
 
-# extract and patch customized libdvdread and libdvdnav and webinterface from 17.0 beta5
+# extract customized additional tarballs
 extract-components:
 	tar -xf $(CURDIR)/../kodi_"$(UPSTREAM_VERSION)".orig-$(DVDNAV_COMPONENT).tar.bz2 && \
 		mv libdvdnav-* $(CURDIR)/$(DVDNAV_COMPONENT)

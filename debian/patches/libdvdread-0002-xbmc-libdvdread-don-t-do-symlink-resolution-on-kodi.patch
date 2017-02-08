@@ -9,8 +9,8 @@ Subject: [PATCH 2/3] [xbmc][libdvdread] don't do symlink resolution on kodi
 
 diff --git a/src/dvd_reader.c b/src/dvd_reader.c
 index 5cc06d6..3c31a1c 100644
---- a/src/dvd_reader.c
-+++ b/src/dvd_reader.c
+--- a/libdvdread-5-0-3/src/dvd_reader.c
++++ b/libdvdread-5-0-3/src/dvd_reader.c
 @@ -432,8 +432,9 @@ static dvd_reader_t *DVDOpenCommon( const char *ppath,
      if( !(path_copy = strdup( path ) ) )
        goto DVDOpen_error;

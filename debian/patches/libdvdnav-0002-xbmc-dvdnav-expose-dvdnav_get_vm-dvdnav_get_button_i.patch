@@ -11,8 +11,8 @@ Subject: [PATCH 02/10] [xbmc][dvdnav] expose dvdnav_get_vm,
 
 diff --git a/src/dvdnav.c b/src/dvdnav.c
 index ae267d5..39c11dd 100644
---- a/src/dvdnav.c
-+++ b/src/dvdnav.c
+--- a/libdvdnav-5-0-3/src/dvdnav.c
++++ b/libdvdnav-5-0-3/src/dvdnav.c
 @@ -1273,3 +1273,55 @@ user_ops_t dvdnav_get_restrictions(dvdnav_t* this) {
  
    return ops.ops_struct;
@@ -72,8 +72,8 @@ index ae267d5..39c11dd 100644
 \ No newline at end of file
 diff --git a/src/dvdnav/dvdnav.h b/src/dvdnav/dvdnav.h
 index 8d68102..9f82b0f 100644
---- a/src/dvdnav/dvdnav.h
-+++ b/src/dvdnav/dvdnav.h
+--- a/libdvdnav-5-0-3/src/dvdnav/dvdnav.h
++++ b/libdvdnav-5-0-3/src/dvdnav/dvdnav.h
 @@ -699,6 +699,7 @@ int8_t dvdnav_is_domain_vtsm(dvdnav_t *self);
   */
  int8_t dvdnav_is_domain_vts(dvdnav_t *self);

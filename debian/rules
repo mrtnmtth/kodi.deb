@@ -183,8 +183,9 @@ debian/tmp/kodi-bin-recommends-dummy.so:
 override_dh_strip:
 	dh_strip --ddeb-migration="kodi-dbg (<< 15.1+dfsg1-4~)" || dh_strip
 
-override_dh_installinit:
-	@echo "Shipping systemd kodi.service file as an example only"
+# ship systemd service file disabled
+override_dh_systemd_enable:
+	dh_systemd_enable --no-enable
 
 override_dh_gencontrol-arch:
 	debian/dh-addon/dh_kodiaddon_depends

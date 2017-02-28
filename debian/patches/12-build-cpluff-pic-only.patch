@@ -1,6 +1,6 @@
 --- a/configure.ac
 +++ b/configure.ac
-@@ -2385,7 +2385,7 @@
+@@ -2386,7 +2386,7 @@
      --prefix="${prefix}" --includedir="${includedir}" --libdir="${libdir}" --datadir="${datadir}" \
      --host=$host_alias \
      --build=$build_alias \

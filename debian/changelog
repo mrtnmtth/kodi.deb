@@ -1,3 +1,10 @@
+kodi (2:17.1~rc1+dfsg1-1) experimental; urgency=medium
+
+  * Imported Upstream version 17.1~rc1+dfsg1
+  * Refresh patches
+
+ -- Balint Reczey <balint@balintreczey.hu>  Tue, 28 Feb 2017 02:21:54 +0100
+
 kodi (2:17.0+dfsg1-3) unstable; urgency=medium
 
   * Ship disabled systemd service file (Closes: #854985, #801886)

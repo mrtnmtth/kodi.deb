@@ -1,11 +1,25 @@
-kodi (2:17.0+dfsg1-1+mtt1) UNRELEASED; urgency=medium
+kodi (2:17.0+dfsg1-3+mtt1) UNRELEASED; urgency=medium
 
   * Non-maintainer upload.
   * Enable rar support (non-free)
   * Fix dh_clean
   * Use default web interface
 
- -- mttronc <mrtn.mtth@gmx.de>  Tue, 07 Feb 2017 15:07:52 +0100
+ -- mttronc <mrtn.mtth@gmx.de>  Thu, 02 Mar 2017 20:11:06 +0100
+
+kodi (2:17.0+dfsg1-3) unstable; urgency=medium
+
+  * Ship disabled systemd service file (Closes: #854985, #801886)
+  * Use systemd service file recommended on upstream wiki
+
+ -- Balint Reczey <balint@balintreczey.hu>  Wed, 22 Feb 2017 01:28:43 +0100
+
+kodi (2:17.0+dfsg1-2) unstable; urgency=medium
+
+  * Apply patches to additional tarballs using quilt series file
+    (Closes: #854463)
+
+ -- Balint Reczey <balint@balintreczey.hu>  Thu, 09 Feb 2017 10:25:18 +0100
 
 kodi (2:17.0+dfsg1-1) experimental; urgency=medium
 

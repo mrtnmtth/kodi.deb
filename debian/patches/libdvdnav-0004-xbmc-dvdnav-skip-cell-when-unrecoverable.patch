@@ -9,8 +9,8 @@ Subject: [PATCH 04/10] [xbmc][dvdnav] skip cell when unrecoverable
 
 diff --git a/src/dvdnav.c b/src/dvdnav.c
 index 39c11dd..3b61059 100644
---- a/src/dvdnav.c
-+++ b/src/dvdnav.c
+--- a/libdvdnav-5-0-3/src/dvdnav.c
++++ b/libdvdnav-5-0-3/src/dvdnav.c
 @@ -564,6 +564,10 @@ dvdnav_status_t dvdnav_get_next_cache_block(dvdnav_t *this, uint8_t **buf,
          /* Decode nav into pci and dsi. Then get next VOBU info. */
          if(!dvdnav_decode_packet(*buf, &this->dsi, &this->pci)) {

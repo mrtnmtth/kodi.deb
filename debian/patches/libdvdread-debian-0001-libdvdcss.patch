@@ -7,8 +7,8 @@ Print information about the CSS README.
  src/dvd_input.c | 9 ++++++++-
  1 file changed, 8 insertions(+), 1 deletion(-)
 
---- a/src/dvd_input.c
-+++ b/src/dvd_input.c
+--- a/libdvdread-5-0-3/src/dvd_input.c
++++ b/libdvdread-5-0-3/src/dvd_input.c
 @@ -366,7 +366,14 @@
      return 1;
  

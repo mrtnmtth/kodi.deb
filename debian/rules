@@ -82,10 +82,6 @@ override_dh_clean:
 	find . -name config.status -o -name config.cache -o -name config.log \
 		-exec rm -f "{}" \;
 	rm -rf tools/depends/target; \
-	ls $(CURDIR)/debian/patches/libdvdnav-* | tac | xargs cat | patch -R --no-backup-if-mismatch -r - -s -p1 \
-		-d $(DVDNAV_COMPONENT) || true
-	ls $(CURDIR)/debian/patches/libdvdread-* | tac | xargs cat | patch -R --no-backup-if-mismatch -r - -s -p1 \
-		-d $(DVDREAD_COMPONENT) || true
 	rm -rf lib/gtest
 	rm -f debian/dh-addon/*.1
 
@@ -102,8 +98,6 @@ DEJAVUSANS=/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf
 endif
 
 override_dh_auto_configure: configure
-	cat $(CURDIR)/debian/patches/libdvdnav-* | patch -p1 -d $(DVDNAV_COMPONENT)
-	cat $(CURDIR)/debian/patches/libdvdread-* | patch -p1 -d $(DVDREAD_COMPONENT)
 	sed -i 's/DEB_VERSION/"'$(VERSION)'"/' xbmc/Application.cpp xbmc/utils/SystemInfo.cpp
 	fontforge -script $(CURDIR)/debian/mergefonts.ff \
 		/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf \
@@ -187,8 +181,9 @@ debian/tmp/kodi-bin-recommends-dummy.so:
 override_dh_strip:
 	dh_strip --ddeb-migration="kodi-dbg (<< 15.1+dfsg1-4~)" || dh_strip
 
-override_dh_installinit:
-	@echo "Shipping systemd kodi.service file as an example only"
+# ship systemd service file disabled
+override_dh_systemd_enable:
+	dh_systemd_enable --no-enable
 
 override_dh_gencontrol-arch:
 	debian/dh-addon/dh_kodiaddon_depends
@@ -197,7 +192,7 @@ override_dh_gencontrol-arch:
 override_dh_gencontrol-indep:
 	dh_gencontrol -i
 
-# extract and patch customized libdvdread and libdvdnav
+# extract customized additional tarballs
 extract-components:
 	tar -xf $(CURDIR)/../kodi_"$(UPSTREAM_VERSION)".orig-$(DVDNAV_COMPONENT).tar.bz2 && \
 		mv libdvdnav-* $(CURDIR)/$(DVDNAV_COMPONENT)

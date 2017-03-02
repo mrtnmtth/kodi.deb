@@ -9,8 +9,8 @@ Subject: [PATCH 03/10] [xbmc][dvdnav] detection of dvd name
 
 diff --git a/src/vm/vm.c b/src/vm/vm.c
 index 35d08d5..7ff285d 100644
---- a/src/vm/vm.c
-+++ b/src/vm/vm.c
+--- a/libdvdnav-5-0-3/src/vm/vm.c
++++ b/libdvdnav-5-0-3/src/vm/vm.c
 @@ -409,6 +409,13 @@ int vm_reset(vm_t *vm, const char *dvdroot,
      if(dvd_read_name(vm->dvd_name, vm->dvd_serial, dvdroot) != 1) {
        fprintf(MSG_OUT, "libdvdnav: vm: dvd_read_name failed\n");

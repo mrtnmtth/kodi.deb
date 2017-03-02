@@ -9,8 +9,8 @@ Subject: [PATCH 08/10] [xbmc][dvdnav] additional debug log
 
 diff --git a/src/searching.c b/src/searching.c
 index 1c9ed6f..1271f87 100644
---- a/src/searching.c
-+++ b/src/searching.c
+--- a/libdvdnav-5-0-3/src/searching.c
++++ b/libdvdnav-5-0-3/src/searching.c
 @@ -208,6 +208,7 @@ dvdnav_status_t dvdnav_sector_search(dvdnav_t *this,
  
    result = dvdnav_get_position(this, &target, &length);

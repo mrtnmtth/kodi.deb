@@ -10,8 +10,8 @@ Subject: [PATCH 06/10] [xbmc][dvdnav] various safeguards
 
 diff --git a/src/dvdnav.c b/src/dvdnav.c
 index 3b61059..c188420 100644
---- a/src/dvdnav.c
-+++ b/src/dvdnav.c
+--- a/libdvdnav-5-0-3/src/dvdnav.c
++++ b/libdvdnav-5-0-3/src/dvdnav.c
 @@ -1265,6 +1265,11 @@ user_ops_t dvdnav_get_restrictions(dvdnav_t* this) {
  
    ops.ops_int = 0;
@@ -26,8 +26,8 @@ index 3b61059..c188420 100644
      return ops.ops_struct;
 diff --git a/src/read_cache.c b/src/read_cache.c
 index 1b2862d..1e1c37d 100644
---- a/src/read_cache.c
-+++ b/src/read_cache.c
+--- a/libdvdnav-5-0-3/src/read_cache.c
++++ b/libdvdnav-5-0-3/src/read_cache.c
 @@ -335,7 +335,7 @@ dvdnav_status_t dvdnav_free_cache_block(dvdnav_t *self, unsigned char *buf) {
    pthread_mutex_lock(&cache->lock);
    for (i = 0; i < READ_CACHE_CHUNKS; i++) {

@@ -9,8 +9,8 @@ Subject: [PATCH] Use real dlopen() for libdvdcss
 
 diff --git a/src/dvd_input.c b/src/dvd_input.c
 index d28efe7..ec3ce67 100644
---- a/src/dvd_input.c
-+++ b/src/dvd_input.c
+--- a/libdvdread-5-0-3/src/dvd_input.c
++++ b/libdvdread-5-0-3/src/dvd_input.c
 @@ -19,6 +19,8 @@
   * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
   */

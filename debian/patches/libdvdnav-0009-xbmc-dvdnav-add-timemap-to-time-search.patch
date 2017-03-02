@@ -9,8 +9,8 @@ Subject: [PATCH 09/10] [xbmc][dvdnav] add timemap to time search
 
 diff --git a/src/searching.c b/src/searching.c
 index 1271f87..ba7481b 100644
---- a/src/searching.c
-+++ b/src/searching.c
+--- a/libdvdnav-5-0-3/src/searching.c
++++ b/libdvdnav-5-0-3/src/searching.c
 @@ -142,24 +142,105 @@ dvdnav_status_t dvdnav_time_search(dvdnav_t *this,
        last_cell_nr = state->pgc->nr_of_cells;
    }

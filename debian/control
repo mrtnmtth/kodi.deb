@@ -140,6 +140,7 @@ Multi-Arch: foreign
 Depends: mesa-utils,
          x11-utils,
          fonts-noto-hinted,
+         fonts-noto-mono,
          fonts-roboto-hinted,
          libjs-jquery,
          libjs-iscroll,

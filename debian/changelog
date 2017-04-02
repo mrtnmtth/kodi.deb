@@ -1,3 +1,15 @@
+kodi (2:17.1+dfsg1-1) experimental; urgency=medium
+
+  * Depend on fonts-noto-mono package which contains NotoMono-Regular.ttf
+    (Closes: #856668)
+  * Fix FTBFS on alpha by not using Intel assempler code (Closes: #856815)
+  * Imported Upstream version 17.1+dfsg1
+    See: https://kodi.tv/kodi-v17-1-krypton
+  * Update my Uploader email address to my Ubuntu one
+  * Fix extract-components target in d/rules
+
+ -- Balint Reczey <rbalint@ubuntu.com>  Sun, 02 Apr 2017 11:01:21 +0200
+
 kodi (2:17.1~rc1+dfsg1-1) experimental; urgency=medium
 
   * Imported Upstream version 17.1~rc1+dfsg1

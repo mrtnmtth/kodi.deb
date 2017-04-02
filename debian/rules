@@ -197,7 +197,7 @@ override_dh_gencontrol-indep:
 # extract customized additional tarballs
 extract-components:
 	tar -xf $(CURDIR)/../kodi_"$(UPSTREAM_VERSION)".orig-$(DVDNAV_COMPONENT).tar.bz2 && \
-		mv libdvdnav-* $(CURDIR)/$(DVDNAV_COMPONENT)
+		test -d $(CURDIR)/$(DVDNAV_COMPONENT) || mv libdvdnav-* $(CURDIR)/$(DVDNAV_COMPONENT)
 	tar -xf $(CURDIR)/../kodi_"$(UPSTREAM_VERSION)".orig-$(DVDREAD_COMPONENT).tar.bz2 && \
-		mv libdvdread-* $(CURDIR)/$(DVDREAD_COMPONENT)
+		test -d $(CURDIR)/$(DVDREAD_COMPONENT) || mv libdvdread-* $(CURDIR)/$(DVDREAD_COMPONENT)
 	tar -xf $(CURDIR)/../kodi_"$(UPSTREAM_VERSION)".orig-webinterface-default.tar.xz

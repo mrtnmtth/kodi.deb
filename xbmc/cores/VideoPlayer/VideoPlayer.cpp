@@ -3595,6 +3595,7 @@ bool CVideoPlayer::OpenStream(CCurrentStream& current, int64_t demuxerId, int iS
     if(!m_pSubtitleDemuxer || m_pSubtitleDemuxer->GetFileName() != st.filename)
     {
       CLog::Log(LOGNOTICE, "Opening Subtitle file: %s", st.filename.c_str());
+      SAFE_DELETE(m_pSubtitleDemuxer);
       std::unique_ptr<CDVDDemuxVobsub> demux(new CDVDDemuxVobsub());
       if(!demux->Open(st.filename, source, st.filename2))
         return false;
@@ -3840,33 +3841,30 @@ bool CVideoPlayer::OpenSubtitleStream(CDVDStreamInfo& hint)
   return true;
 }
 
-bool CVideoPlayer::AdaptForcedSubtitles()
+void CVideoPlayer::AdaptForcedSubtitles()
 {
-  bool valid = false;
   SelectionStream ss = m_SelectionStreams.Get(STREAM_SUBTITLE, GetSubtitle());
-  if (ss.flags & CDemuxStream::FLAG_FORCED || !GetSubtitleVisible())
+  if (ss.flags & CDemuxStream::FLAG_FORCED)
   {
     SelectionStream as = m_SelectionStreams.Get(STREAM_AUDIO, GetAudioStream());
-
+    bool found = false;
     for (const auto &stream : m_SelectionStreams.Get(STREAM_SUBTITLE))
     {
       if (stream.flags & CDemuxStream::FLAG_FORCED && g_LangCodeExpander.CompareISO639Codes(stream.language, as.language))
       {
-        if(OpenStream(m_CurrentSubtitle, stream.demuxerId, stream.id, stream.source))
+        if (OpenStream(m_CurrentSubtitle, stream.demuxerId, stream.id, stream.source))
         {
-          valid = true;
+          found = true;
           SetSubtitleVisibleInternal(true);
           break;
         }
       }
     }
-    if(!valid)
+    if (!found)
     {
-      CloseStream(m_CurrentSubtitle, true);
       SetSubtitleVisibleInternal(false);
     }
   }
-  return valid;
 }
 
 bool CVideoPlayer::OpenTeletextStream(CDVDStreamInfo& hint)

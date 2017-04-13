@@ -2,7 +2,7 @@ Source: kodi
 Section: video
 Priority: optional
 Maintainer: Debian Multimedia Maintainers <pkg-multimedia-maintainers@lists.alioth.debian.org>
-Uploaders: Balint Reczey <balint@balintreczey.hu>
+Uploaders: Balint Reczey <rbalint@ubuntu.com>
 Build-Depends: autoconf,
  automake,
  autopoint,
@@ -140,6 +140,7 @@ Multi-Arch: foreign
 Depends: mesa-utils,
          x11-utils,
          fonts-noto-hinted,
+         fonts-noto-mono,
          fonts-roboto-hinted,
          libjs-jquery,
          libjs-iscroll,

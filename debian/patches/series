@@ -1,6 +1,7 @@
 0001-c-pluff-Fix-format-string-warnings.patch
 0003-Revert-droid-fix-builds-with-AML-disabled.patch
 0004-Allocate-and-free-AVFrames-with-the-proper-FFmpeg-AP.patch
+0005-filesystem-ZipManager-skip-path-traversal.patch
 01_reproducible_build.patch
 02_allow_all_arches.patch
 03-privacy.patch

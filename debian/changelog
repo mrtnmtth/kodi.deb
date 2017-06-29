@@ -1,8 +1,10 @@
-kodi (2:17.3+dfsg1-1ubuntu1) UNRELEASED; urgency=medium
+kodi (2:17.3+dfsg1-2) unstable; urgency=medium
 
-  * 
+  * Upload to unstable
+  * Stop shipping kodi.service as an example since it is now shipped
+    as a regular .service file
 
- -- Balint Reczey <rbalint@ubuntu.com>  Thu, 29 Jun 2017 05:01:04 +0200
+ -- Balint Reczey <rbalint@ubuntu.com>  Thu, 29 Jun 2017 05:15:29 +0200
 
 kodi (2:17.3+dfsg1-1) experimental; urgency=medium
 

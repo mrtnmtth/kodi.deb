@@ -1,4 +1,4 @@
-kodi (2:17.1+dfsg1-1+mtt1) UNRELEASED; urgency=medium
+kodi (2:17.3+dfsg1-2+mtt1) UNRELEASED; urgency=medium
 
   * Non-maintainer upload.
   * Enable rar support (non-free)
@@ -6,7 +6,36 @@ kodi (2:17.1+dfsg1-1+mtt1) UNRELEASED; urgency=medium
   * Use default web interface
   * Remove "From Debian" logo
 
- -- mttronc <mrtn.mtth@gmx.de>  Thu, 13 Apr 2017 15:37:14 +0200
+ -- mttronc <mrtn.mtth@gmx.de>  Tue, 04 Jul 2017 10:15:59 +0200
+
+kodi (2:17.3+dfsg1-2) unstable; urgency=medium
+
+  * Upload to unstable
+  * Stop shipping kodi.service as an example since it is now shipped
+    as a regular .service file
+
+ -- Balint Reczey <rbalint@ubuntu.com>  Thu, 29 Jun 2017 05:15:29 +0200
+
+kodi (2:17.3+dfsg1-1) experimental; urgency=medium
+
+  * New upstream version 17.3
+    See: https://kodi.tv/article/kodi-v173-minor-bug-fix-and-security-release
+  * Refresh patches
+
+ -- Balint Reczey <rbalint@ubuntu.com>  Fri, 26 May 2017 18:44:04 +0200
+
+kodi (2:17.1+dfsg1-3) unstable; urgency=medium
+
+  * Fix zip file directory traversal vulnerability (CVE-2017-8314)
+    (Closes: #863230)
+
+ -- Balint Reczey <rbalint@ubuntu.com>  Sat, 27 May 2017 00:50:34 +0200
+
+kodi (2:17.1+dfsg1-2) unstable; urgency=medium
+
+  * Upload to unstable
+
+ -- Balint Reczey <rbalint@ubuntu.com>  Thu, 13 Apr 2017 23:49:12 +0200
 
 kodi (2:17.1+dfsg1-1) experimental; urgency=medium
 

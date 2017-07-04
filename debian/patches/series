@@ -15,6 +15,7 @@
 14-ignore-test-results.patch
 15-dont-use-openssl.patch
 16-fix-alpha-build.patch
+17-add-test-for-CVE-2017-8314-with-autotools-build.patch
 libdvdnav-0001-xbmc-dvdnav-allow-get-set-vm-state.patch
 libdvdnav-0002-xbmc-dvdnav-expose-dvdnav_get_vm-dvdnav_get_button_i.patch
 libdvdnav-0003-xbmc-dvdnav-detection-of-dvd-name.patch

@@ -1,0 +1,36 @@
+From 78f138211a3e3eafb9b40e332223f2d936e6900c Mon Sep 17 00:00:00 2001
+From: mttronc <mrtn.mtth@gmx.de>
+Date: Tue, 31 Jan 2017 20:27:42 +0100
+Subject: [PATCH 2/3] MusicVisualisation: Add spinning CD art
+
+---
+ xml/MusicVisualisation.xml | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/addons/skin.estuary/xml/MusicVisualisation.xml b/addons/skin.estuary/xml/MusicVisualisation.xml
+index 748bd3d..5343bab 100644
+--- a/addons/skin.estuary/xml/MusicVisualisation.xml
++++ b/addons/skin.estuary/xml/MusicVisualisation.xml
+@@ -25,6 +25,19 @@
+ 			<bottom>0</bottom>
+ 			<height>1080</height>
+ 			<include>OpenClose_Left</include>
++			<control type="image">
++				<left>280</left>
++				<top>225</top>
++				<include>Visible_Left</include>
++				<visible>Player.ShowInfo | Window.IsActive(musicosd)</visible>
++				<width>450</width>
++				<height>450</height>
++				<fadetime>400</fadetime>
++				<aspectratio align="bottom">keep</aspectratio>
++				<animation effect="rotate" end="-360" center="auto" time="4800" loop="true" reversible="false" condition="!Player.Paused">Conditional</animation>
++				<texture background="true">$INFO[Player.FolderPath]cdart.png</texture>
++				<bordersize>0</bordersize>
++			</control>
+ 			<control type="image">
+ 				<left>33</left>
+ 				<top>200</top>
+-- 
+2.14.1
+

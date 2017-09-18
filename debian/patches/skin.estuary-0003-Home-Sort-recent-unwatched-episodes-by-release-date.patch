@@ -1,0 +1,25 @@
+From cf3aefe43f708ec3ddad459354b6e417fded16e0 Mon Sep 17 00:00:00 2001
+From: mttronc <mrtn.mtth@gmx.de>
+Date: Tue, 31 Jan 2017 20:34:57 +0100
+Subject: [PATCH 3/3] Home: Sort recent unwatched episodes by release date
+
+---
+ playlists/recent_unwatched_episodes.xsp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/addons/skin.estuary/playlists/recent_unwatched_episodes.xsp b/addons/skin.estuary/playlists/recent_unwatched_episodes.xsp
+index c96cc50..87c60f8 100644
+--- a/addons/skin.estuary/playlists/recent_unwatched_episodes.xsp
++++ b/addons/skin.estuary/playlists/recent_unwatched_episodes.xsp
+@@ -8,6 +8,6 @@
+     <rule field="playcount" operator="lessthan">
+         <value>1</value>
+     </rule>
+-    <limit>15</limit>
+-    <order direction="descending">dateadded</order>
++    <limit>25</limit>
++    <order direction="descending">year</order>
+ </smartplaylist>
+-- 
+2.14.1
+

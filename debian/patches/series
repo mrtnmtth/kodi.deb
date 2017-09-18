@@ -33,3 +33,6 @@ libdvdread-debian-0001-libdvdcss.patch
 libdvdread-debian-0006-descriptor.patch
 libdvdread-extra-0001-Use-real-dlopen-for-libdvdcss.patch
 unrarxlib-workaround-xbmc-flag.patch
+skin.estuary-0001-MusicVisualisation-Remove-fan-art-background.patch
+skin.estuary-0002-MusicVisualisation-Add-spinning-CD-art.patch
+skin.estuary-0003-Home-Sort-recent-unwatched-episodes-by-release-date.patch

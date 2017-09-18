@@ -1,3 +1,12 @@
+kodi (2:17.4+dfsg1-1+mtt2) unstable; urgency=medium
+
+  [ mttronc ]
+  * Non-maintainer upload.
+  * Drop transitional packages
+  * Add custom patches for Estuary skin
+
+ -- mttronc <mrtn.mtth@gmx.de>  Mon, 18 Sep 2017 23:33:34 +0200
+
 kodi (2:17.4+dfsg1-1+mtt1) unstable; urgency=medium
 
   * Non-maintainer upload.

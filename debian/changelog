@@ -1,6 +1,12 @@
+kodi (2:17.5+dfsg1-1+mtt1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * New upstream version 17.5
+
+ -- mttronc <mrtn.mtth@gmx.de>  Wed, 01 Nov 2017 22:39:47 +0100
+
 kodi (2:17.4+dfsg1-1+mtt2) unstable; urgency=medium
 
-  [ mttronc ]
   * Non-maintainer upload.
   * Drop transitional packages
   * Add custom patches for Estuary skin

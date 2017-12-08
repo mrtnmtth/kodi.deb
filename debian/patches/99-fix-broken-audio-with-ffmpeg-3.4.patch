@@ -1,0 +1,19 @@
+diff --git a/xbmc/cores/VideoPlayer/VideoPlayerAudio.cpp b/xbmc/cores/VideoPlayer/VideoPlayerAudio.cpp
+index ec5f9144..a2e59f7d 100644
+--- a/xbmc/cores/VideoPlayer/VideoPlayerAudio.cpp
++++ b/xbmc/cores/VideoPlayer/VideoPlayerAudio.cpp
+@@ -485,14 +485,6 @@ void CVideoPlayerAudio::Process()
+ 
+         // guess next pts
+         m_audioClock += audioframe.duration;
+-
+-        int ret = m_pAudioCodec->Decode(nullptr, 0, DVD_NOPTS_VALUE, DVD_NOPTS_VALUE);
+-        if (ret < 0)
+-        {
+-          CLog::Log(LOGERROR, "CVideoPlayerAudio::DecodeFrame - Decode Error. Skipping audio packet (%d)", ret);
+-          m_pAudioCodec->Reset();
+-          break;
+-        }
+       } // while decoder produces output
+ 
+     } // demuxer packet

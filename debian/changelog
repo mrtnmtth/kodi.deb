@@ -1,3 +1,11 @@
+kodi (2:17.6+dfsg1-1+mtt1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * New upstream version 17.6
+  * Add patch fixing audio with ffmpeg 3.4 (Closes #881536)
+
+ -- mttronc <mrtn.mtth@gmx.de>  Sat, 09 Dec 2017 19:20:36 +0100
+
 kodi (2:17.5+dfsg1-1+mtt1) unstable; urgency=medium
 
   * Non-maintainer upload.

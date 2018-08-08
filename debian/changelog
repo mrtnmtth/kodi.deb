@@ -1,3 +1,10 @@
+kodi (2:17.6+dfsg1-1+mtt2) unstable; urgency=medium
+
+  * Depend and build-depend on python-pil instead of python-imaging
+  * Add patch to fix build with ffmpeg 4.0
+
+ -- mttronc <mrtn.mtth@gmx.de>  Wed, 08 Aug 2018 15:05:23 +0200
+
 kodi (2:17.6+dfsg1-1+mtt1) unstable; urgency=medium
 
   * Non-maintainer upload.

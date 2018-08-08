@@ -17,6 +17,7 @@
 16-fix-alpha-build.patch
 17-add-test-for-CVE-2017-8314-with-autotools-build.patch
 99-fix-broken-audio-with-ffmpeg-3.4.patch
+99-fix-build-with-ffmpeg4.patch
 libdvdnav-0001-xbmc-dvdnav-allow-get-set-vm-state.patch
 libdvdnav-0002-xbmc-dvdnav-expose-dvdnav_get_vm-dvdnav_get_button_i.patch
 libdvdnav-0003-xbmc-dvdnav-detection-of-dvd-name.patch

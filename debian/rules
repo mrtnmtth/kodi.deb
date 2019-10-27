@@ -105,7 +105,7 @@ override_dh_auto_configure: configure
 		$(CURDIR)/media/Fonts/arial.ttf
 	cp -r /usr/src/gtest/ $(CURDIR)/lib/
 	mkdir -p $(CURDIR)/lib/gtest/lib/.libs
-	ln -s ../../libgtest.a $(CURDIR)/lib/gtest/lib/.libs/
+	ln -s ../libgtest.a $(CURDIR)/lib/gtest/lib/.libs/
 	./bootstrap
 	dh_auto_configure -- $(KODI_CONFIG_OPTIONS)
 	(cd $(DVDREAD_COMPONENT) && autoreconf -vif && \
